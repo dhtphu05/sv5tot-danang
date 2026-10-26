@@ -208,7 +208,17 @@ export const StudentPortalPage: React.FC<StudentPortalPageProps> = ({
         {activeNavId === 'design-system' ? (
           <DesignPlayground />
         ) : activeNavId === 'profile' ? (
-          <StudentProfileView onProfileUpdated={onProfileUpdated} />
+          <StudentProfileView
+            onProfileUpdated={onProfileUpdated}
+            fallbackStudent={{
+              fullName: studentIdentity.fullName,
+              studentId: studentIdentity.studentId,
+              university: studentIdentity.university,
+              email: activeStoreState.application.student.email,
+              institutionId:
+                activeStoreState.application.applicantProfileSnapshot?.institutionId,
+            }}
+          />
         ) : activeNavId === 'overview' ? (
           <StudentHomeView
             storeState={activeStoreState}
@@ -263,6 +273,7 @@ export const StudentPortalPage: React.FC<StudentPortalPageProps> = ({
             key={`${derivedResultScenario}-${scenarioResetKey}`}
             hasApplication={activeStoreState.hasApplication}
             submissionState={activeStoreState.submissionState}
+            studentIdentity={studentIdentity}
             onStartNewApplication={handleStartNewApplication}
             initialScenario={derivedResultScenario}
             onNavigateToApplication={handleNavigateToApplicationFromResults}

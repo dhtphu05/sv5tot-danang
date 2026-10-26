@@ -37,6 +37,7 @@ import {
 export interface UseStudentWorkspaceDeepLinkOptions {
   deepLinkTarget: ResolvedDeepLinkDestination | null;
   onDeepLinkConsumed?: () => void;
+  initialData?: StudentApplicationData;
   setFallbackNotice: React.Dispatch<React.SetStateAction<string | null>>;
   setSubmissionState: React.Dispatch<
     React.SetStateAction<ApplicationSubmissionState>
@@ -83,6 +84,7 @@ export interface UseStudentWorkspaceDeepLinkOptions {
 export function useStudentWorkspaceDeepLink({
   deepLinkTarget,
   onDeepLinkConsumed,
+  initialData,
   setFallbackNotice,
   setSubmissionState,
   setSupplementScenarioId,
@@ -101,6 +103,10 @@ export function useStudentWorkspaceDeepLink({
   useEffect(() => {
     if (!deepLinkTarget) return;
 
+    const isDemoPersona =
+      !initialData?.student?.studentId ||
+      initialData.student.studentId === '102220123';
+
     setFallbackNotice(deepLinkTarget.fallbackNotice || null);
 
     if (deepLinkTarget.enterSupplementMode) {
@@ -113,12 +119,23 @@ export function useStudentWorkspaceDeepLink({
       );
       setSupplementChangesMap(suppConfig.initialChanges || {});
       setIsSupplementWindowClosed(false);
-      setApplication(buildApplicationForSupplementScenario(suppConfig));
-      setActivities(SUPPLEMENT_REQUIRED_ACTIVITIES);
+      if (isDemoPersona) {
+        setApplication(buildApplicationForSupplementScenario(suppConfig));
+        setActivities(SUPPLEMENT_REQUIRED_ACTIVITIES);
+      } else if (initialData) {
+        setApplication(initialData);
+      }
     } else if (deepLinkTarget.submissionStateOverride) {
       const nextState = deepLinkTarget.submissionStateOverride;
       setSubmissionState(nextState);
-      if (nextState === 'draft') {
+      if (!isDemoPersona) {
+        if (initialData) {
+          setApplication(initialData);
+        }
+        if (nextState !== 'supplement_required' && nextState !== 'supplement_sent') {
+          setSupplementRequests([]);
+        }
+      } else if (nextState === 'draft') {
         setApplication(INITIAL_STUDENT_APPLICATION);
         setSupplementRequests([]);
       } else if (nextState === 'submitted') {
@@ -149,7 +166,7 @@ export function useStudentWorkspaceDeepLink({
     }
 
     if (deepLinkTarget.openEvidenceDetailId) {
-      const sourceApp = INITIAL_STUDENT_APPLICATION;
+      const sourceApp = initialData || INITIAL_STUDENT_APPLICATION;
       for (const crit of sourceApp.criteria) {
         for (const req of crit.requirements) {
           for (const decl of req.declarations) {

@@ -35,6 +35,7 @@ import {
   subscribeToCollectiveStore,
 } from '../../staff/collectiveStore';
 import {
+  AUTHORIZED_COLLECTIVE_REGISTRY,
   CollectiveApplication,
   CollectiveType,
 } from '../../staff/collectiveTypes';
@@ -70,14 +71,43 @@ export interface CollectivePortalProps {
 }
 
 export const CollectivePortal: React.FC<CollectivePortalProps> = ({
-  initialAppId = 'COL-2026-DN-21TCLC-DT1',
-  currentEmail: _currentEmail,
+  initialAppId,
+  currentEmail,
   onLogout,
   onSwitchToIndividual,
   onSwitchToStudentPortal,
 }) => {
   const [activeTab, setActiveTab] = useState<CollectivePortalTab>('overview');
-  const [selectedAppId, setSelectedAppId] = useState<string>(initialAppId);
+  const [selectedAppId, setSelectedAppId] = useState<string>(() => {
+    if (initialAppId) return initialAppId;
+    const normalizedEmail = (currentEmail || '').trim().toLowerCase();
+    if (normalizedEmail) {
+      const existing = getAllCollectiveApplications().find(
+        (a) => a.preparedByUserEmail.toLowerCase() === normalizedEmail
+      );
+      if (existing) return existing.id;
+      const registryMatch = AUTHORIZED_COLLECTIVE_REGISTRY.find(
+        (r) => r.authorizedPreparerEmail.toLowerCase() === normalizedEmail
+      );
+      if (registryMatch) {
+        const created = createCollectiveApplication({
+          collectiveName: registryMatch.name,
+          collectiveType: registryMatch.type,
+          institutionId: registryMatch.institutionId,
+          institutionName: registryMatch.institutionName,
+          schoolReviewUnitId: registryMatch.schoolReviewUnitId,
+          schoolReviewUnitName: registryMatch.schoolReviewUnitName,
+          facultyName: registryMatch.facultyName,
+          contactPhone: registryMatch.defaultContactPhone,
+          preparedByUserId: `user-preparer-${registryMatch.id}`,
+          preparedByUserName: registryMatch.authorizedPreparerName,
+          preparedByUserEmail: registryMatch.authorizedPreparerEmail,
+        });
+        return created.id;
+      }
+    }
+    return 'COL-2026-DN-21TCLC-DT1';
+  });
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [, setStoreVersion] = useState(0);
@@ -91,6 +121,39 @@ export const CollectivePortal: React.FC<CollectivePortalProps> = ({
     });
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    if (initialAppId) return;
+    const normalizedEmail = (currentEmail || '').trim().toLowerCase();
+    if (!normalizedEmail) return;
+    const apps = getAllCollectiveApplications();
+    const existing = apps.find(
+      (a) => a.preparedByUserEmail.toLowerCase() === normalizedEmail
+    );
+    if (existing) {
+      setSelectedAppId(existing.id);
+      return;
+    }
+    const registryMatch = AUTHORIZED_COLLECTIVE_REGISTRY.find(
+      (r) => r.authorizedPreparerEmail.toLowerCase() === normalizedEmail
+    );
+    if (registryMatch) {
+      const created = createCollectiveApplication({
+        collectiveName: registryMatch.name,
+        collectiveType: registryMatch.type,
+        institutionId: registryMatch.institutionId,
+        institutionName: registryMatch.institutionName,
+        schoolReviewUnitId: registryMatch.schoolReviewUnitId,
+        schoolReviewUnitName: registryMatch.schoolReviewUnitName,
+        facultyName: registryMatch.facultyName,
+        contactPhone: registryMatch.defaultContactPhone,
+        preparedByUserId: `user-preparer-${registryMatch.id}`,
+        preparedByUserName: registryMatch.authorizedPreparerName,
+        preparedByUserEmail: registryMatch.authorizedPreparerEmail,
+      });
+      setSelectedAppId(created.id);
+    }
+  }, [currentEmail, initialAppId]);
 
   const allApps = getAllCollectiveApplications();
   const currentApp: CollectiveApplication =
@@ -339,9 +402,10 @@ export const CollectivePortal: React.FC<CollectivePortalProps> = ({
             schoolReviewUnitName: payload.schoolReviewUnitName,
             facultyName: payload.facultyName,
             contactPhone: payload.contactPhone,
-            preparedByUserId: 'user-preparer-mai',
-            preparedByUserName: 'Nguyễn Thị Mai',
-            preparedByUserEmail: 'mai.nt@dut.udn.vn',
+            preparedByUserId: currentApp.preparedByUserId || 'user-preparer-mai',
+            preparedByUserName: currentApp.preparedByUserName || 'Nguyễn Thị Mai',
+            preparedByUserEmail:
+              currentEmail || currentApp.preparedByUserEmail || 'mai.nt@dut.udn.vn',
           });
           setSelectedAppId(created.id);
           setIsCreateModalOpen(false);

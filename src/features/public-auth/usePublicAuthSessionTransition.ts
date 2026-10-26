@@ -13,7 +13,11 @@ import {
   ResolvedDeepLinkDestination,
   StudentNotificationItem,
 } from '../../components/notifications/notificationTypes';
-import { STAFF_DEMO_USERS } from '../../staff/fixtures/staffDataset';
+import {
+  STAFF_DEMO_USERS,
+  INITIAL_STAFF_APPLICATIONS,
+} from '../../staff/fixtures/staffDataset';
+import { buildFallbackBundleForStaffRecord } from '../../staff/fixtures/officer/scenarioBundles';
 import { INITIAL_STAFF_ACCOUNTS } from '../../staff/fixtures/admin/staffAccounts';
 import { AUTHORIZED_COLLECTIVE_REGISTRY } from '../../staff/collectiveTypes';
 import { SchoolReviewUnitId } from '../../staff/schoolReviewTypes';
@@ -25,8 +29,14 @@ import {
 } from '../../demo/prototypeDemoMode';
 import { HomeDevScenarioId } from '../../demo/fixtures/homeScenarios';
 import { ApplicationSubmissionState } from '../../components/submission/submissionTypes';
-import { StudentApplicationData } from '../../demo/fixtures/studentApplication';
+import {
+  StudentApplicationData,
+  buildCleanStudentApplication,
+  buildCriteriaFromDefinitions,
+} from '../../demo/fixtures/studentApplication';
 import { AuthSessionPayload } from '../../entities/services/contracts';
+import { isBackendMode } from '../../shared/config/executionMode';
+import { resolveDomainServices } from '../../entities/services/modeResolver';
 
 export interface UsePublicAuthSessionTransitionOptions {
   safeReturnTarget: SafeInternalReturnTarget | null;
@@ -256,27 +266,106 @@ export function usePublicAuthSessionTransition({
         const nextStudentId = session.user.studentCode || '';
         const nextUniversity = session.user.institutionName || '';
         const nextEmail = session.user.email || lower;
-        setStudentIdentity((prev) => ({
-          fullName: nextFullName || prev.fullName,
-          studentId: nextStudentId || prev.studentId,
-          university: nextUniversity || prev.university,
-        }));
-        setSharedApplication((prev) => {
-          const updated: StudentApplicationData = {
-            ...prev,
-            student: {
-              ...prev.student,
-              fullName: nextFullName || prev.student.fullName,
-              studentId: nextStudentId || prev.student.studentId,
-              university: nextUniversity || prev.student.university,
-              email: nextEmail || prev.student.email,
-            },
-          };
-          savePersistedDemoSession({
-            mutatedApplication: updated,
-          });
-          return updated;
+        const nextInstitutionId = session.user.institutionId;
+
+        setStudentIdentity({
+          fullName: nextFullName,
+          studentId: nextStudentId,
+          university: nextUniversity,
         });
+
+        const cleanInitial = buildCleanStudentApplication({
+          fullName: nextFullName,
+          studentId: nextStudentId,
+          university: nextUniversity,
+          email: nextEmail,
+          institutionId: nextInstitutionId,
+        });
+
+        setPrototypeScenarioId('new_student');
+        setHomeScenario('state_a_no_app');
+        setAppSubmissionState('draft');
+        setNotifications([]);
+        setSharedApplication(cleanInitial);
+        savePersistedDemoSession({
+          scenarioId: 'new_student',
+          mutatedNotifications: [],
+          mutatedApplication: cleanInitial,
+        });
+
+        if (isBackendMode() && nextStudentId) {
+          const targetAppId = `APP-2026-DN-${nextStudentId}`;
+          resolveDomainServices()
+            .individual.getStudentApplication(targetAppId)
+            .then((remoteApp) => {
+              if (!remoteApp || !remoteApp.applicationId) return;
+              const hydrated: StudentApplicationData = {
+                ...cleanInitial,
+                ...remoteApp,
+                criteria: buildCriteriaFromDefinitions(
+                  remoteApp.criteria as any
+                ),
+                applicantProfileSnapshot:
+                  remoteApp.applicantProfileSnapshot ||
+                  cleanInitial.applicantProfileSnapshot,
+                student: {
+                  ...cleanInitial.student,
+                  ...(remoteApp.student || {}),
+                },
+              };
+              const isSubmitted =
+                remoteApp.status === 'under_review' ||
+                remoteApp.status === 'submitted' ||
+                remoteApp.schoolPreliminaryStatus === 'pending_intake' ||
+                remoteApp.schoolPreliminaryStatus === 'under_review' ||
+                remoteApp.schoolPreliminaryStatus === 'recommended_forwarding' ||
+                remoteApp.schoolPreliminaryStatus === 'forwarded_to_city';
+              const nextScId: PrototypeScenarioId = isSubmitted
+                ? 'under_review'
+                : 'draft';
+              const nextHomeSc: HomeDevScenarioId = isSubmitted
+                ? 'state_g_under_review'
+                : 'state_b_draft_clean';
+              const nextSubState: ApplicationSubmissionState = isSubmitted
+                ? 'submitted'
+                : 'draft';
+
+              setPrototypeScenarioId(nextScId);
+              setHomeScenario(nextHomeSc);
+              setAppSubmissionState(nextSubState);
+              setSharedApplication(hydrated);
+              savePersistedDemoSession({
+                scenarioId: nextScId,
+                mutatedApplication: hydrated,
+                mutatedNotifications: [],
+              });
+            })
+            .catch(() => {
+              // 404 means student has not created an application yet — keep clean new_student state
+            });
+        } else if (!isBackendMode()) {
+          const matchedSeededRecord = INITIAL_STAFF_APPLICATIONS.find(
+            (app) =>
+              app.student.studentCode !== '102220123' &&
+              ((nextStudentId && app.student.studentCode === nextStudentId) ||
+                (nextEmail &&
+                  app.student.email.toLowerCase() === nextEmail.toLowerCase()))
+          );
+          if (matchedSeededRecord) {
+            const seededBundle =
+              buildFallbackBundleForStaffRecord(matchedSeededRecord);
+            setPrototypeScenarioId('under_review');
+            setHomeScenario('state_g_under_review');
+            setAppSubmissionState('submitted');
+            setNotifications([]);
+            setSharedApplication(seededBundle.studentApp);
+            savePersistedDemoSession({
+              scenarioId: 'under_review',
+              mutatedApplication: seededBundle.studentApp,
+              mutatedNotifications: [],
+            });
+          }
+        }
       }
 
       setViewMode('student_app');
@@ -328,6 +417,10 @@ export function usePublicAuthSessionTransition({
       setPendingDeepLink,
       setActiveNavId,
       setStudentIdentity,
+      setPrototypeScenarioId,
+      setHomeScenario,
+      setAppSubmissionState,
+      setNotifications,
       setSharedApplication,
       updateBrowserUrl,
     ]
@@ -343,17 +436,19 @@ export function usePublicAuthSessionTransition({
       setStudentIdentity(newIdentity);
 
       const nextStore = clonePristineStoreForScenario('new_student');
+      const cleanApp = buildCleanStudentApplication({
+        fullName: payload.fullName,
+        studentId: payload.studentId,
+        university: payload.institutionName,
+        email: payload.email,
+        institutionId: payload.institutionId,
+      });
+
       setPrototypeScenarioId('new_student');
       setHomeScenario('state_a_no_app');
       setAppSubmissionState(nextStore.submissionState);
-      setSharedApplication({
-        ...nextStore.application,
-        student: {
-          ...nextStore.application.student,
-          ...newIdentity,
-        },
-      });
-      setNotifications(nextStore.notifications);
+      setSharedApplication(cleanApp);
+      setNotifications([]);
       setViewMode('student_app');
       setActiveNavId('overview');
       incrementScenarioResetKey();
@@ -362,8 +457,8 @@ export function usePublicAuthSessionTransition({
         scenarioId: 'new_student',
         viewMode: 'student_app',
         navId: 'overview',
-        mutatedApplication: null,
-        mutatedNotifications: null,
+        mutatedApplication: cleanApp,
+        mutatedNotifications: [],
       });
       updateBrowserUrl('/app');
 

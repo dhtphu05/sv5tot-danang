@@ -248,6 +248,10 @@ export function resolveScenarioFromUrlParam(
   );
 }
 
+import { StaffUser } from '../staff/types';
+import { buildCleanStudentApplication } from './fixtures/studentApplication';
+import { isBackendMode } from '../shared/config/executionMode';
+
 /**
  * Returns a fresh deep clone of the pristine CoherentStudentStoreState for a scenario
  * so live mutations in DRAFT / READY_TO_SUBMIT / SUPPLEMENT_REQUIRED never corrupt
@@ -260,29 +264,37 @@ export function clonePristineStoreForScenario(
     PROTOTYPE_SCENARIO_MAP[scenarioId] ||
     PROTOTYPE_SCENARIO_MAP[DEFAULT_PROTOTYPE_SCENARIO_ID];
   const base = HOME_COHERENT_SCENARIOS[config.homeScenarioId];
-  return JSON.parse(JSON.stringify(base)) as CoherentStudentStoreState;
+  const cloned = JSON.parse(JSON.stringify(base)) as CoherentStudentStoreState;
+  if (isBackendMode()) {
+    cloned.application = buildCleanStudentApplication({
+      fullName: '',
+      studentId: '',
+      university: '',
+    });
+    cloned.notifications = [];
+    cloned.advisoryCount = 0;
+  }
+  return cloned;
 }
-
-import { StaffUser } from '../staff/types';
 
 // ============================================================================
 // SESSION STORAGE PERSISTENCE (Section 15)
 // ============================================================================
 const STORAGE_KEYS = {
-  SCENARIO_ID: '5tot_demo_scenario_v1',
-  DEMO_ACTIVE: '5tot_demo_active_v1',
-  VIEW_MODE: '5tot_demo_view_mode_v1',
-  NAV_ID: '5tot_demo_nav_id_v1',
-  STAFF_ROLE: '5tot_staff_role_v1',
-  STAFF_ROUTE_ID: '5tot_staff_route_id_v1',
-  STAFF_USER: '5tot_staff_user_v1',
-  COLLECTIVE_EMAIL: '5tot_collective_email_v1',
-  TOOLBAR_HIDDEN: '5tot_demo_toolbar_hidden_v1',
-  MUTATED_APP: '5tot_demo_mutated_app_v1',
-  MUTATED_NOTIFS: '5tot_demo_mutated_notifs_v1',
-  OFFICER_WORKSPACES: '5tot_demo_officer_workspaces_v2',
-  OFFICER_STUDENT_APPS: '5tot_demo_officer_apps_v2',
-  STAFF_APPLICATIONS: '5tot_demo_staff_apps_v2',
+  SCENARIO_ID: '5tot_demo_scenario_v3',
+  DEMO_ACTIVE: '5tot_demo_active_v3',
+  VIEW_MODE: '5tot_demo_view_mode_v3',
+  NAV_ID: '5tot_demo_nav_id_v3',
+  STAFF_ROLE: '5tot_staff_role_v3',
+  STAFF_ROUTE_ID: '5tot_staff_route_id_v3',
+  STAFF_USER: '5tot_staff_user_v3',
+  COLLECTIVE_EMAIL: '5tot_collective_email_v3',
+  TOOLBAR_HIDDEN: '5tot_demo_toolbar_hidden_v3',
+  MUTATED_APP: '5tot_demo_mutated_app_v3',
+  MUTATED_NOTIFS: '5tot_demo_mutated_notifs_v3',
+  OFFICER_WORKSPACES: '5tot_demo_officer_workspaces_v3',
+  OFFICER_STUDENT_APPS: '5tot_demo_officer_apps_v3',
+  STAFF_APPLICATIONS: '5tot_demo_staff_apps_v3',
 };
 
 export interface PersistedDemoSession {
@@ -300,8 +312,11 @@ export interface PersistedDemoSession {
 }
 
 export function loadPersistedDemoSession(): PersistedDemoSession {
+  const defaultScenario: PrototypeScenarioId = isBackendMode()
+    ? 'new_student'
+    : DEFAULT_PROTOTYPE_SCENARIO_ID;
   const fallback: PersistedDemoSession = {
-    scenarioId: DEFAULT_PROTOTYPE_SCENARIO_ID,
+    scenarioId: defaultScenario,
     isDemoActive: false,
     viewMode: 'public',
     navId: 'overview',
@@ -319,7 +334,7 @@ export function loadPersistedDemoSession(): PersistedDemoSession {
     const validScenario =
       rawScenario && rawScenario in PROTOTYPE_SCENARIO_MAP
         ? (rawScenario as PrototypeScenarioId)
-        : DEFAULT_PROTOTYPE_SCENARIO_ID;
+        : defaultScenario;
 
     const isDemoActive =
       window.sessionStorage.getItem(STORAGE_KEYS.DEMO_ACTIVE) === '1';
@@ -351,9 +366,16 @@ export function loadPersistedDemoSession(): PersistedDemoSession {
       window.sessionStorage.getItem(STORAGE_KEYS.TOOLBAR_HIDDEN) === '1';
 
     const rawApp = window.sessionStorage.getItem(STORAGE_KEYS.MUTATED_APP);
-    const mutatedApplication = rawApp
+    const parsedApp = rawApp
       ? (JSON.parse(rawApp) as StudentApplicationData)
       : null;
+    const mutatedApplication =
+      isBackendMode() &&
+      parsedApp &&
+      (parsedApp.applicationId === 'APP-2026-DN-102220123' ||
+        parsedApp.applicantProfileSnapshot?.fullName === 'Nguyễn Minh Anh')
+        ? null
+        : parsedApp;
 
     const rawNotifs = window.sessionStorage.getItem(
       STORAGE_KEYS.MUTATED_NOTIFS
@@ -524,3 +546,31 @@ export function loadPersistedOfficerStudentApps<T>(): T | null {
     return null;
   }
 }
+
+export function savePersistedStaffApplications(apps: unknown): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const serialized = JSON.stringify(apps);
+    window.sessionStorage.setItem(STORAGE_KEYS.STAFF_APPLICATIONS, serialized);
+    try {
+      window.localStorage.setItem(STORAGE_KEYS.STAFF_APPLICATIONS, serialized);
+    } catch {
+      // Ignore localStorage errors
+    }
+  } catch {
+    // Ignore quota errors
+  }
+}
+
+export function loadPersistedStaffApplications<T>(): T | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw =
+      window.sessionStorage.getItem(STORAGE_KEYS.STAFF_APPLICATIONS) ||
+      window.localStorage.getItem(STORAGE_KEYS.STAFF_APPLICATIONS);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
+}
+

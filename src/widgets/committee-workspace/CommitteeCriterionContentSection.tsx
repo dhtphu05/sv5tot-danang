@@ -284,6 +284,7 @@ export const CommitteeCriterionContentSection: React.FC<
                   <DocumentViewer
                     fileName={activeEvItem.evidence.name}
                     fileType={activeEvItem.evidence.fileType}
+                    fileUrl={activeEvItem.evidence.url}
                   />
                 </div>
                 <div className="p-4 bg-[#F8FBFD] border-t lg:border-t-0 lg:border-l border-[#DCE7EE] space-y-3 overflow-y-auto max-h-[460px]">

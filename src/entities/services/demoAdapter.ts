@@ -235,8 +235,32 @@ const DEMO_SEEDED_STUDENTS: Array<{
 
 let demoSchoolForwardingBatches = new Map<string, SchoolForwardingBatchDto>();
 
+const DEMO_PROFILE_STORAGE_KEY = '5tot_demo_student_profile_v1';
+
+function loadPersistedDemoProfile(): StudentProfileDto | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.sessionStorage.getItem(DEMO_PROFILE_STORAGE_KEY);
+    if (raw) return JSON.parse(raw) as StudentProfileDto;
+  } catch {
+    // ignore storage errors
+  }
+  return null;
+}
+
+function savePersistedDemoProfile(profile: StudentProfileDto): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.setItem(DEMO_PROFILE_STORAGE_KEY, JSON.stringify(profile));
+  } catch {
+    // ignore storage errors
+  }
+}
+
 let activeDemoSession: AuthSessionPayload | null = null;
-let demoStudentProfile: StudentProfileDto = structuredClone(DEFAULT_CANONICAL_STUDENT_PROFILE);
+let demoStudentProfile: StudentProfileDto =
+  loadPersistedDemoProfile() || structuredClone(DEFAULT_CANONICAL_STUDENT_PROFILE);
+let demoRegisteredProfiles = new Map<string, StudentProfileDto>();
 let demoIndividualRecords: StaffApplicationRecord[] = [...INITIAL_STAFF_APPLICATIONS];
 let demoStudentApps = new Map<string, StudentApplicationData>([
   [STUDENT_APPLICATION_FIXTURE.applicationId, structuredClone(STUDENT_APPLICATION_FIXTURE)],
@@ -371,6 +395,39 @@ export const demoServicesAdapter: DomainServicesBundle = {
       const matchedStudent = DEMO_SEEDED_STUDENTS.find(
         (s) => s.email.toLowerCase() === normalized
       );
+      const registeredProf = demoRegisteredProfiles.get(normalized);
+      if (registeredProf) {
+        demoStudentProfile = structuredClone(registeredProf);
+        savePersistedDemoProfile(demoStudentProfile);
+      } else if (
+        normalized === 'minhanh.nguyen@dut.udn.vn' ||
+        normalized === 'minh.nv@dut.udn.vn'
+      ) {
+        demoStudentProfile = {
+          ...structuredClone(DEFAULT_CANONICAL_STUDENT_PROFILE),
+          email: normalized,
+        };
+        savePersistedDemoProfile(demoStudentProfile);
+      } else if (matchedStudent) {
+        demoStudentProfile = {
+          fullName: matchedStudent.fullName,
+          gender: '',
+          dateOfBirth: '',
+          ethnicity: '',
+          academicYearNumber: 0,
+          educationLevel: '',
+          className: '',
+          homeProvince: '',
+          institutionId: matchedStudent.institutionId,
+          institutionName: matchedStudent.institutionName,
+          unionPosition: '',
+          politicalStatus: '' as any,
+          phoneNumber: '',
+          email: matchedStudent.email,
+        };
+        savePersistedDemoProfile(demoStudentProfile);
+      }
+
       activeDemoSession = {
         authenticated: true,
         mode: 'DEMO',
@@ -378,13 +435,20 @@ export const demoServicesAdapter: DomainServicesBundle = {
         accountType: 'STUDENT',
         user: {
           id: matchedStudent?.id || 'student-102220123',
-          fullName: matchedStudent?.fullName || STUDENT_APPLICATION_FIXTURE.student.fullName,
+          fullName:
+            registeredProf?.fullName ||
+            matchedStudent?.fullName ||
+            STUDENT_APPLICATION_FIXTURE.student.fullName,
           email: normalized || 'minhanh.nguyen@dut.udn.vn',
           role: 'STUDENT',
           roleLabel: 'Sinh viên đăng ký xét chọn',
           studentCode: matchedStudent?.studentCode || STUDENT_APPLICATION_FIXTURE.student.studentId,
-          institutionId: matchedStudent?.institutionId || 'inst-dut',
-          institutionName: matchedStudent?.institutionName || STUDENT_APPLICATION_FIXTURE.student.university,
+          institutionId:
+            registeredProf?.institutionId || matchedStudent?.institutionId || 'inst-dut',
+          institutionName:
+            registeredProf?.institutionName ||
+            matchedStudent?.institutionName ||
+            STUDENT_APPLICATION_FIXTURE.student.university,
           unitId: matchedStudent?.unitId || 'unit-udn',
           unitLabel: matchedStudent?.unitLabel || 'Đại học Đà Nẵng',
         },
@@ -416,6 +480,27 @@ export const demoServicesAdapter: DomainServicesBundle = {
         throw err;
       }
 
+      const resolvedInstName = institutionName || 'Trường Đại học Bách khoa – ĐHĐN';
+      const freshProfile: StudentProfileDto = {
+        fullName: fullName.trim(),
+        gender: '',
+        dateOfBirth: '',
+        ethnicity: '',
+        academicYearNumber: 0,
+        educationLevel: '',
+        className: '',
+        homeProvince: '',
+        institutionId,
+        institutionName: resolvedInstName,
+        unionPosition: '',
+        politicalStatus: '' as any,
+        phoneNumber: '',
+        email: normalizedEmail,
+      };
+      demoStudentProfile = structuredClone(freshProfile);
+      demoRegisteredProfiles.set(normalizedEmail, structuredClone(freshProfile));
+      savePersistedDemoProfile(demoStudentProfile);
+
       activeDemoSession = {
         authenticated: true,
         mode: 'DEMO',
@@ -429,7 +514,7 @@ export const demoServicesAdapter: DomainServicesBundle = {
           roleLabel: 'Sinh viên đăng ký xét chọn',
           studentCode: studentCode.trim(),
           institutionId,
-          institutionName: institutionName || 'Trường Đại học Bách khoa – ĐHĐN',
+          institutionName: resolvedInstName,
         },
       };
       return activeDemoSession;
@@ -446,6 +531,10 @@ export const demoServicesAdapter: DomainServicesBundle = {
 
   profile: {
     async getProfile() {
+      const persisted = loadPersistedDemoProfile();
+      if (persisted) {
+        demoStudentProfile = persisted;
+      }
       return {
         profile: structuredClone(demoStudentProfile),
         completeness: evaluateProfileCompleteness(demoStudentProfile),
@@ -458,6 +547,13 @@ export const demoServicesAdapter: DomainServicesBundle = {
         ...input,
         email: demoStudentProfile.email, // email is immutable
       };
+      if (demoStudentProfile.email) {
+        demoRegisteredProfiles.set(
+          demoStudentProfile.email.toLowerCase(),
+          structuredClone(demoStudentProfile)
+        );
+      }
+      savePersistedDemoProfile(demoStudentProfile);
       const completeness = evaluateProfileCompleteness(demoStudentProfile);
       recordDemoAudit({
         track: 'INDIVIDUAL',

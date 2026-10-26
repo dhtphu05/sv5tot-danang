@@ -63,6 +63,7 @@ import { OfficerReviewInspectorHost } from '../../../widgets/officer-review/Offi
 import { OfficerReviewAuxiliaryModals } from './OfficerReviewAuxiliaryModals';
 import { useOfficerReviewMutations } from './useOfficerReviewMutations';
 import { ManualCriterionConclusionBar } from './criterion/ManualCriterionConclusionBar';
+import { CommitteeSchoolDecisionPreviewModal } from '../../../widgets/committee-workspace/CommitteeSchoolDecisionPreviewModal';
 import {
   AiDemoScenarioId,
   getAiDemoScenario,
@@ -893,6 +894,22 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
           studentApp,
         }}
         onNavigateToCriterion={(critId) => handleSelectCriterion(critId as any)}
+      />
+
+      <CommitteeSchoolDecisionPreviewModal
+        isOpen={isSchoolHistoryOpen}
+        onClose={() => setIsSchoolHistoryOpen(false)}
+        decisionNumber={
+          applicationRecord.schoolReviewSummary?.decisionDocumentMetadata?.decisionNumber ||
+          applicationRecord.schoolReviewSummary?.decisionDocumentMetadata?.fileName ||
+          'Văn bản đề nghị (.PDF)'
+        }
+        unitName={
+          applicationRecord.schoolReviewSummary?.schoolReviewUnitName ||
+          applicationRecord.institution.officialName
+        }
+        fileUrl={applicationRecord.schoolReviewSummary?.decisionDocumentMetadata?.fileUrl}
+        fileName={applicationRecord.schoolReviewSummary?.decisionDocumentMetadata?.fileName}
       />
 
       {toastFeedback && (

@@ -139,19 +139,45 @@ export class PrismaIdentityRepository implements IIdentityRepository {
       include: { institution: true },
     });
     if (!user) return null;
+
+    const saved = (
+      user.profile && typeof user.profile === 'object' && !Array.isArray(user.profile)
+        ? user.profile
+        : null
+    ) as Partial<StudentProfileDto> | null;
+
+    if (saved) {
+      return {
+        fullName: saved.fullName || user.fullName,
+        gender: saved.gender || '',
+        dateOfBirth: saved.dateOfBirth || '',
+        ethnicity: saved.ethnicity || '',
+        academicYearNumber: Number(saved.academicYearNumber || 0),
+        educationLevel: saved.educationLevel || '',
+        className: saved.className || '',
+        homeProvince: saved.homeProvince || '',
+        institutionId: saved.institutionId || user.institutionId || '',
+        institutionName: saved.institutionName || user.institution?.officialName,
+        unionPosition: saved.unionPosition || '',
+        politicalStatus: (saved.politicalStatus as any) || '',
+        phoneNumber: user.phone || saved.phoneNumber || '',
+        email: user.email,
+      };
+    }
+
     return {
       fullName: user.fullName,
-      gender: 'Nam',
-      dateOfBirth: '01/01/2004',
-      ethnicity: 'Kinh',
-      academicYearNumber: 1,
-      educationLevel: 'Đại học',
+      gender: '',
+      dateOfBirth: '',
+      ethnicity: '',
+      academicYearNumber: 0,
+      educationLevel: '',
       className: '',
-      homeProvince: 'Thành phố Đà Nẵng',
+      homeProvince: '',
       institutionId: user.institutionId || '',
       institutionName: user.institution?.officialName,
-      unionPosition: 'Không giữ chức vụ',
-      politicalStatus: 'Đoàn viên',
+      unionPosition: '',
+      politicalStatus: '' as any,
       phoneNumber: user.phone || '',
       email: user.email,
     };
@@ -162,9 +188,40 @@ export class PrismaIdentityRepository implements IIdentityRepository {
     input: UpdateStudentProfileInput
   ): Promise<StudentProfileDto> {
     const prisma = await this.getPrisma();
-    const updateData: any = {};
+    const current = await this.getProfile(userId);
+    const mergedProfile: StudentProfileDto = {
+      fullName: input.fullName !== undefined ? input.fullName : current?.fullName || '',
+      gender: input.gender !== undefined ? input.gender : current?.gender || '',
+      dateOfBirth: input.dateOfBirth !== undefined ? input.dateOfBirth : current?.dateOfBirth || '',
+      ethnicity: input.ethnicity !== undefined ? input.ethnicity : current?.ethnicity || '',
+      academicYearNumber:
+        input.academicYearNumber !== undefined
+          ? input.academicYearNumber
+          : current?.academicYearNumber || 0,
+      educationLevel:
+        input.educationLevel !== undefined ? input.educationLevel : current?.educationLevel || '',
+      className: input.className !== undefined ? input.className : current?.className || '',
+      homeProvince:
+        input.homeProvince !== undefined ? input.homeProvince : current?.homeProvince || '',
+      institutionId:
+        input.institutionId !== undefined ? input.institutionId : current?.institutionId || '',
+      institutionName: current?.institutionName,
+      unionPosition:
+        input.unionPosition !== undefined ? input.unionPosition : current?.unionPosition || '',
+      politicalStatus:
+        (input.politicalStatus !== undefined
+          ? input.politicalStatus
+          : current?.politicalStatus || '') as any,
+      phoneNumber:
+        input.phoneNumber !== undefined ? input.phoneNumber : current?.phoneNumber || '',
+      email: current?.email || '',
+    };
+
+    const updateData: any = {
+      profile: mergedProfile as any,
+    };
     if (input.fullName) updateData.fullName = input.fullName;
-    if (input.phoneNumber) updateData.phone = input.phoneNumber;
+    if (input.phoneNumber !== undefined) updateData.phone = input.phoneNumber;
     if (input.institutionId) updateData.institutionId = input.institutionId;
 
     const user = await prisma.user.update({
@@ -174,19 +231,11 @@ export class PrismaIdentityRepository implements IIdentityRepository {
     });
 
     return {
+      ...mergedProfile,
       fullName: user.fullName,
-      gender: input.gender || 'Nam',
-      dateOfBirth: input.dateOfBirth || '01/01/2004',
-      ethnicity: input.ethnicity || 'Kinh',
-      academicYearNumber: input.academicYearNumber || 1,
-      educationLevel: input.educationLevel || 'Đại học',
-      className: input.className || '',
-      homeProvince: input.homeProvince || 'Thành phố Đà Nẵng',
-      institutionId: user.institutionId || '',
-      institutionName: user.institution?.officialName,
-      unionPosition: input.unionPosition || 'Không giữ chức vụ',
-      politicalStatus: (input.politicalStatus as any) || 'Đoàn viên',
-      phoneNumber: user.phone || '',
+      institutionId: user.institutionId || mergedProfile.institutionId,
+      institutionName: user.institution?.officialName || mergedProfile.institutionName,
+      phoneNumber: user.phone || mergedProfile.phoneNumber,
       email: user.email,
     };
   }

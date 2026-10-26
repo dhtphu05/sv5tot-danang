@@ -41,6 +41,7 @@ import {
   StaffAccount,
 } from '../../adminTypes';
 import { StaffRouteId, StaffUser } from '../../types';
+import { AdminOperationalGuideBanner } from './AdminOperationalGuideBanner';
 
 export interface AdminHomeProps {
   currentUser: StaffUser;
@@ -142,6 +143,13 @@ export const AdminHome: React.FC<AdminHomeProps> = ({
           </div>
         </div>
       </div>
+
+      {/* 1B. 4-Step Operational Guide Banner */}
+      <AdminOperationalGuideBanner
+        seasonYearLabel={seasonFullLabel}
+        isSeasonActive={Boolean(currentSeason?.isCurrentActive)}
+        onSelectRoute={onSelectRoute}
+      />
 
       {/* 2. Structured Operational Summary Surface */}
       <div className="bg-white rounded-[12px] border border-[#D4E2EC] shadow-2xs p-5">

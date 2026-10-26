@@ -58,7 +58,7 @@ export const SchoolForwardedSummaryBanner: React.FC<
         <div>
           <span className="text-[#6D28D9] font-medium">Văn bản đề nghị:</span>
           <div className="font-bold text-[#4C1D95] mt-0.5 flex items-center gap-1.5">
-            <span>{decisionDoc?.decisionNumber || '182/QĐ-ĐHĐN'}</span>
+            <span>{decisionDoc?.decisionNumber || 'Văn bản đề nghị (.PDF)'}</span>
             {decisionDoc && (
               <button
                 type="button"

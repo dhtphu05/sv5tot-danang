@@ -3,7 +3,7 @@
  * Manages cross-role state and actions for City Officer, School Officer, City Manager, and City Committee.
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   StaffApplicationRecord,
   StaffNotificationItem,
@@ -46,6 +46,7 @@ import {
   getAllCollectiveApplications,
   publishCollectiveResult,
   assignCityOfficer,
+  hydrateCollectiveStore,
 } from '../../staff/collectiveStore';
 import {
   PrototypeScenarioId,
@@ -54,8 +55,13 @@ import {
   savePersistedOfficerWorkspaces,
   loadPersistedOfficerStudentApps,
   savePersistedOfficerStudentApps,
+  loadPersistedStaffApplications,
+  savePersistedStaffApplications,
 } from '../../demo/prototypeDemoMode';
-import { StudentApplicationData } from '../../demo/fixtures/studentApplication';
+import {
+  StudentApplicationData,
+  buildCriteriaFromDefinitions,
+} from '../../demo/fixtures/studentApplication';
 import { HomeDevScenarioId } from '../../demo/fixtures/homeScenarios';
 import { ApplicationSubmissionState } from '../../components/submission/submissionTypes';
 import type { OfficerReviewWorkspace } from '../../staff/components/review/OfficerReviewWorkspace';
@@ -68,6 +74,8 @@ import {
   applyRecordSchoolRecommendation,
   applyForwardSchoolApplicationsToCity,
 } from '../../entities/committee/committeeWorkflowMutators';
+import { isBackendMode } from '../../shared/config/executionMode';
+import { resolveDomainServices } from '../../entities/services/modeResolver';
 
 const HERO_STAFF_APP_ID = 'APP-2026-DN-102220123';
 
@@ -152,6 +160,9 @@ export function useStaffWorkflowCoordination({
   const [staffApplications, setStaffApplications] = useState<
     StaffApplicationRecord[]
   >(() => {
+    if (isBackendMode()) {
+      return loadPersistedStaffApplications<StaffApplicationRecord[]>() || [];
+    }
     if (initialStaffRole === 'CITY_COMMITTEE') {
       return initialCommitteeBundle.updatedApplications;
     }
@@ -178,17 +189,24 @@ export function useStaffWorkflowCoordination({
 
   const [committeeCasesMap, setCommitteeCasesMap] = useState<
     Record<string, CommitteeCaseDetail>
-  >(() => initialCommitteeBundle.committeeCasesMap);
+  >(() => (isBackendMode() ? {} : initialCommitteeBundle.committeeCasesMap));
 
   const [staffNotifications, setStaffNotifications] = useState<
     StaffNotificationItem[]
-  >(() => JSON.parse(JSON.stringify(INITIAL_STAFF_NOTIFICATIONS)));
+  >(() =>
+    isBackendMode()
+      ? []
+      : JSON.parse(JSON.stringify(INITIAL_STAFF_NOTIFICATIONS))
+  );
 
   const [officerStudentAppMap, setOfficerStudentAppMap] = useState<
     Record<string, StudentApplicationData>
   >(() => {
     const persisted =
       loadPersistedOfficerStudentApps<Record<string, StudentApplicationData>>();
+    if (isBackendMode()) {
+      return persisted || {};
+    }
     return {
       ...initialCommitteeBundle.studentApplicationsMap,
       [HERO_STAFF_APP_ID]: initialHeroOfficerBundle.studentApp,
@@ -203,11 +221,84 @@ export function useStaffWorkflowCoordination({
       loadPersistedOfficerWorkspaces<
         Record<string, ApplicationReviewWorkspaceState>
       >();
+    if (isBackendMode()) {
+      return persisted || {};
+    }
     return {
       [HERO_STAFF_APP_ID]: initialHeroOfficerBundle.workspaceState,
       ...(persisted || {}),
     };
   });
+
+  useEffect(() => {
+    if (!isBackendMode()) return;
+    let cancelled = false;
+    const services = resolveDomainServices();
+
+    services.individual
+      .listApplications()
+      .then(async (records) => {
+        if (cancelled || !Array.isArray(records)) return;
+        setStaffApplications(records);
+        savePersistedStaffApplications(records);
+
+        const committeeBundle = buildCommitteeScenarioBundle(
+          DEFAULT_COMMITTEE_SCENARIO_ID,
+          records
+        );
+        setCommitteeCasesMap(committeeBundle.committeeCasesMap);
+
+        if (records.length > 0) {
+          setSelectedStaffAppId((prev) =>
+            records.some((r) => r.applicationId === prev)
+              ? prev
+              : records[0].applicationId
+          );
+        }
+
+        const fetchedStudentMap: Record<string, StudentApplicationData> = {};
+        await Promise.all(
+          records.map(async (rec) => {
+            try {
+              const studentApp = await services.individual.getStudentApplication(
+                rec.applicationId
+              );
+              if (studentApp && studentApp.applicationId) {
+                fetchedStudentMap[rec.applicationId] = {
+                  ...studentApp,
+                  criteria: buildCriteriaFromDefinitions(
+                    studentApp.criteria as any
+                  ),
+                };
+              }
+            } catch {
+              // Ignore 404 for records without student-view
+            }
+          })
+        );
+        if (!cancelled && Object.keys(fetchedStudentMap).length > 0) {
+          setOfficerStudentAppMap((prev) => {
+            const next = { ...prev, ...fetchedStudentMap };
+            savePersistedOfficerStudentApps(next);
+            return next;
+          });
+        }
+      })
+      .catch(() => {});
+
+    services.collective
+      .listApplications()
+      .then((colApps) => {
+        if (!cancelled && Array.isArray(colApps)) {
+          hydrateCollectiveStore(colApps);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [staffUser.id, staffUser.primaryRole, staffRouteId]);
 
   const handleApplyOfficerScenario = useCallback(
     (
@@ -448,12 +539,34 @@ export function useStaffWorkflowCoordination({
         }
         setOfficerStudentAppMap((prev) => ({
           ...prev,
-          [applicationId]: fallback.studentApp,
+          [applicationId]: prev[applicationId] || fallback.studentApp,
         }));
         setOfficerWorkspaceMap((prev) => ({
           ...prev,
           [applicationId]: fallback.workspaceState,
         }));
+      }
+      if (isBackendMode()) {
+        resolveDomainServices()
+          .individual.getStudentApplication(applicationId)
+          .then((studentApp) => {
+            if (studentApp && studentApp.applicationId) {
+              setOfficerStudentAppMap((prev) => {
+                const next = {
+                  ...prev,
+                  [applicationId]: {
+                    ...studentApp,
+                    criteria: buildCriteriaFromDefinitions(
+                      studentApp.criteria as any
+                    ),
+                  },
+                };
+                savePersistedOfficerStudentApps(next);
+                return next;
+              });
+            }
+          })
+          .catch(() => {});
       }
       setStaffRouteId('application_review');
       updateBrowserUrl(`/staff/applications/${applicationId}`);
@@ -496,8 +609,8 @@ export function useStaffWorkflowCoordination({
         });
       }
 
-      setStaffApplications((prev) =>
-        prev.map((app) => {
+      setStaffApplications((prev) => {
+        const nextApps = prev.map((app): StaffApplicationRecord => {
           if (app.applicationId !== appId) return app;
           const completedCount = Object.values(
             result.nextWorkspace.criterionCompletedMap
@@ -548,8 +661,10 @@ export function useStaffWorkflowCoordination({
                 }
               : app.supplementSummary,
           };
-        })
-      );
+        });
+        savePersistedStaffApplications(nextApps);
+        return nextApps;
+      });
 
       if (appId === HERO_STAFF_APP_ID) {
         const hasWaitingSupp = result.nextWorkspace.supplementRequests.some(
@@ -597,6 +712,21 @@ export function useStaffWorkflowCoordination({
           }
         );
 
+        if (isBackendMode()) {
+          resolveDomainServices()
+            .cityAssignment.assignCollectiveOfficer({
+              applicationId,
+              officerId: officer.id,
+              assignmentNote: `Phân công thẩm định bởi ${staffUser.fullName}`,
+              actor: {
+                id: staffUser.id,
+                name: staffUser.fullName,
+                role: staffUser.primaryRole,
+              },
+            })
+            .catch(() => {});
+        }
+
         if (result.success) {
           setStaffNotifications((prev) => [
             {
@@ -621,8 +751,23 @@ export function useStaffWorkflowCoordination({
         return;
       }
 
-      setStaffApplications((prev) =>
-        prev.map((app) =>
+      if (isBackendMode()) {
+        resolveDomainServices()
+          .cityAssignment.assignIndividualOfficer({
+            applicationId,
+            officerId: officer.id,
+            reason: `Phân công bởi ${staffUser.fullName}`,
+            actor: {
+              id: staffUser.id,
+              name: staffUser.fullName,
+              role: staffUser.primaryRole,
+            },
+          })
+          .catch(() => {});
+      }
+
+      setStaffApplications((prev) => {
+        const nextApps = prev.map((app) =>
           app.applicationId === applicationId
             ? {
                 ...app,
@@ -636,15 +781,17 @@ export function useStaffWorkflowCoordination({
                   officerName: officer.fullName,
                   assignedAt: 'Vừa xong',
                   assignedBy: staffUser.fullName,
-                  status: 'not_started',
+                  status: 'not_started' as const,
                 },
                 latestOperationalNote: `Đã phân công cho ${officer.fullName}`,
               }
             : app
-        )
-      );
+        );
+        savePersistedStaffApplications(nextApps);
+        return nextApps;
+      });
     },
-    [staffUser.fullName, staffUser.roleLabel]
+    [staffUser.id, staffUser.fullName, staffUser.roleLabel, staffUser.primaryRole]
   );
 
   const handleApplyCommitteeScenario = useCallback(
@@ -724,6 +871,7 @@ export function useStaffWorkflowCoordination({
       );
       setCommitteeCasesMap(nextCases);
       setStaffApplications(nextApps);
+      savePersistedStaffApplications(nextApps);
     },
     [committeeCasesMap, staffApplications, staffUser]
   );
@@ -743,6 +891,21 @@ export function useStaffWorkflowCoordination({
       outcome: CommitteeDecisionOutcome,
       internalNote: string
     ) => {
+      if (isBackendMode()) {
+        resolveDomainServices()
+          .committeeDecision.recordIndividualDecision({
+            applicationId,
+            outcome: outcome === 'not_recognized' ? 'not_recognized' : 'recognized',
+            internalNote,
+            actor: {
+              id: staffUser.id,
+              name: staffUser.fullName,
+              role: 'CITY_COMMITTEE',
+            },
+          })
+          .catch(() => {});
+      }
+
       const { nextCases, nextApps } = applyRecordCommitteeDecision(
         committeeCasesMap,
         staffApplications,
@@ -753,6 +916,7 @@ export function useStaffWorkflowCoordination({
       );
       setCommitteeCasesMap(nextCases);
       setStaffApplications(nextApps);
+      savePersistedStaffApplications(nextApps);
 
       if (applicationId === HERO_STAFF_APP_ID) {
         applyPrototypeScenario('waiting_final', {
@@ -771,6 +935,19 @@ export function useStaffWorkflowCoordination({
   }, [staffUser]);
 
   const handlePublishResults = useCallback(() => {
+    if (isBackendMode()) {
+      resolveDomainServices()
+        .committeeDecision.publishIndividualResults({
+          decisionNumber: '108/QĐ-HSV-TP',
+          actor: {
+            id: staffUser.id,
+            name: staffUser.fullName,
+            role: 'CITY_COMMITTEE',
+          },
+        })
+        .catch(() => {});
+    }
+
     const heroOutcome =
       committeeCasesMap[HERO_STAFF_APP_ID]?.decision?.outcome || 'recognized';
     const { nextCases, nextApps } = applyPublishCommitteeResults(
@@ -780,6 +957,7 @@ export function useStaffWorkflowCoordination({
     );
     setCommitteeCasesMap(nextCases);
     setStaffApplications(nextApps);
+    savePersistedStaffApplications(nextApps);
 
     const allCol = getAllCollectiveApplications();
     allCol.forEach((app) => {
@@ -812,22 +990,60 @@ export function useStaffWorkflowCoordination({
       notes?: string,
       reason?: string
     ) => {
-      setStaffApplications((prev) =>
-        applyRecordSchoolRecommendation(
+      if (isBackendMode()) {
+        resolveDomainServices()
+          .schoolReview.completeSchoolPreliminaryReview({
+            applicationId,
+            recommendation:
+              recommendation === 'not_recommended'
+                ? 'not_recommended'
+                : 'recommended',
+            summaryNote: notes || reason || '',
+            actor: {
+              id: staffUser.id,
+              name: staffUser.fullName,
+              role: 'SCHOOL_OFFICER',
+              unitId: staffUser.schoolReviewUnitId,
+            },
+          })
+          .catch(() => {});
+      }
+
+      setStaffApplications((prev) => {
+        const nextApps = applyRecordSchoolRecommendation(
           prev,
           applicationId,
           recommendation,
           staffUser,
           notes,
           reason
-        )
-      );
+        );
+        savePersistedStaffApplications(nextApps);
+        return nextApps;
+      });
     },
     [staffUser]
   );
 
   const handleForwardToCity = useCallback(
     (applicationIds: string[], forwardingNote?: string) => {
+      if (isBackendMode()) {
+        const services = resolveDomainServices();
+        applicationIds.forEach((appId) => {
+          services.schoolReview
+            .forwardSchoolApplicationToCity({
+              applicationId: appId,
+              actor: {
+                id: staffUser.id,
+                name: staffUser.fullName,
+                role: 'SCHOOL_OFFICER',
+                unitId: staffUser.schoolReviewUnitId,
+              },
+            })
+            .catch(() => {});
+        });
+      }
+
       setStaffApplications((prev) => {
         const { nextApps, createdNotification } =
           applyForwardSchoolApplicationsToCity(
@@ -840,6 +1056,7 @@ export function useStaffWorkflowCoordination({
           createdNotification,
           ...prevNotifs,
         ]);
+        savePersistedStaffApplications(nextApps);
         return nextApps;
       });
 

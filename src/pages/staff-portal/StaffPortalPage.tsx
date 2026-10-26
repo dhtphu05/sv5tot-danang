@@ -432,12 +432,15 @@ export const StaffPortalPage: React.FC<StaffPortalPageProps> = ({
         committeeWaitingDecisionCount={committeeWaitingList.length}
         unreadNotificationCount={unreadStaffNotifs}
         currentSeason={getCurrentSeason(adminSeasons)}
-        seasons={adminSeasons}
-        onSwitchSeason={(seasonId) =>
-          handleActivateSeason(
-            seasonId,
-            'Chuyển đổi năm học / mùa xét đang làm việc từ thanh ngữ cảnh'
-          )
+        seasons={staffUser.primaryRole === 'ADMIN' ? adminSeasons : undefined}
+        onSwitchSeason={
+          staffUser.primaryRole === 'ADMIN'
+            ? (seasonId) =>
+                handleActivateSeason(
+                  seasonId,
+                  'Chuyển đổi năm học / mùa xét đang làm việc từ thanh ngữ cảnh'
+                )
+            : undefined
         }
         collectivePendingCount={
           getAllCollectiveApplications().filter(
@@ -504,6 +507,7 @@ export const StaffPortalPage: React.FC<StaffPortalPageProps> = ({
           <SchoolBackofficeViews
             currentUser={staffUser}
             activeRouteId={staffRouteId}
+            currentSeason={getCurrentSeason(adminSeasons)}
             applications={staffApplications}
             notifications={staffNotifications}
             schoolWorkspaces={officerWorkspaceMap}

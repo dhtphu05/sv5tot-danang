@@ -22,6 +22,8 @@ export const ALLOWED_EVIDENCE_MIME_TO_EXTENSIONS: Record<string, readonly string
   'image/jpeg': ['jpg', 'jpeg'],
   'image/png': ['png'],
   'image/webp': ['webp'],
+  'image/heic': ['heic', 'heif'],
+  'image/heif': ['heic', 'heif'],
 };
 
 export function validateEvidenceExtensionAndMime(
@@ -37,7 +39,7 @@ export function validateEvidenceExtensionAndMime(
     return {
       valid: false,
       extension: ext,
-      error: `Định dạng MIME "${mimeType}" không được hỗ trợ. Chỉ chấp nhận PDF, JPEG, PNG, WEBP.`,
+      error: `Định dạng MIME "${mimeType}" không được hỗ trợ. Chỉ chấp nhận PDF, JPEG, PNG, WEBP, HEIC/HEIF.`,
     };
   }
 
@@ -76,6 +78,10 @@ export function verifyEvidenceMagicBytes(
         return hex.slice(16, 24) === '57454250';
       }
       return true;
+    case 'image/heic':
+    case 'image/heif':
+      // ISO BMFF ftyp box at offset 4..7 ("ftyp" = 66747970)
+      return hex.length >= 16 && hex.slice(8, 16) === '66747970';
     default:
       return false;
   }

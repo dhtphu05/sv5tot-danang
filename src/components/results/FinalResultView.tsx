@@ -56,6 +56,11 @@ import { ResultDevToolbar } from './ResultDevToolbar';
 export interface FinalResultViewProps {
   hasApplication?: boolean;
   submissionState?: 'draft' | 'submitted' | 'under_review' | 'supplement_required' | 'supplement_sent' | 'all_reviewed' | 'result_published';
+  studentIdentity?: {
+    fullName: string;
+    studentId: string;
+    university: string;
+  };
   onStartNewApplication?: () => void;
   onNavigateToApplication?: (options?: {
     criterionId?: string;
@@ -73,6 +78,7 @@ const LONG_SCHOOL_NAME =
 export const FinalResultView: React.FC<FinalResultViewProps> = ({
   hasApplication = true,
   submissionState,
+  studentIdentity,
   onStartNewApplication,
   onNavigateToApplication,
   onReturnToNotifications,
@@ -123,6 +129,14 @@ export const FinalResultView: React.FC<FinalResultViewProps> = ({
         break;
     }
 
+    const resolvedStudent = studentIdentity
+      ? {
+          fullName: studentIdentity.fullName || base.student.fullName,
+          studentId: studentIdentity.studentId || base.student.studentId,
+          university: studentIdentity.university || base.student.university,
+        }
+      : base.student;
+
     return {
       ...base,
       decisionNumber: showDecisionMeta ? '142/QĐ-HSV' : undefined,
@@ -132,11 +146,11 @@ export const FinalResultView: React.FC<FinalResultViewProps> = ({
           ? AUTHORITATIVE_DEMO_REASON
           : undefined,
       student: {
-        ...base.student,
-        university: isLongSchoolName ? LONG_SCHOOL_NAME : base.student.university,
+        ...resolvedStudent,
+        university: isLongSchoolName ? LONG_SCHOOL_NAME : resolvedStudent.university,
       },
     };
-  }, [scenario, showDecisionMeta, showAuthoritativeReason, isLongSchoolName]);
+  }, [scenario, showDecisionMeta, showAuthoritativeReason, isLongSchoolName, studentIdentity]);
 
   const handleResetDemo = () => {
     setScenario('recognized_hero');

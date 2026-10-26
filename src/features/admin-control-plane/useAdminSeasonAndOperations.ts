@@ -216,11 +216,35 @@ export function useAdminSeasonAndOperations({
             if (dl.key === 'submission_end' && updates.submissionDeadline) {
               return { ...dl, dateTime: updates.submissionDeadline };
             }
-            if (dl.key === 'supplement_end' && updates.supplementDeadline) {
-              return { ...dl, dateTime: updates.supplementDeadline };
+            if (
+              dl.key === 'review_end' &&
+              (updates.schoolForwardingDeadline || updates.reviewDeadline)
+            ) {
+              return {
+                ...dl,
+                dateTime:
+                  updates.schoolForwardingDeadline ||
+                  updates.reviewDeadline ||
+                  dl.dateTime,
+              };
             }
-            if (dl.key === 'review_end' && updates.reviewDeadline) {
-              return { ...dl, dateTime: updates.reviewDeadline };
+            if (
+              dl.key === 'collective_end' &&
+              updates.collectiveSubmissionDeadline
+            ) {
+              return { ...dl, dateTime: updates.collectiveSubmissionDeadline };
+            }
+            if (
+              dl.key === 'supplement_end' &&
+              (updates.reviewDeadline || updates.supplementDeadline)
+            ) {
+              return {
+                ...dl,
+                dateTime:
+                  updates.reviewDeadline ||
+                  updates.supplementDeadline ||
+                  dl.dateTime,
+              };
             }
             if (dl.key === 'committee_meeting' && updates.committeeDate) {
               return { ...dl, dateTime: updates.committeeDate };

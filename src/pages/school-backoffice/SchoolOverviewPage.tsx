@@ -47,37 +47,32 @@ export const SchoolOverviewPage: React.FC<SchoolOverviewPageProps> = ({
   onSetStatusFilter,
   onSetSupplementTab,
 }) => {
-  const UDN_MEMBERS = [
-    { id: 'inst-dut', code: 'DUT', name: 'ĐH Bách khoa' },
-    { id: 'inst-due', code: 'DUE', name: 'ĐH Kinh tế' },
-    { id: 'inst-ued', code: 'UED', name: 'ĐH Sư phạm' },
-    { id: 'inst-ufl', code: 'UFL', name: 'ĐH Ngoại ngữ' },
-    { id: 'inst-ute', code: 'UTE', name: 'ĐH SP Kỹ thuật' },
-    { id: 'inst-vku', code: 'VKU', name: 'ĐH CNTT Việt - Hàn' },
-    { id: 'inst-vnuk', code: 'VNUK', name: 'Viện VNUK' },
-    { id: 'inst-smp', code: 'SMP', name: 'Khoa Y Dược' },
-  ];
+  const memberBreakdowns = React.useMemo(() => {
+    const instMap = new Map<
+      string,
+      { id: string; code: string; name: string; count: number; recCount: number }
+    >();
+    for (const app of schoolApps) {
+      const id = app.institution.id || 'inst-default';
+      const name = app.institution.officialName || unitName;
+      const code = id.replace(/^inst-/, '').toUpperCase();
+      if (!instMap.has(id)) {
+        instMap.set(id, { id, code, name, count: 0, recCount: 0 });
+      }
+      const entry = instMap.get(id)!;
+      entry.count += 1;
+      if (
+        app.schoolPreliminaryStatus === 'recommended_forwarding' ||
+        app.schoolPreliminaryStatus === 'forwarded_to_city' ||
+        app.schoolReviewSummary?.recommendation === 'recommended'
+      ) {
+        entry.recCount += 1;
+      }
+    }
+    return Array.from(instMap.values());
+  }, [schoolApps, unitName]);
 
-  const memberBreakdowns = UDN_MEMBERS.map((m) => {
-    const apps = schoolApps.filter(
-      (a) =>
-        a.institution.id === m.id ||
-        a.applicantProfileSnapshot?.institutionId === m.id ||
-        a.institution.officialName.toLowerCase().includes(m.name.toLowerCase()) ||
-        a.institution.officialName.toLowerCase().includes(m.code.toLowerCase())
-    );
-    const recCount = apps.filter(
-      (a) =>
-        a.schoolPreliminaryStatus === 'recommended_forwarding' ||
-        a.schoolPreliminaryStatus === 'forwarded_to_city' ||
-        a.schoolReviewSummary?.recommendation === 'recommended'
-    ).length;
-    return {
-      ...m,
-      count: apps.length,
-      recCount,
-    };
-  });
+  const hasMultipleMemberInstitutions = memberBreakdowns.length > 1;
 
   return (
     <div className="p-6 max-w-[1280px] w-full mx-auto space-y-6">
@@ -108,22 +103,26 @@ export const SchoolOverviewPage: React.FC<SchoolOverviewPageProps> = ({
         </div>
       </div>
 
-      {/* UDN 8-Member Breakdown Strip & Consolidated Forwarding Status (UX-S3) */}
+      {/* Institutional Review Unit Scope & Consolidated Forwarding Status */}
       <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-[12px] p-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-[8px] bg-[#E0E7FF] text-[#4338CA] flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-[8px] bg-[#EAF6FC] text-[#0D78AE] flex items-center justify-center shrink-0">
               <Building2 size={18} />
             </div>
             <div>
               <div className="text-[13.5px] font-bold text-[#0F2335] flex items-center gap-2">
-                <span>Khối Đại học Đà Nẵng (08 trường thành viên &amp; đơn vị trực thuộc)</span>
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#EEF2FF] text-[#4338CA] border border-[#C7D2FE]">
-                  QĐ 182/QĐ-ĐHĐN
-                </span>
+                <span>Đơn vị xét sơ tuyển cấp Trường: {unitName}</span>
+                {unitShortName && (
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#EAF6FC] text-[#0D78AE] border border-[#CCE7F6]">
+                    {unitShortName}
+                  </span>
+                )}
               </div>
               <div className="text-[11.5px] text-[#64748B]">
-                Toàn bộ hồ sơ đề xuất từ 08 trường thành viên được tổng hợp thành 01 Đợt chuyển giao duy nhất tới Hội Sinh viên Thành phố.
+                {hasMultipleMemberInstitutions
+                  ? `Tổng hợp hồ sơ từ ${memberBreakdowns.length} đơn vị đào tạo trực thuộc kèm 01 tệp văn bản PDF đề nghị chính thức gửi lên Hội Sinh viên Thành phố.`
+                  : `Toàn bộ hồ sơ đủ điều kiện của ${unitName} được tổng hợp kèm 01 tệp văn bản PDF đề nghị chính thức gửi lên Hội Sinh viên Thành phố.`}
               </div>
             </div>
           </div>
@@ -138,29 +137,31 @@ export const SchoolOverviewPage: React.FC<SchoolOverviewPageProps> = ({
           </Button>
         </div>
 
-        {/* 8 Member Chips */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 pt-2 border-t border-[#E2E8F0]">
-          {memberBreakdowns.map((m) => (
-            <div
-              key={m.id}
-              className="p-2 rounded-[8px] bg-white border border-[#E2E8F0] text-center"
-            >
-              <div className="font-bold text-[12px] text-[#0F2335]">{m.code}</div>
-              <div className="text-[11px] text-[#64748B] truncate" title={m.name}>
-                {m.name}
-              </div>
-              <div className="text-[11.5px] font-extrabold text-[#0D78AE] mt-1 tabular-nums">
-                {m.count} hồ sơ
-              </div>
-              {m.recCount > 0 && (
-                <div className="text-[10px] text-[#16A34A] font-bold flex items-center justify-center gap-0.5 mt-0.5">
-                  <CheckCircle2 size={10} />
-                  <span>{m.recCount} đề xuất</span>
+        {/* Dynamic Member Institution Breakdown — Only rendered when unit has multiple member institutions */}
+        {hasMultipleMemberInstitutions && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 pt-2 border-t border-[#E2E8F0]">
+            {memberBreakdowns.map((m) => (
+              <div
+                key={m.id}
+                className="p-2 rounded-[8px] bg-white border border-[#E2E8F0] text-center"
+              >
+                <div className="font-bold text-[12px] text-[#0F2335]">{m.code}</div>
+                <div className="text-[11px] text-[#64748B] truncate" title={m.name}>
+                  {m.name}
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
+                <div className="text-[11.5px] font-extrabold text-[#0D78AE] mt-1 tabular-nums">
+                  {m.count} hồ sơ
+                </div>
+                {m.recCount > 0 && (
+                  <div className="text-[10px] text-[#16A34A] font-bold flex items-center justify-center gap-0.5 mt-0.5">
+                    <CheckCircle2 size={10} />
+                    <span>{m.recCount} đề xuất</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 8 Actionable Summary Cards */}
@@ -297,7 +298,7 @@ export const SchoolOverviewPage: React.FC<SchoolOverviewPageProps> = ({
               {metrics.recommendedForwarding}
             </div>
             <div className="text-[11.5px] text-[#15803D] font-semibold mt-1">
-              Sẵn sàng chuyển giao S3 →
+              Sẵn sàng lập danh sách đề nghị →
             </div>
           </button>
 

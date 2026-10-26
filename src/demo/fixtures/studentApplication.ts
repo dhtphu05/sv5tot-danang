@@ -41,9 +41,10 @@ export function buildCriteriaFromDefinitions(
   return CRITERIA_DEFINITIONS_LIST.map((critDef) => {
     const existingCrit = existingCriteria.find((c) => c.id === critDef.id);
     const existingReqs = existingCrit
-      ? existingCrit.groups
-        ? existingCrit.groups.flatMap((g) => g.requirements)
-        : existingCrit.requirements || []
+      ? [
+          ...(existingCrit.groups ? existingCrit.groups.flatMap((g) => g.requirements || []) : []),
+          ...(existingCrit.requirements || []),
+        ]
       : [];
 
     const groups: ApplicationRequirementGroup[] = critDef.groups.map((groupDef) => {
@@ -121,5 +122,70 @@ export function buildCriteriaFromDefinitions(
 INITIAL_STUDENT_APPLICATION.criteria = buildCriteriaFromDefinitions(
   INITIAL_STUDENT_APPLICATION.criteria
 );
+
+export function buildCleanStudentApplication(params: {
+  fullName: string;
+  studentId: string;
+  university: string;
+  email?: string;
+  institutionId?: string;
+  existingProfileSnapshot?: import('../../entities/application/studentApplicationTypes').StudentProfileDto | null;
+}): StudentApplicationData {
+  const emptyCriteria = buildCriteriaFromDefinitions([]).map((crit) => ({
+    ...crit,
+    shortSummary: '0 nội dung đã kê khai · 0 minh chứng',
+    statusLabel: 'Chưa kê khai',
+  }));
+
+  const resolvedInstId =
+    params.institutionId ||
+    params.existingProfileSnapshot?.institutionId ||
+    'inst-dut';
+  const profileSnapshot: import('../../entities/application/studentApplicationTypes').StudentProfileDto =
+    params.existingProfileSnapshot &&
+    params.existingProfileSnapshot.fullName === params.fullName
+      ? {
+          ...params.existingProfileSnapshot,
+          fullName: params.fullName,
+          email: params.email || params.existingProfileSnapshot.email,
+          institutionId: resolvedInstId,
+          institutionName: params.university,
+        }
+      : {
+          fullName: params.fullName,
+          gender: '',
+          ethnicity: '',
+          dateOfBirth: '',
+          email: params.email || '',
+          phoneNumber: '',
+          homeProvince: '',
+          institutionId: resolvedInstId,
+          institutionName: params.university,
+          academicYearNumber: 0,
+          educationLevel: 'Đại học',
+          className: '',
+          unionPosition: 'Chưa giữ chức vụ',
+          politicalStatus: 'Đoàn viên',
+        };
+
+  return {
+    ...INITIAL_STUDENT_APPLICATION,
+    applicationId: `APP-2026-DN-${params.studentId || 'NEW'}`,
+    status: 'Đang hoàn thiện',
+    eligibilityStatus: 'Đã xác nhận điều kiện nộp hồ sơ',
+    applicantProfileSnapshot: profileSnapshot,
+    student: {
+      fullName: params.fullName,
+      studentId: params.studentId,
+      university: params.university,
+      faculty: '',
+      class: profileSnapshot.className || '',
+      email: profileSnapshot.email || params.email || '',
+      academicYear: INITIAL_STUDENT_APPLICATION.student.academicYear,
+    },
+    trainingInstitutionName: params.university,
+    criteria: emptyCriteria,
+  };
+}
 
 export { type PersonalLibraryItem, MOCK_PERSONAL_LIBRARY_EVIDENCE } from './mockEvidenceLibrary';

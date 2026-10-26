@@ -18,12 +18,14 @@ import {
   FileText,
   UserCheck,
 } from 'lucide-react';
+import { formatAcademicYearLabel } from '@5tot/contracts';
 import {
   StaffApplicationRecord,
   StaffNotificationItem,
   StaffRouteId,
   StaffUser,
 } from '../../types';
+import { Season } from '../../adminTypes';
 import {
   AUTHORITATIVE_SCHOOL_REVIEW_UNITS,
   SCHOOL_PRELIMINARY_STATUS_META,
@@ -42,9 +44,9 @@ import {
   SharedOperationalTable,
 } from '../shared/SharedOperationalTable';
 import { Button } from '../../../components/buttons/Button';
-import { Dialog } from '../../../components/feedback/Dialog';
 import { ApplicationReviewWorkspaceState } from '../../reviewTypes';
 import { SchoolCollectiveConfirmationQueue } from './SchoolCollectiveConfirmationQueue';
+import { SchoolRecommendationModal } from './SchoolRecommendationModal';
 import { SchoolOverviewPage } from '../../../pages/school-backoffice/SchoolOverviewPage';
 import { SchoolSupplementsPage } from '../../../pages/school-backoffice/SchoolSupplementsPage';
 import { SchoolRecommendationForwardingPage } from '../../../pages/school-backoffice/SchoolRecommendationForwardingPage';
@@ -54,6 +56,7 @@ import { StaffNotificationsRouteView } from '../../../widgets/staff-backoffice/S
 export interface SchoolBackofficeViewsProps {
   currentUser: StaffUser;
   activeRouteId: StaffRouteId;
+  currentSeason?: Season;
   applications: StaffApplicationRecord[];
   notifications: StaffNotificationItem[];
   schoolWorkspaces: Record<string, ApplicationReviewWorkspaceState>;
@@ -75,6 +78,7 @@ export interface SchoolBackofficeViewsProps {
 export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
   currentUser,
   activeRouteId,
+  currentSeason,
   applications,
   notifications = [],
   schoolWorkspaces,
@@ -85,11 +89,14 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
   onForwardToCity,
 }) => {
   const userUnitId = currentUser.schoolReviewUnitId || 'unit-udn';
+  const isUdn = userUnitId === 'unit-udn';
   const unitConfig = AUTHORITATIVE_SCHOOL_REVIEW_UNITS.find(
     (u) => u.id === userUnitId
   );
   const unitName =
     unitConfig?.officialName || currentUser.unitLabel || 'Đại học Đà Nẵng';
+  const activeSeasonCode = currentSeason?.schoolYear || '2025–2026';
+  const activeSeasonLabel = formatAcademicYearLabel(activeSeasonCode);
 
   const schoolApps = useMemo(
     () => getApplicationsForSchoolOfficer(applications, currentUser),
@@ -118,10 +125,8 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
     'all' | 'waiting' | 'returned' | 'completed'
   >('returned');
 
-  // Multi-select state for applications to forward
-  const [selectedAppIds, setSelectedAppIds] = useState<string[]>(() => {
-    return recQueue.recommendedAwaitingForward.map((a) => a.applicationId);
-  });
+  // Multi-select state for applications to forward — starts empty until user selects or batch loads
+  const [selectedAppIds, setSelectedAppIds] = useState<string[]>([]);
 
   // Recommendation Modal State (Authoritative Human Decision)
   const [recModalApp, setRecModalApp] = useState<StaffApplicationRecord | null>(null);
@@ -406,17 +411,11 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
       key: 'student',
       header: 'Sinh viên / Mã hồ sơ',
       renderCell: (app) => {
-        const isHero = app.applicationId === 'APP-2026-DN-102220123';
         const isSelected = selectedAppIds.includes(app.applicationId);
         return (
           <div>
             <div className="font-bold text-[#0F2335] text-[13.5px] flex items-center gap-2">
               <span>{app.student.fullName}</span>
-              {isHero && (
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#EAF6FC] text-[#0B64A0] border border-[#CBE5F6]">
-                  Hồ sơ trọng điểm
-                </span>
-              )}
               {isSelected && (
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#DCFCE7] text-[#166534] border border-[#BBF7D0]">
                   Đã chọn
@@ -432,7 +431,9 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
     },
     {
       key: 'institution',
-      header: 'Đơn vị đào tạo (Trường thành viên)',
+      header: isUdn
+        ? 'Đơn vị đào tạo (Trường thành viên)'
+        : 'Đơn vị đào tạo / Ngày nộp',
       renderCell: (app) => (
         <div className="max-w-[240px]">
           <div className="text-[12.5px] font-semibold text-[#172A3A] line-clamp-1">
@@ -657,6 +658,8 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
       <SchoolRecommendationForwardingPage
         currentUser={currentUser}
         unitName={unitName}
+        seasonId={currentSeason?.id || 'season-2025-2026'}
+        seasonCode={activeSeasonCode}
         activeRouteId={activeRouteId}
         recQueue={recQueue}
         recTab={recTab}
@@ -714,7 +717,7 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#DCE7EE] pb-4">
         <div>
           <div className="text-[12px] font-semibold text-[#526B7C]">
-            {unitName} · Xét sơ tuyển cấp Trường năm học 2026–2027
+            {unitName} · Xét sơ tuyển cấp Trường · {activeSeasonLabel}
           </div>
           <h1 className="text-[20px] font-extrabold text-[#0F2335] mt-0.5">
             {activeRouteId === 'school_pending'
@@ -798,18 +801,20 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
             />
           </div>
 
-          <select
-            value={institutionFilter}
-            onChange={(e) => setInstitutionFilter(e.target.value)}
-            className="h-[34px] px-3 rounded-[8px] bg-[#F7FAFC] border border-[#DCE7EE] text-[12.5px] font-semibold text-[#172A3A] cursor-pointer"
-          >
-            <option value="all">Tất cả đơn vị đào tạo trực thuộc</option>
-            {memberInstitutions.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-              </option>
-            ))}
-          </select>
+          {(isUdn || memberInstitutions.length > 1) && (
+            <select
+              value={institutionFilter}
+              onChange={(e) => setInstitutionFilter(e.target.value)}
+              className="h-[34px] px-3 rounded-[8px] bg-[#F7FAFC] border border-[#DCE7EE] text-[12.5px] font-semibold text-[#172A3A] cursor-pointer"
+            >
+              <option value="all">Tất cả đơn vị đào tạo trực thuộc</option>
+              {memberInstitutions.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         {(searchQuery ||
@@ -883,218 +888,25 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
       )}
 
       {/* Record Human Recommendation Modal (LEAN-4 Step 2) */}
-      {recModalApp && (
-        <Dialog
-          isOpen={Boolean(recModalApp)}
-          onClose={() => setRecModalApp(null)}
-          title="Ghi nhận kết luận đề xuất cấp Trường"
-          description={`Đánh giá sơ tuyển và kết luận chuyển tiếp cho sinh viên ${recModalApp.student.fullName} (MSSV: ${recModalApp.student.studentCode})`}
-          maxWidth="max-w-lg"
-        >
-          <div className="space-y-4">
-            {/* Student & 5 criteria summary preview */}
-            <div className="bg-[#F8FAFC] border border-[#E2E8F0] p-3 rounded-[8px] text-[12.5px] space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-[#0F2335]">
-                  {recModalApp.student.fullName} · {recModalApp.institution.officialName}
-                </span>
-                <span className="font-mono text-[11px] text-[#64748B]">
-                  {recModalApp.applicationId}
-                </span>
-              </div>
-
-              {/* 5 compact criteria preview */}
-              {(() => {
-                const summary = getApplicationCriteriaSummary(
-                  recModalApp,
-                  schoolWorkspaces[recModalApp.applicationId]
-                );
-                return (
-                  <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-[#E2E8F0]">
-                    <span className="text-[11px] font-semibold text-[#526B7C]">
-                      Kết quả 05 tiêu chí:
-                    </span>
-                    <div className="flex items-center gap-1">
-                      {summary.items.map((it) => (
-                        <span
-                          key={it.criterionId}
-                          title={`${it.name}: ${it.statusLabel}`}
-                          className={`px-1.5 py-0.5 rounded text-[10.5px] font-bold border ${
-                            it.status === 'passed'
-                              ? 'bg-[#EAFBF1] text-[#15803D] border-[#BBF7D0]'
-                              : it.status === 'failed'
-                              ? 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]'
-                              : it.status === 'supplement'
-                              ? 'bg-[#FEF9C3] text-[#A16207] border-[#FDE047]'
-                              : 'bg-[#F1F5F9] text-[#64748B] border-[#E2E8F0]'
-                          }`}
-                        >
-                          {it.shortCode}
-                        </span>
-                      ))}
-                    </div>
-                    <span className="text-[11px] font-semibold text-[#15803D]">
-                      ({summary.statusBadgeText})
-                    </span>
-                  </div>
-                );
-              })()}
-            </div>
-
-            {/* Authoritative Human Decision Choices */}
-            <div className="space-y-2">
-              <label className="text-[12.5px] font-bold text-[#0F2335] block">
-                Kết luận đề xuất của Cán bộ xét duyệt <span className="text-red-500">*</span>
-              </label>
-
-              <div className="grid grid-cols-1 gap-2">
-                <label
-                  className={`p-3 rounded-[8px] border cursor-pointer flex items-start gap-3 transition-colors ${
-                    recChoice === 'recommended'
-                      ? 'border-[#16A34A] bg-[#F0FDF4]'
-                      : 'border-[#DCE7EE] bg-white hover:bg-[#F8FAFC]'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="recChoice"
-                    value="recommended"
-                    checked={recChoice === 'recommended'}
-                    onChange={() => {
-                      setRecChoice('recommended');
-                      setRecError(null);
-                    }}
-                    className="mt-1 text-[#16A34A] focus:ring-[#16A34A]"
-                  />
-                  <div>
-                    <div className="font-bold text-[13px] text-[#15803D] flex items-center gap-1.5">
-                      <CheckCircle2 size={14} />
-                      Đề xuất chuyển lên Thành phố
-                    </div>
-                    <div className="text-[11.5px] text-[#526B7C] mt-0.5">
-                      Đủ điều kiện tiêu chuẩn sơ tuyển, hồ sơ minh chứng đầy đủ, đề nghị Hội đồng cấp Thành phố xét duyệt.
-                    </div>
-                  </div>
-                </label>
-
-                <label
-                  className={`p-3 rounded-[8px] border cursor-pointer flex items-start gap-3 transition-colors ${
-                    recChoice === 'not_recommended'
-                      ? 'border-[#DC2626] bg-[#FEF2F2]'
-                      : 'border-[#DCE7EE] bg-white hover:bg-[#F8FAFC]'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="recChoice"
-                    value="not_recommended"
-                    checked={recChoice === 'not_recommended'}
-                    onChange={() => {
-                      setRecChoice('not_recommended');
-                      setRecError(null);
-                    }}
-                    className="mt-1 text-[#DC2626] focus:ring-[#DC2626]"
-                  />
-                  <div>
-                    <div className="font-bold text-[13px] text-[#B91C1C] flex items-center gap-1.5">
-                      <AlertCircle size={14} />
-                      Không đề xuất chuyển lên Thành phố
-                    </div>
-                    <div className="text-[11.5px] text-[#526B7C] mt-0.5">
-                      Không đạt chuẩn hoặc chưa đáp ứng tiêu chí theo quy chế Sinh viên 5 tốt cấp Thành phố.
-                    </div>
-                  </div>
-                </label>
-
-                <label
-                  className={`p-3 rounded-[8px] border cursor-pointer flex items-start gap-3 transition-colors ${
-                    recChoice === 'pending'
-                      ? 'border-[#0D78AE] bg-[#F0F9FF]'
-                      : 'border-[#DCE7EE] bg-white hover:bg-[#F8FAFC]'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="recChoice"
-                    value="pending"
-                    checked={recChoice === 'pending'}
-                    onChange={() => {
-                      setRecChoice('pending');
-                      setRecError(null);
-                    }}
-                    className="mt-1 text-[#0D78AE] focus:ring-[#0D78AE]"
-                  />
-                  <div>
-                    <div className="font-bold text-[13px] text-[#0369A1]">
-                      Chưa có kết luận / Cần xem xét thêm
-                    </div>
-                    <div className="text-[11.5px] text-[#526B7C] mt-0.5">
-                      Đang xác minh minh chứng bổ sung hoặc trao đổi thêm với đơn vị đào tạo.
-                    </div>
-                  </div>
-                </label>
-              </div>
-            </div>
-
-            {/* If Not Recommended: Require Reason */}
-            {recChoice === 'not_recommended' && (
-              <div>
-                <label className="text-[12px] font-bold text-[#B91C1C] block mb-1">
-                  Lý do không đề xuất <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={recReason}
-                  onChange={(e) => {
-                    setRecReason(e.target.value);
-                    if (recError) setRecError(null);
-                  }}
-                  rows={2}
-                  placeholder="Nêu rõ lý do (ví dụ: Thiếu chứng chỉ ngoại ngữ B1, chưa đạt tiêu chí Thể lực tốt...)"
-                  className="w-full p-2.5 rounded-[8px] bg-white border border-[#FECACA] text-[12.5px] text-[#172A3A] focus:outline-none focus:border-[#DC2626]"
-                />
-              </div>
-            )}
-
-            {/* Officer Notes */}
-            <div>
-              <label className="text-[12px] font-semibold text-[#526B7C] block mb-1">
-                Ghi chú nội bộ xét sơ tuyển (tùy chọn)
-              </label>
-              <textarea
-                value={recNotes}
-                onChange={(e) => setRecNotes(e.target.value)}
-                rows={2}
-                placeholder="Ghi chú đối chiếu, lưu ý hồ sơ gửi Thành phố..."
-                className="w-full p-2.5 rounded-[8px] bg-white border border-[#DCE7EE] text-[12.5px] text-[#172A3A] focus:outline-none focus:border-[#0D78AE]"
-              />
-            </div>
-
-            {recError && (
-              <div className="p-2.5 rounded-[8px] bg-[#FEF2F2] border border-[#FECACA] text-[12px] text-[#B91C1C] flex items-center gap-1.5">
-                <AlertCircle size={14} className="shrink-0" />
-                <span>{recError}</span>
-              </div>
-            )}
-
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#DCE7EE]">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setRecModalApp(null)}
-              >
-                Hủy bỏ
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleSaveRecommendation}
-              >
-                Lưu kết luận
-              </Button>
-            </div>
-          </div>
-        </Dialog>
-      )}
+      <SchoolRecommendationModal
+        recModalApp={recModalApp}
+        schoolWorkspaces={schoolWorkspaces}
+        recChoice={recChoice}
+        recNotes={recNotes}
+        recReason={recReason}
+        recError={recError}
+        onChangeChoice={(choice) => {
+          setRecChoice(choice);
+          setRecError(null);
+        }}
+        onChangeNotes={setRecNotes}
+        onChangeReason={(reason) => {
+          setRecReason(reason);
+          if (recError) setRecError(null);
+        }}
+        onClose={() => setRecModalApp(null)}
+        onSave={handleSaveRecommendation}
+      />
     </div>
   );
 };

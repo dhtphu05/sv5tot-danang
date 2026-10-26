@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../../../../components/buttons/Button';
 import { FileTypeIcon } from '../../../../components/evidence/FileTypeIcon';
+import { DocumentViewer } from '../../../../components/evidence/detail/DocumentViewer';
 import { ApplicationEvidence } from '../../../../demo/fixtures/studentApplication';
 import {
   CollectiveApplication,
@@ -35,7 +36,6 @@ export const CollectiveEvidenceReviewModal: React.FC<CollectiveEvidenceReviewMod
   activeEvidenceModalFile,
   onClose,
   app,
-  activeReqId,
   currentReqMeta,
   evidenceJudgmentDraft,
   onChangeEvidenceJudgmentDraft,
@@ -45,7 +45,6 @@ export const CollectiveEvidenceReviewModal: React.FC<CollectiveEvidenceReviewMod
 }) => {
   if (!activeEvidenceModalFile) return null;
 
-  const tt01 = app.tt01;
   const tt02 = app.tt02;
 
   return (
@@ -87,63 +86,21 @@ export const CollectiveEvidenceReviewModal: React.FC<CollectiveEvidenceReviewMod
         {/* Modal Body: Left Document Preview (65%) & Right Inspector (35%) */}
         <div className="flex-1 flex overflow-hidden">
           {/* Document Preview */}
-          <div className="flex-1 bg-[#EEF4F8] p-6 overflow-y-auto flex items-center justify-center">
-            {activeEvidenceModalFile.fileType === 'pdf' ? (
-              /* Realistic Certificate Document Simulator */
-              <div className="w-full max-w-xl bg-white shadow-xl rounded-[8px] p-8 border border-[#CFE3F0] text-center space-y-4">
-                <div className="flex items-center justify-between text-[11px] font-semibold text-[#475569] border-b pb-2">
-                  <div>
-                    HỘI SINH VIÊN VIỆT NAM<br />
-                    <strong>{app.institutionName.toUpperCase()}</strong>
-                  </div>
-                  <div>
-                    CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM<br />
-                    Độc lập - Tự do - Hạnh phúc
-                  </div>
-                </div>
-
-                <div className="py-2">
-                  <div className="text-[12px] font-bold text-[#728391]">
-                    Số: {activeReqId === 'TT01' ? tt01.decisionNumber || '118/QĐ-HSV' : '42/QĐ-HSV'}
-                  </div>
-                  <h4 className="text-[18px] font-extrabold text-[#0D78AE] uppercase tracking-wide mt-2">
-                    {activeReqId === 'TT01'
-                      ? 'QUYẾT ĐỊNH CÔNG NHẬN'
-                      : activeReqId === 'TT04'
-                      ? 'GIẤY XÁC NHẬN CHẤP HÀNH NỘI QUY'
-                      : 'DANH SÁCH KHEN THƯỞNG'}
-                  </h4>
-                  <p className="text-[13px] font-semibold text-[#172A3A] mt-1">
-                    Danh hiệu &ldquo;Tập thể Sinh viên 5 tốt cấp Trường&rdquo;
-                  </p>
-                </div>
-
-                <div className="text-[12.5px] text-[#334E68] text-left leading-relaxed bg-[#F8FBFD] p-3.5 rounded border border-[#E2EDF5]">
-                  <div>Đơn vị được công nhận: <strong>{app.collectiveName}</strong></div>
-                  <div>Cơ sở đào tạo: <strong>{app.institutionName}</strong></div>
-                  <div>Niên khóa xét chọn: <strong>{app.academicYear}</strong></div>
-                  <div>Ngày ban hành: <strong>{activeReqId === 'TT01' ? tt01.decisionDate : '30/05/2026'}</strong></div>
-                </div>
-
-                <div className="pt-4 flex items-center justify-between text-[12px]">
-                  <div className="text-left text-[#607483]">
-                    Nơi nhận:<br />
-                    - BGH Nhà trường;<br />
-                    - Các Chi hội trực thuộc;<br />
-                    - Lưu VP.
-                  </div>
-                  <div className="text-center font-bold text-[#172A3A]">
-                    TM. BAN THƯ KÝ HỘI SINH VIÊN<br />
-                    CHỦ TỊCH<br />
-                    <div className="h-10 flex items-center justify-center text-[#DC2626] font-serif font-black italic">
-                      [Đã ký &amp; Đóng dấu mộc đỏ]
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <div className="flex-1 bg-[#EEF4F8] overflow-hidden flex flex-col">
+            {activeEvidenceModalFile.fileType === 'pdf' ||
+            activeEvidenceModalFile.name.toLowerCase().endsWith('.pdf') ? (
+              <DocumentViewer
+                fileName={activeEvidenceModalFile.name}
+                fileType="pdf"
+                fileUrl={
+                  activeEvidenceModalFile.url ||
+                  (activeEvidenceModalFile as any).fileUrl
+                }
+              />
             ) : (
               /* Formatted Spreadsheet Preview for XLSX Member Rosters */
-              <div className="w-full max-w-2xl bg-white shadow-xl rounded-[8px] p-5 border border-[#CFE3F0] space-y-3">
+              <div className="flex-1 p-6 overflow-y-auto flex items-center justify-center">
+                <div className="w-full max-w-2xl bg-white shadow-xl rounded-[8px] p-5 border border-[#CFE3F0] space-y-3">
                 <div className="flex items-center justify-between border-b pb-2">
                   <div className="flex items-center gap-2">
                     <FileSpreadsheet size={16} className="text-[#16A34A]" />
@@ -185,6 +142,7 @@ export const CollectiveEvidenceReviewModal: React.FC<CollectiveEvidenceReviewMod
                       ))}
                     </tbody>
                   </table>
+                </div>
                 </div>
               </div>
             )}

@@ -116,6 +116,7 @@ export function useAdminControlPlane(
   }, []);
 
   useEffect(() => {
+    if (staffUser.primaryRole !== 'ADMIN') return;
     let mounted = true;
     fetchAdminSnapshotFromServer().then((snap) => {
       if (!mounted || !snap) return;
@@ -137,7 +138,7 @@ export function useAdminControlPlane(
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [staffUser.primaryRole, staffUser.id]);
 
   const resetAdminControlPlane = useCallback(() => {
     setAdminInstitutions(JSON.parse(JSON.stringify(INITIAL_INSTITUTIONS)));

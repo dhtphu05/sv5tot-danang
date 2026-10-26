@@ -14,6 +14,8 @@ export const uploadIntentSchema = z.object({
     'image/png',
     'image/jpeg',
     'image/webp',
+    'image/heic',
+    'image/heif',
   ]),
   sizeBytes: z
     .number()

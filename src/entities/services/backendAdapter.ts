@@ -739,6 +739,14 @@ export const backendServicesAdapter: DomainServicesBundle = {
       const sizeLabel =
         sizeKb >= 1024 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`;
 
+      const localPreviewUrl =
+        typeof window !== 'undefined' &&
+        typeof URL !== 'undefined' &&
+        typeof URL.createObjectURL === 'function' &&
+        payload.file instanceof Blob
+          ? URL.createObjectURL(payload.file)
+          : undefined;
+
       return {
         id: finalized.id,
         name: finalized.originalFileName,
@@ -746,6 +754,7 @@ export const backendServicesAdapter: DomainServicesBundle = {
         size: sizeLabel,
         uploadedAt: new Date(finalized.uploadedAt).toLocaleDateString('vi-VN'),
         status: 'ready',
+        ...(localPreviewUrl ? { url: localPreviewUrl } : {}),
       };
     },
 

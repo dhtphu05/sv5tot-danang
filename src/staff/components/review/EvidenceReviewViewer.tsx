@@ -100,7 +100,277 @@ function getOfficerRecognizedFields(
   file: ApplicationEvidence,
   declaration?: ApplicationDeclaration
 ): SystemRecognizedInfoRow[] {
-  const lower = file.name.toLowerCase();
+  const lower = `${file.name} ${file.url || ''}`.toLowerCase();
+
+  if (lower.includes('518') || lower.includes('smartcampus')) {
+    if (lower.includes('307') || lower.includes('ke_hoach')) {
+      return [
+        {
+          label: 'Tên văn bản nhận diện',
+          value: 'Kế hoạch số 307/KH-ĐHBK tổ chức Cuộc thi BK-SmartCampus 2026',
+          highlightRegionId: 'award-name',
+        },
+        {
+          label: 'Đơn vị ban hành',
+          value: 'Trường Đại học Bách khoa – Đại học Đà Nẵng',
+          highlightRegionId: 'authority',
+        },
+        {
+          label: 'Nội dung đối chiếu',
+          value: 'Thể lệ và quy mô Cuộc thi Chuyển đổi số và Quản lý thông minh',
+        },
+      ];
+    }
+    return [
+      {
+        label: 'Tên quyết định khen thưởng',
+        value: 'Quyết định số 518-QĐ/ĐHBK-ĐTN tặng Giấy khen Cuộc thi BK SmartCampus',
+        highlightRegionId: 'award-name',
+      },
+      {
+        label: 'Thành tích ghi nhận',
+        value: 'Giải Nhất Cuộc thi Chuyển đổi số và Quản lý thông minh – BK SmartCampus',
+        highlightRegionId: 'award-name',
+      },
+      {
+        label: 'Ngày ký ban hành',
+        value: '14/09/2026',
+        highlightRegionId: 'date',
+      },
+      {
+        label: 'Cơ quan cấp & Mộc dấu',
+        value: 'BCH Đoàn Trường Đại học Bách khoa – ĐH Đà Nẵng (Dấu đỏ hợp lệ)',
+        highlightRegionId: 'authority',
+      },
+    ];
+  }
+
+  if (lower.includes('mistalent')) {
+    return [
+      {
+        label: 'Tên chứng nhận nhận diện',
+        value: 'Giấy chứng nhận Top 15 Cuộc thi Học thuật MIS Talent 2026',
+        highlightRegionId: 'award-name',
+      },
+      {
+        label: 'Đơn vị cấp chứng nhận',
+        value: 'Khoa Hệ thống Thông tin Quản lý – Trường Đại học Kinh tế Quốc dân',
+        highlightRegionId: 'authority',
+      },
+      {
+        label: 'Năm học ghi nhận',
+        value: 'Năm học 2025–2026',
+        highlightRegionId: 'date',
+      },
+    ];
+  }
+
+  if (lower.includes('vannghe_phu')) {
+    return [
+      {
+        label: 'Tên giấy chứng nhận',
+        value: 'Giấy chứng nhận đóng góp tích cực Chương trình Chào đón Tân Sinh viên Khóa 2025 & Trao học bổng khuyến học',
+        highlightRegionId: 'award-name',
+      },
+      {
+        label: 'Đơn vị xác nhận',
+        value: 'BCH Liên Chi đoàn Khoa Công nghệ Thông tin – Trường ĐH Bách khoa ĐHĐN',
+        highlightRegionId: 'authority',
+      },
+      {
+        label: 'Ngày cấp trên văn bản',
+        value: '17/10/2025',
+        highlightRegionId: 'date',
+      },
+      {
+        label: 'Thông tin cần đối chiếu (Thời lượng tình nguyện)',
+        value: 'Văn bản ghi nhận đóng góp chương trình ngày 17/10/2025 (cần đối chiếu số ngày chuẩn bị thực tế)',
+        advisoryNote:
+          'Hệ thống gợi ý kiểm tra: Đối chiếu số ngày tham gia công tác tổ chức thực tế so với kê khai của sinh viên.',
+        highlightRegionId: 'date',
+      },
+    ];
+  }
+
+  if (lower.includes('doan_hoang_thien_phu') || lower.includes('convo_ai')) {
+    return [
+      {
+        label: 'Tên chứng nhận quốc tế',
+        value: 'Certificate of Participation – Convo AI Hackathon Danang University 2026',
+        highlightRegionId: 'award-name',
+      },
+      {
+        label: 'Đơn vị đồng tổ chức',
+        value: 'Agora Vietnam, Solana Foundation & Trường Đại học Bách khoa – ĐHĐN',
+        highlightRegionId: 'authority',
+      },
+      {
+        label: 'Ngày cấp',
+        value: '28/06/2026',
+        highlightRegionId: 'date',
+      },
+    ];
+  }
+
+  if (lower.includes('img_1720') || lower.includes('bk_shark') || lower.includes('472')) {
+    return [
+      {
+        label: 'Tên giấy khen',
+        value: 'Giấy khen Giải Nhất Cuộc thi Khởi nghiệp trong Sinh viên – BK Shark 2026',
+        highlightRegionId: 'award-name',
+      },
+      {
+        label: 'Số quyết định & Ngày cấp',
+        value: 'Quyết định số 472-QĐ/ĐHBK-ĐTN ngày 01/07/2026',
+        highlightRegionId: 'date',
+      },
+      {
+        label: 'Đơn vị cấp',
+        value: 'BCH Đoàn TNCS Hồ Chí Minh Trường Đại học Bách khoa – ĐHĐN',
+        highlightRegionId: 'authority',
+      },
+    ];
+  }
+
+  if (lower.includes('img_1721') || lower.includes('startup_runway') || lower.includes('155')) {
+    return [
+      {
+        label: 'Tên bằng khen',
+        value: 'Bằng khen Giải Nhất Cuộc thi Khởi nghiệp Startup Runway 2026',
+        highlightRegionId: 'award-name',
+      },
+      {
+        label: 'Số quyết định & Ngày cấp',
+        value: 'Quyết định số 155-QĐ/TĐTN ngày 07/09/2026',
+        highlightRegionId: 'date',
+      },
+      {
+        label: 'Cơ quan ban hành',
+        value: 'Ban Chấp hành Thành Đoàn Đà Nẵng (Dấu đỏ Thành Đoàn)',
+        highlightRegionId: 'authority',
+      },
+    ];
+  }
+
+  if (lower.includes('img_1711') || lower.includes('147')) {
+    return [
+      {
+        label: 'Tên bằng khen cấp Trung ương',
+        value: 'Bằng khen Giải Khuyến khích Bảng B Cuộc thi Vietnamese Student HackAIthon 2026',
+        highlightRegionId: 'award-name',
+      },
+      {
+        label: 'Số quyết định & Ngày cấp',
+        value: 'Quyết định số 147-QĐKT/TWHSV ngày 23/07/2026',
+        highlightRegionId: 'date',
+      },
+      {
+        label: 'Cơ quan ban hành',
+        value: 'Ban Chấp hành Trung ương Hội Sinh viên Việt Nam',
+        highlightRegionId: 'authority',
+      },
+    ];
+  }
+
+  if (lower.includes('img_9540') || lower.includes('156')) {
+    return [
+      {
+        label: 'Tên bằng khen cấp Thành phố',
+        value: 'Bằng khen Giải Khuyến khích Bảng B Cuộc thi Vietnamese Student HackAIthon 2026',
+        highlightRegionId: 'award-name',
+      },
+      {
+        label: 'Số quyết định & Ngày cấp',
+        value: 'Quyết định số 156-QĐ/TĐTN ngày 08/09/2026',
+        highlightRegionId: 'date',
+      },
+      {
+        label: 'Cơ quan ban hành',
+        value: 'Ban Chấp hành Thành Đoàn Đà Nẵng',
+        highlightRegionId: 'authority',
+      },
+    ];
+  }
+
+  if (lower.includes('img_9544') || lower.includes('it_league_2025')) {
+    return [
+      {
+        label: 'Tên giấy chứng nhận thể thao',
+        value: 'Giấy chứng nhận Giải Bóng đá truyền thống Khoa CNTT – IT League 2025',
+        highlightRegionId: 'award-name',
+      },
+      {
+        label: 'Thời gian giải đấu & Ngày cấp',
+        value: '18/04/2025 – 11/05/2025 (Cấp ngày 12/05/2025)',
+        highlightRegionId: 'date',
+      },
+      {
+        label: 'Đơn vị tổ chức',
+        value: 'BCH Liên Chi đoàn Khoa Công nghệ Thông tin – Trường ĐH Bách khoa ĐHĐN',
+        highlightRegionId: 'authority',
+      },
+    ];
+  }
+
+  if (lower.includes('img_9547') || lower.includes('50_nam')) {
+    return [
+      {
+        label: 'Tên giấy chứng nhận tình nguyện',
+        value: 'Giấy chứng nhận tham gia phục vụ Lễ Kỷ niệm 50 năm thành lập Trường ĐH Bách khoa – ĐHĐN (1975–2025)',
+        highlightRegionId: 'award-name',
+      },
+      {
+        label: 'Ngày cấp',
+        value: '10/07/2025',
+        highlightRegionId: 'date',
+      },
+      {
+        label: 'Đơn vị xác nhận',
+        value: 'BCH Liên Chi đoàn Khoa Công nghệ Thông tin – Trường ĐH Bách khoa ĐHĐN',
+        highlightRegionId: 'authority',
+      },
+    ];
+  }
+
+  if (lower.includes('img_9542') || lower.includes('khac_mong')) {
+    return [
+      {
+        label: 'Tên chứng nhận hoạt động cộng đồng',
+        value: 'Certificate of Recognition – Chương trình K24 Khắc Mộng Thiên Thu',
+        highlightRegionId: 'award-name',
+      },
+      {
+        label: 'Ngày cấp',
+        value: '16/11/2024',
+        highlightRegionId: 'date',
+      },
+      {
+        label: 'Đơn vị cấp',
+        value: 'BCH Liên Chi đoàn Khoa Công nghệ Thông tin – Trường ĐH Bách khoa ĐHĐN',
+        highlightRegionId: 'authority',
+      },
+    ];
+  }
+
+  if (lower.includes('img_9553') || lower.includes('310')) {
+    return [
+      {
+        label: 'Tên giấy khen',
+        value: 'Giấy khen Thành tích xuất sắc trong công tác Đoàn và phong trào thanh niên',
+        highlightRegionId: 'award-name',
+      },
+      {
+        label: 'Số quyết định & Ngày cấp',
+        value: 'Quyết định số 310-QĐ/ĐHBK-ĐTN ngày 11/11/2025',
+        highlightRegionId: 'date',
+      },
+      {
+        label: 'Đơn vị cấp',
+        value: 'BCH Đoàn TNCS Hồ Chí Minh Trường Đại học Bách khoa – ĐHĐN',
+        highlightRegionId: 'authority',
+      },
+    ];
+  }
 
   if (lower.includes('thoi_gian_mhx')) {
     return [
@@ -108,11 +378,6 @@ function getOfficerRecognizedFields(
         label: 'Tên văn bản nhận diện',
         value: 'Giấy xác nhận thời gian tham gia Chiến dịch Mùa hè xanh 2026',
         highlightRegionId: 'award-name',
-      },
-      {
-        label: 'Sinh viên được xác nhận',
-        value: 'Nguyễn Minh Anh (MSSV: 102220123)',
-        highlightRegionId: 'student-name',
       },
       {
         label: 'Thời gian tham gia trên tài liệu',
@@ -123,69 +388,6 @@ function getOfficerRecognizedFields(
         label: 'Đơn vị cấp xác nhận',
         value: 'Ban Chỉ huy Chiến dịch Mùa hè xanh Trường ĐH Bách khoa',
         highlightRegionId: 'authority',
-      },
-    ];
-  }
-
-  if (lower.includes('mua_he_xanh') || lower.includes('mhx')) {
-    return [
-      {
-        label: 'Tên chứng nhận',
-        value: 'Giấy chứng nhận Chiến sĩ Mùa hè xanh 2026',
-        highlightRegionId: 'award-name',
-      },
-      {
-        label: 'Đơn vị cấp',
-        value: 'Đoàn Thanh niên Trường ĐH Bách khoa - ĐH Đà Nẵng',
-        highlightRegionId: 'authority',
-      },
-      {
-        label: 'Ngày cấp',
-        value: '25/07/2026',
-        highlightRegionId: 'date',
-      },
-      {
-        label: 'Thông tin cần đối chiếu (Thời gian tham gia)',
-        value: 'Chỉ ghi "Tháng 07/2026" (chưa thể hiện rõ số ngày tham gia)',
-        advisoryNote:
-          'Hệ thống gợi ý kiểm tra: Văn bản chưa ghi rõ tổng số ngày tham gia thực tế để đối chiếu với kê khai của sinh viên.',
-        highlightRegionId: 'date',
-      },
-    ];
-  }
-
-  if (lower.includes('bong_chuyen')) {
-    return [
-      {
-        label: 'Tên chứng nhận / Quyết định',
-        value: 'Huy chương Bạc Giải bóng chuyền sinh viên TP. Đà Nẵng 2026',
-        highlightRegionId: 'award-name',
-      },
-      {
-        label: 'Ngày cấp',
-        value: '22/03/2026',
-        highlightRegionId: 'date',
-      },
-      {
-        label: 'Đơn vị cấp',
-        value: 'Hội Sinh viên Việt Nam Thành phố Đà Nẵng',
-        highlightRegionId: 'authority',
-      },
-    ];
-  }
-
-  if (lower.includes('scan_mo') || file.status === 'needs_verification') {
-    return [
-      {
-        label: 'Tên chứng nhận',
-        value: declaration?.value || 'Giấy xác nhận thành tích',
-        highlightRegionId: 'award-name',
-      },
-      {
-        label: 'Thông tin cần đối chiếu',
-        value: 'Một phần thông tin ngày cấp / cấp xác nhận trên bản quét cần cán bộ kiểm tra trực tiếp.',
-        advisoryNote:
-          'Hệ thống gợi ý kiểm tra: Đối chiếu trực tiếp con dấu và cấp ban hành trên tài liệu gốc.',
       },
     ];
   }
@@ -281,7 +483,12 @@ export const EvidenceReviewViewer: React.FC<EvidenceReviewViewerProps> = ({
   const hasNext = currentIndex >= 0 && currentIndex < evidenceList.length - 1;
 
   const recognizedFields = getOfficerRecognizedFields(evidence, declaration);
-  const aiInsight = getEvidenceAiInsight(evidence.id);
+  const rawAiInsight = getEvidenceAiInsight(evidence.id);
+  const isRealMinhChungFile = Boolean(evidence.url?.includes('/minhchung_test/'));
+  const aiInsight =
+    rawAiInsight && rawAiInsight.criterionId === scope.criterionId && !isRealMinhChungFile
+      ? rawAiInsight
+      : undefined;
   const isNewSupplementFile = evidence.id.includes('supp-new');
 
   const handleNoteChange = (text: string) => {
@@ -521,6 +728,7 @@ export const EvidenceReviewViewer: React.FC<EvidenceReviewViewerProps> = ({
               <DocumentViewer
                 fileName={evidence.name}
                 fileType={evidence.fileType}
+                fileUrl={evidence.url}
                 highlightRegion={activeHighlightRegion}
               />
             </div>

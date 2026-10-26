@@ -135,12 +135,7 @@ export const CommitteeQueueView: React.FC<CommitteeQueueViewProps> = ({
           app.schoolPreliminaryStatus === 'not_recommended' ||
           app.schoolReviewSummary?.recommendation === 'not_recommended';
         const docNum =
-          app.schoolReviewSummary?.decisionDocumentMetadata?.decisionNumber ||
-          (app.institution.id.startsWith('inst-') &&
-          app.institution.id !== 'inst-dtu' &&
-          app.institution.id !== 'inst-dlu'
-            ? 'QĐ số 182/QĐ-ĐHĐN'
-            : 'QĐ đề xuất cơ sở');
+          app.schoolReviewSummary?.decisionDocumentMetadata?.decisionNumber;
 
         if (isRec) {
           return (
@@ -150,7 +145,7 @@ export const CommitteeQueueView: React.FC<CommitteeQueueViewProps> = ({
                 <span>Đề xuất Thành phố</span>
               </span>
               <div className="text-[11px] text-[#607483] mt-0.5 tabular-nums">
-                Theo {docNum}
+                {docNum ? `Theo ${docNum}` : 'Đã kèm văn bản PDF'}
               </div>
             </div>
           );

@@ -47,7 +47,10 @@ import { PublicationDialog } from './PublicationDialog';
 import { CollectiveCommitteeWorkspace } from './CollectiveCommitteeWorkspace';
 import { CommitteeOverviewView } from './views/CommitteeOverviewView';
 import { CommitteeResultsView } from './views/CommitteeResultsView';
-import { CommitteeRecognitionView } from './views/CommitteeRecognitionView';
+import {
+  CityRecognitionDecisionMetadata,
+  CommitteeRecognitionView,
+} from './views/CommitteeRecognitionView';
 import { CommitteeQueueView } from './views/CommitteeQueueView';
 import { CommitteeCollectiveDetailsModal } from './views/CommitteeCollectiveDetailsModal';
 import { Button } from '../../../components/buttons/Button';
@@ -68,6 +71,7 @@ export interface CommitteeViewsProps {
   ) => void;
   onFinalizeResultSet: () => void;
   onPublishResults: () => void;
+  activeSeasonLabel?: string;
 }
 
 export const CommitteeViews: React.FC<CommitteeViewsProps> = ({
@@ -82,6 +86,7 @@ export const CommitteeViews: React.FC<CommitteeViewsProps> = ({
   onRecordDecision,
   onFinalizeResultSet,
   onPublishResults,
+  activeSeasonLabel,
 }) => {
   // Shared Filter & Selection State
   const [trackFilter, setTrackFilter] = useState<'all' | 'individual' | 'collective'>('all');
@@ -99,6 +104,8 @@ export const CommitteeViews: React.FC<CommitteeViewsProps> = ({
     useState<CollectiveApplication | null>(null);
   const [activeCollectiveWorkspaceApp, setActiveCollectiveWorkspaceApp] =
     useState<CollectiveApplication | null>(null);
+  const [cityDecisionDoc, setCityDecisionDoc] =
+    useState<CityRecognitionDecisionMetadata | null>(null);
 
   useEffect(() => {
     return subscribeToCollectiveStore(() => {
@@ -339,6 +346,7 @@ export const CommitteeViews: React.FC<CommitteeViewsProps> = ({
           onSelectRoute={onSelectRoute}
           onOpenApplicationWorkspace={onOpenApplicationWorkspace}
           renderCommitteeScenarioStrip={renderCommitteeScenarioStrip}
+          activeSeasonLabel={activeSeasonLabel}
         />
       )}
 
@@ -375,6 +383,7 @@ export const CommitteeViews: React.FC<CommitteeViewsProps> = ({
           renderCommitteeScenarioStrip={renderCommitteeScenarioStrip}
           onSelectCollective={(app) => setActiveCollectiveWorkspaceApp(app)}
           onOpenCollectiveDecisionModal={(app) => setDecisionTargetCollective(app)}
+          activeSeasonLabel={activeSeasonLabel}
         />
       )}
 
@@ -388,6 +397,9 @@ export const CommitteeViews: React.FC<CommitteeViewsProps> = ({
           onFinalizeResultSet={onFinalizeResultSet}
           onOpenPublicationDialog={() => setIsPublicationDialogOpen(true)}
           renderCommitteeScenarioStrip={renderCommitteeScenarioStrip}
+          activeSeasonLabel={activeSeasonLabel}
+          decisionDoc={cityDecisionDoc}
+          onUpdateDecisionDoc={setCityDecisionDoc}
         />
       )}
 
@@ -537,6 +549,8 @@ export const CommitteeViews: React.FC<CommitteeViewsProps> = ({
           onPublishResults();
           setIsPublicationDialogOpen(false);
         }}
+        activeSeasonLabel={activeSeasonLabel}
+        decisionDoc={cityDecisionDoc}
       />
 
       {/* Collective Details Inspection Modal */}

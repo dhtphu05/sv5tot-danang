@@ -5,6 +5,7 @@
  *
  * Implements ADMIN-REVAMP Sections 6 & 7 + ADMIN-REVAMP.1 Sections 3–7:
  * - Central-style 5TOT Selection Timeline (T01–T07) including parallel Collective track (T04)
+ * - Friendly Calendar Date + Time Pickers (<VietnameseDateTimePicker />) & 1-click Auto-Schedule
  * - Guided Create Season with "Sao chép cấu hình từ mùa trước" (copyFromSeasonId)
  * - 8-Gate Season Readiness Validation Checklist ("Kiểm tra cấu hình")
  * - Controlled Season Activation ("Kích hoạt mùa xét") preserving at most 1 active season
@@ -17,8 +18,6 @@ import {
   Plus,
   Clock,
   Lock,
-  X,
-  Copy,
   CheckCircle2,
   AlertTriangle,
   Play,
@@ -26,6 +25,8 @@ import {
   Trash2,
   ArrowRight,
   Layers,
+  Sparkles,
+  CalendarRange,
 } from 'lucide-react';
 import {
   buildCentralTimelineMilestones,
@@ -39,7 +40,12 @@ import {
 } from '../../adminTypes';
 import { StaffRouteId } from '../../types';
 import { Button } from '../../../components/buttons/Button';
-import { validateSeasonConfiguration } from '../../adminSelectors';
+import {
+  VietnameseDateTimePicker,
+  generateStandardTimelineFromStart,
+} from './VietnameseDateTimePicker';
+import { AdminOperationalGuideBanner } from './AdminOperationalGuideBanner';
+import { SeasonCreateModal } from './SeasonCreateModal';
 
 export interface SeasonManagementProps {
   seasons: Season[];
@@ -73,6 +79,15 @@ export interface SeasonManagementProps {
   onSelectRoute?: (routeId: StaffRouteId) => void;
 }
 
+const TRACK_LABELS_VI: Record<string, string> = {
+  INDIVIDUAL: 'Cá nhân',
+  SCHOOL_UNIT: 'Cấp Trường',
+  COLLECTIVE: 'Tập thể (Nộp thẳng TP)',
+  CITY: 'Cấp Thành phố',
+  COMMITTEE: 'Hội đồng xét chọn',
+  SYSTEM: 'Toàn hệ thống',
+};
+
 export const SeasonManagement: React.FC<SeasonManagementProps> = ({
   seasons,
   onCreateSeason,
@@ -88,7 +103,6 @@ export const SeasonManagement: React.FC<SeasonManagementProps> = ({
     seasons.find((s) => s.isCurrentActive)?.id || seasons[0]?.id || ''
   );
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [createErrors, setCreateErrors] = useState<string[]>([]);
   const [readinessReport, setReadinessReport] =
     useState<SeasonReadinessReport | null>(null);
   const [isEditingTimeline, setIsEditingTimeline] = useState(false);
@@ -96,52 +110,31 @@ export const SeasonManagement: React.FC<SeasonManagementProps> = ({
   const activeOrLatestSeason =
     seasons.find((s) => s.isCurrentActive) || seasons[0];
 
-  const [createForm, setCreateForm] = useState({
-    schoolYear: '2026–2027',
-    title:
-      'Đợt xét chọn Danh hiệu "Sinh viên 5 Tốt" cấp Thành phố Năm học 2026–2027',
-    copyFromSeasonId: activeOrLatestSeason?.id || 'season-2025-2026',
-    submissionStart: '01/10/2026 08:00 (GMT+7)',
-    submissionDeadline: '20/10/2026 17:00 (GMT+7)',
-    schoolReviewStart: '05/10/2026 08:00 (GMT+7)',
-    schoolReviewDeadline: '23/10/2026 17:00 (GMT+7)',
-    schoolForwardingDeadline: '25/10/2026 17:00 (GMT+7)',
-    collectiveSubmissionStart: '01/10/2026 08:00 (GMT+7)',
-    collectiveSubmissionDeadline: '25/10/2026 17:00 (GMT+7)',
-    reviewStart: '26/10/2026 08:00 (GMT+7)',
-    reviewDeadline: '05/11/2026 17:00 (GMT+7)',
-    supplementStart: '26/10/2026 08:00 (GMT+7)',
-    supplementDeadline: '02/11/2026 17:00 (GMT+7)',
-    committeeDate: '08/11/2026 08:30 (GMT+7)',
-    publicationTargetDate: '12/11/2026 09:00 (GMT+7)',
-    criteriaVersionId: 'crit-ver-2026-2027-draft',
-    criteriaVersionLabel:
-      'v1.0 (2026–2027) — Bản dự thảo sao chép từ mùa 2025–2026',
-  });
-
   const selectedSeason =
     seasons.find((s) => s.id === selectedSeasonId) || seasons[0];
 
-  const [timelineDraft, setTimelineDraft] = useState({
-    submissionStart: selectedSeason?.submissionStart || '',
-    submissionDeadline: selectedSeason?.submissionDeadline || '',
+  const buildDraftFromSeason = (s?: Season) => ({
+    submissionStart: s?.submissionStart || '01/10/2026 · 08:00',
+    submissionDeadline: s?.submissionDeadline || '20/10/2026 · 20:00',
     schoolForwardingDeadline:
-      selectedSeason?.schoolForwardingDeadline ||
-      selectedSeason?.reviewStart ||
-      '',
+      s?.schoolForwardingDeadline || '25/10/2026 · 17:00',
     collectiveSubmissionStart:
-      selectedSeason?.collectiveSubmissionStart ||
-      selectedSeason?.submissionStart ||
-      '',
+      s?.collectiveSubmissionStart ||
+      s?.submissionStart ||
+      '01/10/2026 · 08:00',
     collectiveSubmissionDeadline:
-      selectedSeason?.collectiveSubmissionDeadline ||
-      selectedSeason?.schoolForwardingDeadline ||
-      '',
-    reviewDeadline: selectedSeason?.reviewDeadline || '',
-    supplementDeadline: selectedSeason?.supplementDeadline || '',
-    committeeDate: selectedSeason?.committeeDate || '',
-    publicationTargetDate: selectedSeason?.publicationTargetDate || '',
+      s?.collectiveSubmissionDeadline ||
+      s?.schoolForwardingDeadline ||
+      '25/10/2026 · 20:00',
+    supplementDeadline: s?.supplementDeadline || '31/10/2026 · 20:00',
+    reviewDeadline: s?.reviewDeadline || '05/11/2026 · 17:00',
+    committeeDate: s?.committeeDate || '08/11/2026 · 08:30',
+    publicationTargetDate: s?.publicationTargetDate || '12/11/2026 · 09:00',
   });
+
+  const [timelineDraft, setTimelineDraft] = useState(() =>
+    buildDraftFromSeason(selectedSeason)
+  );
 
   const getStatusBadge = (status: SeasonStatus) => {
     switch (status) {
@@ -184,25 +177,56 @@ export const SeasonManagement: React.FC<SeasonManagementProps> = ({
     }
   };
 
+  // Compute Central T01–T07 milestones dynamically from the selected season's actual dates!
   const selectedMilestones = selectedSeason
-    ? selectedSeason.centralMilestones &&
-      selectedSeason.centralMilestones.length > 0
-      ? selectedSeason.centralMilestones
-      : buildCentralTimelineMilestones({
-          academicYear: formatShortAcademicYear(selectedSeason.schoolYear),
-          individualSubmissionOpenAt: '2025-10-01T01:00:00.000Z',
-          individualSubmissionCloseAt: '2025-10-20T10:00:00.000Z',
-          schoolReviewOpenAt: '2025-10-05T01:00:00.000Z',
-          schoolReviewCloseAt: '2025-10-23T10:00:00.000Z',
-          schoolForwardingCloseAt: '2025-10-25T10:00:00.000Z',
-          collectiveSubmissionOpenAt: '2025-10-01T01:00:00.000Z',
-          collectiveSubmissionCloseAt: '2025-10-25T10:00:00.000Z',
-          cityReviewOpenAt: '2025-10-26T01:00:00.000Z',
-          cityReviewCloseAt: '2025-11-05T10:00:00.000Z',
-          supplementDeadlineAt: '2025-11-02T10:00:00.000Z',
-          committeeSessionAt: '2025-11-08T01:30:00.000Z',
-          resultPublicationAt: '2025-11-12T02:00:00.000Z',
-        })
+    ? buildCentralTimelineMilestones({
+        academicYear: formatShortAcademicYear(selectedSeason.schoolYear),
+        individualSubmissionOpenAt:
+          selectedSeason.submissionStart ||
+          selectedSeason.individualSubmissionOpenAt ||
+          '01/10/2026 · 08:00',
+        individualSubmissionCloseAt:
+          selectedSeason.submissionDeadline ||
+          selectedSeason.individualSubmissionCloseAt ||
+          '15/11/2026 · 20:00',
+        schoolReviewStartAt:
+          selectedSeason.schoolReviewStart ||
+          selectedSeason.schoolReviewStartAt ||
+          selectedSeason.submissionStart,
+        schoolReviewEndAt:
+          selectedSeason.schoolReviewDeadline ||
+          selectedSeason.schoolReviewEndAt ||
+          selectedSeason.schoolForwardingDeadline ||
+          selectedSeason.submissionDeadline,
+        schoolForwardingCloseAt:
+          selectedSeason.schoolForwardingDeadline ||
+          selectedSeason.schoolForwardingCloseAt ||
+          selectedSeason.reviewDeadline,
+        collectiveSubmissionOpenAt:
+          selectedSeason.collectiveSubmissionStart ||
+          selectedSeason.collectiveSubmissionOpenAt ||
+          selectedSeason.submissionStart,
+        collectiveSubmissionCloseAt:
+          selectedSeason.collectiveSubmissionDeadline ||
+          selectedSeason.collectiveSubmissionCloseAt ||
+          selectedSeason.schoolForwardingDeadline ||
+          selectedSeason.submissionDeadline,
+        cityReviewStartAt:
+          selectedSeason.reviewStart ||
+          selectedSeason.cityReviewStartAt ||
+          selectedSeason.schoolForwardingDeadline,
+        cityReviewEndAt:
+          selectedSeason.reviewDeadline || selectedSeason.cityReviewEndAt,
+        supplementDeadlineAt: selectedSeason.supplementDeadline,
+        committeeMeetingStartAt:
+          selectedSeason.committeeDate ||
+          selectedSeason.committeeMeetingStartAt,
+        committeeMeetingEndAt:
+          selectedSeason.committeeMeetingEndAt || selectedSeason.committeeDate,
+        resultAnnouncementAt:
+          selectedSeason.publicationTargetDate ||
+          selectedSeason.resultAnnouncementAt,
+      })
     : [];
 
   return (
@@ -215,34 +239,58 @@ export const SeasonManagement: React.FC<SeasonManagementProps> = ({
           </div>
           <h1 className="text-[20px] font-extrabold text-[#0F2335] mt-0.5 flex items-center gap-2">
             <Calendar size={20} className="text-[#0D78AE]" />
-            <span>Quản lý mùa xét chọn</span>
+            <span>Quản lý mùa xét chọn &amp; Lịch trình T01–T07</span>
           </h1>
           <p className="text-[12.5px] text-[#526B7C] mt-1">
-            Khởi tạo mùa xét mới, sao chép cấu hình từ mùa trước, kiểm tra 8
-            điều kiện sẵn sàng và vận hành lộ trình thời gian chuẩn Trung ương
-            (T01–T07).
+            Chọn năm học, thiết lập ngày giờ bằng lịch trực quan (hoặc tự động
+            tính 7 bước từ ngày mở cổng), kiểm tra 8 điều kiện và kích hoạt mùa
+            xét.
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => {
-            setCreateErrors([]);
-            setIsCreateOpen(true);
-          }}
-          className="flex items-center gap-1.5"
-        >
-          <Plus size={15} />
-          <span>Tạo mùa xét mới</span>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onSelectManageDeadlines}
+          >
+            <Clock size={14} />
+            <span>Gia hạn nhanh (Hotfix +24h/+48h)</span>
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setIsCreateOpen(true)}
+          >
+            <Plus size={15} />
+            <span>Tạo mùa xét mới</span>
+          </Button>
+        </div>
       </div>
+
+      {/* 1B. 4-Step Admin Operational Workflow Guide */}
+      <AdminOperationalGuideBanner
+        activeStep={1}
+        seasonYearLabel={formatAcademicYearLabel(
+          selectedSeason?.schoolYear || '2025–2026'
+        )}
+        isSeasonActive={Boolean(selectedSeason?.isCurrentActive)}
+        onSelectRoute={onSelectRoute}
+      />
 
       {/* 2. Season Cards List */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {seasons.map((season) => {
           const isSelected = selectedSeason?.id === season.id;
           const shortYear = formatShortAcademicYear(season.schoolYear);
+          const forwardingDisplay =
+            season.schoolForwardingDeadline ||
+            season.reviewDeadline ||
+            season.submissionDeadline;
+          const collectiveDisplay =
+            season.collectiveSubmissionDeadline ||
+            season.schoolForwardingDeadline ||
+            season.submissionDeadline;
           return (
             <button
               key={season.id}
@@ -250,6 +298,7 @@ export const SeasonManagement: React.FC<SeasonManagementProps> = ({
               onClick={() => {
                 setSelectedSeasonId(season.id);
                 setReadinessReport(null);
+                setTimelineDraft(buildDraftFromSeason(season));
                 setIsEditingTimeline(false);
               }}
               className={`text-left p-4 rounded-[12px] border transition-all cursor-pointer relative ${
@@ -276,21 +325,20 @@ export const SeasonManagement: React.FC<SeasonManagementProps> = ({
               <div className="mt-3.5 pt-3 border-t border-[#EEF4F8] space-y-1 text-[11.5px] text-[#526B7C]">
                 <div className="flex items-center justify-between">
                   <span>Hạn nộp Cá nhân (T01):</span>
-                  <span className="font-semibold text-[#172A3A] truncate max-w-[170px]">
+                  <span className="font-semibold text-[#172A3A] tabular-nums">
                     {season.submissionDeadline}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Hạn Trường gửi TP (T03):</span>
-                  <span className="font-semibold text-[#172A3A] truncate max-w-[170px]">
-                    {season.schoolForwardingDeadline || season.reviewStart}
+                  <span className="font-semibold text-[#172A3A] tabular-nums">
+                    {forwardingDisplay}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Hạn nộp Tập thể (T04):</span>
-                  <span className="font-semibold text-[#172A3A] truncate max-w-[170px]">
-                    {season.collectiveSubmissionDeadline ||
-                      season.submissionDeadline}
+                  <span className="font-semibold text-[#172A3A] tabular-nums">
+                    {collectiveDisplay}
                   </span>
                 </div>
                 <div className="flex items-center justify-between pt-1">
@@ -327,7 +375,24 @@ export const SeasonManagement: React.FC<SeasonManagementProps> = ({
               </h2>
             </div>
 
+            {/* Clean, Well-Aligned Action Toolbar */}
             <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant={isEditingTimeline ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => {
+                  setTimelineDraft(buildDraftFromSeason(selectedSeason));
+                  setIsEditingTimeline((v) => !v);
+                }}
+              >
+                <CalendarRange size={14} />
+                <span>
+                  {isEditingTimeline
+                    ? 'Đóng bảng chỉnh ngày giờ'
+                    : 'Chỉnh ngày giờ (Lịch T01–T07)'}
+                </span>
+              </Button>
+
               {onCheckSeasonReadiness && (
                 <Button
                   variant="secondary"
@@ -336,10 +401,9 @@ export const SeasonManagement: React.FC<SeasonManagementProps> = ({
                     const report = onCheckSeasonReadiness(selectedSeason.id);
                     setReadinessReport(report);
                   }}
-                  className="flex items-center gap-1.5"
                 >
                   <CheckCircle2 size={14} />
-                  <span>Kiểm tra cấu hình</span>
+                  <span>Kiểm tra cấu hình (8 điều kiện)</span>
                 </Button>
               )}
 
@@ -358,7 +422,6 @@ export const SeasonManagement: React.FC<SeasonManagementProps> = ({
                         setReadinessReport(res.readiness);
                       }
                     }}
-                    className="flex items-center gap-1.5"
                   >
                     <Play size={14} />
                     <span>Kích hoạt mùa xét</span>
@@ -376,7 +439,6 @@ export const SeasonManagement: React.FC<SeasonManagementProps> = ({
                       'Hoàn tất đợt xét chọn và khóa tiếp nhận mùa xét'
                     )
                   }
-                  className="flex items-center gap-1.5"
                 >
                   <Archive size={14} />
                   <span>Kết thúc mùa xét</span>
@@ -391,55 +453,12 @@ export const SeasonManagement: React.FC<SeasonManagementProps> = ({
                     variant="secondary"
                     size="sm"
                     onClick={() => onDeleteDraftSeason(selectedSeason.id)}
-                    className="flex items-center gap-1.5 text-[#B91C1C]"
+                    className="text-[#B91C1C]"
                   >
                     <Trash2 size={14} />
                     <span>Xóa bản nháp</span>
                   </Button>
                 )}
-
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setTimelineDraft({
-                    submissionStart: selectedSeason.submissionStart,
-                    submissionDeadline: selectedSeason.submissionDeadline,
-                    schoolForwardingDeadline:
-                      selectedSeason.schoolForwardingDeadline ||
-                      selectedSeason.reviewStart,
-                    collectiveSubmissionStart:
-                      selectedSeason.collectiveSubmissionStart ||
-                      selectedSeason.submissionStart,
-                    collectiveSubmissionDeadline:
-                      selectedSeason.collectiveSubmissionDeadline ||
-                      selectedSeason.submissionDeadline,
-                    reviewDeadline: selectedSeason.reviewDeadline,
-                    supplementDeadline: selectedSeason.supplementDeadline,
-                    committeeDate: selectedSeason.committeeDate,
-                    publicationTargetDate: selectedSeason.publicationTargetDate,
-                  });
-                  setIsEditingTimeline((v) => !v);
-                }}
-                className="flex items-center gap-1.5"
-              >
-                <Clock size={14} />
-                <span>
-                  {isEditingTimeline
-                    ? 'Đóng chỉnh sửa mốc'
-                    : 'Điều chỉnh lộ trình T01–T07'}
-                </span>
-              </Button>
-
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={onSelectManageDeadlines}
-                className="flex items-center gap-1.5"
-              >
-                <Clock size={14} />
-                <span>Bảng mốc thời gian</span>
-              </Button>
             </div>
           </div>
 
@@ -471,140 +490,225 @@ export const SeasonManagement: React.FC<SeasonManagementProps> = ({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                {(readinessReport.items || readinessReport.checks || []).map((item) => (
-                  <div
-                    key={item.key}
-                    className="p-3 rounded-[8px] bg-white border border-[#E2EDF5] flex items-start justify-between gap-2 text-[12px]"
-                  >
-                    <div className="space-y-0.5">
-                      <div className="font-bold text-[#0F2335] flex items-center gap-1.5">
-                        <span
-                          className={`w-2 h-2 rounded-full ${
-                            item.passed ? 'bg-[#16A34A]' : 'bg-[#DC2626]'
-                          }`}
-                        />
-                        <span>{item.labelVi}</span>
+                {(readinessReport.items || readinessReport.checks || []).map(
+                  (item) => (
+                    <div
+                      key={item.key}
+                      className="p-3 rounded-[8px] bg-white border border-[#E2EDF5] flex items-start justify-between gap-2 text-[12px]"
+                    >
+                      <div className="space-y-0.5">
+                        <div className="font-bold text-[#0F2335] flex items-center gap-1.5">
+                          <span
+                            className={`w-2 h-2 rounded-full ${
+                              item.passed ? 'bg-[#16A34A]' : 'bg-[#DC2626]'
+                            }`}
+                          />
+                          <span>{item.labelVi}</span>
+                        </div>
+                        <div className="text-[#526B7C]">{item.detailVi}</div>
                       </div>
-                      <div className="text-[#526B7C]">{item.detailVi}</div>
+                      {!item.passed && onSelectRoute && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onSelectRoute(item.actionRoute as StaffRouteId)
+                          }
+                          className="px-2.5 py-1 rounded text-[11px] font-bold text-[#0D78AE] bg-[#EBF6FC] hover:bg-[#DCEEFA] shrink-0 flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>{item.actionLabelVi}</span>
+                          <ArrowRight size={11} />
+                        </button>
+                      )}
                     </div>
-                    {!item.passed && onSelectRoute && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onSelectRoute(item.actionRoute as StaffRouteId)
-                        }
-                        className="px-2.5 py-1 rounded text-[11px] font-bold text-[#0D78AE] bg-[#EBF6FC] hover:bg-[#DCEEFA] shrink-0 flex items-center gap-1 cursor-pointer"
-                      >
-                        <span>{item.actionLabelVi}</span>
-                        <ArrowRight size={11} />
-                      </button>
-                    )}
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             </div>
           )}
 
-          {/* Inline Timeline Editor */}
+          {/* Friendly Visual Date & Time Editor for T01–T07 */}
           {isEditingTimeline && (
-            <div className="p-4 rounded-[10px] bg-[#F8FBFD] border border-[#CCE7F6] space-y-3">
-              <div className="text-[13px] font-extrabold text-[#0F2335]">
-                Chỉnh sửa trực tiếp mốc thời gian mùa xét{' '}
-                {formatAcademicYearLabel(selectedSeason.schoolYear)}
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-[12px]">
+            <div
+              data-testid="season-visual-timeline-editor"
+              className="p-5 rounded-[12px] bg-[#F4FAFE] border-2 border-[#0D78AE]/30 space-y-4"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#D5E8F5] pb-3">
                 <div>
-                  <label className="font-bold text-[#172A3A] block mb-1">
-                    Mở nhận Cá nhân (T01)
-                  </label>
-                  <input
-                    type="text"
-                    value={timelineDraft.submissionStart}
-                    onChange={(e) =>
-                      setTimelineDraft({
-                        ...timelineDraft,
-                        submissionStart: e.target.value,
-                      })
-                    }
-                    className="w-full h-[36px] px-2.5 bg-white border border-[#DCE7EE] rounded-[6px]"
-                  />
+                  <div className="text-[14px] font-extrabold text-[#0F2335] flex items-center gap-2">
+                    <CalendarRange size={16} className="text-[#0D78AE]" />
+                    <span>
+                      Thiết lập Ngày &amp; Giờ cho Lộ trình 7 Bước (
+                      {formatAcademicYearLabel(selectedSeason.schoolYear)})
+                    </span>
+                  </div>
+                  <p className="text-[12px] text-[#526B7C] mt-0.5">
+                    Chọn ngày trên lịch và chọn giờ chuẩn (08:00, 17:00, 20:00),
+                    hoặc bấm nút <strong>Tự động gợi ý lịch 7 bước</strong> bên
+                    phải để hệ thống tự tính từ ngày mở cổng.
+                  </p>
                 </div>
-                <div>
-                  <label className="font-bold text-[#172A3A] block mb-1">
-                    Hạn nộp Cá nhân (T01)
-                  </label>
-                  <input
-                    type="text"
-                    value={timelineDraft.submissionDeadline}
-                    onChange={(e) =>
-                      setTimelineDraft({
-                        ...timelineDraft,
-                        submissionDeadline: e.target.value,
-                      })
-                    }
-                    className="w-full h-[36px] px-2.5 bg-white border border-[#DCE7EE] rounded-[6px]"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-[#172A3A] block mb-1">
-                    Hạn Trường gửi TP (T03)
-                  </label>
-                  <input
-                    type="text"
-                    value={timelineDraft.schoolForwardingDeadline}
-                    onChange={(e) =>
-                      setTimelineDraft({
-                        ...timelineDraft,
-                        schoolForwardingDeadline: e.target.value,
-                      })
-                    }
-                    className="w-full h-[36px] px-2.5 bg-white border border-[#DCE7EE] rounded-[6px]"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-[#172A3A] block mb-1">
-                    Hạn nộp Tập thể (T04)
-                  </label>
-                  <input
-                    type="text"
-                    value={timelineDraft.collectiveSubmissionDeadline}
-                    onChange={(e) =>
-                      setTimelineDraft({
-                        ...timelineDraft,
-                        collectiveSubmissionDeadline: e.target.value,
-                      })
-                    }
-                    className="w-full h-[36px] px-2.5 bg-white border border-[#DCE7EE] rounded-[6px]"
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end gap-2">
+
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={() => setIsEditingTimeline(false)}
-                >
-                  Hủy
-                </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
                   onClick={() => {
-                    onUpdateSeason(
-                      selectedSeason.id,
-                      timelineDraft,
-                      'Cập nhật lộ trình thời gian T01–T07 từ màn hình Quản lý mùa xét'
+                    const auto = generateStandardTimelineFromStart(
+                      timelineDraft.submissionStart
                     );
-                    setIsEditingTimeline(false);
+                    setTimelineDraft({
+                      submissionStart: auto.submissionStart,
+                      submissionDeadline: auto.submissionDeadline,
+                      schoolForwardingDeadline: auto.schoolForwardingDeadline,
+                      collectiveSubmissionStart: auto.collectiveSubmissionStart,
+                      collectiveSubmissionDeadline:
+                        auto.collectiveSubmissionDeadline,
+                      supplementDeadline: auto.supplementDeadline,
+                      reviewDeadline: auto.reviewDeadline,
+                      committeeDate: auto.committeeDate,
+                      publicationTargetDate: auto.publicationTargetDate,
+                    });
                   }}
+                  className="bg-white border border-[#0D78AE] text-[#0D78AE]"
                 >
-                  Lưu mốc thời gian
+                  <Sparkles size={14} />
+                  <span>Tự động gợi ý lịch 7 bước từ ngày mở cổng (T01)</span>
                 </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <VietnameseDateTimePicker
+                  stageBadge="T01 · Mở cổng"
+                  label="Mở nhận hồ sơ Cá nhân"
+                  value={timelineDraft.submissionStart}
+                  onChange={(val) =>
+                    setTimelineDraft({ ...timelineDraft, submissionStart: val })
+                  }
+                  showQuickShifts
+                  helperText="Mở cổng cho sinh viên đăng ký & nộp minh chứng."
+                />
+                <VietnameseDateTimePicker
+                  stageBadge="T01 · Đóng cổng"
+                  label="Hạn nộp hồ sơ Cá nhân"
+                  value={timelineDraft.submissionDeadline}
+                  onChange={(val) =>
+                    setTimelineDraft({
+                      ...timelineDraft,
+                      submissionDeadline: val,
+                    })
+                  }
+                  showQuickShifts
+                  helperText="Hệ thống tự khóa nộp mới sau thời điểm này."
+                />
+                <VietnameseDateTimePicker
+                  stageBadge="T03 · Cấp Trường"
+                  label="Hạn Trường gửi DS lên TP"
+                  value={timelineDraft.schoolForwardingDeadline}
+                  onChange={(val) =>
+                    setTimelineDraft({
+                      ...timelineDraft,
+                      schoolForwardingDeadline: val,
+                    })
+                  }
+                  showQuickShifts
+                  helperText="Phải sau hoặc bằng Hạn nộp Cá nhân (T01)."
+                />
+                <VietnameseDateTimePicker
+                  stageBadge="T04 · Tập thể"
+                  label="Hạn nộp Tập thể (TT01–TT04)"
+                  value={timelineDraft.collectiveSubmissionDeadline}
+                  onChange={(val) =>
+                    setTimelineDraft({
+                      ...timelineDraft,
+                      collectiveSubmissionDeadline: val,
+                    })
+                  }
+                  showQuickShifts
+                  helperText="Tập thể nộp thẳng về Thành phố song song Cá nhân."
+                />
+                <VietnameseDateTimePicker
+                  stageBadge="T05 · Bổ sung"
+                  label="Hạn nhận bổ sung minh chứng"
+                  value={timelineDraft.supplementDeadline}
+                  onChange={(val) =>
+                    setTimelineDraft({
+                      ...timelineDraft,
+                      supplementDeadline: val,
+                    })
+                  }
+                  showQuickShifts
+                  helperText="Hạn cuối cho hồ sơ được yêu cầu bổ sung."
+                />
+                <VietnameseDateTimePicker
+                  stageBadge="T05 · Cấp TP"
+                  label="Hoàn tất thẩm định cấp TP"
+                  value={timelineDraft.reviewDeadline}
+                  onChange={(val) =>
+                    setTimelineDraft({ ...timelineDraft, reviewDeadline: val })
+                  }
+                  showQuickShifts
+                  helperText="Mốc hoàn tất rà soát độc lập của Tổ thẩm định TP."
+                />
+                <VietnameseDateTimePicker
+                  stageBadge="T06 · Hội đồng"
+                  label="Ngày họp Hội đồng xét chọn"
+                  value={timelineDraft.committeeDate}
+                  onChange={(val) =>
+                    setTimelineDraft({ ...timelineDraft, committeeDate: val })
+                  }
+                  showQuickShifts
+                  helperText="Phiên họp chính thức của Hội đồng cấp Thành phố."
+                />
+                <VietnameseDateTimePicker
+                  stageBadge="T07 · Công bố"
+                  label="Ngày công bố kết quả"
+                  value={timelineDraft.publicationTargetDate}
+                  onChange={(val) =>
+                    setTimelineDraft({
+                      ...timelineDraft,
+                      publicationTargetDate: val,
+                    })
+                  }
+                  showQuickShifts
+                  helperText="Phát hành quyết định và tra cứu kết quả chính thức."
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#D5E8F5]">
+                <span className="text-[11.5px] text-[#0A527A]">
+                  Mẹo: Bạn có thể bấm các nút <strong>08:00</strong>,{' '}
+                  <strong>17:00</strong>, <strong>20:00</strong> hoặc{' '}
+                  <strong>+3 ngày</strong>, <strong>+7 ngày</strong> trên từng
+                  ô để chỉnh cực nhanh mà không cần gõ phím.
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setIsEditingTimeline(false)}
+                  >
+                    Hủy
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      onUpdateSeason(
+                        selectedSeason.id,
+                        timelineDraft,
+                        'Cập nhật lộ trình thời gian T01–T07 từ trình chọn lịch trực quan'
+                      );
+                      setIsEditingTimeline(false);
+                    }}
+                  >
+                    <CheckCircle2 size={14} />
+                    <span>Lưu lịch trình T01–T07</span>
+                  </Button>
+                </div>
               </div>
             </div>
           )}
 
-          {/* Core Info Grid */}
+          {/* Core Summary Info Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-[13px]">
             <div className="p-3.5 rounded-[9px] bg-[#F8FBFD] border border-[#E2EDF5]">
               <span className="text-[#526B7C] text-[11.5px] block font-semibold">
@@ -640,11 +744,14 @@ export const SeasonManagement: React.FC<SeasonManagementProps> = ({
               <span className="text-[#526B7C] text-[11.5px] block font-semibold">
                 Hạn nộp Cá nhân (T01) &amp; Tập thể (T04)
               </span>
-              <div className="font-bold text-[#0F2335] mt-0.5 text-[12px]">
+              <div className="font-bold text-[#0F2335] mt-0.5 text-[12px] tabular-nums">
                 CN: {selectedSeason.submissionDeadline}
               </div>
-              <div className="text-[11px] text-[#0D78AE] font-semibold mt-1">
-                TT: {selectedSeason.collectiveSubmissionDeadline || selectedSeason.submissionDeadline}
+              <div className="text-[11px] text-[#0D78AE] font-semibold mt-1 tabular-nums">
+                TT:{' '}
+                {selectedSeason.collectiveSubmissionDeadline ||
+                  selectedSeason.schoolForwardingDeadline ||
+                  selectedSeason.submissionDeadline}
               </div>
             </div>
 
@@ -665,296 +772,103 @@ export const SeasonManagement: React.FC<SeasonManagementProps> = ({
           {/* Central-Style 5TOT Timeline (T01–T07) */}
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-[13.5px] font-extrabold text-[#0F2335] flex items-center gap-2">
-                <Layers size={16} className="text-[#0D78AE]" />
-                <span>
-                  Lộ trình thời gian xét chọn chuẩn Trung ương (T01–T07)
-                </span>
-              </h3>
-              <span className="text-[11.5px] text-[#526B7C]">
-                Hồ sơ Tập thể (T04) nộp trực tiếp về Thành phố song song với
-                nhánh Cá nhân (T01–T03)
-              </span>
+              <div>
+                <h3 className="text-[14px] font-extrabold text-[#0F2335] flex items-center gap-2">
+                  <Layers size={16} className="text-[#0D78AE]" />
+                  <span>
+                    Lộ trình thời gian xét chọn chuẩn Trung ương (7 Bước:
+                    T01–T07)
+                  </span>
+                </h3>
+                <p className="text-[11.5px] text-[#526B7C] mt-0.5">
+                  Hồ sơ Tập thể (T04) nộp trực tiếp về Thành phố song song với
+                  nhánh Cá nhân (T01 → T02 → T03). Bấm vào bất kỳ thẻ nào bên
+                  dưới để mở trình chọn lịch.
+                </p>
+              </div>
+              {!isEditingTimeline && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTimelineDraft(buildDraftFromSeason(selectedSeason));
+                    setIsEditingTimeline(true);
+                  }}
+                  className="px-3 py-1.5 rounded-[8px] bg-[#EBF6FC] hover:bg-[#DCEEFA] text-[#0D78AE] font-bold text-[12px] border border-[#CCE7F6] inline-flex items-center gap-1.5 cursor-pointer"
+                >
+                  <CalendarRange size={13} />
+                  <span>Bấm để đổi ngày giờ T01–T07</span>
+                </button>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-[12px]">
-              {selectedMilestones.map((ms) => (
-                <div
-                  key={ms.code}
-                  className="p-3 rounded-[9px] bg-[#F8FBFD] border border-[#DCE7EE] flex flex-col justify-between gap-2"
-                >
-                  <div>
-                    <div className="flex items-center justify-between gap-1.5">
-                      <span className="px-2 py-0.5 rounded text-[10.5px] font-extrabold bg-[#EBF6FC] text-[#0D78AE]">
-                        {ms.code} ·{' '}
-                        {ms.track === 'INDIVIDUAL'
-                          ? 'Cá nhân'
-                          : ms.track === 'COLLECTIVE'
-                            ? 'Tập thể (Song song)'
-                            : 'Chung'}
-                      </span>
-                      <span
-                        className={`text-[10.5px] font-bold ${
-                          ms.state === 'OPEN'
-                            ? 'text-[#16A34A]'
-                            : ms.state === 'COMPLETED'
-                              ? 'text-[#64748B]'
-                              : 'text-[#B45309]'
-                        }`}
-                      >
-                        {ms.badgeLabelVi}
-                      </span>
-                    </div>
-                    <div className="font-bold text-[#0F2335] mt-1.5">
-                      {ms.labelVi}
-                    </div>
-                    <p className="text-[11px] text-[#526B7C] mt-0.5">
-                      {ms.descriptionVi}
-                    </p>
-                  </div>
-                  <div className="pt-2 border-t border-[#E2EDF5] text-[11px] font-semibold text-[#172A3A] tabular-nums">
-                    {ms.openAtVi ? `${ms.openAtVi} → ` : ''}
-                    {ms.closeAtVi}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+              {selectedMilestones.map((ms) => {
+                const shortCode =
+                  ms.code || ms.stageCode.split('_')[0] || `T0${ms.orderIndex}`;
+                const trackKey = ms.trackScope || ms.track || 'SYSTEM';
+                const trackLabel = TRACK_LABELS_VI[trackKey] || 'Chung';
+                const title = ms.titleVi || ms.labelVi || ms.shortLabelVi;
+                const openStr = ms.openDisplayVi || ms.openAtVi || '';
+                const closeStr = ms.closeDisplayVi || ms.closeAtVi || '';
+                const isHardGate = ms.enforcementMode === 'HARD_WINDOW';
 
-      {/* 4. Create Season Modal with "Sao chép cấu hình từ mùa trước" */}
-      {isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-[14px] border border-[#D4E2EC] max-w-[640px] w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#EEF4F8] pb-3">
-              <div>
-                <h2 className="text-[16px] font-extrabold text-[#0F2335]">
-                  Tạo mùa xét mới &amp; Sao chép cấu hình
-                </h2>
-                <span className="text-[11.5px] text-[#526B7C]">
-                  Trạng thái ban đầu: <strong>Bản nháp (Chuẩn bị)</strong>
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsCreateOpen(false)}
-                className="p-1 text-[#607483] hover:text-[#0F2335]"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            {createErrors.length > 0 && (
-              <div className="p-3 rounded-[8px] bg-[#FEF2F2] border border-[#FECACA] text-[12px] text-[#B91C1C] space-y-1">
-                {createErrors.map((err, i) => (
-                  <div key={i}>• {err}</div>
-                ))}
-              </div>
-            )}
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const validation = validateSeasonConfiguration(
-                  {
-                    schoolYear: createForm.schoolYear,
-                    title: createForm.title,
-                  },
-                  seasons
-                );
-                if (!validation.isValid) {
-                  setCreateErrors(validation.errors);
-                  return;
-                }
-
-                onCreateSeason({
-                  schoolYear: createForm.schoolYear.trim(),
-                  title: createForm.title.trim(),
-                  status: 'draft',
-                  isCurrentActive: false,
-                  submissionStart: createForm.submissionStart,
-                  submissionDeadline: createForm.submissionDeadline,
-                  schoolReviewStart: createForm.schoolReviewStart,
-                  schoolReviewDeadline: createForm.schoolReviewDeadline,
-                  schoolForwardingDeadline: createForm.schoolForwardingDeadline,
-                  collectiveSubmissionStart:
-                    createForm.collectiveSubmissionStart,
-                  collectiveSubmissionDeadline:
-                    createForm.collectiveSubmissionDeadline,
-                  reviewStart: createForm.reviewStart,
-                  reviewDeadline: createForm.reviewDeadline,
-                  supplementStart: createForm.supplementStart,
-                  supplementDeadline: createForm.supplementDeadline,
-                  committeeDate: createForm.committeeDate,
-                  publicationTargetDate: createForm.publicationTargetDate,
-                  criteriaVersionId: createForm.criteriaVersionId,
-                  criteriaVersionLabel: createForm.criteriaVersionLabel,
-                  copyFromSeasonId: createForm.copyFromSeasonId || undefined,
-                });
-                setIsCreateOpen(false);
-              }}
-              className="space-y-3.5 text-[13px]"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[12px] font-bold text-[#172A3A] mb-1">
-                    Năm học (Định dạng YYYY–YYYY){' '}
-                    <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={createForm.schoolYear}
-                    onChange={(e) => {
-                      const yr = e.target.value;
-                      setCreateForm({
-                        ...createForm,
-                        schoolYear: yr,
-                        title: `Đợt xét chọn Danh hiệu "Sinh viên 5 Tốt" cấp Thành phố ${formatAcademicYearLabel(yr)}`,
-                      });
+                return (
+                  <div
+                    key={ms.stageCode}
+                    onClick={() => {
+                      if (!isEditingTimeline) {
+                        setTimelineDraft(buildDraftFromSeason(selectedSeason));
+                        setIsEditingTimeline(true);
+                      }
                     }}
-                    placeholder="2026–2027"
-                    className="w-full h-[40px] px-3 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px] outline-none focus:border-[#0D78AE] focus:bg-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[12px] font-bold text-[#172A3A] mb-1 flex items-center gap-1">
-                    <Copy size={12} className="text-[#0D78AE]" />
-                    <span>Sao chép cấu hình từ mùa trước</span>
-                  </label>
-                  <select
-                    value={createForm.copyFromSeasonId}
-                    onChange={(e) =>
-                      setCreateForm({
-                        ...createForm,
-                        copyFromSeasonId: e.target.value,
-                      })
-                    }
-                    className="w-full h-[40px] px-3 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px] outline-none focus:border-[#0D78AE] focus:bg-white"
+                    className="p-3.5 rounded-[10px] bg-[#F8FBFD] hover:bg-[#F1F8FD] border border-[#DCE7EE] hover:border-[#0D78AE]/50 transition-all flex flex-col justify-between gap-2.5 cursor-pointer group"
                   >
-                    <option value="">Không sao chép (Khởi tạo trống)</option>
-                    {seasons.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        Sao chép tiêu chuẩn &amp; đơn vị từ{' '}
-                        {formatAcademicYearLabel(s.schoolYear)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[12px] font-bold text-[#172A3A] mb-1">
-                  Tên hiển thị đợt xét <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={createForm.title}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, title: e.target.value })
-                  }
-                  className="w-full h-[40px] px-3 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px] outline-none focus:border-[#0D78AE] focus:bg-white"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[12px] font-bold text-[#172A3A] mb-1">
-                    Mở nhận hồ sơ Cá nhân (T01)
-                  </label>
-                  <input
-                    type="text"
-                    value={createForm.submissionStart}
-                    onChange={(e) =>
-                      setCreateForm({
-                        ...createForm,
-                        submissionStart: e.target.value,
-                      })
-                    }
-                    className="w-full h-[38px] px-3 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[12px] font-bold text-[#172A3A] mb-1">
-                    Hạn nộp hồ sơ Cá nhân (T01)
-                  </label>
-                  <input
-                    type="text"
-                    value={createForm.submissionDeadline}
-                    onChange={(e) =>
-                      setCreateForm({
-                        ...createForm,
-                        submissionDeadline: e.target.value,
-                      })
-                    }
-                    className="w-full h-[38px] px-3 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[12px] font-bold text-[#172A3A] mb-1">
-                    Hạn Trường gửi danh sách lên TP (T03)
-                  </label>
-                  <input
-                    type="text"
-                    value={createForm.schoolForwardingDeadline}
-                    onChange={(e) =>
-                      setCreateForm({
-                        ...createForm,
-                        schoolForwardingDeadline: e.target.value,
-                      })
-                    }
-                    className="w-full h-[38px] px-3 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[12px] font-bold text-[#172A3A] mb-1">
-                    Hạn nộp Tập thể trực tiếp lên TP (T04)
-                  </label>
-                  <input
-                    type="text"
-                    value={createForm.collectiveSubmissionDeadline}
-                    onChange={(e) =>
-                      setCreateForm({
-                        ...createForm,
-                        collectiveSubmissionDeadline: e.target.value,
-                      })
-                    }
-                    className="w-full h-[38px] px-3 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px]"
-                  />
-                </div>
-              </div>
-
-              <div className="p-3 rounded-[8px] bg-[#EBF6FC] border border-[#CCE7F6] text-[11.5px] text-[#0A527A]">
-                Khi chọn <strong>Sao chép cấu hình từ mùa trước</strong>, hệ
-                thống chỉ sao chép khung 05 tiêu chuẩn Cá nhân, 04 tiêu chuẩn
-                Tập thể (TT01–TT04), danh mục đơn vị tham gia và mẫu thông báo;{' '}
-                <strong>tuyệt đối không sao chép</strong> hồ sơ sinh viên, minh
-                chứng, tờ trình cấp Trường hay quyết định Hội đồng.
-              </div>
-
-              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#EEF4F8]">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  type="button"
-                  onClick={() => setIsCreateOpen(false)}
-                >
-                  Hủy
-                </Button>
-                <Button variant="primary" size="sm" type="submit">
-                  Lưu bản nháp mùa xét
-                </Button>
-              </div>
-            </form>
+                    <div>
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span className="px-2 py-0.5 rounded text-[10.5px] font-extrabold bg-[#EBF6FC] text-[#0D78AE] border border-[#CCE7F6]">
+                          Bước {ms.orderIndex} ({shortCode}) · {trackLabel}
+                        </span>
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            isHardGate
+                              ? 'bg-[#FEF2F2] text-[#B91C1C]'
+                              : 'bg-[#F1F5F9] text-[#475569]'
+                          }`}
+                        >
+                          {ms.badgeLabelVi ||
+                            (isHardGate ? 'Khóa tự động' : 'Điều phối')}
+                        </span>
+                      </div>
+                      <div className="font-extrabold text-[#0F2335] text-[13px] mt-2 group-hover:text-[#0D78AE]">
+                        {title}
+                      </div>
+                      <p className="text-[11px] text-[#526B7C] mt-1 leading-relaxed">
+                        {ms.descriptionVi}
+                      </p>
+                    </div>
+                    <div className="pt-2 border-t border-[#E2EDF5] flex items-center justify-between gap-1 text-[11.5px] font-extrabold text-[#0D78AE] tabular-nums">
+                      <span>
+                        {openStr && openStr !== closeStr
+                          ? `${openStr} → ${closeStr}`
+                          : closeStr}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
+
+      {/* 4. Create Season Modal with "Sao chép cấu hình từ mùa trước" & Auto-Schedule */}
+      <SeasonCreateModal
+        isOpen={isCreateOpen}
+        seasons={seasons}
+        defaultCopyFromSeasonId={activeOrLatestSeason?.id || 'season-2025-2026'}
+        onClose={() => setIsCreateOpen(false)}
+        onCreateSeason={onCreateSeason}
+      />
     </div>
   );
 };

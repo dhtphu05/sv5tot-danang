@@ -58,7 +58,9 @@ export function getExecutionMode(): ExecutionMode {
   }
 
   if (typeof import.meta !== 'undefined' && import.meta.env) {
-    const envMode = normalizeMode(import.meta.env.VITE_EXECUTION_MODE);
+    const envMode = normalizeMode(
+      import.meta.env.VITE_EXECUTION_MODE || import.meta.env.VITE_5TOT_EXECUTION_MODE
+    );
     if (envMode) return envMode;
     if (import.meta.env.VITE_DEMO_MODE === 'false') {
       return 'BACKEND';

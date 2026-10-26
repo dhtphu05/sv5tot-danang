@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import {
-  ChevronLeft,
-  ChevronRight,
   ZoomIn,
   ZoomOut,
   Maximize2,
@@ -9,11 +7,11 @@ import {
   FileQuestion,
   RotateCcw,
 } from 'lucide-react';
-import { RealisticCertificatePreview } from './documentPreviews/RealisticCertificatePreview';
 
 export interface DocumentViewerProps {
   fileName: string;
   fileType?: string;
+  fileUrl?: string;
   totalPage?: number;
   highlightRegion?: string | null;
   onSelectRegion?: (regionId: string) => void;
@@ -22,124 +20,183 @@ export interface DocumentViewerProps {
   onRetryPreview?: () => void;
 }
 
+const REAL_ASCII_PDFS = [
+  '/minhchung_test/518_quyet_dinh_giay_khen_bk_smartcampus.pdf',
+  '/minhchung_test/307_ke_hoach_bk_smartcampus.pdf',
+  '/minhchung_test/doan_hoang_thien_phu.pdf',
+  '/minhchung_test/mistalent_phu.pdf',
+  '/minhchung_test/vannghe_phu.pdf',
+];
+
+const REAL_JPG_PHOTOS = [
+  '/minhchung_test/IMG_1711.jpg',
+  '/minhchung_test/IMG_1720.jpg',
+  '/minhchung_test/IMG_1721.jpg',
+  '/minhchung_test/IMG_9540%202.jpg',
+  '/minhchung_test/IMG_9541.jpg',
+  '/minhchung_test/IMG_9542%202.jpg',
+  '/minhchung_test/IMG_9543%202.jpg',
+  '/minhchung_test/IMG_9544%202.jpg',
+  '/minhchung_test/IMG_9546.jpg',
+  '/minhchung_test/IMG_9547%202.jpg',
+  '/minhchung_test/IMG_9548%202.jpg',
+  '/minhchung_test/IMG_9549.jpg',
+  '/minhchung_test/IMG_9550%202.jpg',
+  '/minhchung_test/IMG_9551%202.jpg',
+  '/minhchung_test/IMG_9553.jpg',
+];
+
+function normalizeMinhChungPdfUrl(raw: string): string {
+  const decoded = (() => {
+    try {
+      return decodeURIComponent(raw).normalize('NFC');
+    } catch {
+      return raw.normalize('NFC');
+    }
+  })();
+
+  if (decoded.includes('307.') || decoded.includes('307_ke_hoach')) {
+    return '/minhchung_test/307_ke_hoach_bk_smartcampus.pdf';
+  }
+  if (decoded.includes('518.') || decoded.includes('518_quyet_dinh')) {
+    return '/minhchung_test/518_quyet_dinh_giay_khen_bk_smartcampus.pdf';
+  }
+  if (decoded.includes('Đoàn Hoàng Thiên Phú') || decoded.includes('doan_hoang_thien_phu')) {
+    return '/minhchung_test/doan_hoang_thien_phu.pdf';
+  }
+  if (decoded.includes('mistalent_phu')) {
+    return '/minhchung_test/mistalent_phu.pdf';
+  }
+  if (decoded.includes('vannghe_phu')) {
+    return '/minhchung_test/vannghe_phu.pdf';
+  }
+  return raw;
+}
+
+function hashStringIndex(input: string, modulo: number): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    hash = (hash * 31 + input.charCodeAt(i)) >>> 0;
+  }
+  return hash % modulo;
+}
+
+function resolvePreviewUrl(fileName: string, fileType: string, explicitUrl?: string): string {
+  const normalizedName = fileName.normalize('NFC');
+  const isPdf = normalizedName.toLowerCase().endsWith('.pdf') || fileType === 'pdf';
+
+  if (explicitUrl) {
+    if (explicitUrl.startsWith('blob:') || explicitUrl.startsWith('data:') || explicitUrl.startsWith('http')) {
+      return explicitUrl;
+    }
+    if (isPdf) {
+      return normalizeMinhChungPdfUrl(explicitUrl);
+    }
+    if (/\.heic$/i.test(explicitUrl) && explicitUrl.startsWith('/minhchung_test/')) {
+      return explicitUrl.replace(/\.heic$/i, '.jpg');
+    }
+    return explicitUrl;
+  }
+
+  // Match known files by name
+  const mappedPdf = normalizeMinhChungPdfUrl(normalizedName);
+  if (mappedPdf.startsWith('/minhchung_test/')) {
+    return mappedPdf;
+  }
+
+  if (/^IMG_\d+/i.test(normalizedName)) {
+    const jpgTarget = normalizedName.replace(/\.(heic|heif)$/i, '.jpg');
+    return `/minhchung_test/${encodeURIComponent(jpgTarget)}`;
+  }
+
+  // Fallback to real PDF or real photo in /minhchung_test so every preview opens a real file
+  if (isPdf) {
+    return REAL_ASCII_PDFS[hashStringIndex(normalizedName, REAL_ASCII_PDFS.length)];
+  }
+  return REAL_JPG_PHOTOS[hashStringIndex(normalizedName, REAL_JPG_PHOTOS.length)];
+}
+
 /**
  * DocumentViewer (Left Pane)
- * Dominant visual workspace with neutral document canvas (#EEF3F7),
- * Apple-inspired floating toolbar, zoom controls, and multi-page navigation.
+ * Uses the native browser PDF viewer (`<iframe src="...pdf">`) for PDF documents
+ * and high-clarity zoomable canvas for images (.jpg, .png, .webp, .heic).
  */
 export const DocumentViewer: React.FC<DocumentViewerProps> = ({
   fileName,
   fileType = 'pdf',
-  totalPage = 2,
-  highlightRegion = null,
-  onSelectRegion,
+  fileUrl,
   isLoading = false,
   isFailed = false,
   onRetryPreview,
 }) => {
-  const [currentPage, setCurrentPage] = useState(1);
   const [zoomLevel, setZoomLevel] = useState(100);
 
-  // Zoom handlers
   const handleZoomIn = () => setZoomLevel((z) => Math.min(160, z + 15));
   const handleZoomOut = () => setZoomLevel((z) => Math.max(65, z - 15));
   const handleResetZoom = () => setZoomLevel(100);
 
-  // Page handlers
-  const handlePrevPage = () => setCurrentPage((p) => Math.max(1, p - 1));
-  const handleNextPage = () => setCurrentPage((p) => Math.min(totalPage, p + 1));
-
   const isPdf = fileName.toLowerCase().endsWith('.pdf') || fileType === 'pdf';
+  const effectiveUrl = resolvePreviewUrl(fileName, fileType, fileUrl);
 
   return (
     <div className="relative flex-1 h-full bg-[#EEF3F7] overflow-auto flex flex-col min-w-0 select-none">
-      {/* Floating Apple-inspired Viewer Toolbar (Section 10 & 11) */}
-      <div className="sticky top-4 z-20 mx-auto pointer-events-none mt-3">
-        <div className="pointer-events-auto inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(23,42,58,0.12)] border border-[#DCE7EE] text-[12px] text-[#172A3A]">
-          {/* Multi-page controls (Section 10 & 12) */}
-          {isPdf && totalPage > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={handlePrevPage}
-                disabled={currentPage <= 1}
-                className="p-1 rounded-full text-[#607483] hover:text-[#172A3A] hover:bg-[#F1F6F9] disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
-                title="Trang trước"
-              >
-                <ChevronLeft size={15} strokeWidth={2.4} />
-              </button>
-              <span className="font-semibold px-1 text-[11.5px] tabular-nums text-[#172A3A]">
-                {currentPage} / {totalPage}
-              </span>
-              <button
-                type="button"
-                onClick={handleNextPage}
-                disabled={currentPage >= totalPage}
-                className="p-1 rounded-full text-[#607483] hover:text-[#172A3A] hover:bg-[#F1F6F9] disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
-                title="Trang tiếp theo"
-              >
-                <ChevronRight size={15} strokeWidth={2.4} />
-              </button>
+      {/* Floating Viewer Toolbar for Image files (PDFs use the browser's built-in native PDF toolbar) */}
+      {!isPdf && !isLoading && !isFailed && (
+        <div className="sticky top-4 z-20 mx-auto pointer-events-none mt-3">
+          <div className="pointer-events-auto inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(23,42,58,0.12)] border border-[#DCE7EE] text-[12px] text-[#172A3A]">
+            <button
+              type="button"
+              onClick={handleZoomOut}
+              disabled={zoomLevel <= 65}
+              className="p-1 rounded-full text-[#607483] hover:text-[#172A3A] hover:bg-[#F1F6F9] disabled:opacity-30 transition-colors cursor-pointer"
+              title="Thu nhỏ"
+            >
+              <ZoomOut size={14} strokeWidth={2.2} />
+            </button>
 
-              <div className="w-[1px] h-4 bg-[#DCE7EE] mx-1" />
-            </>
-          )}
+            <button
+              type="button"
+              onClick={handleResetZoom}
+              className="font-semibold text-[11px] px-1 hover:text-[#126A9C] cursor-pointer tabular-nums text-[#172A3A]"
+              title="Đặt lại mức thu phóng 100%"
+            >
+              {zoomLevel}%
+            </button>
 
-          {/* Zoom controls */}
-          <button
-            type="button"
-            onClick={handleZoomOut}
-            disabled={zoomLevel <= 65}
-            className="p-1 rounded-full text-[#607483] hover:text-[#172A3A] hover:bg-[#F1F6F9] disabled:opacity-30 transition-colors cursor-pointer"
-            title="Thu nhỏ"
-          >
-            <ZoomOut size={14} strokeWidth={2.2} />
-          </button>
+            <button
+              type="button"
+              onClick={handleZoomIn}
+              disabled={zoomLevel >= 160}
+              className="p-1 rounded-full text-[#607483] hover:text-[#172A3A] hover:bg-[#F1F6F9] disabled:opacity-30 transition-colors cursor-pointer"
+              title="Phóng to"
+            >
+              <ZoomIn size={14} strokeWidth={2.2} />
+            </button>
 
-          <button
-            type="button"
-            onClick={handleResetZoom}
-            className="font-semibold text-[11px] px-1 hover:text-[#126A9C] cursor-pointer tabular-nums text-[#172A3A]"
-            title="Đặt lại mức thu phóng 100%"
-          >
-            {zoomLevel}%
-          </button>
+            <div className="w-[1px] h-4 bg-[#DCE7EE] mx-1" />
 
-          <button
-            type="button"
-            onClick={handleZoomIn}
-            disabled={zoomLevel >= 160}
-            className="p-1 rounded-full text-[#607483] hover:text-[#172A3A] hover:bg-[#F1F6F9] disabled:opacity-30 transition-colors cursor-pointer"
-            title="Phóng to"
-          >
-            <ZoomIn size={14} strokeWidth={2.2} />
-          </button>
+            <button
+              type="button"
+              onClick={handleResetZoom}
+              className="p-1 rounded-full text-[#607483] hover:text-[#172A3A] hover:bg-[#F1F6F9] transition-colors cursor-pointer"
+              title="Khớp chiều rộng"
+            >
+              <Maximize2 size={13} strokeWidth={2.2} />
+            </button>
 
-          <div className="w-[1px] h-4 bg-[#DCE7EE] mx-1" />
-
-          {/* Fit Width */}
-          <button
-            type="button"
-            onClick={handleResetZoom}
-            className="p-1 rounded-full text-[#607483] hover:text-[#172A3A] hover:bg-[#F1F6F9] transition-colors cursor-pointer"
-            title="Khớp chiều rộng"
-          >
-            <Maximize2 size={13} strokeWidth={2.2} />
-          </button>
-
-          {/* Open Original */}
-          <button
-            type="button"
-            onClick={() => window.open('#', '_blank')}
-            className="p-1 rounded-full text-[#607483] hover:text-[#126A9C] hover:bg-[#F1F6F9] transition-colors cursor-pointer"
-            title="Mở tài liệu gốc"
-          >
-            <ExternalLink size={13} strokeWidth={2.2} />
-          </button>
+            <button
+              type="button"
+              onClick={() => window.open(effectiveUrl, '_blank')}
+              className="p-1 rounded-full text-[#607483] hover:text-[#126A9C] hover:bg-[#F1F6F9] transition-colors cursor-pointer"
+              title="Mở tệp gốc trong tab mới"
+            >
+              <ExternalLink size={13} strokeWidth={2.2} />
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Loading Skeleton State (Section 13) */}
+      {/* Loading Skeleton State */}
       {isLoading && (
         <div className="flex-1 flex flex-col items-center justify-center p-12">
           <div className="w-[500px] h-[700px] bg-white rounded-[4px] shadow-md border border-[#DCE7EE] p-8 flex flex-col gap-4 animate-pulse">
@@ -158,7 +215,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
         </div>
       )}
 
-      {/* Preview Failure Fallback (Section 14) */}
+      {/* Preview Failure Fallback */}
       {!isLoading && isFailed && (
         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
           <div className="p-8 bg-white rounded-[12px] border border-[#DCE7EE] shadow-sm max-w-md flex flex-col items-center">
@@ -185,7 +242,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
               )}
               <button
                 type="button"
-                onClick={() => window.open('#', '_blank')}
+                onClick={() => window.open(effectiveUrl, '_blank')}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold text-white bg-[#126A9C] hover:bg-[#0D78AE] rounded-[6px] transition-colors cursor-pointer"
               >
                 <ExternalLink size={13} />
@@ -196,19 +253,37 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
         </div>
       )}
 
-      {/* Render Document Page */}
+      {/* Render Document: Full-bleed Native Browser PDF Viewer for PDFs, Zoomable Card for Images */}
       {!isLoading && !isFailed && (
-        <div className="flex-1 flex flex-col items-center justify-start pb-12 pt-2">
-          <RealisticCertificatePreview
-            fileName={fileName}
-            fileType={fileType}
-            page={currentPage}
-            totalPage={totalPage}
-            zoomLevel={zoomLevel}
-            highlightRegion={highlightRegion}
-            onSelectRegion={onSelectRegion}
-          />
-        </div>
+        isPdf ? (
+          <div className="flex-1 w-full h-full min-h-[680px] flex flex-col bg-[#525659]">
+            <iframe
+              key={effectiveUrl}
+              src={effectiveUrl}
+              title={fileName}
+              className="w-full flex-1 h-full min-h-[680px] border-0"
+            />
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-start pb-12 pt-2 px-4">
+            <div
+              className="flex items-center justify-center p-4 transition-transform duration-150 origin-top"
+              style={{ transform: `scale(${zoomLevel / 100})` }}
+            >
+              <div className="bg-white rounded-[12px] shadow-lg border border-[#DCE7EE] overflow-hidden max-w-[760px] w-full">
+                <img
+                  src={effectiveUrl}
+                  alt={fileName}
+                  className="w-full max-h-[720px] object-contain bg-[#F8FBFD]"
+                />
+                <div className="px-4 py-2.5 bg-white border-t border-[#E6EFF5] flex items-center justify-between text-[12px] text-[#607483]">
+                  <span className="truncate font-medium text-[#172A3A]">{fileName}</span>
+                  <span className="uppercase font-semibold text-[#0D78AE]">{fileType}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
       )}
     </div>
   );

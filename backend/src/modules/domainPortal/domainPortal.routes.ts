@@ -20,6 +20,8 @@ import {
   createDefaultCriteriaReviewList,
   portalState,
   resetDomainPortalState,
+  clearDomainPortalStateForSeed,
+  savePortalStateToDisk,
   appendPortalAuditLog,
   resolveSessionActor,
   requireAllowedRoles,
@@ -28,8 +30,9 @@ import {
   type PortalAuditLogRecord,
 } from './domainPortal.state';
 import { registerCollectiveAndEvidencePortalRoutes } from './domainPortal.collective.routes';
+import { dbManager } from '../../shared/database/prismaClient';
 
-export { resetDomainPortalState, appendPortalAuditLog, type PortalAuditLogRecord };
+export { resetDomainPortalState, clearDomainPortalStateForSeed, appendPortalAuditLog, type PortalAuditLogRecord };
 
 export interface DomainPortalRouterDeps {
   sessionService: SessionService;
@@ -38,6 +41,21 @@ export interface DomainPortalRouterDeps {
 
 export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
   const router = Router();
+
+  router.post('/admin/reset-empty', async (_req: Request, res: Response): Promise<void> => {
+    clearDomainPortalStateForSeed();
+    try {
+      const prisma = await dbManager.getClient();
+      await (prisma as any).schoolForwardingBatch.deleteMany({});
+      await (prisma as any).individualApplication.deleteMany({});
+    } catch {
+      // Offline or test fake DB
+    }
+    res.status(200).json({
+      success: true,
+      message: 'Đã xóa sạch dữ liệu mẫu, sẵn sàng khởi tạo qua REST API.',
+    });
+  });
 
   // =========================================================================
   // 1. AUTHENTICATION (/api/v2/portal/auth/*)
@@ -64,10 +82,12 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedCode = studentCode.trim().toUpperCase();
 
+    const existingDbEmail = await deps.identityRepo.findByEmail(normalizedEmail).catch(() => null);
     if (
       normalizedEmail === 'da-ton-tai@dut.udn.vn' ||
       normalizedEmail === 'minhanh.nguyen@dut.udn.vn' ||
       portalState.registeredStudents.has(normalizedEmail) ||
+      Boolean(existingDbEmail) ||
       STAFF_SEED_ACCOUNTS.some((s) => s.email.toLowerCase() === normalizedEmail) ||
       COLLECTIVE_PREPARERS.some((c) => c.email.toLowerCase() === normalizedEmail)
     ) {
@@ -79,10 +99,16 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
       return;
     }
 
+    const existingDbCode = await deps.identityRepo.findByStudentCode(normalizedCode).catch(() => null);
     const existingByCode = Array.from(portalState.registeredStudents.values()).some(
       (st) => st.studentCode.toUpperCase() === normalizedCode
     );
-    if (normalizedCode === 'TRUNG_MSSV' || normalizedCode === '102220123' || existingByCode) {
+    if (
+      normalizedCode === 'TRUNG_MSSV' ||
+      normalizedCode === '102220123' ||
+      existingByCode ||
+      Boolean(existingDbCode)
+    ) {
       res.status(409).json({
         success: false,
         errorCode: 'STUDENT_CODE_CONFLICT',
@@ -129,6 +155,8 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
         studentCode: studentCode.trim(),
         institutionId,
         institutionName: resolvedInstName,
+        unitId: SCHOOL_UNIT_MAP[institutionId]?.unitId || 'unit-udn',
+        unitLabel: SCHOOL_UNIT_MAP[institutionId]?.unitName || 'Đại học Đà Nẵng',
       },
     };
     portalState.sessions.set(issued.accessToken, session);
@@ -263,7 +291,7 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
       return;
     }
 
-    // C. Student Login (check registered students first, then seed students)
+    // C. Student Login (check registered students first, then DB, then seed students)
     const registeredStudent = portalState.registeredStudents.get(normalized);
     if (registeredStudent && registeredStudent.password && password && registeredStudent.password !== password) {
       res.status(401).json({
@@ -274,18 +302,22 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
       return;
     }
 
+    const dbStudent = await deps.identityRepo.findByEmail(normalized).catch(() => null);
     const seededStudent = SEEDED_STUDENTS.find((s) => s.email.toLowerCase() === normalized);
     const isMinhAnh = normalized === 'minhanh.nguyen@dut.udn.vn';
     const studentCode =
       registeredStudent?.studentCode ||
+      dbStudent?.studentCode ||
       seededStudent?.studentCode ||
       (isMinhAnh ? '102220123' : '102220999');
     const fullName =
       registeredStudent?.fullName ||
+      dbStudent?.fullName ||
       seededStudent?.fullName ||
       (isMinhAnh ? 'Nguyễn Minh Anh' : 'Trần Minh Quân');
     const institutionId =
       registeredStudent?.institutionId ||
+      dbStudent?.institutionId ||
       seededStudent?.institutionId ||
       'inst-dut';
     const institutionName =
@@ -295,7 +327,7 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
       'Trường Đại học Bách khoa – ĐHĐN';
 
     const issued = await issueZeroTrustJwtToken(deps, {
-      id: seededStudent?.id || `student-${studentCode}`,
+      id: dbStudent?.id || seededStudent?.id || `student-${studentCode}`,
       email: normalized,
       fullName,
       role: 'STUDENT',
@@ -414,9 +446,15 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
   });
 
   router.get('/individual/applications/:id/student-view', (req: Request, res: Response): void => {
-    const app =
-      portalState.studentApplications[req.params.id] ||
-      portalState.studentApplications['APP-2026-DN-00142'];
+    const app = portalState.studentApplications[req.params.id];
+    if (!app) {
+      res.status(404).json({
+        success: false,
+        errorCode: 'APPLICATION_NOT_FOUND',
+        error: `Không tìm thấy hồ sơ ${req.params.id}`,
+      });
+      return;
+    }
     res.status(200).json({ success: true, data: app });
   });
 
@@ -429,7 +467,17 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
       institutionName,
       faculty,
       className,
-    } = (req.body || {}) as Record<string, string>;
+      gender,
+      dateOfBirth,
+      ethnicity,
+      academicYearNumber,
+      educationLevel,
+      homeProvince,
+      unionPosition,
+      politicalStatus,
+      phoneNumber,
+      applicantProfileSnapshot,
+    } = (req.body || {}) as Record<string, any>;
 
     if (!studentFullName || !studentCode || !institutionId) {
       res.status(400).json({
@@ -446,23 +494,43 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
       instName: institutionName || 'Trường Đại học Bách khoa – ĐHĐN',
     };
 
+    const resolvedSnapshot = applicantProfileSnapshot || {
+      fullName: studentFullName,
+      gender: gender || 'Nam',
+      dateOfBirth: dateOfBirth || '15/05/2004',
+      ethnicity: ethnicity || 'Kinh',
+      academicYearNumber: Number(academicYearNumber) || 3,
+      educationLevel: educationLevel || 'Đại học',
+      className: className || '22CLC1',
+      homeProvince: homeProvince || 'Thành phố Đà Nẵng',
+      institutionId,
+      institutionName: institutionName || mapped.instName,
+      unionPosition: unionPosition || 'Ủy viên BCH Chi đoàn',
+      politicalStatus: politicalStatus || 'Đoàn viên',
+      phoneNumber: phoneNumber || '0905123456',
+      email: email || `${studentCode}@sv.udn.vn`,
+    };
+
     const appId = `APP-2026-DN-${studentCode}`;
     const created: Record<string, any> = {
       applicationId: appId,
+      season: 'Năm học 2025–2026',
+      level: 'Cấp Thành phố Đà Nẵng',
       status: 'draft',
       reviewStage: 'SCHOOL',
       trainingInstitutionName: institutionName || mapped.instName,
       schoolReviewUnitId: mapped.unitId,
       schoolReviewUnitName: mapped.unitName,
       schoolPreliminaryStatus: 'school_not_submitted',
+      applicantProfileSnapshot: resolvedSnapshot,
       student: {
         fullName: studentFullName,
         studentId: studentCode,
         university: institutionName || mapped.instName,
         faculty: faculty || 'Khoa Đào tạo',
-        class: className || '22TCLC',
+        class: className || '22CLC1',
         email: email || `${studentCode}@sv.udn.vn`,
-        academicYear: '2025–2026',
+        academicYear: 'Năm học 2025–2026',
       },
       criteria: createDefaultCriteriaList(),
       supplementRequests: [],
@@ -470,29 +538,53 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
 
     portalState.studentApplications[appId] = created;
 
-    if (!portalState.individualStaffRecords.some((r) => r.applicationId === appId)) {
-      portalState.individualStaffRecords.unshift({
-        applicationId: appId,
-        schoolYear: 'Năm học 2025–2026',
-        student: {
-          fullName: studentFullName,
-          studentCode,
-          email: email || `${studentCode}@sv.udn.vn`,
-        },
-        institution: {
-          id: institutionId,
-          officialName: institutionName || mapped.instName,
-        },
-        currentReviewStage: 'SCHOOL',
-        schoolReviewUnitId: mapped.unitId,
-        schoolReviewUnitName: mapped.unitName,
-        schoolPreliminaryStatus: 'pending_intake',
-        workflowStatus: 'unassigned',
-        assignment: null,
-        reviewedCriteriaCount: 0,
-        criteriaReview: createDefaultCriteriaReviewList(),
-        updatedAt: new Date().toISOString(),
-      });
+    const staffRec = {
+      applicationId: appId,
+      schoolYear: 'Năm học 2025–2026',
+      levelLabel: 'Cấp Thành phố Đà Nẵng',
+      submittedAt: '10/10/2026 · 09:30',
+      submittedDateSortKey: new Date().toISOString(),
+      updatedAt: 'Vừa cập nhật',
+      updatedSortKey: Date.now(),
+      internalDeadline: '20/10/2026',
+      eligibilityStatus: 'verified',
+      eligibilityLabel: 'Đủ điều kiện nộp hồ sơ',
+      student: {
+        fullName: studentFullName,
+        studentCode,
+        email: email || `${studentCode}@sv.udn.vn`,
+      },
+      applicantProfileSnapshot: resolvedSnapshot,
+      institution: {
+        id: institutionId,
+        officialName: institutionName || mapped.instName,
+      },
+      currentReviewStage: 'SCHOOL',
+      schoolReviewUnitId: mapped.unitId,
+      schoolReviewUnitName: mapped.unitName,
+      schoolPreliminaryStatus: 'pending_intake',
+      schoolRecommendation: 'pending',
+      workflowStatus: 'unassigned',
+      assignment: null,
+      reviewedCriteriaCount: 0,
+      totalCriteriaCount: 5,
+      totalDeclarations: 0,
+      totalEvidence: 0,
+      supplementSummary: {
+        requestCount: 0,
+        activeStatus: null,
+      },
+      committeeSummary: null,
+      finalResultSummary: null,
+      latestOperationalNote: `Khởi tạo hồ sơ trực tuyến · Định tuyến về ${mapped.unitName}`,
+      criteriaReview: createDefaultCriteriaReviewList(),
+    };
+
+    const existingIdx = portalState.individualStaffRecords.findIndex((r) => r.applicationId === appId);
+    if (existingIdx >= 0) {
+      portalState.individualStaffRecords[existingIdx] = staffRec;
+    } else {
+      portalState.individualStaffRecords.unshift(staffRec);
     }
 
     appendPortalAuditLog({
@@ -527,9 +619,92 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
 
     const app =
       portalState.studentApplications[id] ||
-      structuredClone(portalState.studentApplications['APP-2026-DN-00142']);
+      (portalState.studentApplications['APP-2026-DN-00142']
+        ? structuredClone(portalState.studentApplications['APP-2026-DN-00142'])
+        : {
+            applicationId: id,
+            status: 'draft',
+            reviewStage: 'SCHOOL',
+            criteria: createDefaultCriteriaList(),
+            supplementRequests: [],
+          });
     app.applicationId = id;
+    if (!Array.isArray(app.criteria) || app.criteria.length === 0) {
+      app.criteria = createDefaultCriteriaList();
+    }
+
+    const crit = app.criteria.find((c: Record<string, any>) => c.id === criterionId);
+    if (crit) {
+      if (!Array.isArray(crit.requirements)) {
+        crit.requirements = [];
+      }
+      let reqObj = crit.requirements.find((r: Record<string, any>) => r.id === requirementId);
+      if (!reqObj) {
+        reqObj = {
+          id: requirementId,
+          criterionId,
+          status: 'completed',
+          declarations: [],
+        };
+        crit.requirements.push(reqObj);
+      }
+      if (!Array.isArray(reqObj.declarations)) {
+        reqObj.declarations = [];
+      }
+      const normalizedDecl = {
+        id: declaration.id || `decl-${requirementId}-${Date.now()}`,
+        title: declaration.title || 'Nội dung kê khai',
+        description: declaration.description || '',
+        date: declaration.date || '10/10/2026',
+        authority: declaration.authority || '',
+        evidenceFiles: Array.isArray(declaration.evidenceFiles) ? declaration.evidenceFiles : [],
+      };
+      const existingDeclIdx = reqObj.declarations.findIndex(
+        (d: Record<string, any>) => d.id === normalizedDecl.id
+      );
+      if (existingDeclIdx >= 0) {
+        reqObj.declarations[existingDeclIdx] = normalizedDecl;
+      } else {
+        reqObj.declarations.push(normalizedDecl);
+      }
+      reqObj.status = 'completed';
+    }
+
     portalState.studentApplications[id] = app;
+
+    // Sync declaredCount & evidenceCount to individualStaffRecords
+    const staffIdx = portalState.individualStaffRecords.findIndex((r) => r.applicationId === id);
+    if (staffIdx >= 0) {
+      const rec = portalState.individualStaffRecords[staffIdx];
+      let totalDecl = 0;
+      let totalEv = 0;
+      const updatedCriteriaReview = (rec.criteriaReview || createDefaultCriteriaReviewList()).map(
+        (cr: Record<string, any>) => {
+          const matchingCrit = app.criteria.find((c: Record<string, any>) => c.id === cr.criterionId);
+          const allReqs = matchingCrit?.requirements || [];
+          const allDecls = allReqs.flatMap((r: Record<string, any>) => r.declarations || []);
+          const evCount = allDecls.reduce(
+            (sum: number, d: Record<string, any>) => sum + (d.evidenceFiles?.length || 0),
+            0
+          );
+          totalDecl += allDecls.length;
+          totalEv += evCount;
+          return {
+            ...cr,
+            declaredCount: allDecls.length,
+            evidenceCount: evCount,
+          };
+        }
+      );
+      portalState.individualStaffRecords[staffIdx] = {
+        ...rec,
+        criteriaReview: updatedCriteriaReview,
+        totalDeclarations: totalDecl,
+        totalEvidence: totalEv,
+        updatedAt: 'Vừa cập nhật',
+        updatedSortKey: Date.now(),
+      };
+    }
 
     const actor = resolveSessionActor(req);
     appendPortalAuditLog({
@@ -539,7 +714,7 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
       actorId: actor.id,
       actorName: actor.name,
       actorRole: actor.role,
-      details: `Lưu kê khai tiêu chí ${criterionId} (${requirementId})`,
+      details: `Lưu kê khai tiêu chí ${criterionId} (${requirementId}): ${declaration.title || ''}`,
     });
 
     res.status(200).json({ success: true, data: app });
@@ -549,10 +724,20 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
     const { id } = req.params;
     const app =
       portalState.studentApplications[id] ||
-      structuredClone(portalState.studentApplications['APP-2026-DN-00142']);
+      (portalState.studentApplications['APP-2026-DN-00142']
+        ? structuredClone(portalState.studentApplications['APP-2026-DN-00142'])
+        : {
+            applicationId: id,
+            status: 'under_review',
+            reviewStage: 'SCHOOL',
+            criteria: createDefaultCriteriaList(),
+            supplementRequests: [],
+          });
     app.applicationId = id;
     app.status = 'under_review';
     app.reviewStage = 'SCHOOL';
+    app.schoolPreliminaryStatus = 'pending_intake';
+    app.submittedAt = new Date().toLocaleDateString('vi-VN');
     portalState.studentApplications[id] = app;
 
     const idx = portalState.individualStaffRecords.findIndex((r) => r.applicationId === id);
@@ -561,7 +746,9 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
         ...portalState.individualStaffRecords[idx],
         currentReviewStage: 'SCHOOL',
         schoolPreliminaryStatus: 'pending_intake',
-        updatedAt: new Date().toISOString(),
+        submittedAt: '12/10/2026 · 14:20',
+        updatedAt: '12/10/2026 · 14:20',
+        latestOperationalNote: `Sinh viên đã nộp hồ sơ chính thức về ${app.schoolReviewUnitName || 'Đơn vị xét sơ tuyển'}`,
       };
     }
 

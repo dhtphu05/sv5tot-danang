@@ -26,6 +26,7 @@ export interface CommitteeOverviewViewProps {
   onSelectRoute: (routeId: StaffRouteId) => void;
   onOpenApplicationWorkspace: (applicationId: string) => void;
   renderCommitteeScenarioStrip: () => React.ReactNode;
+  activeSeasonLabel?: string;
 }
 
 export const CommitteeOverviewView: React.FC<CommitteeOverviewViewProps> = ({
@@ -39,6 +40,7 @@ export const CommitteeOverviewView: React.FC<CommitteeOverviewViewProps> = ({
   onSelectRoute,
   onOpenApplicationWorkspace,
   renderCommitteeScenarioStrip,
+  activeSeasonLabel,
 }) => {
   const homePriorityList =
     attentionApps.length > 0
@@ -90,17 +92,21 @@ export const CommitteeOverviewView: React.FC<CommitteeOverviewViewProps> = ({
     {
       key: 'school_recommendation',
       header: 'Đề xuất cơ sở',
-      renderCell: (app) => (
-        <div>
-          <span className="inline-flex items-center gap-1 text-[12px] font-bold text-[#0B64A0] bg-[#EAF5FC] px-2 py-0.5 rounded-[5px]">
-            <CheckCircle2 size={12} className="text-[#0D78AE]" />
-            <span>Đề xuất Thành phố</span>
-          </span>
-          <div className="text-[11px] text-[#607483] mt-0.5">
-            Theo QĐ số 182/QĐ-ĐHĐN
+      renderCell: (app) => {
+        const docNum =
+          app.schoolReviewSummary?.decisionDocumentMetadata?.decisionNumber;
+        return (
+          <div>
+            <span className="inline-flex items-center gap-1 text-[12px] font-bold text-[#0B64A0] bg-[#EAF5FC] px-2 py-0.5 rounded-[5px]">
+              <CheckCircle2 size={12} className="text-[#0D78AE]" />
+              <span>Đề xuất Thành phố</span>
+            </span>
+            <div className="text-[11px] text-[#607483] mt-0.5">
+              {docNum ? `Theo ${docNum}` : 'Đã kèm văn bản PDF'}
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       key: 'city_review',
@@ -184,7 +190,7 @@ export const CommitteeOverviewView: React.FC<CommitteeOverviewViewProps> = ({
       <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#DCE7EE] pb-4">
         <div>
           <div className="text-[12px] font-bold text-[#0B64A0]">
-            {CURRENT_STAFF_SEASON.schoolYear} · {CURRENT_STAFF_SEASON.scopeLabel}
+            {activeSeasonLabel || CURRENT_STAFF_SEASON.schoolYear} · {CURRENT_STAFF_SEASON.scopeLabel}
           </div>
           <h1 className="text-[22px] font-extrabold text-[#0F2335] mt-0.5">
             Hội đồng xét chọn
@@ -417,10 +423,14 @@ export const CommitteeOverviewView: React.FC<CommitteeOverviewViewProps> = ({
               variant="secondary"
               size="md"
               onClick={() =>
-                onOpenApplicationWorkspace('APP-2026-DN-102220123')
+                onOpenApplicationWorkspace(
+                  attentionApps[0]?.applicationId ||
+                    homePriorityList[0]?.applicationId ||
+                    'APP-2026-DN-102220123'
+                )
               }
             >
-              Mở hồ sơ Nguyễn Minh Anh
+              Mở hồ sơ {attentionApps[0]?.student.fullName || 'cần xem xét'}
             </Button>
           )}
           <Button

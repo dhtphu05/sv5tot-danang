@@ -879,8 +879,9 @@ export function buildOfficerScenarioBundle(
 }
 
 /**
- * Fallback builder for any other StaffApplicationRecord in the 32-record dataset
- * so clicking "Mở hồ sơ xét duyệt" on ANY assigned row in "Hồ sơ được phân công" works seamlessly!
+ * Fallback builder for any other StaffApplicationRecord in the dataset
+ * so clicking "Mở hồ sơ xét duyệt" on ANY assigned row in "Hồ sơ được phân công" works seamlessly
+ * with semantically matched real PDFs and certificate photos per criterion.
  */
 export function buildFallbackBundleForStaffRecord(
   record: StaffApplicationRecord
@@ -911,16 +912,41 @@ export function buildFallbackBundleForStaffRecord(
   }
 
   const bundle = buildOfficerScenarioBundle(mappedScenario);
+  bundle.studentApp.applicationId = record.applicationId;
+  bundle.studentApp.trainingInstitutionName = record.institution.officialName;
   bundle.studentApp.student = {
     fullName: record.student.fullName,
     studentId: record.student.studentCode,
     university: record.institution.officialName,
-    faculty: 'Đơn vị đào tạo trực thuộc',
+    faculty:
+      record.student.studentCode === '193230153'
+        ? 'Khoa Công nghệ Thông tin'
+        : 'Đơn vị đào tạo trực thuộc',
+    email: record.student.email,
     academicYear: record.schoolYear,
   };
+  bundle.studentApp.applicantProfileSnapshot = {
+    fullName: record.student.fullName,
+    gender: 'Nam',
+    dateOfBirth: '15/08/2004',
+    ethnicity: 'Kinh',
+    academicYearNumber: 3,
+    educationLevel: 'Đại học',
+    className:
+      record.student.studentCode === '193230153' ? '23T_DT2' : 'K2023-CLC',
+    homeProvince: 'Thành phố Đà Nẵng',
+    institutionId: record.institution.id,
+    institutionName: record.institution.officialName,
+    unionPosition: 'Đoàn viên tích cực',
+    politicalStatus: 'Đoàn viên',
+    phoneNumber: '0905123456',
+    email: record.student.email,
+  };
+
   bundle.workspaceState.applicationId = record.applicationId;
   return {
     studentApp: bundle.studentApp,
     workspaceState: bundle.workspaceState,
   };
 }
+

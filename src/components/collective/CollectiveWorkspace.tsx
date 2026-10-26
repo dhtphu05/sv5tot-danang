@@ -180,7 +180,7 @@ export const CollectiveWorkspace: React.FC<CollectiveWorkspaceProps> = ({
         ref={fileInputRef}
         type="file"
         multiple
-        accept=".pdf,.xlsx,.xls,.docx,.doc,.png,.jpg,.jpeg,.webp"
+        accept=".pdf,.xlsx,.xls,.docx,.doc,.png,.jpg,.jpeg,.webp,.heic,.heif"
         onChange={handleFileInputChange}
         className="hidden"
       />

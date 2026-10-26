@@ -21,6 +21,7 @@ import {
 import { PublicationReadinessResult } from '../../committeeSelectors';
 import { CURRENT_STAFF_SEASON } from '../../fixtures/staffDataset';
 import { Button } from '../../../components/buttons/Button';
+import { CityRecognitionDecisionMetadata } from './views/CommitteeRecognitionView';
 
 export interface PublicationDialogProps {
   isOpen: boolean;
@@ -28,6 +29,8 @@ export interface PublicationDialogProps {
   simulateError?: boolean;
   onClose: () => void;
   onConfirmPublish: () => void;
+  activeSeasonLabel?: string;
+  decisionDoc?: CityRecognitionDecisionMetadata | null;
 }
 
 export const PublicationDialog: React.FC<PublicationDialogProps> = ({
@@ -36,8 +39,11 @@ export const PublicationDialog: React.FC<PublicationDialogProps> = ({
   simulateError = false,
   onClose,
   onConfirmPublish,
+  activeSeasonLabel,
+  decisionDoc,
 }) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const seasonLabel = activeSeasonLabel || CURRENT_STAFF_SEASON.schoolYear;
 
   useEffect(() => {
     if (isOpen) {
@@ -85,7 +91,7 @@ export const PublicationDialog: React.FC<PublicationDialogProps> = ({
                 Công bố kết quả xét chọn?
               </h2>
               <p className="text-[12px] text-[#526B7C]">
-                {CURRENT_STAFF_SEASON.schoolYear} · {CURRENT_STAFF_SEASON.scopeLabel}
+                {seasonLabel} · {CURRENT_STAFF_SEASON.scopeLabel}
               </p>
             </div>
           </div>
@@ -121,9 +127,19 @@ export const PublicationDialog: React.FC<PublicationDialogProps> = ({
             <div className="flex items-center justify-between gap-2">
               <span className="text-[#526B7C]">Đợt xét chọn:</span>
               <strong className="font-bold text-[#0F2335]">
-                {CURRENT_STAFF_SEASON.schoolYear} · Cấp Thành phố Đà Nẵng
+                {seasonLabel} · Cấp Thành phố Đà Nẵng
               </strong>
             </div>
+            {decisionDoc && (
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[#526B7C]">Văn bản Quyết định (.PDF):</span>
+                <strong className="font-bold text-[#0B64A0] truncate max-w-[240px]">
+                  {decisionDoc.decisionNumber
+                    ? `${decisionDoc.decisionNumber} (${decisionDoc.fileName})`
+                    : decisionDoc.fileName}
+                </strong>
+              </div>
+            )}
             <div className="flex items-center justify-between gap-2">
               <span className="text-[#526B7C]">Tổng số hồ sơ công bố:</span>
               <strong className="font-extrabold text-[#0F2335] tabular-nums">

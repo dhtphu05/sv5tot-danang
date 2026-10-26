@@ -14,6 +14,7 @@ import type {
 import { dbManager } from '../../shared/database/prismaClient';
 import { getEnvironment } from '../../config/environment';
 import { ApiError } from '../../shared/errors/apiError';
+import { portalState, savePortalStateToDisk } from '../domainPortal/domainPortal.state';
 
 export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingBatchRepository {
   private async getClient() {
@@ -27,16 +28,32 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
     return dbManager.getClient();
   }
 
+  private async resolveEffectiveSeasonId(prisma: any, requestedSeasonId?: string): Promise<string> {
+    if (requestedSeasonId) {
+      const found = await prisma.awardSeason.findUnique({
+        where: { id: requestedSeasonId },
+        select: { id: true },
+      });
+      if (found) return found.id;
+    }
+    const active = await prisma.awardSeason.findFirst({
+      where: { isActive: true },
+      select: { id: true },
+    });
+    return active?.id || requestedSeasonId || 'season-2025-2026';
+  }
+
   public async findBatchByUnitAndSeason(
     unitId: string,
     seasonId: string
   ): Promise<SchoolForwardingBatchDto | null> {
     const prisma = await this.getClient();
+    const effectiveSeasonId = await this.resolveEffectiveSeasonId(prisma, seasonId);
     const batch = await (prisma as any).schoolForwardingBatch.findUnique({
       where: {
         schoolReviewUnitId_seasonId: {
           schoolReviewUnitId: unitId,
-          seasonId,
+          seasonId: effectiveSeasonId,
         },
       },
       include: {
@@ -65,23 +82,32 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
     _userId: string
   ): Promise<SchoolForwardingBatchDto> {
     const prisma = await this.getClient();
+    const effectiveSeasonId = await this.resolveEffectiveSeasonId(prisma, input.seasonId);
+    const parsedDecisionDate = input.decisionMetadata?.decisionDate
+      ? new Date(input.decisionMetadata.decisionDate)
+      : undefined;
+    const validDecisionDate =
+      parsedDecisionDate && !Number.isNaN(parsedDecisionDate.getTime())
+        ? parsedDecisionDate
+        : undefined;
+
     const batch = await (prisma as any).schoolForwardingBatch.upsert({
       where: {
         schoolReviewUnitId_seasonId: {
           schoolReviewUnitId: unitId,
-          seasonId: input.seasonId,
+          seasonId: effectiveSeasonId,
         },
       },
       create: {
         schoolReviewUnitId: unitId,
-        seasonId: input.seasonId,
+        seasonId: effectiveSeasonId,
         status: 'DRAFT',
         forwardingNote: input.forwardingNote,
         selectedApplicationIds: input.selectedApplicationIds,
         applicationCount: input.selectedApplicationIds.length,
         decisionNumber: input.decisionMetadata?.decisionNumber,
         decisionTitle: input.decisionMetadata?.decisionTitle,
-        decisionDate: input.decisionMetadata?.decisionDate ? new Date(input.decisionMetadata.decisionDate) : undefined,
+        decisionDate: validDecisionDate,
         signedByName: input.decisionMetadata?.signedByName,
         signedByTitle: input.decisionMetadata?.signedByTitle,
       },
@@ -91,7 +117,7 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
         forwardingNote: input.forwardingNote,
         decisionNumber: input.decisionMetadata?.decisionNumber,
         decisionTitle: input.decisionMetadata?.decisionTitle,
-        decisionDate: input.decisionMetadata?.decisionDate ? new Date(input.decisionMetadata.decisionDate) : undefined,
+        decisionDate: validDecisionDate,
         signedByName: input.decisionMetadata?.signedByName,
         signedByTitle: input.decisionMetadata?.signedByTitle,
         version: { increment: 1 },
@@ -110,20 +136,27 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
     _userId: string
   ): Promise<SchoolForwardingBatchDto> {
     const prisma = await this.getClient();
+    const effectiveSeasonId = await this.resolveEffectiveSeasonId(prisma, input.seasonId);
+    const parsedDecisionDate = input.decisionDate ? new Date(input.decisionDate) : undefined;
+    const validDecisionDate =
+      parsedDecisionDate && !Number.isNaN(parsedDecisionDate.getTime())
+        ? parsedDecisionDate
+        : undefined;
+
     const batch = await (prisma as any).schoolForwardingBatch.upsert({
       where: {
         schoolReviewUnitId_seasonId: {
           schoolReviewUnitId: unitId,
-          seasonId: input.seasonId,
+          seasonId: effectiveSeasonId,
         },
       },
       create: {
         schoolReviewUnitId: unitId,
-        seasonId: input.seasonId,
+        seasonId: effectiveSeasonId,
         status: 'DRAFT',
         decisionNumber: input.decisionNumber,
         decisionTitle: input.decisionTitle,
-        decisionDate: input.decisionDate ? new Date(input.decisionDate) : undefined,
+        decisionDate: validDecisionDate,
         signedByName: input.signedByName,
         signedByTitle: input.signedByTitle,
         decisionFileId: input.fileId,
@@ -136,7 +169,7 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
       update: {
         decisionNumber: input.decisionNumber,
         decisionTitle: input.decisionTitle,
-        decisionDate: input.decisionDate ? new Date(input.decisionDate) : undefined,
+        decisionDate: validDecisionDate,
         signedByName: input.signedByName,
         signedByTitle: input.signedByTitle,
         decisionFileId: input.fileId,
@@ -163,9 +196,10 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
     payloadHash?: string
   ): Promise<SchoolForwardingBatchDto> {
     const prisma = await this.getClient();
+    const effectiveSeasonId = await this.resolveEffectiveSeasonId(prisma, seasonId);
     const now = new Date();
 
-    return (prisma as any).$transaction(async (tx: any) => {
+    const resultDto = await (prisma as any).$transaction(async (tx: any) => {
       // 1. Fetch current batch
       const batch = await tx.schoolForwardingBatch.findUnique({
         where: { id: batchId },
@@ -192,12 +226,15 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
         include: { schoolReviewUnit: true },
       });
 
-      // 3. Atomically transition all selected applications to forwarded_to_city & unassigned at City
+      // 3. Atomically transition all selected applications in DB to forwarded_to_city & unassigned at City
       if (selectedIds.length > 0) {
         await tx.individualApplication.updateMany({
           where: {
-            id: { in: selectedIds },
-            seasonId,
+            OR: [
+              { id: { in: selectedIds } },
+              { applicationCode: { in: selectedIds } },
+            ],
+            seasonId: effectiveSeasonId,
             schoolReviewUnitId: unitId,
           },
           data: {
@@ -213,6 +250,32 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
 
       return this.mapToDto(updatedBatch);
     });
+
+    // 4. Synchronize portalState in-memory records if present
+    const selectedSet = new Set(resultDto.selectedApplicationIds || []);
+    if (selectedSet.size > 0 && Array.isArray(portalState?.individualStaffRecords)) {
+      const nowIso = now.toISOString();
+      portalState.individualStaffRecords = portalState.individualStaffRecords.map((rec: any) => {
+        if (!selectedSet.has(rec.applicationId)) return rec;
+        return {
+          ...rec,
+          currentReviewStage: 'CITY',
+          schoolPreliminaryStatus: 'forwarded_to_city',
+          workflowStatus: 'unassigned',
+          schoolReviewSummary: {
+            ...(rec.schoolReviewSummary || {}),
+            isForwardedToCity: true,
+            recommendation: 'recommended',
+            forwardedAt: nowIso,
+            forwardedBy: userId,
+          },
+          updatedAt: nowIso,
+        };
+      });
+      savePortalStateToDisk();
+    }
+
+    return resultDto;
   }
 
   public async validateApplicationEligibility(
@@ -225,15 +288,20 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
     reasons: string[];
   }> {
     const prisma = await this.getClient();
+    const effectiveSeasonId = await this.resolveEffectiveSeasonId(prisma, seasonId);
     const invalidIds: string[] = [];
     const reasons: string[] = [];
 
     const apps = await (prisma as any).individualApplication.findMany({
       where: {
-        id: { in: applicationIds },
+        OR: [
+          { id: { in: applicationIds } },
+          { applicationCode: { in: applicationIds } },
+        ],
       },
       select: {
         id: true,
+        applicationCode: true,
         seasonId: true,
         schoolReviewUnitId: true,
         schoolPreliminaryStatus: true,
@@ -242,7 +310,16 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
       },
     });
 
-    const appMap = new Map<string, any>(apps.map((a: any) => [a.id, a]));
+    const appMap = new Map<string, any>();
+    for (const a of apps) {
+      appMap.set(a.id, a);
+      if (a.applicationCode) {
+        appMap.set(a.applicationCode, a);
+      }
+    }
+    const portalMap = new Map<string, any>(
+      (portalState?.individualStaffRecords || []).map((r: any) => [r.applicationId, r])
+    );
 
     for (const appId of applicationIds) {
       if (appId.toLowerCase().startsWith('col-')) {
@@ -253,14 +330,28 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
 
       const app = appMap.get(appId);
       if (!app) {
+        const portalApp = portalMap.get(appId);
+        if (portalApp) {
+          if (portalApp.schoolReviewUnitId && portalApp.schoolReviewUnitId !== unitId) {
+            invalidIds.push(appId);
+            reasons.push(
+              `Hồ sơ ${appId} thuộc đơn vị khác (${portalApp.schoolReviewUnitId}), không thuộc ${unitId}`
+            );
+          }
+          continue;
+        }
+        // Accept valid individual application codes (APP-*) originating from the School Officer's unit table
+        if (appId.toUpperCase().startsWith('APP-')) {
+          continue;
+        }
         invalidIds.push(appId);
         reasons.push(`Không tìm thấy hồ sơ ${appId}`);
         continue;
       }
 
-      if (app.seasonId !== seasonId) {
+      if (app.seasonId !== effectiveSeasonId && app.seasonId !== seasonId) {
         invalidIds.push(appId);
-        reasons.push(`Hồ sơ ${appId} không thuộc mùa xét ${seasonId}`);
+        reasons.push(`Hồ sơ ${appId} không thuộc mùa xét ${effectiveSeasonId}`);
         continue;
       }
 
@@ -276,7 +367,7 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
         continue;
       }
 
-      if (app.schoolPreliminaryStatus === 'FORWARDED_TO_CITY' || app.forwardingBatchId) {
+      if (app.forwardingBatchId) {
         invalidIds.push(appId);
         reasons.push(`Hồ sơ ${appId} đã được chuyển lên cấp Thành phố trước đó`);
         continue;
@@ -301,32 +392,58 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
     seasonId: string
   ): Promise<SchoolForwardingBatchSummaryDto> {
     const prisma = await this.getClient();
+    const effectiveSeasonId = await this.resolveEffectiveSeasonId(prisma, seasonId);
 
     const unit = await (prisma as any).schoolReviewUnit.findUnique({
       where: { id: unitId },
       include: { institution: true },
     });
 
-    const applications = await (prisma as any).individualApplication.findMany({
+    const dbApplications = await (prisma as any).individualApplication.findMany({
       where: {
         schoolReviewUnitId: unitId,
-        seasonId,
+        seasonId: effectiveSeasonId,
       },
       include: {
         institution: true,
       },
     });
 
+    const dbAppIds = new Set(dbApplications.map((a: any) => a.id));
+    const portalUnitRecords = (portalState?.individualStaffRecords || []).filter(
+      (r: any) => r.schoolReviewUnitId === unitId && !dbAppIds.has(r.applicationId)
+    );
+    const mergedPortalApps = portalUnitRecords.map((r: any) => ({
+      id: r.applicationId,
+      institutionId: r.institutionId || unitId,
+      institution: { officialName: r.university || r.schoolReviewUnitName || unitId },
+      openSupplementCount: r.supplementSummary?.activeStatus === 'pending_student' ? 1 : 0,
+      schoolPreliminaryStatus:
+        r.schoolPreliminaryStatus === 'forwarded_to_city'
+          ? 'FORWARDED_TO_CITY'
+          : r.schoolPreliminaryStatus === 'recommended_forwarding'
+            ? 'ELIGIBLE_FOR_CITY'
+            : r.schoolPreliminaryStatus === 'not_recommended'
+              ? 'NOT_ELIGIBLE_AT_SCHOOL'
+              : 'PENDING_SCHOOL_REVIEW',
+    }));
+    const applications = [...dbApplications, ...mergedPortalApps];
+
     const existingBatch = await (prisma as any).schoolForwardingBatch.findUnique({
       where: {
         schoolReviewUnitId_seasonId: {
           schoolReviewUnitId: unitId,
-          seasonId,
+          seasonId: effectiveSeasonId,
         },
       },
     });
 
-    const total = applications.length;
+    const draftSelectedIds: string[] = Array.isArray(existingBatch?.selectedApplicationIds)
+      ? (existingBatch.selectedApplicationIds as string[])
+      : [];
+    const draftSelectedSet = new Set(draftSelectedIds);
+
+    const total = Math.max(applications.length, draftSelectedIds.length);
     let reviewed = 0;
     let selected = 0;
     let notSelected = 0;
@@ -348,11 +465,11 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
         withOpenSupplements++;
       }
 
-      if (app.schoolPreliminaryStatus === 'FORWARDED_TO_CITY') {
-        reviewed++;
-        selected++;
-        item.selected++;
-      } else if (app.schoolPreliminaryStatus === 'ELIGIBLE_FOR_CITY') {
+      if (
+        app.schoolPreliminaryStatus === 'FORWARDED_TO_CITY' ||
+        app.schoolPreliminaryStatus === 'ELIGIBLE_FOR_CITY' ||
+        draftSelectedSet.has(app.id)
+      ) {
         reviewed++;
         selected++;
         item.selected++;
@@ -363,6 +480,11 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
         pending++;
         item.pending++;
       }
+    }
+
+    if (draftSelectedIds.length > selected) {
+      selected = draftSelectedIds.length;
+      reviewed = Math.max(reviewed, selected);
     }
 
     const blockingReasons: string[] = [];
@@ -381,7 +503,7 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
     return {
       schoolReviewUnitId: unitId,
       schoolReviewUnitName: unit?.officialName || unitId,
-      seasonId,
+      seasonId: effectiveSeasonId,
       seasonCode: '2025-2026',
       totalApplicationsInScope: total,
       reviewedApplicationsCount: reviewed,

@@ -28,6 +28,7 @@ import {
 } from '@5tot/contracts';
 import { DeadlineConfigItem, Season } from '../../adminTypes';
 import { Button } from '../../../components/buttons/Button';
+import { VietnameseDateTimePicker } from './VietnameseDateTimePicker';
 
 export interface DeadlineManagementProps {
   currentSeason?: Season;
@@ -358,21 +359,15 @@ export const DeadlineManagement: React.FC<DeadlineManagementProps> = ({
 
             <div className="space-y-3.5 text-[13px]">
               <div>
-                <label className="block text-[12px] font-bold text-[#172A3A] mb-1">
-                  Thời gian mới (Định dạng: DD/MM/YYYY · HH:MM){' '}
-                  <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
+                <VietnameseDateTimePicker
+                  label="Chọn Ngày & Giờ mới"
                   value={newDateTime}
-                  onChange={(e) => setNewDateTime(e.target.value)}
-                  placeholder="20/10/2026 · 20:00"
-                  className="w-full h-[40px] px-3 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px] font-semibold outline-none focus:border-[#0D78AE] focus:bg-white"
+                  onChange={(val) => setNewDateTime(val)}
+                  required
                 />
                 <div className="flex flex-wrap items-center gap-1.5 mt-2">
                   <span className="text-[11.5px] font-semibold text-[#526B7C]">
-                    Gia hạn nhanh (Hotfix):
+                    Gia hạn nhanh 1-click (Hotfix):
                   </span>
                   {[
                     { h: 24, label: '+24 giờ' },
@@ -446,7 +441,7 @@ export const DeadlineManagement: React.FC<DeadlineManagementProps> = ({
       {/* Create Custom Milestone Modal */}
       {createOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-[14px] border border-[#D4E2EC] max-w-[520px] w-full p-6 shadow-xl space-y-4 text-[12.5px]">
+          <div className="bg-white rounded-[14px] border border-[#D4E2EC] max-w-[540px] w-full p-6 shadow-xl space-y-4 text-[12.5px]">
             <div className="flex items-center justify-between border-b border-[#EEF4F8] pb-3">
               <h2 className="text-[16px] font-extrabold text-[#0F2335]">
                 Thêm mốc thời gian vận hành mới
@@ -476,43 +471,37 @@ export const DeadlineManagement: React.FC<DeadlineManagementProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="font-bold text-[#172A3A] block mb-1">
-                    Thời điểm áp dụng <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={createForm.dateTime}
-                    onChange={(e) =>
-                      setCreateForm({ ...createForm, dateTime: e.target.value })
-                    }
-                    placeholder="28/10/2026 · 17:00"
-                    className="w-full h-[36px] px-3 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px] font-semibold"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-[#172A3A] block mb-1">
-                    Phân loại mốc
-                  </label>
-                  <select
-                    value={createForm.type}
-                    onChange={(e) =>
-                      setCreateForm({
-                        ...createForm,
-                        type: e.target.value as
-                          | 'hard_gate'
-                          | 'operational_reminder',
-                      })
-                    }
-                    className="w-full h-[36px] px-2.5 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px] font-semibold"
-                  >
-                    <option value="operational_reminder">
-                      Hạn đề nghị xử lý
-                    </option>
-                    <option value="hard_gate">Giới hạn hệ thống</option>
-                  </select>
-                </div>
+              <VietnameseDateTimePicker
+                label="Thời điểm áp dụng"
+                value={createForm.dateTime}
+                onChange={(val) =>
+                  setCreateForm({ ...createForm, dateTime: val })
+                }
+                showQuickShifts
+                required
+              />
+
+              <div>
+                <label className="font-bold text-[#172A3A] block mb-1">
+                  Phân loại mốc
+                </label>
+                <select
+                  value={createForm.type}
+                  onChange={(e) =>
+                    setCreateForm({
+                      ...createForm,
+                      type: e.target.value as
+                        | 'hard_gate'
+                        | 'operational_reminder',
+                    })
+                  }
+                  className="w-full h-[36px] px-2.5 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px] font-semibold"
+                >
+                  <option value="operational_reminder">
+                    Hạn đề nghị xử lý
+                  </option>
+                  <option value="hard_gate">Giới hạn hệ thống</option>
+                </select>
               </div>
 
               <div>

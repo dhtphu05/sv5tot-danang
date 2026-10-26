@@ -70,7 +70,7 @@ export const CollectiveCommitteeWorkspace: React.FC<CollectiveCommitteeWorkspace
   const [selectedEvidenceTitle, setSelectedEvidenceTitle] = useState<string>('');
   const [showAuditModal, setShowAuditModal] = useState<boolean>(false);
   const [showPublicationModal, setShowPublicationModal] = useState<boolean>(false);
-  const [publicationDecisionNumber, setPublicationDecisionNumber] = useState<string>('86/QĐ-HSV-TP');
+  const [publicationDecisionNumber, setPublicationDecisionNumber] = useState<string>('');
 
   // Decision Form State
   const [outcome, setOutcome] = useState<'recognized' | 'not_recognized' | 'needs_consideration'>(
@@ -160,10 +160,14 @@ export const CollectiveCommitteeWorkspace: React.FC<CollectiveCommitteeWorkspace
 
   const handlePublish = () => {
     setActionErrorMsg(null);
-    const ok = publishCollectiveResult(appData.id, publicationDecisionNumber, {
-      name: currentUser.fullName,
-      role: currentUser.roleLabel,
-    });
+    const ok = publishCollectiveResult(
+      appData.id,
+      publicationDecisionNumber.trim() || 'Văn bản QĐ (.PDF)',
+      {
+        name: currentUser.fullName,
+        role: currentUser.roleLabel,
+      }
+    );
 
     if (ok) {
       const refreshed = getCollectiveApplicationById(appData.id);

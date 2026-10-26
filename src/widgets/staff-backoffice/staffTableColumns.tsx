@@ -250,24 +250,16 @@ export function buildIndividualApplicationTableColumns(params: {
     {
       key: 'student',
       header: 'Sinh viên',
-      renderCell: (app) => {
-        const isHero = app.applicationId === 'APP-2026-DN-102220123';
-        return (
-          <div>
-            <div className="font-bold text-[#0F2335] text-[13.5px] flex items-center gap-2">
-              <span>{app.student.fullName}</span>
-              {isHero && (
-                <span className="text-[10.5px] font-bold px-1.5 py-0.5 rounded bg-[#EAF6FC] text-[#0B64A0] border border-[#CBE5F6]">
-                  Hồ sơ mẫu
-                </span>
-              )}
-            </div>
-            <div className="text-[11.5px] text-[#526B7C] font-mono tabular-nums mt-0.5">
-              {app.student.studentCode} · {app.applicationId}
-            </div>
+      renderCell: (app) => (
+        <div>
+          <div className="font-bold text-[#0F2335] text-[13.5px] flex items-center gap-2">
+            <span>{app.student.fullName}</span>
           </div>
-        );
-      },
+          <div className="text-[11.5px] text-[#526B7C] font-mono tabular-nums mt-0.5">
+            {app.student.studentCode} · {app.applicationId}
+          </div>
+        </div>
+      ),
     },
     {
       key: 'institution',
@@ -292,10 +284,8 @@ export function buildIndividualApplicationTableColumns(params: {
           app.schoolPreliminaryStatus === 'forwarded_to_city' ||
           app.schoolReviewSummary?.recommendation === 'recommended' ||
           app.schoolReviewSummary?.isForwardedToCity;
-        const isUDN =
-          app.institution.id.startsWith('inst-') &&
-          app.institution.id !== 'inst-dtu' &&
-          app.institution.id !== 'inst-dlu';
+        const docNumber =
+          app.schoolReviewSummary?.decisionDocumentMetadata?.decisionNumber;
 
         if (isRecommended) {
           return (
@@ -305,7 +295,7 @@ export function buildIndividualApplicationTableColumns(params: {
                 <span>Đề xuất Thành phố</span>
               </span>
               <div className="text-[11px] text-[#607483] tabular-nums mt-0.5">
-                {isUDN ? 'Theo QĐ 182/QĐ-ĐHĐN' : 'Theo QĐ đề xuất'}
+                {docNumber ? `Theo ${docNumber}` : 'Đã kèm văn bản PDF'}
               </div>
             </div>
           );

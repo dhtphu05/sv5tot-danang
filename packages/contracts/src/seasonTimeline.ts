@@ -213,7 +213,10 @@ export function parseVietnamTimestampToIso(
     return Number.isNaN(input.getTime()) ? null : input.toISOString();
   }
 
-  const trimmed = input.trim();
+  const trimmed = input
+    .trim()
+    .replace(/\s*\((?:GMT|UTC)\+?0?7(?::00)?\)\s*$/i, '')
+    .trim();
   if (!trimmed) return null;
 
   const defaultTime = options.isEndOfDay ? '23:59:59' : '00:00:00';
@@ -320,40 +323,58 @@ export function buildCentralTimelineMilestones(config: Partial<SeasonTimelineCon
   const t01Close = parseVietnamTimestampToIso(config.individualSubmissionCloseAt, { isEndOfDay: true });
 
   const t02Start = parseVietnamTimestampToIso(
-    config.schoolReviewStartAt || config.individualSubmissionOpenAt,
+    config.schoolReviewStartAt || config.schoolReviewOpenAt || config.individualSubmissionOpenAt,
     { isEndOfDay: false }
   );
   const t02End = parseVietnamTimestampToIso(
-    config.schoolReviewEndAt || config.schoolForwardingCloseAt,
+    config.schoolReviewEndAt || config.schoolReviewCloseAt || config.schoolForwardingCloseAt,
     { isEndOfDay: true }
   );
 
   const t03Close = parseVietnamTimestampToIso(config.schoolForwardingCloseAt, { isEndOfDay: true });
 
-  const t04Open = parseVietnamTimestampToIso(config.collectiveSubmissionOpenAt, { isEndOfDay: false });
-  const t04Close = parseVietnamTimestampToIso(config.collectiveSubmissionCloseAt, { isEndOfDay: true });
-
-  const t05Start = parseVietnamTimestampToIso(
-    config.cityReviewStartAt || config.schoolForwardingCloseAt,
+  const t04Open = parseVietnamTimestampToIso(
+    config.collectiveSubmissionOpenAt || config.individualSubmissionOpenAt,
     { isEndOfDay: false }
   );
-  const t05End = parseVietnamTimestampToIso(config.cityReviewEndAt, { isEndOfDay: true });
+  const t04Close = parseVietnamTimestampToIso(
+    config.collectiveSubmissionCloseAt || config.schoolForwardingCloseAt || config.individualSubmissionCloseAt,
+    { isEndOfDay: true }
+  );
 
-  const t06Start = parseVietnamTimestampToIso(config.committeeMeetingStartAt, { isEndOfDay: false });
-  const t06End = parseVietnamTimestampToIso(config.committeeMeetingEndAt || config.committeeMeetingStartAt, {
-    isEndOfDay: true,
-  });
+  const t05Start = parseVietnamTimestampToIso(
+    config.cityReviewStartAt || config.cityReviewOpenAt || config.schoolForwardingCloseAt,
+    { isEndOfDay: false }
+  );
+  const t05End = parseVietnamTimestampToIso(
+    config.cityReviewEndAt || config.cityReviewCloseAt,
+    { isEndOfDay: true }
+  );
 
-  const t07At = parseVietnamTimestampToIso(config.resultAnnouncementAt, { isEndOfDay: true });
+  const t06Start = parseVietnamTimestampToIso(
+    config.committeeMeetingStartAt || config.committeeSessionAt,
+    { isEndOfDay: false }
+  );
+  const t06End = parseVietnamTimestampToIso(
+    config.committeeMeetingEndAt || config.committeeMeetingStartAt || config.committeeSessionAt,
+    { isEndOfDay: true }
+  );
 
-  return [
+  const t07At = parseVietnamTimestampToIso(
+    config.resultAnnouncementAt || config.resultPublicationAt,
+    { isEndOfDay: true }
+  );
+
+  const rawItems: Array<Omit<CentralTimelineMilestone, 'code' | 'labelVi' | 'track' | 'state' | 'badgeLabelVi' | 'openAtVi' | 'closeAtVi'> & { shortCode: string; badgeVi: string }> = [
     {
       stageCode: 'T01_INDIVIDUAL_SUBMISSION',
+      shortCode: 'T01',
       orderIndex: 1,
       titleVi: 'Tiếp nhận hồ sơ Sinh viên 5 Tốt (Cá nhân)',
       shortLabelVi: 'Nộp hồ sơ Cá nhân',
       descriptionVi: 'Sinh viên kê khai tiêu chuẩn, tải minh chứng và gửi hồ sơ về Đơn vị xét duyệt cấp Trường.',
       trackScope: 'INDIVIDUAL',
+      badgeVi: 'Khóa cổng tự động',
       enforcementMode: 'HARD_WINDOW',
       openAtIso: t01Open,
       closeAtIso: t01Close,
@@ -363,11 +384,13 @@ export function buildCentralTimelineMilestones(config: Partial<SeasonTimelineCon
     },
     {
       stageCode: 'T02_SCHOOL_PRELIMINARY_REVIEW',
+      shortCode: 'T02',
       orderIndex: 2,
       titleVi: 'Thẩm định sơ khảo cấp Trường / Đơn vị xét duyệt',
       shortLabelVi: 'Thẩm định cấp Trường',
       descriptionVi: 'Cán bộ cấp Trường kiểm tra minh chứng, yêu cầu bổ sung (nếu có) và đánh giá từng tiêu chí.',
       trackScope: 'SCHOOL_UNIT',
+      badgeVi: 'Mốc điều phối',
       enforcementMode: 'OPERATIONAL_GUIDANCE',
       openAtIso: t02Start,
       closeAtIso: t02End,
@@ -377,11 +400,13 @@ export function buildCentralTimelineMilestones(config: Partial<SeasonTimelineCon
     },
     {
       stageCode: 'T03_SCHOOL_FORWARDING',
+      shortCode: 'T03',
       orderIndex: 3,
       titleVi: 'Gửi danh sách & văn bản đề nghị cấp Trường lên Thành phố',
       shortLabelVi: 'Trường gửi danh sách lên TP',
       descriptionVi: 'Mỗi Đơn vị xét duyệt cấp Trường chọn sinh viên đủ điều kiện, đính kèm 01 văn bản PDF chung và gửi 01 đợt duy nhất lên Thành phố.',
       trackScope: 'SCHOOL_UNIT',
+      badgeVi: 'Khóa gửi tự động',
       enforcementMode: 'HARD_WINDOW',
       openAtIso: t01Open,
       closeAtIso: t03Close,
@@ -391,11 +416,13 @@ export function buildCentralTimelineMilestones(config: Partial<SeasonTimelineCon
     },
     {
       stageCode: 'T04_COLLECTIVE_SUBMISSION',
+      shortCode: 'T04',
       orderIndex: 4,
       titleVi: 'Tiếp nhận hồ sơ Tập thể Sinh viên 5 Tốt (TT01–TT04)',
       shortLabelVi: 'Nộp hồ sơ Tập thể',
       descriptionVi: 'Đơn vị lập hồ sơ Tập thể kê khai TT01–TT04 và gửi trực tiếp về Thành phố (không qua bước lập danh sách cấp Trường).',
       trackScope: 'COLLECTIVE',
+      badgeVi: 'Khóa cổng tự động',
       enforcementMode: 'HARD_WINDOW',
       openAtIso: t04Open,
       closeAtIso: t04Close,
@@ -405,11 +432,13 @@ export function buildCentralTimelineMilestones(config: Partial<SeasonTimelineCon
     },
     {
       stageCode: 'T05_CITY_REVIEW',
+      shortCode: 'T05',
       orderIndex: 5,
       titleVi: 'Thẩm định độc lập cấp Thành phố',
       shortLabelVi: 'Thẩm định cấp Thành phố',
       descriptionVi: 'Tổ thẩm định Thành phố rà soát độc lập hồ sơ Cá nhân (đã được Trường đề nghị) và hồ sơ Tập thể.',
       trackScope: 'CITY',
+      badgeVi: 'Mốc điều phối',
       enforcementMode: 'OPERATIONAL_GUIDANCE',
       openAtIso: t05Start,
       closeAtIso: t05End,
@@ -419,11 +448,13 @@ export function buildCentralTimelineMilestones(config: Partial<SeasonTimelineCon
     },
     {
       stageCode: 'T06_COMMITTEE_DECISION',
+      shortCode: 'T06',
       orderIndex: 6,
       titleVi: 'Họp Hội đồng xét chọn cấp Thành phố',
       shortLabelVi: 'Hội đồng xét chọn',
       descriptionVi: 'Hội đồng xét chọn cấp Thành phố xem xét kết quả thẩm định và ra quyết định công nhận chính thức.',
       trackScope: 'COMMITTEE',
+      badgeVi: 'Thẩm quyền Hội đồng',
       enforcementMode: 'MANUAL_AUTHORITY_GATED',
       openAtIso: t06Start,
       closeAtIso: t06End,
@@ -433,11 +464,13 @@ export function buildCentralTimelineMilestones(config: Partial<SeasonTimelineCon
     },
     {
       stageCode: 'T07_RESULT_ANNOUNCEMENT',
+      shortCode: 'T07',
       orderIndex: 7,
       titleVi: 'Công bố kết quả chính thức',
       shortLabelVi: 'Công bố kết quả',
       descriptionVi: 'Ban Thư ký Hội Sinh viên Thành phố phát hành quyết định và công bố kết quả chính thức.',
       trackScope: 'SYSTEM',
+      badgeVi: 'Ban Thư ký công bố',
       enforcementMode: 'MANUAL_AUTHORITY_GATED',
       openAtIso: t07At,
       closeAtIso: t07At,
@@ -446,6 +479,17 @@ export function buildCentralTimelineMilestones(config: Partial<SeasonTimelineCon
       isConfigured: Boolean(t07At),
     },
   ];
+
+  return rawItems.map(({ shortCode, badgeVi, ...item }) => ({
+    ...item,
+    code: shortCode,
+    labelVi: item.titleVi,
+    track: item.trackScope,
+    state: item.isConfigured ? 'OPEN' : 'UPCOMING',
+    badgeLabelVi: badgeVi,
+    openAtVi: item.openDisplayVi !== item.closeDisplayVi ? item.openDisplayVi : undefined,
+    closeAtVi: item.closeDisplayVi,
+  }));
 }
 
 /**

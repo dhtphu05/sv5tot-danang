@@ -55,6 +55,7 @@ export interface CommitteeResultsViewProps {
   renderCommitteeScenarioStrip: () => React.ReactNode;
   onSelectCollective: (app: CollectiveApplication) => void;
   onOpenCollectiveDecisionModal: (app: CollectiveApplication) => void;
+  activeSeasonLabel?: string;
 }
 
 export const CommitteeResultsView: React.FC<CommitteeResultsViewProps> = ({
@@ -88,6 +89,7 @@ export const CommitteeResultsView: React.FC<CommitteeResultsViewProps> = ({
   renderCommitteeScenarioStrip,
   onSelectCollective,
   onOpenCollectiveDecisionModal,
+  activeSeasonLabel,
 }) => {
   const resultColumns: OperationalTableColumn<StaffApplicationRecord>[] = [
     {
@@ -374,7 +376,7 @@ export const CommitteeResultsView: React.FC<CommitteeResultsViewProps> = ({
       <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#DCE7EE] pb-4">
         <div>
           <div className="text-[12px] font-bold text-[#0B64A0]">
-            {CURRENT_STAFF_SEASON.schoolYear} · {CURRENT_STAFF_SEASON.scopeLabel}
+            {activeSeasonLabel || CURRENT_STAFF_SEASON.schoolYear} · {CURRENT_STAFF_SEASON.scopeLabel}
           </div>
           <h1 className="text-[21px] font-extrabold text-[#0F2335] mt-0.5">
             Kết quả xét chọn

@@ -131,7 +131,7 @@ export const CollectiveCommitteeCriterionDetail: React.FC<CollectiveCommitteeCri
             <div className="p-3 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px]">
               <span className="text-[#607483] block text-[11.5px]">Số quyết định công nhận:</span>
               <span className="font-bold text-[#0F2335] text-[14px] mt-0.5 block">
-                {appData.tt01.decisionNumber || '112/QĐ-HSV-ĐHBK'}
+                {appData.tt01.decisionNumber || 'Chưa cập nhật'}
               </span>
             </div>
             <div className="p-3 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px]">
@@ -143,7 +143,7 @@ export const CollectiveCommitteeCriterionDetail: React.FC<CollectiveCommitteeCri
             <div className="p-3 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px]">
               <span className="text-[#607483] block text-[11.5px]">Ngày ban hành quyết định:</span>
               <span className="font-bold text-[#0F2335] mt-0.5 block">
-                {appData.tt01.decisionDate || '28/05/2026'}
+                {appData.tt01.decisionDate || 'Chưa cập nhật'}
               </span>
             </div>
           </div>
@@ -271,7 +271,7 @@ export const CollectiveCommitteeCriterionDetail: React.FC<CollectiveCommitteeCri
             <div className="p-3 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px]">
               <span className="text-[#607483] block text-[11.5px]">Văn bản xác nhận:</span>
               <span className="font-bold text-[#0F2335] mt-0.5 block">
-                {appData.tt04.confirmationDocNumber || '48/XN-KĐTVT'}
+                {appData.tt04.confirmationDocNumber || 'Đã đính kèm văn bản'}
               </span>
             </div>
             <div className="p-3 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px]">
@@ -329,7 +329,7 @@ export const CollectiveCommitteeCriterionDetail: React.FC<CollectiveCommitteeCri
                       size="sm"
                       onClick={() => {
                         onViewEvidence(
-                          (ev as any).fileUrl || '/demo-cert.pdf',
+                          (ev as any).fileUrl || ev.url || '',
                           ev.name || (ev as any).fileName
                         );
                       }}

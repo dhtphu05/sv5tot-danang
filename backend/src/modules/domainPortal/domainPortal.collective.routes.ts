@@ -4,6 +4,8 @@
  * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  */
 
+import fs from 'node:fs';
+import path from 'node:path';
 import type { Router, Request, Response } from 'express';
 import { MAX_EVIDENCE_SIZE_BYTES } from '../../shared/storage/r2StorageClient';
 import {
@@ -12,6 +14,7 @@ import {
   createEmptyCollectiveRequirements,
   portalState,
   appendPortalAuditLog,
+  savePortalStateToDisk,
   resolveSessionActor,
   requireAllowedRoles,
   type StoredEvidenceRecord,
@@ -120,6 +123,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
     if (facultyName) app.facultyName = facultyName;
     if (contactPhone) app.contactPhone = contactPhone;
     app.updatedAt = new Date().toISOString();
+    savePortalStateToDisk();
 
     res.status(200).json({ success: true, data: app });
   });
@@ -192,6 +196,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
         return;
       }
       app.updatedAt = new Date().toISOString();
+      savePortalStateToDisk();
       res.status(200).json({ success: true, data: app });
     }
   );
@@ -281,6 +286,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
       }
       app.status = 'city_in_review';
       app.updatedAt = new Date().toISOString();
+      savePortalStateToDisk();
       res.status(200).json({ success: true, data: app });
     }
   );
@@ -309,6 +315,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
         updatedAt: new Date().toISOString(),
       };
       app.updatedAt = new Date().toISOString();
+      savePortalStateToDisk();
       res.status(200).json({ success: true, data: app });
     }
   );
@@ -339,6 +346,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
         updatedAt: new Date().toISOString(),
       };
       app.updatedAt = new Date().toISOString();
+      savePortalStateToDisk();
       res.status(200).json({ success: true, data: app });
     }
   );
@@ -445,6 +453,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
       app.status = 'city_review_completed';
       app.reviewSummaryNote = summaryNote || '';
       app.updatedAt = new Date().toISOString();
+      savePortalStateToDisk();
 
       res.status(200).json({
         success: true,
@@ -465,6 +474,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
       }
       app.status = 'city_in_review';
       app.updatedAt = new Date().toISOString();
+      savePortalStateToDisk();
       res.status(200).json({
         success: true,
         message: 'Đã mở lại thẩm định hồ sơ tập thể.',
@@ -573,6 +583,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
       }
       app.status = 'city_review_completed';
       app.updatedAt = new Date().toISOString();
+      savePortalStateToDisk();
       res.status(200).json({
         success: true,
         message: 'Đã mở lại kết luận Hội đồng cho hồ sơ tập thể.',
@@ -593,6 +604,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
       fileType,
       fileSizeBytes,
       base64Content,
+      fileUrl,
     } = (req.body || {}) as {
       ownerTrack?: 'INDIVIDUAL' | 'COLLECTIVE';
       applicationId?: string;
@@ -601,6 +613,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
       fileType?: string;
       fileSizeBytes?: number;
       base64Content?: string;
+      fileUrl?: string;
     };
 
     if (!ownerTrack || !applicationId || !requirementOrCriterionId || !fileName) {
@@ -640,6 +653,13 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
     const sizeLabel = sizeKb >= 1024 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`;
     const evidenceId = `ev-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
+    const publicTestPath = path.resolve(process.cwd(), 'public/minhchung_test', path.basename(fileName));
+    const resolvedViewUrl =
+      fileUrl ||
+      (fs.existsSync(publicTestPath)
+        ? `/minhchung_test/${encodeURIComponent(path.basename(fileName))}`
+        : `/api/v2/portal/evidence/${encodeURIComponent(evidenceId)}`);
+
     const stored: StoredEvidenceRecord = {
       id: evidenceId,
       ownerTrack: ownerTrack === 'INDIVIDUAL' ? 'INDIVIDUAL' : 'COLLECTIVE',
@@ -650,7 +670,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
       size: sizeLabel,
       uploadedAt: new Date().toLocaleDateString('vi-VN'),
       status: 'achieved',
-      url: `/api/v2/portal/evidence/${encodeURIComponent(evidenceId)}`,
+      url: resolvedViewUrl,
       base64Content,
     };
 

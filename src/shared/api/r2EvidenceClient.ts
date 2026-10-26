@@ -64,6 +64,8 @@ const EXTENSION_TO_MIME: Record<string, string> = {
   jpeg: 'image/jpeg',
   png: 'image/png',
   webp: 'image/webp',
+  heic: 'image/heic',
+  heif: 'image/heif',
 };
 
 const viewUrlCache = new Map<string, { result: R2ViewUrlResult; expiresAtMs: number }>();
@@ -111,7 +113,13 @@ export function validateClientEvidenceFile(
 
   const ext = (fileName.split('.').pop() || '').toLowerCase().replace(/^\./, '');
   const expectedMime = EXTENSION_TO_MIME[ext];
-  if (expectedMime && mimeType && expectedMime !== mimeType.toLowerCase()) {
+  const lowerMime = (mimeType || '').toLowerCase();
+  const isHeicVariant =
+    (ext === 'heic' || ext === 'heif') &&
+    (lowerMime === 'image/heic' ||
+      lowerMime === 'image/heif' ||
+      lowerMime === 'application/octet-stream');
+  if (expectedMime && lowerMime && expectedMime !== lowerMime && !isHeicVariant) {
     throw new BackendApiError(
       `Phần mở rộng tệp (.${ext}) không khớp với định dạng khai báo (${mimeType}).`,
       400,

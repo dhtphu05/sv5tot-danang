@@ -4,6 +4,8 @@
  * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  */
 
+import fs from 'node:fs';
+import path from 'node:path';
 import type { Request, Response, NextFunction } from 'express';
 import type { IIdentityRepository } from '../identity/identity.repository';
 import type { SessionService } from '../sessions/session.service';
@@ -61,6 +63,8 @@ export const ALLOWED_EXTENSIONS = new Set([
   'jpeg',
   'png',
   'webp',
+  'heic',
+  'heif',
   'doc',
   'docx',
   'xls',
@@ -660,25 +664,120 @@ export const SEEDED_STUDENTS: Array<{
     unitId: 'unit-fpt',
     unitLabel: 'Trường Đại học FPT phân hiệu Đà Nẵng',
   },
+  {
+    id: 'stu-dut-phu',
+    email: 'phu.dht@dut.udn.vn',
+    fullName: 'Đoàn Hoàng Thiên Phú',
+    studentCode: '193230153',
+    institutionId: 'inst-dut',
+    institutionName: 'Trường Đại học Bách khoa – ĐHĐN',
+    unitId: 'unit-udn',
+    unitLabel: 'Đại học Đà Nẵng',
+  },
+  {
+    id: 'stu-dtu-02',
+    email: 'minhanh.tran@duytan.edu.vn',
+    fullName: 'Trần Lê Minh Ánh',
+    studentCode: '282115088',
+    institutionId: 'inst-dtu',
+    institutionName: 'Đại học Duy Tân',
+    unitId: 'unit-dtu',
+    unitLabel: 'Trường Đại học Duy Tân',
+  },
+  {
+    id: 'stu-donga-02',
+    email: 'huukhang.nguyen@donga.edu.vn',
+    fullName: 'Nguyễn Hữu Khang',
+    studentCode: 'DA210892',
+    institutionId: 'inst-donga',
+    institutionName: 'Trường Đại học Đông Á',
+    unitId: 'unit-donga',
+    unitLabel: 'Trường Đại học Đông Á',
+  },
+  {
+    id: 'stu-dau-02',
+    email: 'thanhha.phan@dau.edu.vn',
+    fullName: 'Phan Thị Thanh Hà',
+    studentCode: '22KT0241',
+    institutionId: 'inst-dau',
+    institutionName: 'Trường Đại học Kiến trúc Đà Nẵng',
+    unitId: 'unit-dau',
+    unitLabel: 'Trường Đại học Kiến trúc Đà Nẵng',
+  },
+  {
+    id: 'stu-upes3-02',
+    email: 'vanhoang.le@upes3.edu.vn',
+    fullName: 'Lê Văn Hoàng',
+    studentCode: 'TD210152',
+    institutionId: 'inst-upes3',
+    institutionName: 'Trường Đại học Thể dục Thể thao Đà Nẵng',
+    unitId: 'unit-upes3',
+    unitLabel: 'Trường Đại học Thể dục Thể thao Đà Nẵng',
+  },
+  {
+    id: 'stu-fpt-02',
+    email: 'tamhmde180129@fpt.edu.vn',
+    fullName: 'Hoàng Minh Tâm',
+    studentCode: 'DE180129',
+    institutionId: 'inst-fpt',
+    institutionName: 'Trường Đại học FPT phân hiệu Đà Nẵng',
+    unitId: 'unit-fpt',
+    unitLabel: 'Trường Đại học FPT phân hiệu Đà Nẵng',
+  },
 ];
 
 export function createDefaultCriteriaList() {
   return [
-    { id: 'ethics', name: 'Đạo đức tốt', requirements: [], groups: [] },
-    { id: 'academic', name: 'Học tập tốt', requirements: [], groups: [] },
-    { id: 'physical', name: 'Thể lực tốt', requirements: [], groups: [] },
-    { id: 'volunteer', name: 'Tình nguyện tốt', requirements: [], groups: [] },
-    { id: 'integration', name: 'Hội nhập tốt', requirements: [], groups: [] },
+    { id: 'ethics', number: 1, name: 'Đạo đức tốt', requirements: [] },
+    { id: 'academic', number: 2, name: 'Học tập tốt', requirements: [] },
+    { id: 'physical', number: 3, name: 'Thể lực tốt', requirements: [] },
+    { id: 'volunteer', number: 4, name: 'Tình nguyện tốt', requirements: [] },
+    { id: 'integration', number: 5, name: 'Hội nhập tốt', requirements: [] },
   ];
 }
 
 export function createDefaultCriteriaReviewList() {
   return [
-    { criterionId: 'ethics', criterionName: 'Đạo đức tốt', status: 'not_reviewed' },
-    { criterionId: 'academic', criterionName: 'Học tập tốt', status: 'not_reviewed' },
-    { criterionId: 'physical', criterionName: 'Thể lực tốt', status: 'not_reviewed' },
-    { criterionId: 'volunteer', criterionName: 'Tình nguyện tốt', status: 'not_reviewed' },
-    { criterionId: 'integration', criterionName: 'Hội nhập tốt', status: 'not_reviewed' },
+    {
+      criterionId: 'ethics',
+      criterionNumber: 1,
+      criterionName: 'Đạo đức tốt',
+      status: 'not_reviewed',
+      declaredCount: 0,
+      evidenceCount: 0,
+    },
+    {
+      criterionId: 'academic',
+      criterionNumber: 2,
+      criterionName: 'Học tập tốt',
+      status: 'not_reviewed',
+      declaredCount: 0,
+      evidenceCount: 0,
+    },
+    {
+      criterionId: 'physical',
+      criterionNumber: 3,
+      criterionName: 'Thể lực tốt',
+      status: 'not_reviewed',
+      declaredCount: 0,
+      evidenceCount: 0,
+    },
+    {
+      criterionId: 'volunteer',
+      criterionNumber: 4,
+      criterionName: 'Tình nguyện tốt',
+      status: 'not_reviewed',
+      declaredCount: 0,
+      evidenceCount: 0,
+    },
+    {
+      criterionId: 'integration',
+      criterionNumber: 5,
+      criterionName: 'Hội nhập tốt',
+      status: 'not_reviewed',
+      declaredCount: 0,
+      evidenceCount: 0,
+    },
   ];
 }
 
@@ -714,7 +813,7 @@ export function createEmptyCollectiveRequirements() {
 }
 
 function buildSeededIndividualStaffRecords(): Array<Record<string, any>> {
-  return [
+  const baseRecords: Array<Record<string, any>> = [
     {
       applicationId: 'APP-2026-DN-00142',
       schoolYear: 'Năm học 2025–2026',
@@ -738,10 +837,38 @@ function buildSeededIndividualStaffRecords(): Array<Record<string, any>> {
       updatedAt: new Date().toISOString(),
     },
   ];
+
+  for (const st of SEEDED_STUDENTS) {
+    if (st.studentCode === '102220123') continue;
+    baseRecords.push({
+      applicationId: `APP-2026-DN-${st.studentCode}`,
+      schoolYear: 'Năm học 2025–2026',
+      student: {
+        fullName: st.fullName,
+        studentCode: st.studentCode,
+        email: st.email,
+      },
+      institution: {
+        id: st.institutionId,
+        officialName: st.institutionName,
+      },
+      currentReviewStage: 'SCHOOL',
+      schoolReviewUnitId: st.unitId,
+      schoolReviewUnitName: st.unitLabel,
+      schoolPreliminaryStatus: 'pending_intake',
+      workflowStatus: 'unassigned',
+      assignment: null,
+      reviewedCriteriaCount: 0,
+      criteriaReview: createDefaultCriteriaReviewList(),
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  return baseRecords;
 }
 
 function buildSeededStudentApplications(): Record<string, Record<string, any>> {
-  return {
+  const map: Record<string, Record<string, any>> = {
     'APP-2026-DN-00142': {
       applicationId: 'APP-2026-DN-00142',
       status: 'draft',
@@ -763,6 +890,32 @@ function buildSeededStudentApplications(): Record<string, Record<string, any>> {
       supplementRequests: [],
     },
   };
+
+  for (const st of SEEDED_STUDENTS) {
+    const appId = `APP-2026-DN-${st.studentCode}`;
+    map[appId] = {
+      applicationId: appId,
+      status: 'submitted',
+      reviewStage: 'SCHOOL',
+      trainingInstitutionName: st.institutionName,
+      schoolReviewUnitId: st.unitId,
+      schoolReviewUnitName: st.unitLabel,
+      schoolPreliminaryStatus: 'pending_intake',
+      student: {
+        fullName: st.fullName,
+        studentId: st.studentCode,
+        university: st.institutionName,
+        faculty: 'Khoa chuyên ngành',
+        class: 'K2022',
+        email: st.email,
+        academicYear: '2025–2026',
+      },
+      criteria: createDefaultCriteriaList(),
+      supplementRequests: [],
+    };
+  }
+
+  return map;
 }
 
 export interface PortalRegisteredStudent {
@@ -785,6 +938,8 @@ export interface PortalState {
   auditLogs: PortalAuditLogRecord[];
 }
 
+const PORTAL_STATE_FILE_PATH = path.resolve(process.cwd(), '.data', 'portal-state.json');
+
 export const portalState: PortalState = {
   sessions: new Map(),
   registeredStudents: new Map(),
@@ -805,6 +960,89 @@ export const portalState: PortalState = {
     },
   ],
 };
+
+export function savePortalStateToDisk(): void {
+  if (process.env.NODE_ENV === 'test') return;
+  try {
+    const dir = path.dirname(PORTAL_STATE_FILE_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const payload = {
+      registeredStudents: Array.from(portalState.registeredStudents.entries()),
+      individualStaffRecords: portalState.individualStaffRecords,
+      studentApplications: portalState.studentApplications,
+      collectiveApplications: portalState.collectiveApplications,
+      evidenceIndex: Array.from(portalState.evidenceIndex.entries()),
+      auditLogs: portalState.auditLogs.slice(0, 500),
+    };
+    fs.writeFileSync(PORTAL_STATE_FILE_PATH, JSON.stringify(payload, null, 2), 'utf8');
+  } catch {
+    // Ignore disk write errors in read-only environments
+  }
+}
+
+export function loadPortalStateFromDisk(): boolean {
+  if (process.env.NODE_ENV === 'test') return false;
+  try {
+    if (!fs.existsSync(PORTAL_STATE_FILE_PATH)) return false;
+    const raw = fs.readFileSync(PORTAL_STATE_FILE_PATH, 'utf8');
+    const parsed = JSON.parse(raw) as {
+      registeredStudents?: Array<[string, PortalRegisteredStudent]>;
+      individualStaffRecords?: Array<Record<string, any>>;
+      studentApplications?: Record<string, Record<string, any>>;
+      collectiveApplications?: Array<Record<string, any>>;
+      evidenceIndex?: Array<[string, StoredEvidenceRecord]>;
+      auditLogs?: PortalAuditLogRecord[];
+    };
+    if (Array.isArray(parsed.registeredStudents)) {
+      portalState.registeredStudents = new Map(parsed.registeredStudents);
+    }
+    if (Array.isArray(parsed.individualStaffRecords)) {
+      portalState.individualStaffRecords = parsed.individualStaffRecords;
+    }
+    if (parsed.studentApplications && typeof parsed.studentApplications === 'object') {
+      portalState.studentApplications = parsed.studentApplications;
+    }
+    if (Array.isArray(parsed.collectiveApplications)) {
+      portalState.collectiveApplications = parsed.collectiveApplications;
+    }
+    if (Array.isArray(parsed.evidenceIndex)) {
+      portalState.evidenceIndex = new Map(parsed.evidenceIndex);
+    }
+    if (Array.isArray(parsed.auditLogs)) {
+      portalState.auditLogs = parsed.auditLogs;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Automatically load persisted state on server startup
+loadPortalStateFromDisk();
+
+export function clearDomainPortalStateForSeed(): void {
+  portalState.sessions = new Map();
+  portalState.registeredStudents = new Map();
+  portalState.individualStaffRecords = [];
+  portalState.studentApplications = {};
+  portalState.collectiveApplications = [];
+  portalState.evidenceIndex = new Map();
+  portalState.auditLogs = [
+    {
+      id: `aud-clean-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      track: 'SYSTEM',
+      action: 'CLEAN_SLATE_INITIALIZED',
+      actorId: 'system',
+      actorName: 'Hệ thống 5TOT Đà Nẵng',
+      actorRole: 'ADMIN',
+      details: 'Đã làm sạch toàn bộ dữ liệu mẫu để khởi tạo dữ liệu thật qua REST API.',
+    },
+  ];
+  savePortalStateToDisk();
+}
 
 export function resetDomainPortalState(): void {
   portalState.sessions = new Map();
@@ -836,6 +1074,7 @@ export function appendPortalAuditLog(
     ...entry,
   };
   portalState.auditLogs.unshift(record);
+  savePortalStateToDisk();
   return record;
 }
 
@@ -901,6 +1140,9 @@ export async function issueZeroTrustJwtToken(
 ): Promise<{ userId: string; accessToken: string }> {
   try {
     let existing = await deps.identityRepo.findByEmail(params.email);
+    if (!existing && params.studentCode) {
+      existing = await deps.identityRepo.findByStudentCode(params.studentCode);
+    }
     if (!existing) {
       const passwordHash = await defaultPasswordHasher.hash('PortalAuthPass123!');
       if (params.role === 'STUDENT') {

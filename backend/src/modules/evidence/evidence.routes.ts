@@ -18,7 +18,15 @@ export function createEvidenceRouter(
   router.put(
     '/r2-local-object/:id',
     express.raw({
-      type: ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'application/octet-stream'],
+      type: [
+        'application/pdf',
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/heic',
+        'image/heif',
+        'application/octet-stream',
+      ],
       limit: '105mb',
     }),
     controller.putLocalOfflineObject

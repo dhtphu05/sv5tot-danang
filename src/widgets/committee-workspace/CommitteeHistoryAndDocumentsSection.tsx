@@ -64,14 +64,28 @@ export const CommitteeHistoryAndDocumentsSection: React.FC<
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[13.5px] font-extrabold text-[#0F2335]">
-                  Quyết định đề nghị xét chọn — Đại học Đà Nẵng
+                  Văn bản đề nghị xét chọn — {application.institution.officialName}
                 </span>
-                <span className="px-2 py-0.5 rounded-[4px] bg-[#EEF2FF] text-[#4338CA] text-[11px] font-bold">
-                  unit-udn
-                </span>
+                {application.schoolReviewUnitId && (
+                  <span className="px-2 py-0.5 rounded-[4px] bg-[#EEF2FF] text-[#4338CA] text-[11px] font-bold">
+                    {application.schoolReviewUnitId}
+                  </span>
+                )}
               </div>
               <div className="text-[12px] text-[#64748B] mt-0.5">
-                Văn bản số: <strong>182/QĐ-ĐHĐN</strong> · Ngày ký: 18/10/2026 · Người ký: PGS.TS. Nguyễn Ngọc Vũ
+                {application.schoolReviewSummary?.decisionDocumentMetadata?.fileName ? (
+                  <>
+                    Tệp đính kèm:{' '}
+                    <strong>
+                      {application.schoolReviewSummary.decisionDocumentMetadata.fileName}
+                    </strong>
+                    {application.schoolReviewSummary.decisionDocumentMetadata.decisionNumber
+                      ? ` · Số hiệu: ${application.schoolReviewSummary.decisionDocumentMetadata.decisionNumber}`
+                      : ''}
+                  </>
+                ) : (
+                  <span>Tệp văn bản đề nghị (.PDF) từ đơn vị xét sơ tuyển</span>
+                )}
               </div>
             </div>
           </div>
@@ -82,7 +96,7 @@ export const CommitteeHistoryAndDocumentsSection: React.FC<
             iconLeading={<Eye size={13} />}
             onClick={onOpenSchoolDecisionModal}
           >
-            Xem Quyết định đính kèm
+            Xem văn bản đính kèm
           </Button>
         </div>
 
@@ -96,7 +110,7 @@ export const CommitteeHistoryAndDocumentsSection: React.FC<
           <div>
             <span className="text-[#64748B]">Đơn vị xét sơ tuyển:</span>
             <div className="font-bold text-[#1E293B]">
-              Đại học Đà Nẵng (Đợt đề xuất tập trung)
+              {application.institution.officialName}
             </div>
           </div>
           <div>

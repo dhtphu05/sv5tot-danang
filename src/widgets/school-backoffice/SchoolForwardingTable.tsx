@@ -220,24 +220,41 @@ export const SchoolForwardingTable: React.FC<SchoolForwardingTableProps> = ({
             />
           </div>
 
-          {/* Institution Filter */}
-          <select
-            value={institutionFilter}
-            onChange={(e) => onSetInstitutionFilter(e.target.value)}
-            className="h-[34px] px-3 rounded-[7px] bg-[#F7FAFC] border border-[#DCE7EE] text-[12.5px] font-semibold text-[#172A3A] cursor-pointer"
-          >
-            <option value="all">
-              {isUdn ? 'Tất cả 08 trường thành viên' : 'Tất cả đơn vị trực thuộc'}
-            </option>
-            {memberInstitutions.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
+          {/* Institution Filter — Only rendered for UDN or multi-institution units */}
+          {(isUdn || memberInstitutions.length > 1) && (
+            <select
+              value={institutionFilter}
+              onChange={(e) => onSetInstitutionFilter(e.target.value)}
+              className="h-[34px] px-3 rounded-[7px] bg-[#F7FAFC] border border-[#DCE7EE] text-[12.5px] font-semibold text-[#172A3A] cursor-pointer"
+            >
+              <option value="all">
+                {isUdn ? 'Tất cả 08 trường thành viên' : 'Tất cả đơn vị trực thuộc'}
               </option>
-            ))}
-          </select>
+              {memberInstitutions.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+          )}
 
           {/* Status Filter Segmented Selector */}
           <div className="flex items-center p-0.5 bg-[#F1F5F9] rounded-[7px] text-[12px]">
+            {(batchStatus === 'FORWARDED' || selectedAppIds.length > 0) && (
+              <button
+                type="button"
+                onClick={() => onSetStatusFilter('selected')}
+                className={`px-2.5 py-1 rounded-[6px] font-semibold transition-colors cursor-pointer ${
+                  statusFilter === 'selected'
+                    ? 'bg-white text-[#7E22CE] shadow-2xs'
+                    : 'text-[#64748B] hover:text-[#0F2335]'
+                }`}
+              >
+                {batchStatus === 'FORWARDED'
+                  ? `Đã gửi TP (${selectedAppIds.length})`
+                  : `Đã chọn (${selectedAppIds.length})`}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => onSetStatusFilter('reviewed')}
@@ -427,9 +444,10 @@ export const SchoolForwardingTable: React.FC<SchoolForwardingTableProps> = ({
                 {filteredList.map((app) => {
                   const isSelected = selectedAppIds.includes(app.applicationId);
                   const isForwarded =
-                    batchStatus === 'FORWARDED' ||
-                    app.schoolPreliminaryStatus === 'forwarded_to_city' ||
-                    app.schoolReviewSummary?.isForwardedToCity;
+                    batchStatus === 'FORWARDED'
+                      ? isSelected
+                      : app.schoolPreliminaryStatus === 'forwarded_to_city' ||
+                        Boolean(app.schoolReviewSummary?.isForwardedToCity);
                   const hasActiveSupplement =
                     app.supplementSummary?.activeStatus === 'waiting_student';
                   const canSelect =
@@ -513,7 +531,9 @@ export const SchoolForwardingTable: React.FC<SchoolForwardingTableProps> = ({
                           {app.institution?.officialName || 'Đơn vị đào tạo'}
                         </div>
                         <div className="text-[11px] text-[#64748B]">
-                          Năm học {app.schoolYear || '2026–2027'}
+                          {(app.schoolYear || '2025–2026').startsWith('Năm học')
+                            ? app.schoolYear
+                            : `Năm học ${app.schoolYear || '2025–2026'}`}
                         </div>
                       </td>
 
@@ -539,6 +559,10 @@ export const SchoolForwardingTable: React.FC<SchoolForwardingTableProps> = ({
                         {isForwarded ? (
                           <span className="text-[12px] font-bold text-[#7E22CE]">
                             Đã gửi Thành phố
+                          </span>
+                        ) : batchStatus === 'FORWARDED' ? (
+                          <span className="text-[12px] font-medium text-[#64748B]">
+                            Không gửi đợt này
                           </span>
                         ) : summary?.allPassed ? (
                           <span className="text-[12px] font-bold text-[#15803D]">

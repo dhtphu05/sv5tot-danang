@@ -342,16 +342,22 @@ export const SchoolAnalyticsPage: React.FC<SchoolAnalyticsPageProps> = ({
         </div>
       </div>
 
-      {/* Member Institutions Breakdown Table (UDN or multi-institution scope) */}
+      {/* Member Institutions Breakdown Table */}
       <div className="bg-white rounded-[14px] border border-[#DCE7EE] overflow-hidden shadow-2xs space-y-0">
         <div className="p-5 border-b border-[#EEF4F8] flex items-center justify-between">
           <div>
             <h2 className="text-[15px] font-extrabold text-[#0F2335] flex items-center gap-2">
               <Building2 size={17} className="text-[#0D78AE]" />
-              <span>Phân bổ theo Đơn vị đào tạo trực thuộc</span>
+              <span>
+                {institutionBreakdown.length > 1
+                  ? 'Phân bổ theo Đơn vị đào tạo trực thuộc'
+                  : 'Tổng hợp hồ sơ tại Đơn vị đào tạo'}
+              </span>
             </h2>
             <p className="text-[12px] text-[#64748B] mt-0.5">
-              Chi tiết số lượng hồ sơ tiếp nhận và đề xuất theo từng trường thành viên / khoa trực thuộc
+              {institutionBreakdown.length > 1
+                ? 'Chi tiết số lượng hồ sơ tiếp nhận và đề xuất theo từng đơn vị trực thuộc'
+                : `Tổng hợp số lượng hồ sơ tiếp nhận và đề xuất của ${unitName}`}
             </p>
           </div>
           <span className="text-[12px] font-semibold text-[#526B7C] bg-[#F1F5F9] px-2.5 py-1 rounded-[6px]">

@@ -177,12 +177,15 @@ export const ReviewApplicationHeader: React.FC<ReviewApplicationHeaderProps> = (
             {isSchoolStage && (
               <>
                 <span className="text-[#0D78AE] font-semibold">
-                  Đơn vị xét sơ tuyển: {schoolReviewUnitName || applicationRecord.schoolReviewUnitName || 'Đại học Đà Nẵng'}
+                  Đơn vị xét sơ tuyển:{' '}
+                  {schoolReviewUnitName ||
+                    applicationRecord.schoolReviewUnitName ||
+                    applicationRecord.institution.officialName}
                 </span>
                 <span>·</span>
               </>
             )}
-            <span>Năm học: 2026–2027</span>
+            <span>{applicationRecord.schoolYear || 'Năm học 2025–2026'}</span>
           </div>
 
           {/* Meta: Officer Assignment & Timestamp */}
@@ -191,7 +194,9 @@ export const ReviewApplicationHeader: React.FC<ReviewApplicationHeaderProps> = (
               {isSchoolStage ? 'Cán bộ xét sơ tuyển:' : 'Thẩm định hồ sơ:'}{' '}
               <strong className="font-bold text-[#172A3A]">
                 {isSchoolStage
-                  ? 'Nguyễn Văn An'
+                  ? applicationRecord.schoolReviewSummary?.recommendingOfficerName ||
+                    applicationRecord.assignment?.officerName ||
+                    'Tổ sơ tuyển cấp Trường'
                   : applicationRecord.assignment?.officerName || 'Tổ thẩm định Thành phố'}
               </strong>
             </span>

@@ -13,6 +13,8 @@ export interface CommitteeSchoolDecisionPreviewModalProps {
   onClose: () => void;
   decisionNumber?: string;
   unitName?: string;
+  fileUrl?: string;
+  fileName?: string;
 }
 
 export const CommitteeSchoolDecisionPreviewModal: React.FC<
@@ -20,8 +22,10 @@ export const CommitteeSchoolDecisionPreviewModal: React.FC<
 > = ({
   isOpen,
   onClose,
-  decisionNumber = '182/QĐ-ĐHĐN',
-  unitName = 'Đại học Đà Nẵng',
+  decisionNumber = 'Văn bản đề nghị (.PDF)',
+  unitName = 'Đơn vị xét sơ tuyển',
+  fileUrl,
+  fileName,
 }) => {
   if (!isOpen) return null;
 
@@ -45,10 +49,10 @@ export const CommitteeSchoolDecisionPreviewModal: React.FC<
             <FileText size={20} className="text-[#38BDF8]" />
             <div>
               <h3 className="font-bold text-[14.5px]">
-                Quyết định đề xuất danh sách xét chọn — {unitName}
+                Văn bản đề nghị xét chọn — {unitName}
               </h3>
               <p className="text-[12px] text-[#94A3B8]">
-                Số hiệu: {decisionNumber} · Văn bản đính kèm đợt chuyển cấp Thành phố
+                {fileName || decisionNumber} · Văn bản đính kèm đợt chuyển cấp Thành phố
               </p>
             </div>
           </div>
@@ -64,96 +68,59 @@ export const CommitteeSchoolDecisionPreviewModal: React.FC<
         </div>
 
         {/* Document Body */}
-        <div className="p-8 overflow-y-auto flex-1 bg-[#F1F5F9]">
-          <div className="max-w-[680px] mx-auto bg-white rounded-md shadow-md p-8 sm:p-12 text-[#1E293B] border border-[#CBD5E1] space-y-6 font-serif">
-            <div className="flex items-start justify-between text-center pb-4 border-b border-gray-300 gap-4">
-              <div className="w-1/2 text-left">
-                <div className="text-[12px] font-bold uppercase tracking-wider text-gray-700">
-                  ỦY BAN NHÂN DÂN THÀNH PHỐ ĐÀ NẴNG
+        <div className="p-6 overflow-y-auto flex-1 bg-[#F1F5F9]">
+          {fileUrl ? (
+            <iframe
+              src={fileUrl}
+              title={fileName || decisionNumber}
+              className="w-full h-[65vh] rounded-[8px] border border-[#CBD5E1] bg-white"
+            />
+          ) : (
+            <div className="max-w-xl mx-auto bg-white rounded-[12px] border border-[#CBD5E1] p-6 space-y-4 text-[#1E293B]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-[8px] bg-[#EFF6FF] text-[#1D4ED8] flex items-center justify-center shrink-0">
+                  <Building2 size={20} />
                 </div>
-                <div className="text-[13px] font-extrabold uppercase text-[#0B64A0] mt-0.5">
-                  {unitName.toUpperCase()}
-                </div>
-                <div className="text-[12px] text-gray-600 font-mono mt-1">
-                  Số: {decisionNumber}
-                </div>
-              </div>
-
-              <div className="w-1/2 text-center">
-                <div className="text-[12px] font-bold uppercase text-gray-800">
-                  CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
-                </div>
-                <div className="text-[12.5px] font-bold text-gray-800 underline underline-offset-4 decoration-1">
-                  Độc lập – Tự do – Hạnh phúc
-                </div>
-                <div className="text-[11.5px] italic text-gray-600 mt-2">
-                  Đà Nẵng, ngày 18 tháng 10 năm 2026
+                <div>
+                  <div className="text-[14px] font-bold text-[#0F2335]">
+                    Đơn vị gửi đề nghị: {unitName}
+                  </div>
+                  <div className="text-[12px] text-[#64748B]">
+                    Tệp văn bản: {fileName || decisionNumber}
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div className="text-center space-y-2 pt-2">
-              <h2 className="text-[16px] font-bold uppercase tracking-wide text-gray-900">
-                QUYẾT ĐỊNH
-              </h2>
-              <div className="text-[13px] font-semibold text-gray-700 italic max-w-[480px] mx-auto">
-                Về việc đề xuất danh sách sinh viên đạt tiêu chuẩn danh hiệu &ldquo;Sinh viên 5 tốt&rdquo; cấp Thành phố năm học 2025–2026
+              <div className="text-[12.5px] text-[#526B7C] pt-3 border-t border-[#E2E8F0]">
+                Văn bản PDF đề nghị xét chọn đã được đơn vị đính kèm khi chuyển giao danh sách hồ sơ lên Hội Sinh viên Thành phố.
               </div>
             </div>
-
-            <div className="text-[13px] leading-relaxed space-y-3 text-justify text-gray-800">
-              <p>
-                - Căn cứ Hướng dẫn liên tịch số 42/HDLT-TĐ-HSV giữa Thành Đoàn Đà Nẵng và Hội Sinh viên Việt Nam thành phố Đà Nẵng về việc xét chọn danh hiệu &ldquo;Sinh viên 5 tốt&rdquo; năm học 2025–2026;
-              </p>
-              <p>
-                - Căn cứ kết quả thẩm định sơ tuyển cấp Trường của Hội đồng xét chọn Đại học Đà Nẵng bao gồm các trường đại học thành viên,
-              </p>
-
-              <div className="text-center font-bold text-[14px] uppercase pt-2">
-                QUYẾT NGHỊ:
-              </div>
-
-              <p>
-                <strong>Điều 1.</strong> Đề xuất Hội đồng xét chọn cấp Thành phố — Hội Sinh viên Việt Nam thành phố Đà Nẵng xem xét, công nhận danh hiệu &ldquo;Sinh viên 5 tốt&rdquo; cấp Thành phố năm học 2025–2026 đối với các sinh viên đủ điều kiện theo danh sách đính kèm.
-              </p>
-              <p>
-                <strong>Điều 2.</strong> Hồ sơ đề xuất của các cá nhân đính kèm đã được kiểm tra tính hợp lệ và nguyên trạng minh chứng theo đúng Quy chế xét chọn hiện hành.
-              </p>
-            </div>
-
-            <div className="pt-6 flex justify-between items-end border-t border-gray-200 text-[12.5px]">
-              <div className="text-left text-gray-600 italic text-[11.5px]">
-                <div>Nơi nhận:</div>
-                <div>- Hội Sinh viên TP Đà Nẵng;</div>
-                <div>- Ban Giám đốc ĐHĐN;</div>
-                <div>- Lưu: VT, ĐTN.</div>
-              </div>
-
-              <div className="text-center">
-                <div className="font-bold uppercase text-gray-800">
-                  GIÁM ĐỐC ĐẠI HỌC ĐÀ NẴNG
-                </div>
-                <div className="text-[11px] italic text-gray-500 my-4">
-                  (Đã ký điện tử &amp; đóng dấu)
-                </div>
-                <div className="font-bold text-[#0B64A0] text-[13.5px]">
-                  PGS.TS. Nguyễn Ngọc Vũ
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Footer */}
         <div className="px-6 py-3 bg-white border-t border-[#E2E8F0] flex items-center justify-between">
           <div className="flex items-center gap-2 text-[12px] text-[#16A34A] font-semibold">
             <CheckCircle2 size={15} />
-            <span>Văn bản đề xuất hợp lệ · Khóa đồng bộ theo đợt UDN</span>
+            <span>Văn bản đề xuất hợp lệ từ đơn vị</span>
           </div>
 
-          <Button variant="secondary" size="sm" onClick={onClose}>
-            Đóng
-          </Button>
+          <div className="flex items-center gap-2">
+            {fileUrl && (
+              <a
+                href={fileUrl}
+                download={fileName || 'van_ban_de_nghi.pdf'}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] bg-[#EAF6FC] hover:bg-[#DCEEFA] text-[#0D78AE] font-semibold text-[12px] transition-colors"
+              >
+                <Download size={13} />
+                <span>Tải xuống PDF</span>
+              </a>
+            )}
+            <Button variant="secondary" size="sm" onClick={onClose}>
+              Đóng
+            </Button>
+          </div>
         </div>
       </div>
     </div>

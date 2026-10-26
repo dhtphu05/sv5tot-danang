@@ -1,5 +1,5 @@
-import React from 'react';
-import { History, X, Send } from 'lucide-react';
+import React, { useState } from 'react';
+import { FileText, History, Upload, X, Send } from 'lucide-react';
 import { CollectiveApplication } from '../../../collectiveTypes';
 import { DocumentViewer } from '../../../../components/evidence/detail/DocumentViewer';
 import { Button } from '../../../../components/buttons/Button';
@@ -31,6 +31,11 @@ export const CollectiveCommitteeModals: React.FC<CollectiveCommitteeModalsProps>
   setPublicationDecisionNumber,
   onPublish,
 }) => {
+  const [uploadedDecisionPdf, setUploadedDecisionPdf] = useState<{
+    fileName: string;
+    fileUrl: string;
+  } | null>(null);
+
   return (
     <>
       {/* Document Viewer Modal */}
@@ -48,7 +53,10 @@ export const CollectiveCommitteeModals: React.FC<CollectiveCommitteeModalsProps>
               </button>
             </div>
             <div className="flex-1 overflow-hidden">
-              <DocumentViewer fileName={selectedEvidenceTitle} />
+              <DocumentViewer
+                fileName={selectedEvidenceTitle}
+                fileUrl={selectedEvidenceUrl || undefined}
+              />
             </div>
           </div>
         </div>
@@ -99,7 +107,7 @@ export const CollectiveCommitteeModals: React.FC<CollectiveCommitteeModalsProps>
           aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F2335]/55 backdrop-blur-xs select-none"
         >
-          <div className="w-full max-w-lg bg-white rounded-[14px] shadow-2xl border border-[#CFE0EC] overflow-hidden flex flex-col">
+          <div className="w-full max-w-lg bg-white rounded-[14px] shadow-2xl border border-[#CFE0EC] overflow-hidden flex flex-col max-h-[90vh]">
             <div className="px-5 py-4 bg-[#F8FBFD] border-b border-[#DCE7EE] flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <Send size={16} className="text-[#0B64A0]" />
@@ -116,7 +124,7 @@ export const CollectiveCommitteeModals: React.FC<CollectiveCommitteeModalsProps>
               </button>
             </div>
 
-            <div className="p-5 space-y-4 text-[13px]">
+            <div className="p-5 space-y-4 text-[13px] overflow-y-auto">
               <p className="text-[#172A3A]">
                 Sau khi công bố, tập thể <strong>{appData.collectiveName}</strong> sẽ có thể xem kết quả xét chọn chính thức trên Cổng tập thể.
               </p>
@@ -146,17 +154,65 @@ export const CollectiveCommitteeModals: React.FC<CollectiveCommitteeModalsProps>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[12px] font-bold text-[#172A3A] mb-1">
-                  Số quyết định công bố:
-                </label>
-                <input
-                  type="text"
-                  value={publicationDecisionNumber}
-                  onChange={(e) => setPublicationDecisionNumber(e.target.value)}
-                  placeholder="VD: 86/QĐ-HSV-TP"
-                  className="w-full h-[36px] px-3 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[7px] text-[13px] outline-none focus:border-[#0D78AE]"
-                />
+              <div className="space-y-2.5">
+                <div>
+                  <label className="block text-[12px] font-bold text-[#172A3A] mb-1">
+                    Tải lên Quyết định công nhận (.PDF) &amp; Số quyết định:
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={publicationDecisionNumber}
+                      onChange={(e) => setPublicationDecisionNumber(e.target.value)}
+                      placeholder="Nhập số quyết định (tùy chọn)..."
+                      className="flex-1 h-[36px] px-3 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[7px] text-[13px] outline-none focus:border-[#0D78AE]"
+                    />
+                    <label className="inline-flex items-center gap-1.5 h-[36px] px-3 rounded-[7px] bg-[#0B64A0] hover:bg-[#095386] text-white text-[12px] font-bold cursor-pointer shrink-0">
+                      <Upload size={13} />
+                      <span>Tải tệp PDF</span>
+                      <input
+                        type="file"
+                        accept=".pdf,application/pdf"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const url = URL.createObjectURL(file);
+                          setUploadedDecisionPdf({ fileName: file.name, fileUrl: url });
+                          if (!publicationDecisionNumber.trim()) {
+                            setPublicationDecisionNumber(file.name);
+                          }
+                          e.target.value = '';
+                        }}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                {uploadedDecisionPdf && (
+                  <div className="space-y-2">
+                    <div className="p-2.5 rounded-[7px] bg-[#EAF6FC] border border-[#CBE5F6] flex items-center justify-between text-[12px] text-[#0B64A0]">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <FileText size={14} className="shrink-0" />
+                        <span className="font-bold truncate">{uploadedDecisionPdf.fileName}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setUploadedDecisionPdf(null)}
+                        className="text-[#DC2626] font-semibold text-[11px] hover:underline cursor-pointer shrink-0"
+                      >
+                        Gỡ tệp
+                      </button>
+                    </div>
+                    <div className="h-[240px] rounded-[7px] overflow-hidden border border-[#DCE7EE] bg-[#525659]">
+                      <iframe
+                        src={uploadedDecisionPdf.fileUrl}
+                        title={uploadedDecisionPdf.fileName}
+                        className="w-full h-full border-0"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

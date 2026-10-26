@@ -37,6 +37,7 @@ import { resolveDomainServices } from '../../entities/services/modeResolver';
 export interface SchoolRecommendationForwardingPageProps {
   currentUser: StaffUser;
   unitName: string;
+  seasonId?: string;
   seasonCode?: string;
   activeRouteId: StaffRouteId;
   recQueue: SchoolRecommendationQueue;
@@ -65,25 +66,13 @@ export interface SchoolRecommendationForwardingPageProps {
   ) => void;
 }
 
-const DEFAULT_SYNTHETIC_DECISION: DecisionDocumentMetadata = {
-  decisionNumber: '182/QĐ-ĐHĐN',
-  decisionTitle:
-    'Quyết định về việc đề xuất danh sách sinh viên đạt danh hiệu "Sinh viên 5 tốt" cấp Thành phố năm học 2026–2027',
-  decisionDate: '2026-10-18',
-  signedByName: 'PGS.TS. Nguyễn Ngọc Vũ',
-  signedByTitle: 'Giám đốc Đại học Đà Nẵng',
-  fileId: 'doc-dec-182-dhdn-2026',
-  fileName: '182_QD_DHDN_DanhSach_DeXuat_SV5T_CapThanhPho.pdf',
-  fileSize: 2450000,
-  fileUrl: '/assets/docs/182_QD_DHDN_SV5T.pdf',
-};
-
 export const SchoolRecommendationForwardingPage: React.FC<
   SchoolRecommendationForwardingPageProps
 > = ({
   currentUser,
   unitName,
-  seasonCode = '2026–2027',
+  seasonId = 'season-2025-2026',
+  seasonCode = '2025–2026',
   activeRouteId,
   recQueue,
   recTab: _externalRecTab,
@@ -105,7 +94,7 @@ export const SchoolRecommendationForwardingPage: React.FC<
   const [internalInstitutionFilter, setInternalInstitutionFilter] =
     useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<ForwardingStatusFilter>(
-    activeRouteId === 'school_forwarded' ? 'all' : 'reviewed'
+    activeRouteId === 'school_forwarded' ? 'selected' : 'reviewed'
   );
 
   const searchQuery = externalSearchQuery ?? internalSearchQuery;
@@ -136,42 +125,20 @@ export const SchoolRecommendationForwardingPage: React.FC<
   }, [recQueue]);
 
   // Batch Selection State: Set of application IDs selected for forwarding
-  // Initialized with existing recommended applications or those ready for selection
-  const [internalSelectedAppIds, setInternalSelectedAppIds] = useState<string[]>(() => {
-    if (recQueue?.recommendedAwaitingForward && recQueue.recommendedAwaitingForward.length > 0) {
-      return recQueue.recommendedAwaitingForward.map((a) => a.applicationId);
-    }
-    // Default draft selection: applications with 5/5 criteria passed
-    return (allUnitApplications || [])
-      .filter((app) => {
-        if (!app) return false;
-        const sum = getApplicationCriteriaSummary(app);
-        return sum.allPassed && app.schoolPreliminaryStatus !== 'forwarded_to_city';
-      })
-      .map((a) => a.applicationId);
-  });
+  // Starts empty until user ticks rows or loads saved draft/forwarded batch from server
+  const [internalSelectedAppIds, setInternalSelectedAppIds] = useState<string[]>([]);
 
   const selectedAppIds = externalSelectedAppIds ?? internalSelectedAppIds;
   const setSelectedAppIds = externalOnSetSelectedAppIds ?? setInternalSelectedAppIds;
 
-  // Attached Decision Document state
+  // Attached Decision Document state — Starts as null until genuinely uploaded or loaded from server batch
   const [decisionDoc, setDecisionDoc] =
-    useState<DecisionDocumentMetadata | null>(DEFAULT_SYNTHETIC_DECISION);
-  const [docNumberInput, setDocNumberInput] = useState<string>(
-    DEFAULT_SYNTHETIC_DECISION.decisionNumber || ''
-  );
-  const [docTitleInput, setDocTitleInput] = useState<string>(
-    DEFAULT_SYNTHETIC_DECISION.decisionTitle || ''
-  );
-  const [docDateInput, setDocDateInput] = useState<string>(
-    DEFAULT_SYNTHETIC_DECISION.decisionDate || ''
-  );
-  const [docSignerInput, setDocSignerInput] = useState<string>(
-    DEFAULT_SYNTHETIC_DECISION.signedByName || ''
-  );
-  const [docSignerTitleInput, setDocSignerTitleInput] = useState<string>(
-    DEFAULT_SYNTHETIC_DECISION.signedByTitle || ''
-  );
+    useState<DecisionDocumentMetadata | null>(null);
+  const [docNumberInput, setDocNumberInput] = useState<string>('');
+  const [docTitleInput, setDocTitleInput] = useState<string>('');
+  const [docDateInput, setDocDateInput] = useState<string>('');
+  const [docSignerInput, setDocSignerInput] = useState<string>('');
+  const [docSignerTitleInput, setDocSignerTitleInput] = useState<string>('');
   const [isEditingDocMeta, setIsEditingDocMeta] = useState<boolean>(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -185,9 +152,7 @@ export const SchoolRecommendationForwardingPage: React.FC<
   const [batchId, setBatchId] = useState<string>(
     `BATCH-${userUnitId.toUpperCase()}-${seasonCode.replace(/[^0-9]/g, '')}`
   );
-  const [forwardedAtTime, setForwardedAtTime] = useState<string>(
-    '18/10/2026 · 14:30'
-  );
+  const [forwardedAtTime, setForwardedAtTime] = useState<string>('');
   const [forwardedByName, setForwardedByName] = useState<string>(
     currentUser.fullName
   );
@@ -208,12 +173,19 @@ export const SchoolRecommendationForwardingPage: React.FC<
 
   // Load existing batch status from services on mount
   useEffect(() => {
+    setDecisionDoc(null);
+    setDocNumberInput('');
+    setDocTitleInput('');
+    setDocDateInput('');
+    setDocSignerInput('');
+    setDocSignerTitleInput('');
+
     let isMounted = true;
     async function loadBatch() {
       try {
         const services = resolveDomainServices();
         const existing = await services.schoolReview.getSchoolForwardingBatch({
-          seasonId: 'season-2026-2027',
+          seasonId,
           actor: {
             id: currentUser.id,
             name: currentUser.fullName,
@@ -228,36 +200,32 @@ export const SchoolRecommendationForwardingPage: React.FC<
             if (existing.submittedByName)
               setForwardedByName(existing.submittedByName);
             if (existing.id) setBatchId(existing.id);
-            setStatusFilter('all');
+            setStatusFilter('selected');
+          } else {
+            setBatchStatus('DRAFT');
           }
-          if (existing.decisionFileId) {
+          if (existing.decisionFileId && existing.decisionFileName) {
             setDecisionDoc({
-              decisionNumber: existing.decisionNumber || DEFAULT_SYNTHETIC_DECISION.decisionNumber,
-              decisionTitle:
-                existing.decisionTitle || DEFAULT_SYNTHETIC_DECISION.decisionTitle,
-              decisionDate:
-                existing.decisionDate || DEFAULT_SYNTHETIC_DECISION.decisionDate,
-              signedByName:
-                existing.signedByName || DEFAULT_SYNTHETIC_DECISION.signedByName,
-              signedByTitle:
-                existing.signedByTitle ||
-                DEFAULT_SYNTHETIC_DECISION.signedByTitle,
+              decisionNumber: existing.decisionNumber,
+              decisionTitle: existing.decisionTitle,
+              decisionDate: existing.decisionDate,
+              signedByName: existing.signedByName,
+              signedByTitle: existing.signedByTitle,
               fileId: existing.decisionFileId,
-              fileName:
-                existing.decisionFileName ||
-                DEFAULT_SYNTHETIC_DECISION.fileName,
-              fileSize:
-                existing.decisionFileSize ||
-                DEFAULT_SYNTHETIC_DECISION.fileSize,
+              fileName: existing.decisionFileName,
+              fileSize: existing.decisionFileSize || 0,
               fileUrl: existing.decisionFileUrl,
             });
             if (existing.decisionNumber) {
               setDocNumberInput(existing.decisionNumber);
             }
           }
-          if (existing.selectedApplicationIds && existing.selectedApplicationIds.length > 0) {
+          if (Array.isArray(existing.selectedApplicationIds)) {
             setSelectedAppIds(existing.selectedApplicationIds);
           }
+        } else if (isMounted) {
+          setBatchStatus('DRAFT');
+          setSelectedAppIds([]);
         }
       } catch {
         // Fallback gracefully in offline / initial mode
@@ -267,7 +235,7 @@ export const SchoolRecommendationForwardingPage: React.FC<
     return () => {
       isMounted = false;
     };
-  }, [currentUser, userUnitId]);
+  }, [currentUser, userUnitId, seasonId]);
 
   // Selection mutation handlers (LEAN-4.1)
   const handleToggleSelectApp = (appId: string) => {
@@ -346,11 +314,12 @@ export const SchoolRecommendationForwardingPage: React.FC<
     }
 
     setUploadError(null);
-    const newDoc: DecisionDocumentMetadata = {
+    const objectUrl = URL.createObjectURL(file);
+    const baseDoc: DecisionDocumentMetadata = {
       fileId: `doc-${Date.now()}`,
       fileName: file.name,
       fileSize: file.size,
-      fileUrl: URL.createObjectURL(file),
+      fileUrl: objectUrl,
       // Preserve historical metadata if present on existing doc, never fabricate
       decisionNumber: decisionDoc?.decisionNumber,
       decisionTitle: decisionDoc?.decisionTitle,
@@ -358,7 +327,20 @@ export const SchoolRecommendationForwardingPage: React.FC<
       signedByName: decisionDoc?.signedByName,
       signedByTitle: decisionDoc?.signedByTitle,
     };
-    setDecisionDoc(newDoc);
+    setDecisionDoc(baseDoc);
+    if (file.size <= 10 * 1024 * 1024) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          setDecisionDoc((prev) =>
+            prev && prev.fileId === baseDoc.fileId
+              ? { ...prev, fileUrl: reader.result as string }
+              : prev
+          );
+        }
+      };
+      reader.readAsDataURL(file);
+    }
     setIsEditingDocMeta(false);
     setActionSuccessNotice(`Đã đính kèm tệp văn bản "${file.name}" thành công.`);
   };
@@ -474,7 +456,7 @@ export const SchoolRecommendationForwardingPage: React.FC<
 
       // 1. Save draft with current selection
       await services.schoolReview.saveSchoolForwardingBatchDraft({
-        seasonId: 'season-2026-2027',
+        seasonId,
         selectedApplicationIds: selectedAppIds,
         forwardingNote: forwardBatchNote.trim(),
         decisionMetadata: decisionDoc,
@@ -483,7 +465,7 @@ export const SchoolRecommendationForwardingPage: React.FC<
 
       // 2. Attach document
       await services.schoolReview.attachSchoolDecisionDocument({
-        seasonId: 'season-2026-2027',
+        seasonId,
         decisionNumber: decisionDoc.decisionNumber,
         decisionTitle: decisionDoc.decisionTitle,
         decisionDate: decisionDoc.decisionDate,
@@ -498,7 +480,7 @@ export const SchoolRecommendationForwardingPage: React.FC<
 
       // 3. Confirm batch forwarding
       const result = await services.schoolReview.confirmSchoolForwardingBatch({
-        seasonId: 'season-2026-2027',
+        seasonId,
         forwardingNote: forwardBatchNote.trim(),
         actor,
       });
@@ -515,7 +497,7 @@ export const SchoolRecommendationForwardingPage: React.FC<
       setForwardedByName(currentUser.fullName);
       setBatchId(result.data.id || batchId);
       setIsBatchConfirmOpen(false);
-      setStatusFilter('all');
+      setStatusFilter('selected');
       setActionSuccessNotice(
         `Đã gửi danh sách gồm ${selectedAppIds.length} hồ sơ của ${unitName} lên Hội Sinh viên TP. Đà Nẵng.`
       );

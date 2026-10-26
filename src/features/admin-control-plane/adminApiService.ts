@@ -4,7 +4,7 @@
  * `/api/v2/institutions/*`, `/api/v2/school-review-units/*`) when running in Real Backend Mode.
  */
 
-import { apiRequest } from '../../shared/api/httpClient';
+import { apiRequest, getApiActorContext } from '../../shared/api/httpClient';
 import { isBackendMode } from '../../shared/config/executionMode';
 import type {
   AdminControlPlaneSnapshot,
@@ -30,6 +30,8 @@ export function isRealBackendActive(): boolean {
 
 export async function fetchAdminSnapshotFromServer(): Promise<Partial<AdminControlPlaneSnapshot> | null> {
   if (!isRealBackendActive()) return null;
+  const actor = getApiActorContext();
+  if (!actor?.token || actor.role !== 'ADMIN') return null;
   try {
     const res = await apiRequest<{ success: boolean; data: AdminControlPlaneSnapshot }>(
       '/api/v2/admin/control-plane'

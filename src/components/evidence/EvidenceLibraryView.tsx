@@ -73,9 +73,13 @@ export const EvidenceLibraryView: React.FC<EvidenceLibraryViewProps> = ({
   const libraryFiles: PersonalLibraryItem[] = useMemo(() => {
     if (isForceEmpty || !hasApplication) return [];
     if (application) {
+      const fallbackEvidence =
+        application.student?.studentId === '102220123'
+          ? MOCK_PERSONAL_LIBRARY_EVIDENCE
+          : [];
       return deriveEvidenceLibraryFromApplication(
         application,
-        MOCK_PERSONAL_LIBRARY_EVIDENCE
+        fallbackEvidence
       );
     }
     return MOCK_PERSONAL_LIBRARY_EVIDENCE;

@@ -97,7 +97,7 @@ export const DossierAiSummaryModal: React.FC<DossierAiSummaryModalProps> = ({
         ],
         recommendedCommitteeVote: 'Khuyến nghị: Yêu cầu bổ sung tài liệu trước khi biểu quyết chính thức',
         executiveMemo:
-          'Kính trình Hội đồng xét chọn Sinh viên 5 tốt cấp Thành phố Đà Nẵng năm học 2025–2026.\n\nHồ sơ ứng viên Nguyễn Minh Anh (MSSV: 102220123) - Trường Đại học Bách khoa.\nSơ bộ đạt 2/5 tiêu chí vững chắc (Đạo đức tốt, Hội nhập tốt). Còn 2 nội dung cần bổ sung bảng điểm cả năm học và giấy xác nhận ngày công tác tình nguyện.\n\nCán bộ thẩm định đề xuất cấp quyền bổ sung hồ sơ theo quy định.',
+          `Kính trình Hội đồng xét chọn Sinh viên 5 tốt cấp Thành phố Đà Nẵng năm học 2025–2026.\n\nHồ sơ ứng viên ${applicationRecord.student.fullName} (MSSV: ${applicationRecord.student.studentCode}) - ${applicationRecord.institution.officialName}.\nSơ bộ đạt các tiêu chí cốt lõi. Cán bộ thẩm định đề xuất Hội đồng xem xét theo quy định.`,
       });
       return;
     }

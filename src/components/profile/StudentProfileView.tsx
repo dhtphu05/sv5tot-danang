@@ -48,6 +48,13 @@ import { resolveSchoolReviewUnit } from '../../staff/schoolReviewTypes';
 
 export interface StudentProfileViewProps {
   onProfileUpdated?: (updated: StudentProfileDto) => void;
+  fallbackStudent?: {
+    fullName?: string;
+    studentId?: string;
+    university?: string;
+    email?: string;
+    institutionId?: string;
+  };
   className?: string;
 }
 
@@ -68,14 +75,62 @@ export const CANONICAL_INSTITUTION_OPTIONS = [
   { id: 'inst-fpt', name: 'Trường Đại học FPT phân hiệu Đà Nẵng' },
 ];
 
+function buildFallbackStudentProfile(
+  fallbackStudent?: StudentProfileViewProps['fallbackStudent']
+): StudentProfileDto {
+  if (
+    !fallbackStudent?.fullName ||
+    fallbackStudent.fullName === DEFAULT_CANONICAL_STUDENT_PROFILE.fullName
+  ) {
+    return structuredClone(DEFAULT_CANONICAL_STUDENT_PROFILE);
+  }
+  const matchedInst = CANONICAL_INSTITUTION_OPTIONS.find(
+    (opt) =>
+      opt.id === fallbackStudent.institutionId ||
+      (fallbackStudent.university &&
+        (opt.name.toLowerCase().includes(fallbackStudent.university.toLowerCase()) ||
+          fallbackStudent.university.toLowerCase().includes(opt.name.split(' - ')[0].toLowerCase())))
+  );
+  return {
+    fullName: fallbackStudent.fullName,
+    gender: '' as any,
+    dateOfBirth: '',
+    ethnicity: '',
+    academicYearNumber: 0,
+    educationLevel: '' as any,
+    className: '',
+    homeProvince: '',
+    institutionId: matchedInst?.id || fallbackStudent.institutionId || 'inst-dut',
+    institutionName:
+      matchedInst?.name ||
+      fallbackStudent.university ||
+      'Trường Đại học Bách khoa - Đại học Đà Nẵng',
+    unionPosition: '',
+    politicalStatus: '' as any,
+    phoneNumber: '',
+    email: fallbackStudent.email || '',
+  };
+}
+
 export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
   onProfileUpdated,
+  fallbackStudent,
   className = '',
 }) => {
-  const [profile, setProfile] = useState<StudentProfileDto>(DEFAULT_CANONICAL_STUDENT_PROFILE);
-  const [initialProfile, setInitialProfile] = useState<StudentProfileDto>(DEFAULT_CANONICAL_STUDENT_PROFILE);
+  const defaultResolvedProfile = useMemo(
+    () => buildFallbackStudentProfile(fallbackStudent),
+    [
+      fallbackStudent?.fullName,
+      fallbackStudent?.studentId,
+      fallbackStudent?.university,
+      fallbackStudent?.email,
+      fallbackStudent?.institutionId,
+    ]
+  );
+  const [profile, setProfile] = useState<StudentProfileDto>(defaultResolvedProfile);
+  const [initialProfile, setInitialProfile] = useState<StudentProfileDto>(defaultResolvedProfile);
   const [completeness, setCompleteness] = useState<ProfileCompletenessResult>(() =>
-    evaluateProfileCompleteness(DEFAULT_CANONICAL_STUDENT_PROFILE)
+    evaluateProfileCompleteness(defaultResolvedProfile)
   );
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -100,12 +155,23 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
         const services = resolveDomainServices();
         const res = await services.profile.getProfile();
         if (isMounted && res?.profile) {
-          setProfile(res.profile);
-          setInitialProfile(res.profile);
-          setCompleteness(res.completeness || evaluateProfileCompleteness(res.profile));
+          const isStaleDefaultForOtherUser =
+            Boolean(fallbackStudent?.fullName) &&
+            res.profile.fullName !== fallbackStudent!.fullName;
+          const resolvedProfile = isStaleDefaultForOtherUser
+            ? defaultResolvedProfile
+            : res.profile;
+          setProfile(resolvedProfile);
+          setInitialProfile(resolvedProfile);
+          setCompleteness(evaluateProfileCompleteness(resolvedProfile));
         }
       } catch (err: any) {
-        console.warn('Could not load student profile via domain service, using canonical defaults:', err);
+        console.warn('Could not load student profile via domain service, using student identity fallback:', err);
+        if (isMounted) {
+          setProfile(defaultResolvedProfile);
+          setInitialProfile(defaultResolvedProfile);
+          setCompleteness(evaluateProfileCompleteness(defaultResolvedProfile));
+        }
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -114,7 +180,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [defaultResolvedProfile, fallbackStudent?.fullName]);
 
   // Update completeness real-time as user types
   useEffect(() => {

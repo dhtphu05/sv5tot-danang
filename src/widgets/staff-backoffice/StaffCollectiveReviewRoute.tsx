@@ -32,6 +32,7 @@ export interface StaffCollectiveReviewRouteProps {
   onChangeStatusFilter: (s: string) => void;
   collectiveTableColumns: OperationalTableColumn<CollectiveApplication>[];
   onSelectRoute: (routeId: StaffRouteId) => void;
+  activeSeasonLabel?: string;
 }
 
 export const StaffCollectiveReviewRoute: React.FC<
@@ -50,6 +51,7 @@ export const StaffCollectiveReviewRoute: React.FC<
   onChangeStatusFilter,
   collectiveTableColumns,
   onSelectRoute,
+  activeSeasonLabel,
 }) => {
   const collectiveApps = getAllCollectiveApplications();
   const currentApp =
@@ -120,7 +122,7 @@ export const StaffCollectiveReviewRoute: React.FC<
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#DCE7EE] pb-4">
         <div>
           <div className="text-[12px] font-semibold text-[#526B7C]">
-            {CURRENT_STAFF_SEASON.schoolYear} · {currentUser.roleLabel}:{' '}
+            {activeSeasonLabel || CURRENT_STAFF_SEASON.schoolYear} · {currentUser.roleLabel}:{' '}
             <strong className="text-[#172A3A]">{currentUser.fullName}</strong>
           </div>
           <h1 className="text-[20px] font-extrabold text-[#0F2335] mt-0.5 flex items-center gap-2">

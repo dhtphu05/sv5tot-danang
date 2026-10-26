@@ -74,7 +74,10 @@ export const CommitteeResultsSummarySection: React.FC<
             type="button"
             onClick={onOpenSchoolDecision}
             className="inline-flex items-center gap-1.5 h-[32px] px-3 rounded-[8px] bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#0F2335] text-[12px] font-bold transition-colors cursor-pointer border border-[#CBD5E1]"
-            title="Xem Quyết định đề nghị xét chọn từ cơ sở (Đại học Đà Nẵng)"
+            title={`Xem Quyết định đề nghị xét chọn từ cơ sở (${
+              application.schoolReviewSummary?.schoolReviewUnitName ||
+              application.institution.officialName
+            })`}
           >
             <FileText size={14} className="text-[#0D78AE]" />
             <span>Quyết định đề xuất từ cơ sở</span>

@@ -140,14 +140,17 @@ export const StudentHomeView: React.FC<StudentHomeViewProps> = ({
           <div className="flex items-center gap-2 text-[12px] font-bold text-[#0D78AE] uppercase tracking-wider">
             <span>Hội Sinh viên Việt Nam TP. Đà Nẵng</span>
             <span>·</span>
-            <span>Năm học {MOCK_STUDENT.schoolYear}</span>
+            <span>Năm học {application?.student?.academicYear || MOCK_STUDENT.schoolYear}</span>
           </div>
           <h1 className="text-[22px] sm:text-[24px] font-extrabold text-[#172A3A] tracking-tight mt-0.5">
-            Xin chào, {MOCK_STUDENT.fullName}
+            Xin chào, {application?.student?.fullName || MOCK_STUDENT.fullName}
           </h1>
           <p className="text-[13px] text-[#607483] mt-0.5">
-            MSSV: <strong className="text-[#172A3A]">{MOCK_STUDENT.studentId}</strong> ·{' '}
-            {MOCK_STUDENT.faculty}
+            MSSV:{' '}
+            <strong className="text-[#172A3A]">
+              {application?.student?.studentId || MOCK_STUDENT.studentId}
+            </strong>
+            {application?.student?.faculty ? ` · ${application.student.faculty}` : ''}
           </p>
           <div className="text-[12.5px] text-[#526B7C] mt-1 flex items-center gap-2 flex-wrap">
             <span>

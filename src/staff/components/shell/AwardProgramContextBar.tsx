@@ -133,7 +133,7 @@ export const AwardProgramContextBar: React.FC<AwardProgramContextBarProps> = ({
 
         <div className="flex items-center gap-1.5 text-[#0D78AE] font-semibold">
           <Calendar size={13} className="shrink-0" />
-          {seasons.length > 0 && onSwitchSeason ? (
+          {currentUser.primaryRole === 'ADMIN' && seasons.length > 0 && onSwitchSeason ? (
             <select
               data-testid="context-bar-season-switcher"
               aria-label="Đổi năm học / Mùa xét đang làm việc"
@@ -153,7 +153,12 @@ export const AwardProgramContextBar: React.FC<AwardProgramContextBarProps> = ({
               ))}
             </select>
           ) : (
-            <span>{seasonYearLabel}</span>
+            <span
+              data-testid="context-bar-active-season-badge"
+              className="inline-flex items-center gap-1 bg-[#EAF6FC] border border-[#CCE7F6] text-[#0D78AE] font-bold text-[11.5px] px-2 py-0.5 rounded-[6px]"
+            >
+              <span>{seasonYearLabel}</span>
+            </span>
           )}
           {currentUser.primaryRole === 'ADMIN' && onOpenSeasonManagement && (
             <button

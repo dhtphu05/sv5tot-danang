@@ -29,11 +29,14 @@ import {
   PrototypeScenarioId,
   getPrototypeScenarioByHomeId,
   savePersistedDemoSession,
+  savePersistedOfficerStudentApps,
+  savePersistedStaffApplications,
 } from '../../demo/prototypeDemoMode';
 import {
   StaffApplicationRecord,
   StaffNotificationItem,
 } from '../../staff/types';
+import { resolveSchoolReviewUnit } from '../../staff/schoolReviewTypes';
 import { ApplicationReviewWorkspaceState } from '../../staff/reviewTypes';
 
 const HERO_STAFF_APP_ID = 'APP-2026-DN-102220123';
@@ -277,43 +280,150 @@ export function useStudentPortalWorkflow({
 
   const handleApplicationSubmitted = useCallback(
     (submittedApp: StudentApplicationData) => {
+      const targetAppId = submittedApp.applicationId || HERO_STAFF_APP_ID;
       setSharedApplication(submittedApp);
       setPrototypeScenarioId('under_review');
       setHomeScenario('state_g_under_review');
       setAppSubmissionState('under_review');
 
-      setStaffApplications((prev) =>
-        prev.map((app) =>
-          app.applicationId === HERO_STAFF_APP_ID
-            ? {
-                ...app,
-                workflowStatus: 'assigned_not_started',
-                submissionSnapshotAvailable: true,
-                submittedAt: 'Vừa xong · Hôm nay',
-                updatedAt: 'Vừa xong',
-                latestOperationalNote:
-                  'Sinh viên đã hoàn tất gửi hồ sơ xét chọn',
-              }
-            : app
-        )
-      );
-      setOfficerStudentAppMap((prev) => ({
-        ...prev,
-        [HERO_STAFF_APP_ID]: submittedApp,
-      }));
+      setStaffApplications((prev) => {
+        const exists = prev.some(
+          (app) =>
+            app.applicationId === targetAppId ||
+            (targetAppId === HERO_STAFF_APP_ID &&
+              app.applicationId === HERO_STAFF_APP_ID)
+        );
+        if (exists) {
+          const updatedList = prev.map((app) =>
+            app.applicationId === targetAppId
+              ? {
+                  ...app,
+                  workflowStatus: 'assigned_not_started' as const,
+                  submittedAt: 'Vừa xong · Hôm nay',
+                  updatedAt: 'Vừa xong',
+                  latestOperationalNote:
+                    'Sinh viên đã hoàn tất gửi hồ sơ xét chọn',
+                }
+              : app
+          );
+          savePersistedStaffApplications(updatedList);
+          return updatedList;
+        }
+
+        const criteriaReview = submittedApp.criteria.map((crit) => {
+          const allReqs = crit.groups
+            ? crit.groups.flatMap((g) => g.requirements)
+            : crit.requirements || [];
+          const decls = allReqs.flatMap((r) => r.declarations || []);
+          const evCount = decls.reduce(
+            (sum, d) => sum + (d.evidenceFiles?.length || 0),
+            0
+          );
+          return {
+            criterionId: crit.id as
+              | 'ethics'
+              | 'academic'
+              | 'physical'
+              | 'volunteer'
+              | 'integration',
+            criterionNumber: crit.number,
+            criterionName: crit.name,
+            status: 'not_reviewed' as const,
+            declaredCount: decls.length,
+            evidenceCount: evCount,
+          };
+        });
+        const totalDeclarations = criteriaReview.reduce(
+          (s, c) => s + c.declaredCount,
+          0
+        );
+        const totalEvidence = criteriaReview.reduce(
+          (s, c) => s + c.evidenceCount,
+          0
+        );
+
+        const instId =
+          submittedApp.applicantProfileSnapshot?.institutionId || 'inst-dut';
+        const resolvedSchoolUnit = resolveSchoolReviewUnit(instId);
+
+        const newStaffRecord: StaffApplicationRecord = {
+          applicationId: targetAppId,
+          student: {
+            fullName: submittedApp.student.fullName,
+            studentCode: submittedApp.student.studentId,
+            email:
+              submittedApp.applicantProfileSnapshot?.email ||
+              submittedApp.student.email ||
+              '',
+          },
+          applicantProfileSnapshot:
+            submittedApp.applicantProfileSnapshot || null,
+          institution: {
+            id: instId,
+            officialName: submittedApp.student.university,
+          },
+          schoolYear: submittedApp.season || 'Năm học 2025–2026',
+          levelLabel: 'Cấp Thành phố Đà Nẵng',
+          submittedAt: 'Vừa xong · Hôm nay',
+          submittedDateSortKey: new Date().toISOString(),
+          updatedAt: 'Vừa xong',
+          updatedSortKey: Date.now(),
+          internalDeadline: '18/10/2026',
+          eligibilityStatus: 'verified',
+          eligibilityLabel: 'Đủ điều kiện nộp hồ sơ',
+          workflowStatus: 'assigned_not_started',
+          assignment: {
+            applicationId: targetAppId,
+            officerId: 'staff-off-nam',
+            officerName: 'Trần Hoàng Nam',
+            assignedAt: 'Vừa xong',
+            assignedBy: 'Hệ thống',
+            status: 'not_started',
+          },
+          criteriaReview,
+          reviewedCriteriaCount: 0,
+          totalCriteriaCount: 5,
+          totalDeclarations,
+          totalEvidence,
+          supplementSummary: {
+            requestCount: 0,
+            activeStatus: null,
+          },
+          committeeSummary: null,
+          finalResultSummary: null,
+          latestOperationalNote: 'Sinh viên đã hoàn tất gửi hồ sơ xét chọn',
+          currentReviewStage: 'SCHOOL',
+          schoolReviewUnitId: resolvedSchoolUnit.unit?.id || 'unit-udn',
+          schoolReviewUnitName:
+            resolvedSchoolUnit.unit?.officialName || 'Đại học Đà Nẵng',
+          schoolPreliminaryStatus: 'pending_intake',
+          schoolRecommendation: 'pending',
+        };
+
+        const nextList = [newStaffRecord, ...prev];
+        savePersistedStaffApplications(nextList);
+        return nextList;
+      });
+      setOfficerStudentAppMap((prev) => {
+        const nextMap = {
+          ...prev,
+          [targetAppId]: submittedApp,
+        };
+        savePersistedOfficerStudentApps(nextMap);
+        return nextMap;
+      });
       setStaffNotifications((prev) => [
         {
           id: `notif-staff-sub-${Date.now()}`,
           categoryLabel: 'Hồ sơ mới',
           title: 'Hồ sơ xét chọn mới tiếp nhận',
-          summary:
-            'Sinh viên Nguyễn Minh Anh (ĐH Bách khoa) đã gửi hồ sơ xét chọn trực tuyến.',
+          summary: `Sinh viên ${submittedApp.student.fullName} (${submittedApp.student.university}) đã gửi hồ sơ xét chọn trực tuyến.`,
           timestamp: 'Vừa xong',
           isUnread: true,
           tone: 'brand',
           targetRoute: 'applications',
-          targetApplicationId: HERO_STAFF_APP_ID,
-          targetRoles: ['CITY_OFFICER', 'CITY_MANAGER'],
+          targetApplicationId: targetAppId,
+          targetRoles: ['SCHOOL_OFFICER', 'CITY_OFFICER', 'CITY_MANAGER'],
         },
         ...prev,
       ]);
@@ -351,13 +461,15 @@ export function useStudentPortalWorkflow({
   );
 
   const handleSupplementBusinessResolved = useCallback(() => {
+    const targetAppId =
+      activeStoreState.application?.applicationId || HERO_STAFF_APP_ID;
     setPrototypeScenarioId('supplement_submitted');
     setHomeScenario('state_i_supplement_sent');
     setAppSubmissionState('supplement_sent');
 
     setStaffApplications((prev) =>
       prev.map((app) =>
-        app.applicationId === HERO_STAFF_APP_ID
+        app.applicationId === targetAppId
           ? {
               ...app,
               workflowStatus: 'supplement_returned',
@@ -380,11 +492,11 @@ export function useStudentPortalWorkflow({
       )
     );
     setOfficerWorkspaceMap((prev) => {
-      const current = prev[HERO_STAFF_APP_ID];
+      const current = prev[targetAppId];
       if (!current) return prev;
       return {
         ...prev,
-        [HERO_STAFF_APP_ID]: {
+        [targetAppId]: {
           ...current,
           workflowStatus: 'supplement_returned',
           supplementRequests: current.supplementRequests.map((r) => ({
@@ -400,14 +512,13 @@ export function useStudentPortalWorkflow({
         id: `notif-staff-supp-ret-${Date.now()}`,
         categoryLabel: 'Bổ sung hồ sơ',
         title: 'Sinh viên đã nộp bổ sung',
-        summary:
-          'Sinh viên Nguyễn Minh Anh đã cập nhật minh chứng theo yêu cầu của cán bộ.',
+        summary: `Sinh viên ${studentIdentity.fullName} đã cập nhật minh chứng theo yêu cầu của cán bộ.`,
         timestamp: 'Vừa xong',
         isUnread: true,
         tone: 'brand',
         targetRoute: 'applications',
-        targetApplicationId: HERO_STAFF_APP_ID,
-        targetRoles: ['CITY_OFFICER', 'CITY_MANAGER'],
+        targetApplicationId: targetAppId,
+        targetRoles: ['SCHOOL_OFFICER', 'CITY_OFFICER', 'CITY_MANAGER'],
       },
       ...prev,
     ]);
@@ -431,6 +542,8 @@ export function useStudentPortalWorkflow({
       return nextNotifs;
     });
   }, [
+    activeStoreState.application?.applicationId,
+    studentIdentity.fullName,
     setPrototypeScenarioId,
     setHomeScenario,
     setAppSubmissionState,

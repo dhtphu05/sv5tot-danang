@@ -20,11 +20,14 @@ import { deriveOfficerWorkloadSummaries } from './staffTableColumns';
 
 export interface StaffWorkloadViewProps {
   applications: StaffApplicationRecord[];
+  activeSeasonLabel?: string;
 }
 
 export const StaffWorkloadView: React.FC<StaffWorkloadViewProps> = ({
   applications,
+  activeSeasonLabel,
 }) => {
+  const seasonLabel = activeSeasonLabel || CURRENT_STAFF_SEASON.schoolYear;
   // Simplified for SRW-4 Business Correction: Replaces per-officer workload allocation with shared operational progress overview
   const totalApps = applications.length;
   const completedCount = applications.filter(
@@ -47,7 +50,7 @@ export const StaffWorkloadView: React.FC<StaffWorkloadViewProps> = ({
     <div className="p-6 max-w-[1240px] w-full mx-auto space-y-5">
       <div className="border-b border-[#DCE7EE] pb-4">
         <div className="text-[12px] font-semibold text-[#526B7C]">
-          {CURRENT_STAFF_SEASON.schoolYear} · Không gian xét duyệt cấp Thành phố
+          {seasonLabel} · Không gian xét duyệt cấp Thành phố
         </div>
         <h1 className="text-[20px] font-extrabold text-[#0F2335] mt-0.5">
           Tiến độ thẩm định hồ sơ cấp Thành phố
@@ -63,7 +66,7 @@ export const StaffWorkloadView: React.FC<StaffWorkloadViewProps> = ({
           <div className="text-[26px] font-extrabold text-[#0F2335] tabular-nums mt-1">
             {totalApps}
           </div>
-          <div className="text-[11.5px] text-[#0D78AE] mt-1">Đợt xét năm học 2025–2026</div>
+          <div className="text-[11.5px] text-[#0D78AE] mt-1">Đợt xét {seasonLabel}</div>
         </div>
 
         <div className="p-4 bg-white rounded-[12px] border border-[#DCE7EE] shadow-2xs">
@@ -109,20 +112,21 @@ export interface StaffOverviewDashboardProps {
   onSetStatusFilter: (filter: string) => void;
   onOpenApplicationReview: (applicationId: string) => void;
   applications?: StaffApplicationRecord[];
+  activeSeasonLabel?: string;
 }
 
 export const StaffOverviewDashboard: React.FC<StaffOverviewDashboardProps> = ({
   currentUser,
   officerAssignedApps,
-  officerMetrics,
   applicationTableColumns,
   selectedRowKey,
   onSelectRowKey,
   onSelectRoute,
   onSetStatusFilter,
-  onOpenApplicationReview,
   applications = officerAssignedApps,
+  activeSeasonLabel,
 }) => {
+  const seasonLabel = activeSeasonLabel || CURRENT_STAFF_SEASON.schoolYear;
   // In the shared City review workspace, all authorized City reviewers work on the shared City application list
   const sharedCityApps = applications.length > 0 ? applications : officerAssignedApps;
 
@@ -153,7 +157,7 @@ export const StaffOverviewDashboard: React.FC<StaffOverviewDashboardProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#DCE7EE] pb-4">
         <div>
           <div className="text-[12px] font-semibold text-[#526B7C]">
-            {CURRENT_STAFF_SEASON.schoolYear} · {CURRENT_STAFF_SEASON.scopeLabel}{' '}
+            {seasonLabel} · {CURRENT_STAFF_SEASON.scopeLabel}{' '}
             · {currentUser.roleLabel}
           </div>
           <h1 className="text-[21px] font-extrabold text-[#0F2335] mt-0.5">

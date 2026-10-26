@@ -555,6 +555,10 @@ export const StaffBackofficeViews: React.FC<StaffBackofficeViewsProps> = ({
     [isManager, onAssignOfficer, onOpenApplicationReview]
   );
 
+  const activeSeasonLabel = currentSeason
+    ? `Năm học ${currentSeason.schoolYear}`
+    : undefined;
+
   if (
     activeRouteId === 'committee' ||
     activeRouteId === 'committee_decisions' ||
@@ -575,6 +579,7 @@ export const StaffBackofficeViews: React.FC<StaffBackofficeViewsProps> = ({
         onRecordDecision={onRecordCommitteeDecision}
         onFinalizeResultSet={onFinalizeResultSet}
         onPublishResults={onPublishResults}
+        activeSeasonLabel={activeSeasonLabel}
       />
     );
   }
@@ -607,12 +612,18 @@ export const StaffBackofficeViews: React.FC<StaffBackofficeViewsProps> = ({
         onChangeStatusFilter={setStatusFilter}
         collectiveTableColumns={collectiveTableColumns}
         onSelectRoute={onSelectRoute}
+        activeSeasonLabel={activeSeasonLabel}
       />
     );
   }
 
   if (activeRouteId === 'workload') {
-    return <StaffWorkloadView applications={applications} />;
+    return (
+      <StaffWorkloadView
+        applications={applications}
+        activeSeasonLabel={activeSeasonLabel}
+      />
+    );
   }
 
   if (activeRouteId === 'analytics') {
@@ -628,7 +639,7 @@ export const StaffBackofficeViews: React.FC<StaffBackofficeViewsProps> = ({
 
 
   if (activeRouteId === 'deadlines') {
-    return <StaffDeadlinesRouteView />;
+    return <StaffDeadlinesRouteView activeSeasonLabel={activeSeasonLabel} />;
   }
 
   if (activeRouteId === 'overview') {
@@ -644,6 +655,7 @@ export const StaffBackofficeViews: React.FC<StaffBackofficeViewsProps> = ({
         onSetStatusFilter={setStatusFilter}
         onOpenApplicationReview={onOpenApplicationReview}
         applications={applications}
+        activeSeasonLabel={activeSeasonLabel}
       />
     );
   }
@@ -671,6 +683,7 @@ export const StaffBackofficeViews: React.FC<StaffBackofficeViewsProps> = ({
       applicationTableColumns={applicationTableColumns}
       collectiveTableColumns={collectiveTableColumns}
       onOpenApplicationReview={onOpenApplicationReview}
+      activeSeasonLabel={activeSeasonLabel}
     />
   );
 };

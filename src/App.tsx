@@ -21,7 +21,10 @@ import {
   HOME_COHERENT_SCENARIOS,
   CoherentStudentStoreState,
 } from './demo/fixtures/homeScenarios';
-import { StudentApplicationData } from './demo/fixtures/studentApplication';
+import {
+  StudentApplicationData,
+  buildCleanStudentApplication,
+} from './demo/fixtures/studentApplication';
 import { ResultDemoScenarioId } from './components/results/resultTypes';
 import { ApplicationSubmissionState } from './components/submission/submissionTypes';
 import { CollectivePortal } from './components/collective/CollectivePortal';
@@ -60,6 +63,7 @@ import { StudentPortalPage } from './pages/student-portal/StudentPortalPage';
 import { PublicEntryPortalPage } from './pages/public-portal/PublicEntryPortalPage';
 import { resolveDomainServices } from './entities/services';
 import { setApiActorContext } from './shared/api/httpClient';
+import { isBackendMode } from './shared/config/executionMode';
 
 export default function App() {
   const initialSession = useMemo(() => resolveInitialRouteAndSession(), []);
@@ -98,25 +102,14 @@ export default function App() {
   }>(() => ({
     fullName:
       initialSession.store.application.student.fullName ||
-      MOCK_STUDENT.fullName,
+      (isBackendMode() ? '' : MOCK_STUDENT.fullName),
     studentId:
       initialSession.store.application.student.studentId ||
-      MOCK_STUDENT.studentId,
+      (isBackendMode() ? '' : MOCK_STUDENT.studentId),
     university:
       initialSession.store.application.student.university ||
-      MOCK_STUDENT.university,
+      (isBackendMode() ? '' : MOCK_STUDENT.university),
   }));
-
-  const handleProfileUpdated = useCallback(
-    (updated: import('./entities/application/studentApplicationTypes').StudentProfileDto) => {
-      setStudentIdentity((prev) => ({
-        ...prev,
-        fullName: updated.fullName,
-        university: updated.institutionName || prev.university,
-      }));
-    },
-    []
-  );
 
   const [activeNavId, setActiveNavId] = useState<string>(initialSession.navId);
 
@@ -127,6 +120,35 @@ export default function App() {
   );
   const [sharedApplication, setSharedApplication] =
     useState<StudentApplicationData>(() => initialSession.store.application);
+
+  const handleProfileUpdated = useCallback(
+    (updated: import('./entities/application/studentApplicationTypes').StudentProfileDto) => {
+      setStudentIdentity((prev) => ({
+        ...prev,
+        fullName: updated.fullName,
+        university: updated.institutionName || prev.university,
+      }));
+      setSharedApplication((prev) => {
+        const nextApp: StudentApplicationData = {
+          ...prev,
+          applicantProfileSnapshot: updated,
+          student: {
+            ...prev.student,
+            fullName: updated.fullName,
+            university: updated.institutionName || prev.student.university,
+            class: updated.className || prev.student.class,
+            email: updated.email || prev.student.email,
+          },
+          trainingInstitutionName:
+            updated.institutionName || prev.trainingInstitutionName,
+        };
+        savePersistedDemoSession({ mutatedApplication: nextApp });
+        return nextApp;
+      });
+    },
+    []
+  );
+
   const [hasMultipleSupplements, setHasMultipleSupplements] =
     useState<boolean>(false);
   const [isHomeLoading, setIsHomeLoading] = useState<boolean>(false);
@@ -184,20 +206,80 @@ export default function App() {
         PROTOTYPE_SCENARIO_MAP[nextScenarioId] ||
         PROTOTYPE_SCENARIO_MAP[DEFAULT_PROTOTYPE_SCENARIO_ID];
       const pristine = clonePristineStoreForScenario(config.id);
+      const isNonDemoStudent =
+        (isBackendMode() ||
+          (Boolean(studentIdentity.studentId) &&
+            studentIdentity.studentId !== '102220123')) &&
+        (config.id === 'draft' || config.id === 'new_student');
+
+      const shouldNavigate = options?.navigateToDefaultScreen ?? true;
+      const targetNavId = shouldNavigate ? config.defaultNavId : activeNavId;
 
       setPrototypeScenarioId(config.id);
-      setHomeScenario(pristine.scenarioId);
+      setHomeScenario(
+        isNonDemoStudent && config.id === 'draft'
+          ? 'state_b_draft_clean'
+          : pristine.scenarioId
+      );
       setAppSubmissionState(pristine.submissionState);
-      setSharedApplication({
-        ...pristine.application,
-        student: {
-          ...pristine.application.student,
-          fullName: studentIdentity.fullName,
-          studentId: studentIdentity.studentId,
-          university: studentIdentity.university,
-        },
-      });
-      setNotifications(pristine.notifications);
+
+      if (isNonDemoStudent) {
+        setSharedApplication((prev) => {
+          const isPrevPollutedByDemo =
+            prev.applicationId === 'APP-2026-DN-102220123' ||
+            prev.applicantProfileSnapshot?.fullName === 'Nguyễn Minh Anh';
+          const nextApp =
+            prev.student.studentId === studentIdentity.studentId &&
+            !isPrevPollutedByDemo
+              ? {
+                  ...prev,
+                  student: {
+                    ...prev.student,
+                    fullName: studentIdentity.fullName,
+                    studentId: studentIdentity.studentId,
+                    university: studentIdentity.university,
+                  },
+                }
+              : buildCleanStudentApplication({
+                  fullName: studentIdentity.fullName,
+                  studentId: studentIdentity.studentId,
+                  university: studentIdentity.university,
+                  existingProfileSnapshot: isPrevPollutedByDemo
+                    ? undefined
+                    : prev.applicantProfileSnapshot,
+                });
+          savePersistedDemoSession({
+            scenarioId: config.id,
+            isDemoActive: true,
+            viewMode: 'student_app',
+            navId: targetNavId,
+            mutatedApplication: nextApp,
+            mutatedNotifications: [],
+          });
+          return nextApp;
+        });
+        setNotifications([]);
+      } else {
+        setSharedApplication({
+          ...pristine.application,
+          student: {
+            ...pristine.application.student,
+            fullName: studentIdentity.fullName,
+            studentId: studentIdentity.studentId,
+            university: studentIdentity.university,
+          },
+        });
+        setNotifications(pristine.notifications);
+        savePersistedDemoSession({
+          scenarioId: config.id,
+          isDemoActive: true,
+          viewMode: 'student_app',
+          navId: targetNavId,
+          mutatedApplication: null,
+          mutatedNotifications: null,
+        });
+      }
+
       setHasMultipleSupplements(false);
       setIsHomeLoading(false);
       setIsHomeError(false);
@@ -210,26 +292,16 @@ export default function App() {
       setPendingDeepLink(null);
       setScenarioResetKey((prev) => prev + 1);
 
-      const hasActionable = pristine.notifications.some(
-        (n) => n.isActionable && !n.isActionResolved
-      );
+      const hasActionable = isNonDemoStudent
+        ? false
+        : pristine.notifications.some(
+            (n) => n.isActionable && !n.isActionResolved
+          );
       setNotifTab(hasActionable ? 'actionable' : 'all');
-
-      const shouldNavigate = options?.navigateToDefaultScreen ?? true;
-      const targetNavId = shouldNavigate ? config.defaultNavId : activeNavId;
 
       setViewMode('student_app');
       setIsDemoActive(true);
       setActiveNavId(targetNavId);
-
-      savePersistedDemoSession({
-        scenarioId: config.id,
-        isDemoActive: true,
-        viewMode: 'student_app',
-        navId: targetNavId,
-        mutatedApplication: null,
-        mutatedNotifications: null,
-      });
 
       if (!options?.preserveUrl) {
         updateBrowserUrl(config.defaultPath);
@@ -304,6 +376,49 @@ export default function App() {
     setStaffApplications
   );
 
+  // Self-heal if a non-demo student has demo application or notification pollution
+  useEffect(() => {
+    const isNonDemo =
+      isBackendMode() ||
+      (Boolean(studentIdentity.studentId) &&
+        studentIdentity.studentId !== '102220123');
+    const isPollutedByDemo =
+      sharedApplication.applicationId === 'APP-2026-DN-102220123' ||
+      sharedApplication.applicantProfileSnapshot?.fullName === 'Nguyễn Minh Anh';
+
+    if (isNonDemo && isPollutedByDemo) {
+      const cleaned = buildCleanStudentApplication({
+        fullName: studentIdentity.fullName,
+        studentId: studentIdentity.studentId,
+        university: studentIdentity.university,
+      });
+      setSharedApplication(cleaned);
+      setNotifications([]);
+      savePersistedDemoSession({
+        mutatedApplication: cleaned,
+        mutatedNotifications: [],
+      });
+    } else if (
+      isNonDemo &&
+      notifications.some(
+        (n) =>
+          n.id === 'notif-supp-vol-mhx' ||
+          n.id === 'notif-ev-ielts-confirm' ||
+          n.id === 'notif-rev-started'
+      )
+    ) {
+      setNotifications([]);
+      savePersistedDemoSession({ mutatedNotifications: [] });
+    }
+  }, [
+    studentIdentity.fullName,
+    studentIdentity.studentId,
+    studentIdentity.university,
+    sharedApplication.applicationId,
+    sharedApplication.applicantProfileSnapshot?.fullName,
+    notifications,
+  ]);
+
   const activeStoreState: CoherentStudentStoreState = useMemo(() => {
     const base = HOME_COHERENT_SCENARIOS[homeScenario];
     const configuredDeadline =
@@ -316,14 +431,32 @@ export default function App() {
       adminControlPlane.adminSeasons.find((s) => s.isCurrentActive)
         ?.schoolYear || sharedApplication.student.academicYear;
 
+    const isNonDemo =
+      isBackendMode() ||
+      (Boolean(studentIdentity.studentId) &&
+        studentIdentity.studentId !== '102220123');
+    const isPollutedByDemo =
+      sharedApplication.applicationId === 'APP-2026-DN-102220123' ||
+      sharedApplication.applicantProfileSnapshot?.fullName === 'Nguyễn Minh Anh';
+
+    const effectiveSharedApp =
+      isNonDemo && isPollutedByDemo
+        ? buildCleanStudentApplication({
+            fullName: studentIdentity.fullName,
+            studentId: studentIdentity.studentId,
+            university: studentIdentity.university,
+          })
+        : sharedApplication;
+
     return {
       ...base,
+      advisoryCount: isNonDemo ? 0 : base.advisoryCount,
       submissionState: appSubmissionState,
       submissionDeadlineText: configuredDeadline,
       application: {
-        ...sharedApplication,
+        ...effectiveSharedApp,
         student: {
-          ...sharedApplication.student,
+          ...effectiveSharedApp.student,
           fullName: studentIdentity.fullName,
           studentId: studentIdentity.studentId,
           university: studentIdentity.university,

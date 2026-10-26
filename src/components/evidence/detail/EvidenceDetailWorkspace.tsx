@@ -37,7 +37,14 @@ export interface EvidenceDetailWorkspaceProps {
 /**
  * Generate rich recognized field items based on evidence file
  */
-function getInitialRecognizedFields(file: ApplicationEvidence): RecognizedFieldItem[] {
+function getInitialRecognizedFields(
+  file: ApplicationEvidence,
+  context?: {
+    criterionName?: string;
+    requirementTitle?: string;
+    declarationTitle?: string;
+  }
+): RecognizedFieldItem[] {
   const name = file.name.toLowerCase();
 
   if (name.includes('ielts')) {
@@ -61,8 +68,10 @@ function getInitialRecognizedFields(file: ApplicationEvidence): RecognizedFieldI
       {
         id: 'f-ielts-3',
         label: 'Họ và tên thí sinh',
-        effectiveValue: 'NGUYEN MINH ANH',
-        recognizedValue: 'NGUYEN MINH ANH',
+        effectiveValue:
+          file.id === 'ev-ielts-1' ? 'NGUYEN MINH ANH' : 'Trích xuất từ chứng chỉ ngoại ngữ',
+        recognizedValue:
+          file.id === 'ev-ielts-1' ? 'NGUYEN MINH ANH' : 'Trích xuất từ chứng chỉ ngoại ngữ',
         editable: true,
         highlightRegionId: 'student-name',
       },
@@ -176,54 +185,98 @@ function getInitialRecognizedFields(file: ApplicationEvidence): RecognizedFieldI
   }
 
   // Primary Hero Scenario: Giay_chung_nhan_NCKH.pdf / Quyet_dinh_cong_nhan_...pdf (Section 21, 24, 68)
+  if (name.includes('nckh') || name.includes('quyet_dinh_cong_nhan')) {
+    return [
+      {
+        id: 'f-nckh-1',
+        label: 'Tên thành tích / Danh hiệu',
+        effectiveValue: 'Giải Nhì Hội nghị Sinh viên Nghiên cứu khoa học 2026',
+        recognizedValue: 'Giải Nhì Hội nghị Sinh viên Nghiên cứu khoa học 2026',
+        editable: true,
+        highlightRegionId: 'award-name',
+      },
+      {
+        id: 'f-nckh-2',
+        label: 'Đơn vị công nhận & cấp bằng',
+        effectiveValue: 'Trường Đại học Bách khoa - Đại học Đà Nẵng',
+        recognizedValue: 'Trường Đại học Bách khoa - Đại học Đà Nẵng',
+        editable: true,
+        highlightRegionId: 'authority',
+      },
+      {
+        id: 'f-nckh-3',
+        label: 'Ngày công nhận (Quyết định khen thưởng)',
+        effectiveValue: '20/05/2028',
+        recognizedValue: '20/05/2028',
+        needsAttention: true,
+        attentionReason:
+          'Ngày được hệ thống nhận diện (2028) có thể chưa chính xác so với văn bản gốc (2026).',
+        editable: true,
+        highlightRegionId: 'date',
+      },
+      {
+        id: 'f-nckh-4',
+        label: 'Cấp thành tích',
+        effectiveValue: 'Cấp trường',
+        recognizedValue: 'Cấp trường',
+        editable: true,
+      },
+      {
+        id: 'f-nckh-5',
+        label: 'Họ và tên người được khen thưởng',
+        effectiveValue: 'Nguyễn Minh Anh',
+        recognizedValue: 'Nguyễn Minh Anh',
+        editable: true,
+        highlightRegionId: 'student-name',
+      },
+      {
+        id: 'f-nckh-6',
+        label: 'Mã số sinh viên (MSSV)',
+        effectiveValue: '102220123',
+        recognizedValue: '102220123',
+        editable: true,
+      },
+    ];
+  }
+
+  // Real files and user-uploaded evidence
   return [
     {
-      id: 'f-nckh-1',
-      label: 'Tên thành tích / Danh hiệu',
-      effectiveValue: 'Giải Nhì Hội nghị Sinh viên Nghiên cứu khoa học 2026',
-      recognizedValue: 'Giải Nhì Hội nghị Sinh viên Nghiên cứu khoa học 2026',
+      id: 'f-real-1',
+      label: 'Tên nội dung kê khai / Minh chứng',
+      effectiveValue: context?.declarationTitle || file.name,
+      recognizedValue: context?.declarationTitle || file.name,
       editable: true,
       highlightRegionId: 'award-name',
     },
     {
-      id: 'f-nckh-2',
-      label: 'Đơn vị công nhận & cấp bằng',
-      effectiveValue: 'Trường Đại học Bách khoa - Đại học Đà Nẵng',
-      recognizedValue: 'Trường Đại học Bách khoa - Đại học Đà Nẵng',
+      id: 'f-real-2',
+      label: 'Tiêu chí & Yêu cầu áp dụng',
+      effectiveValue:
+        context?.requirementTitle ||
+        context?.criterionName ||
+        'Minh chứng hồ sơ Sinh viên 5 tốt',
+      recognizedValue:
+        context?.requirementTitle ||
+        context?.criterionName ||
+        'Minh chứng hồ sơ Sinh viên 5 tốt',
       editable: true,
       highlightRegionId: 'authority',
     },
     {
-      id: 'f-nckh-3',
-      label: 'Ngày công nhận (Quyết định khen thưởng)',
-      effectiveValue: '20/05/2028',
-      recognizedValue: '20/05/2028',
-      needsAttention: true,
-      attentionReason: 'Ngày được hệ thống nhận diện (2028) có thể chưa chính xác so với văn bản gốc (2026).',
+      id: 'f-real-3',
+      label: 'Tệp đính kèm',
+      effectiveValue: `${file.name}${file.size ? ` (${file.size})` : ''}`,
+      recognizedValue: file.name,
+      editable: false,
+    },
+    {
+      id: 'f-real-4',
+      label: 'Thời điểm tải lên',
+      effectiveValue: file.uploadedAt || 'Vừa tải lên',
+      recognizedValue: file.uploadedAt || 'Vừa tải lên',
       editable: true,
       highlightRegionId: 'date',
-    },
-    {
-      id: 'f-nckh-4',
-      label: 'Cấp thành tích',
-      effectiveValue: 'Cấp trường',
-      recognizedValue: 'Cấp trường',
-      editable: true,
-    },
-    {
-      id: 'f-nckh-5',
-      label: 'Họ và tên người được khen thưởng',
-      effectiveValue: 'Nguyễn Minh Anh',
-      recognizedValue: 'Nguyễn Minh Anh',
-      editable: true,
-      highlightRegionId: 'student-name',
-    },
-    {
-      id: 'f-nckh-6',
-      label: 'Mã số sinh viên (MSSV)',
-      effectiveValue: '102220123',
-      recognizedValue: '102220123',
-      editable: true,
     },
   ];
 }
@@ -255,7 +308,11 @@ export const EvidenceDetailWorkspace: React.FC<EvidenceDetailWorkspaceProps> = (
 }) => {
   const [currentFile, setCurrentFile] = useState<ApplicationEvidence>(evidence);
   const [fields, setFields] = useState<RecognizedFieldItem[]>(() =>
-    getInitialRecognizedFields(evidence)
+    getInitialRecognizedFields(evidence, {
+      criterionName,
+      requirementTitle,
+      declarationTitle,
+    })
   );
   const initialAttentionField = fields.find((f) => f.needsAttention);
   const [focusedFieldId, setFocusedFieldId] = useState<string | null>(
@@ -268,12 +325,16 @@ export const EvidenceDetailWorkspace: React.FC<EvidenceDetailWorkspaceProps> = (
   // Sync state if selected evidence prop changes
   useEffect(() => {
     setCurrentFile(evidence);
-    const nextFields = getInitialRecognizedFields(evidence);
+    const nextFields = getInitialRecognizedFields(evidence, {
+      criterionName,
+      requirementTitle,
+      declarationTitle,
+    });
     setFields(nextFields);
     const att = nextFields.find((f) => f.needsAttention);
     setFocusedFieldId(att?.id || null);
     setHighlightRegion(att?.highlightRegionId || null);
-  }, [evidence]);
+  }, [evidence, criterionName, requirementTitle, declarationTitle]);
 
   // Lock background application page scroll (Section 34)
   useEffect(() => {
@@ -448,6 +509,7 @@ export const EvidenceDetailWorkspace: React.FC<EvidenceDetailWorkspaceProps> = (
           <DocumentViewer
             fileName={currentFile.name}
             fileType={currentFile.fileType}
+            fileUrl={currentFile.url}
             totalPage={currentFile.name.toLowerCase().endsWith('.pdf') ? 2 : 1}
             highlightRegion={highlightRegion}
             onSelectRegion={(reg) => {

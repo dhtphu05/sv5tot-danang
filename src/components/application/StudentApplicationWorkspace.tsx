@@ -128,13 +128,25 @@ export const StudentApplicationWorkspace: React.FC<
     setSubmissionState(initialSubmissionState);
   }, [initialSubmissionState]);
 
-  const [advisories, setAdvisories] =
-    useState<PreSubmitAdvisoryItem[]>(DEFAULT_ADVISORIES);
-  const [activities, setActivities] = useState<TrackingActivity[]>(
-    initialSubmissionState === 'supplement_required'
-      ? SUPPLEMENT_REQUIRED_ACTIVITIES
-      : ALL_REVIEWED_ACTIVITIES
+  const isDemoPersona = initialData?.student?.studentId === '102220123';
+  const [advisories, setAdvisories] = useState<PreSubmitAdvisoryItem[]>(() =>
+    isDemoPersona ? DEFAULT_ADVISORIES : []
   );
+  const [activities, setActivities] = useState<TrackingActivity[]>(() => {
+    if (initialSubmissionState === 'supplement_required') {
+      return SUPPLEMENT_REQUIRED_ACTIVITIES;
+    }
+    if (isDemoPersona) {
+      return ALL_REVIEWED_ACTIVITIES;
+    }
+    return [
+      {
+        id: 'act-init',
+        timestamp: 'Vừa xong',
+        message: 'Khởi tạo hồ sơ trực tuyến: Hồ sơ đề nghị xét chọn Sinh viên 5 tốt đã sẵn sàng để kê khai 5 tiêu chí.',
+      },
+    ];
+  });
   const [isActivityError, setIsActivityError] = useState(false);
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
   const [isSubmissionSuccessOpen, setIsSubmissionSuccessOpen] = useState(false);
@@ -169,6 +181,44 @@ export const StudentApplicationWorkspace: React.FC<
 
   const [application, setApplication] =
     useState<StudentApplicationData>(() => initialData);
+
+  useEffect(() => {
+    setAdvisories(isDemoPersona ? DEFAULT_ADVISORIES : []);
+    if (!isDemoPersona && initialSubmissionState !== 'supplement_required') {
+      setActivities([
+        {
+          id: 'act-init',
+          timestamp: 'Vừa xong',
+          message:
+            'Khởi tạo hồ sơ trực tuyến: Hồ sơ đề nghị xét chọn Sinh viên 5 tốt đã sẵn sàng để kê khai 5 tiêu chí.',
+        },
+      ]);
+    }
+  }, [isDemoPersona, initialSubmissionState]);
+
+  useEffect(() => {
+    setApplication((prev) => {
+      if (
+        prev.applicationId !== initialData.applicationId ||
+        prev.student.studentId !== initialData.student.studentId
+      ) {
+        return initialData;
+      }
+      return {
+        ...prev,
+        student: initialData.student,
+        applicantProfileSnapshot:
+          initialData.applicantProfileSnapshot ?? prev.applicantProfileSnapshot,
+        trainingInstitutionName:
+          initialData.trainingInstitutionName || prev.trainingInstitutionName,
+      };
+    });
+  }, [
+    initialData.applicationId,
+    initialData.student,
+    initialData.applicantProfileSnapshot,
+    initialData.trainingInstitutionName,
+  ]);
 
   const [expandedCriteria, setExpandedCriteria] = useState<
     Record<string, boolean>
@@ -244,6 +294,7 @@ export const StudentApplicationWorkspace: React.FC<
   useStudentWorkspaceDeepLink({
     deepLinkTarget,
     onDeepLinkConsumed,
+    initialData,
     setFallbackNotice,
     setSubmissionState,
     setSupplementScenarioId,

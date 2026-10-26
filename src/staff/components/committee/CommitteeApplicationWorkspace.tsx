@@ -208,13 +208,18 @@ export const CommitteeApplicationWorkspace: React.FC<
                 </span>
                 <span>·</span>
                 <span>
-                  Đơn vị sơ tuyển: <strong>Đại học Đà Nẵng (unit-udn)</strong>
+                  Đơn vị sơ tuyển:{' '}
+                  <strong>
+                    {application.schoolReviewSummary?.schoolReviewUnitName ||
+                      application.schoolReviewUnitName ||
+                      application.institution.officialName}
+                  </strong>
                 </span>
                 <span>·</span>
                 <span>
                   Cán bộ thẩm định:{' '}
                   <strong className="text-[#172A3A]">
-                    {application.assignment?.officerName || 'Trần Hoàng Nam'}
+                    {application.assignment?.officerName || 'Tổ thẩm định Thành phố'}
                   </strong>
                 </span>
               </div>
@@ -403,6 +408,7 @@ export const CommitteeApplicationWorkspace: React.FC<
                   <DocumentViewer
                     fileName={item.evidence.name}
                     fileType={item.evidence.fileType || 'pdf'}
+                    fileUrl={item.evidence.url}
                   />
                 ) : (
                   <div className="text-center p-8 text-[#526B7C]">Không tìm thấy tệp minh chứng.</div>
@@ -428,8 +434,17 @@ export const CommitteeApplicationWorkspace: React.FC<
       <CommitteeSchoolDecisionPreviewModal
         isOpen={isSchoolDecisionModalOpen}
         onClose={() => setIsSchoolDecisionModalOpen(false)}
-        decisionNumber="182/QĐ-ĐHĐN"
-        unitName="Đại học Đà Nẵng"
+        decisionNumber={
+          application.schoolReviewSummary?.decisionDocumentMetadata?.decisionNumber ||
+          application.schoolReviewSummary?.decisionDocumentMetadata?.fileName ||
+          'Văn bản đề nghị (.PDF)'
+        }
+        unitName={
+          application.schoolReviewSummary?.schoolReviewUnitName ||
+          application.institution.officialName
+        }
+        fileUrl={application.schoolReviewSummary?.decisionDocumentMetadata?.fileUrl}
+        fileName={application.schoolReviewSummary?.decisionDocumentMetadata?.fileName}
       />
 
       {/* AI Committee Secretary Advisory Modal (Quiet, On-Demand Only) */}

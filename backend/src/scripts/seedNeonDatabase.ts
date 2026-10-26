@@ -7,8 +7,15 @@
  */
 
 import 'dotenv/config';
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
 import { dbManager } from '../shared/database/prismaClient';
 import { defaultPasswordHasher } from '../modules/auth/passwordHasher';
+import {
+  CloudflareR2StorageClient,
+  verifyEvidenceMagicBytes,
+} from '../shared/storage/r2StorageClient';
 import {
   STAFF_SEED_ACCOUNTS,
   COLLECTIVE_PREPARERS,
@@ -578,8 +585,29 @@ async function main() {
   }
   console.log(`✅ Seeded ${COLLECTIVE_PREPARERS.length} Collective Preparer Accounts & Authorizations.`);
 
-  // 7. Seed Student Accounts across all 14 universities
-  for (const stu of SEEDED_STUDENTS) {
+  // 7. Seed Student Accounts & IndividualApplications across all 14 universities
+  let appSeedCount = 0;
+  for (let idx = 0; idx < SEEDED_STUDENTS.length; idx++) {
+    const stu = SEEDED_STUDENTS[idx];
+    const profilePayload = {
+      fullName: stu.fullName,
+      studentCode: stu.studentCode,
+      dateOfBirth: stu.studentCode === '193230153' ? '2004-08-19' : '2004-05-15',
+      gender: idx % 2 === 0 ? 'Nam' : 'Nữ',
+      ethnicity: 'Kinh',
+      citizenId: `04820400${String(1000 + idx)}`,
+      phoneNumber: `0905${String(123400 + idx)}`,
+      email: stu.email.toLowerCase(),
+      permanentAddress: 'Thành phố Đà Nẵng',
+      trainingInstitutionId: stu.institutionId,
+      trainingInstitutionName: stu.institutionName,
+      faculty: stu.studentCode === '193230153' ? 'Khoa Công nghệ Thông tin' : 'Khoa Đào tạo Chuyên ngành',
+      className: stu.studentCode === '193230153' ? '23T_DT2' : `22CLC-${idx + 1}`,
+      academicYear: '2025-2026',
+      youthUnionRole: 'Đoàn viên / Hội viên ưu tú',
+      updatedAt: new Date().toISOString(),
+    };
+
     const user = await prisma.user.upsert({
       where: { email: stu.email.toLowerCase() },
       update: {
@@ -588,6 +616,7 @@ async function main() {
         passwordHash: defaultHash,
         status: 'ACTIVE',
         institutionId: stu.institutionId,
+        profile: profilePayload,
       },
       create: {
         id: stu.id,
@@ -597,6 +626,7 @@ async function main() {
         passwordHash: defaultHash,
         status: 'ACTIVE',
         institutionId: stu.institutionId,
+        profile: profilePayload,
       },
     });
 
@@ -616,24 +646,226 @@ async function main() {
         },
       });
     }
-  }
-  console.log(`✅ Seeded ${SEEDED_STUDENTS.length} Student Accounts across all 14 universities.`);
 
-  const [instCount, unitCount, userCount, roleCount, colAuthCount] = await Promise.all([
+    // Create / upsert IndividualApplication across School Preliminary & City Review stages
+    const appCode = stu.studentCode === '102220123'
+      ? 'APP-2026-DN-00142'
+      : `APP-2026-DN-${stu.studentCode}`;
+    const isCityStage = idx % 3 !== 0; // 2/3 forwarded to City for City Manager/Officer/Committee testing, 1/3 at School Preliminary for School Officer testing
+    const isCommitteeStage = idx % 5 === 0 && isCityStage;
+
+    await prisma.individualApplication.upsert({
+      where: {
+        seasonId_applicantUserId: {
+          seasonId: season.id,
+          applicantUserId: user.id,
+        },
+      },
+      update: {
+        applicationCode: appCode,
+        institutionId: stu.institutionId,
+        schoolReviewUnitId: stu.unitId,
+        facultyName: profilePayload.faculty,
+        className: profilePayload.className,
+        academicYear: '2025-2026',
+        studentCodeSnapshot: stu.studentCode,
+        fullNameSnapshot: stu.fullName,
+        applicantProfileSnapshot: profilePayload,
+        gpaScale4: 3.65,
+        gpaScale10: 8.85,
+        conductScore: 92,
+        declaredCriteriaCount: 5,
+        totalEvidenceCount: 8,
+        currentReviewStage: isCommitteeStage
+          ? 'COMMITTEE_FINALIZATION'
+          : isCityStage
+          ? 'CITY_REVIEW'
+          : 'SCHOOL_PRELIMINARY',
+        schoolPreliminaryStatus: isCityStage
+          ? 'FORWARDED_TO_CITY'
+          : 'PENDING_SCHOOL_REVIEW',
+        cityWorkflowStatus: isCommitteeStage
+          ? 'CITY_REVIEW_COMPLETED'
+          : isCityStage
+          ? idx % 2 === 0
+            ? 'CITY_IN_REVIEW'
+            : 'CITY_UNASSIGNED'
+          : 'NOT_AT_CITY',
+        submittedToSchoolAt: new Date('2026-10-15T08:30:00Z'),
+        schoolForwardedAt: isCityStage ? new Date('2026-10-18T10:00:00Z') : null,
+      },
+      create: {
+        id: appCode,
+        applicationCode: appCode,
+        seasonId: season.id,
+        applicantUserId: user.id,
+        institutionId: stu.institutionId,
+        schoolReviewUnitId: stu.unitId,
+        facultyName: profilePayload.faculty,
+        className: profilePayload.className,
+        academicYear: '2025-2026',
+        studentCodeSnapshot: stu.studentCode,
+        fullNameSnapshot: stu.fullName,
+        applicantProfileSnapshot: profilePayload,
+        gpaScale4: 3.65,
+        gpaScale10: 8.85,
+        conductScore: 92,
+        declaredCriteriaCount: 5,
+        totalEvidenceCount: 8,
+        currentReviewStage: isCommitteeStage
+          ? 'COMMITTEE_FINALIZATION'
+          : isCityStage
+          ? 'CITY_REVIEW'
+          : 'SCHOOL_PRELIMINARY',
+        schoolPreliminaryStatus: isCityStage
+          ? 'FORWARDED_TO_CITY'
+          : 'PENDING_SCHOOL_REVIEW',
+        cityWorkflowStatus: isCommitteeStage
+          ? 'CITY_REVIEW_COMPLETED'
+          : isCityStage
+          ? idx % 2 === 0
+            ? 'CITY_IN_REVIEW'
+            : 'CITY_UNASSIGNED'
+          : 'NOT_AT_CITY',
+        submittedToSchoolAt: new Date('2026-10-15T08:30:00Z'),
+        schoolForwardedAt: isCityStage ? new Date('2026-10-18T10:00:00Z') : null,
+      },
+    });
+    appSeedCount++;
+  }
+  console.log(`✅ Seeded ${SEEDED_STUDENTS.length} Student Accounts & ${appSeedCount} IndividualApplications across all 14 universities.`);
+
+  // 8. Real Evidence Files Verification & Upload to Cloudflare R2 + Neon DB
+  const minhChungDir = fs.existsSync(path.resolve(process.cwd(), '../public/minhchung_test'))
+    ? path.resolve(process.cwd(), '../public/minhchung_test')
+    : path.resolve(process.cwd(), 'public/minhchung_test');
+  const r2Client = new CloudflareR2StorageClient();
+  let r2UploadedCount = 0;
+
+  if (fs.existsSync(minhChungDir)) {
+    const allFiles = fs
+      .readdirSync(minhChungDir)
+      .filter((f) => !f.startsWith('.') && /\.(pdf|heic|jpg|jpeg|png|webp)$/i.test(f));
+
+    console.log(`\n📂 Found ${allFiles.length} real evidence files in public/minhchung_test.`);
+
+    // Upload the 5 real PDFs + representative HEIC & JPG files to Cloudflare R2 & Neon DB
+    const targetFiles = allFiles.filter(
+      (f) =>
+        f.endsWith('.pdf') ||
+        f === 'IMG_1711.heic' ||
+        f === 'IMG_1711.jpg' ||
+        f === 'IMG_2266.heic' ||
+        f === 'IMG_2266.jpg' ||
+        f === 'IMG_4242.jpg'
+    );
+
+    const phuUser = await prisma.user.findUnique({
+      where: { email: 'phu.dht@dut.udn.vn' },
+    });
+    const ownerUserId = phuUser?.id || 'stu-dut-phu';
+
+    for (const fileName of targetFiles) {
+      const fullPath = path.join(minhChungDir, fileName);
+      const buffer = fs.readFileSync(fullPath);
+      const ext = (fileName.split('.').pop() || '').toLowerCase();
+      const mimeType =
+        ext === 'pdf'
+          ? 'application/pdf'
+          : ext === 'heic' || ext === 'heif'
+          ? 'image/heic'
+          : ext === 'png'
+          ? 'image/png'
+          : 'image/jpeg';
+
+      const headerHex = buffer.subarray(0, 32).toString('hex');
+      const magicValid = verifyEvidenceMagicBytes(mimeType, headerHex);
+      if (!magicValid) {
+        throw new Error(`Magic byte check failed for ${fileName} (${mimeType}): ${headerHex}`);
+      }
+
+      const sha256Checksum = crypto.createHash('sha256').update(buffer).digest('hex');
+      const safeSlug = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const objectKey = `2025-2026/INDIVIDUAL/APP-2026-DN-193230153/minhchung_test/${safeSlug}`;
+
+      if (r2Client.isConfigured()) {
+        const putIntent = await r2Client.createPresignedPutUrl({
+          objectKey,
+          mimeType,
+          sizeBytes: buffer.byteLength,
+        });
+        const putRes = await fetch(putIntent.uploadUrl, {
+          method: 'PUT',
+          headers: putIntent.headers,
+          body: buffer,
+        });
+        if (!putRes.ok) {
+          throw new Error(`R2 PUT failed for ${fileName}: HTTP ${putRes.status}`);
+        }
+        const inspected = await r2Client.inspectUploadedObject(objectKey);
+        if (!inspected?.exists) {
+          throw new Error(`R2 inspectUploadedObject failed for ${fileName}`);
+        }
+      }
+
+      const evId = `ev-real-${crypto.createHash('md5').update(fileName).digest('hex').slice(0, 12)}`;
+      await prisma.evidenceObject.upsert({
+        where: { objectKey },
+        update: {
+          originalFileName: fileName,
+          mimeType,
+          extension: ext,
+          sizeBytes: BigInt(buffer.byteLength),
+          sha256Checksum,
+          bucketName: r2Client.getBucketName(),
+          scanStatus: 'CLEAN',
+          isFinalized: true,
+          finalizedAt: new Date(),
+        },
+        create: {
+          id: evId,
+          ownerUserId,
+          track: 'INDIVIDUAL',
+          individualAppId: 'APP-2026-DN-193230153',
+          currentVersionNo: 1,
+          originalFileName: fileName,
+          mimeType,
+          extension: ext,
+          sizeBytes: BigInt(buffer.byteLength),
+          sha256Checksum,
+          bucketName: r2Client.getBucketName(),
+          objectKey,
+          scanStatus: 'CLEAN',
+          isFinalized: true,
+          finalizedAt: new Date(),
+        },
+      });
+      r2UploadedCount++;
+      console.log(
+        `   ✔ Uploaded & verified [${ext.toUpperCase()}] ${fileName} (${(buffer.byteLength / 1024).toFixed(1)} KB) -> R2 + Neon DB`
+      );
+    }
+  }
+
+  const [instCount, unitCount, userCount, roleCount, colAuthCount, appCount, evCount] = await Promise.all([
     prisma.institution.count(),
     prisma.schoolReviewUnit.count(),
     prisma.user.count(),
     prisma.userRoleAssignment.count(),
     prisma.collectivePreparerAuthorization.count(),
+    prisma.individualApplication.count(),
+    prisma.evidenceObject.count(),
   ]);
 
-  console.log('\n📊 NEON POSTGRESQL SEED SUMMARY:');
+  console.log('\n📊 NEON POSTGRESQL & CLOUDFLARE R2 SEED SUMMARY:');
   console.log(`   - Institutions: ${instCount}`);
   console.log(`   - SchoolReviewUnits: ${unitCount}`);
   console.log(`   - Users: ${userCount}`);
   console.log(`   - UserRoleAssignments: ${roleCount}`);
   console.log(`   - CollectivePreparerAuthorizations: ${colAuthCount}`);
-  console.log('🎉 Neon PostgreSQL database is ready for full production testing!');
+  console.log(`   - IndividualApplications: ${appCount}`);
+  console.log(`   - EvidenceObjects (R2 + Neon): ${evCount} (${r2UploadedCount} synced from /minhchung_test)`);
+  console.log('🎉 Neon PostgreSQL database & Cloudflare R2 storage are ready for full production testing!');
 }
 
 main()

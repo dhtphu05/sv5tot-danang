@@ -57,7 +57,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ) : (
           iconLeading && <span className="shrink-0">{iconLeading}</span>
         )}
-        <span>{children}</span>
+        <span className="inline-flex items-center gap-1.5">{children}</span>
         {!isLoading && iconTrailing && <span className="shrink-0">{iconTrailing}</span>}
       </button>
     );

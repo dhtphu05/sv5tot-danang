@@ -141,12 +141,15 @@ export const StaffNotificationsRouteView: React.FC<
   );
 };
 
-export const StaffDeadlinesRouteView: React.FC = () => {
+export const StaffDeadlinesRouteView: React.FC<{ activeSeasonLabel?: string }> = ({
+  activeSeasonLabel,
+}) => {
+  const seasonLabel = activeSeasonLabel || CURRENT_STAFF_SEASON.schoolYear;
   return (
     <div className="p-6 max-w-[1160px] w-full mx-auto space-y-5">
       <div className="border-b border-[#DCE7EE] pb-4">
         <div className="text-[12px] font-semibold text-[#526B7C]">
-          {CURRENT_STAFF_SEASON.schoolYear} · {CURRENT_STAFF_SEASON.scopeLabel}
+          {seasonLabel} · {CURRENT_STAFF_SEASON.scopeLabel}
         </div>
         <h1 className="text-[20px] font-extrabold text-[#0F2335] mt-0.5 flex items-center gap-2">
           <Calendar size={19} className="text-[#0D78AE]" />
@@ -224,6 +227,7 @@ export interface StaffApplicationQueueRouteViewProps {
   applicationTableColumns: OperationalTableColumn<StaffApplicationRecord>[];
   collectiveTableColumns: OperationalTableColumn<CollectiveApplication>[];
   onOpenApplicationReview: (applicationId: string) => void;
+  activeSeasonLabel?: string;
 }
 
 export const StaffApplicationQueueRouteView: React.FC<
@@ -250,6 +254,7 @@ export const StaffApplicationQueueRouteView: React.FC<
   applicationTableColumns,
   collectiveTableColumns,
   onOpenApplicationReview,
+  activeSeasonLabel,
 }) => {
   const [previewBatchDoc, setPreviewBatchDoc] =
     useState<DecisionDocumentMetadata | null>(null);
@@ -344,7 +349,7 @@ export const StaffApplicationQueueRouteView: React.FC<
           supplementCriterionLabel:
             app.supplementSummary?.latestRequest?.criterionName || '—',
           decisionOutcomeLabel: isRec
-            ? 'Đề xuất Thành phố (QĐ 182/QĐ-ĐHĐN)'
+            ? 'Đề xuất từ đơn vị cấp Trường'
             : 'Đang trong quy trình',
           decidedAt: '—',
           publicationStatusLabel: 'Chưa công bố',
@@ -401,95 +406,16 @@ export const StaffApplicationQueueRouteView: React.FC<
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#DCE7EE] pb-4">
         <div>
           <div className="text-[12px] font-semibold text-[#526B7C]">
-            {CURRENT_STAFF_SEASON.schoolYear} · Người thao tác:{' '}
+            {activeSeasonLabel || CURRENT_STAFF_SEASON.schoolYear} · Người thao tác:{' '}
             <strong className="text-[#172A3A]">{currentUser.fullName}</strong> ({currentUser.roleLabel})
           </div>
           <h1 className="text-[20px] font-extrabold text-[#0F2335] mt-0.5">
             {pageTitle}
           </h1>
         </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => onOpenApplicationReview('APP-2026-DN-471102190')}
-            className="text-[12px] font-semibold text-[#526B7C] hover:text-[#0F2335] px-3 py-1.5 rounded-[8px] border border-[#DCE7EE] bg-white hover:bg-[#F8FBFD] transition-colors cursor-pointer"
-            title="Mở hồ sơ sinh viên trong không gian xét duyệt chung (Võ Thị Minh Châu)"
-          >
-            Mở hồ sơ kiểm tra (Võ Thị Minh Châu)
-          </button>
-        </div>
       </div>
 
-      {/* City Intake: Incoming School Forwarded Batches Visibility (Prompt SRW-3 Section 14) */}
-      {(activeRouteId === 'assignments' ||
-        activeRouteId === 'applications' ||
-        currentUser.primaryRole === 'CITY_MANAGER') && (
-        <div className="p-4 bg-[#F8FAFC] border border-[#CBD5E1] rounded-[12px] space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-[8px] bg-[#E0E7FF] text-[#4338CA] flex items-center justify-center shrink-0">
-                <FileText size={18} />
-              </div>
-              <div>
-                <div className="text-[13.5px] font-bold text-[#0F2335]">
-                  Đợt đề xuất tiếp nhận từ cơ sở: Đại học Đà Nẵng
-                </div>
-                <div className="text-[11.5px] text-[#64748B]">
-                  Đã chuyển theo Quyết định số 182/QĐ-ĐHĐN · Mùa xét 2025–2026 · Đơn vị: unit-udn
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                iconLeading={<Eye size={13} />}
-                onClick={() =>
-                  setPreviewBatchDoc({
-                    decisionNumber: '182/QĐ-ĐHĐN',
-                    decisionTitle:
-                      'Quyết định về việc đề xuất danh sách sinh viên đạt danh hiệu "Sinh viên 5 tốt" cấp Thành phố năm học 2025–2026',
-                    decisionDate: '2026-10-18',
-                    signedByName: 'PGS.TS. Nguyễn Ngọc Vũ',
-                    signedByTitle: 'Giám đốc Đại học Đà Nẵng',
-                    fileId: 'doc-dec-182-dhdn-2026',
-                    fileName: '182_QD_DHDN_DanhSach_DeXuat_SV5T_CapThanhPho.pdf',
-                    fileSize: 2450000,
-                  })
-                }
-              >
-                Xem Quyết định đính kèm
-              </Button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-[#E2E8F0] text-[11.5px]">
-            <div>
-              <span className="text-[#64748B]">Đơn vị xét sơ:</span>
-              <div className="font-bold text-[#1E293B]">Đại học Đà Nẵng (unit-udn)</div>
-            </div>
-            <div>
-              <span className="text-[#64748B]">Quy mô đợt:</span>
-              <div className="font-bold text-[#1E293B]">Bao gồm 08 trường thành viên</div>
-            </div>
-            <div>
-              <span className="text-[#64748B]">Trạng thái tiếp nhận:</span>
-              <div className="font-bold text-[#16A34A] flex items-center gap-1">
-                <CheckCircle2 size={12} />
-                <span>Hồ sơ hợp lệ · Đã khóa cấp trường</span>
-              </div>
-            </div>
-            <div>
-              <span className="text-[#64748B]">Thẩm định cấp Thành phố:</span>
-              <div className="font-bold text-[#0D78AE]">Sẵn sàng thẩm định</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Decision Document Preview Modal for City Intake */}
+      {/* Decision Document Preview Modal for City Intake (if opened from a batch record) */}
       {previewBatchDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
@@ -508,10 +434,13 @@ export const StaffApplicationQueueRouteView: React.FC<
                 <FileText size={20} className="text-[#38BDF8]" />
                 <div>
                   <h3 className="font-bold text-[14.5px]">
-                    Văn bản Quyết định đề xuất từ cơ sở (Đại học Đà Nẵng)
+                    Văn bản đề nghị xét chọn từ cơ sở
                   </h3>
                   <p className="text-[12px] text-[#94A3B8]">
-                    Số hiệu: {previewBatchDoc.decisionNumber} · {previewBatchDoc.fileName}
+                    {previewBatchDoc.decisionNumber
+                      ? `Số hiệu: ${previewBatchDoc.decisionNumber} · `
+                      : ''}
+                    {previewBatchDoc.fileName}
                   </p>
                 </div>
               </div>
@@ -526,95 +455,29 @@ export const StaffApplicationQueueRouteView: React.FC<
               </button>
             </div>
 
-            <div className="p-8 overflow-y-auto flex-1 bg-[#F1F5F9]">
-              <div className="max-w-[680px] mx-auto bg-white rounded-md shadow-md p-8 sm:p-12 text-[#1E293B] border border-[#CBD5E1] space-y-6 font-serif">
-                <div className="flex items-start justify-between text-center pb-4 border-b border-gray-300 gap-4">
-                  <div className="w-1/2 text-left">
-                    <div className="text-[12px] font-bold uppercase tracking-wider text-gray-700">
-                      ỦY BAN NHÂN DÂN THÀNH PHỐ ĐÀ NẴNG
-                    </div>
-                    <div className="text-[13px] font-extrabold uppercase text-[#0B64A0] mt-0.5">
-                      ĐẠI HỌC ĐÀ NẴNG
-                    </div>
-                    <div className="text-[12px] text-gray-600 font-mono mt-1">
-                      Số: {previewBatchDoc.decisionNumber}
-                    </div>
+            <div className="p-6 overflow-y-auto flex-1 bg-[#F1F5F9]">
+              {previewBatchDoc.fileUrl ? (
+                <iframe
+                  src={previewBatchDoc.fileUrl}
+                  title={previewBatchDoc.fileName}
+                  className="w-full h-[65vh] rounded-[8px] border border-[#CBD5E1] bg-white"
+                />
+              ) : (
+                <div className="max-w-lg mx-auto bg-white rounded-[12px] border border-[#CBD5E1] p-6 space-y-3 text-[13px] text-[#1E293B]">
+                  <div className="font-bold text-[#0F2335]">
+                    {previewBatchDoc.fileName}
                   </div>
-
-                  <div className="w-1/2 text-center">
-                    <div className="text-[12px] font-bold uppercase text-gray-800">
-                      CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
-                    </div>
-                    <div className="text-[12.5px] font-bold text-gray-800 underline underline-offset-4 decoration-1">
-                      Độc lập – Tự do – Hạnh phúc
-                    </div>
-                    <div className="text-[11.5px] italic text-gray-600 mt-2">
-                      Đà Nẵng, ngày 18 tháng 10 năm 2026
-                    </div>
-                  </div>
+                  {previewBatchDoc.decisionTitle && (
+                    <div className="text-[#526B7C]">{previewBatchDoc.decisionTitle}</div>
+                  )}
                 </div>
-
-                <div className="text-center space-y-1.5 pt-2">
-                  <h2 className="text-[18px] font-extrabold uppercase text-gray-900 tracking-wide">
-                    QUYẾT ĐỊNH
-                  </h2>
-                  <p className="text-[13.5px] font-bold text-gray-700 max-w-lg mx-auto">
-                    {previewBatchDoc.decisionTitle}
-                  </p>
-                </div>
-
-                <div className="space-y-2 text-[12.5px] leading-relaxed text-gray-700 italic">
-                  <p>
-                    - Căn cứ Hướng dẫn liên tịch số 02-HD/TWHSV về tiêu chuẩn xét chọn danh hiệu &quot;Sinh viên 5 tốt&quot; cấp Thành phố;
-                  </p>
-                  <p>
-                    - Căn cứ kết quả xét sơ tuyển của Hội đồng sơ duyệt các trường đại học thành viên và đơn vị trực thuộc;
-                  </p>
-                  <p>
-                    - Xét đề nghị của Ban Thư ký Hội Sinh viên Đại học Đà Nẵng,
-                  </p>
-                </div>
-
-                <div className="space-y-3 pt-2 text-[13px] text-gray-900">
-                  <div className="font-bold uppercase text-center text-[14px]">
-                    QUYẾT ĐỊNH:
-                  </div>
-                  <p>
-                    <strong>Điều 1.</strong> Thống nhất đề xuất Hội Sinh viên Việt Nam TP. Đà Nẵng xét chọn danh hiệu &quot;Sinh viên 5 tốt&quot; cấp Thành phố năm học 2025–2026 cho các cá nhân sinh viên tiêu biểu thuộc danh sách kèm theo Quyết định này.
-                  </p>
-                  <p>
-                    <strong>Điều 2.</strong> Ban Thư ký Hội Sinh viên và các đơn vị trực thuộc Đại học Đà Nẵng chịu trách nhiệm thi hành Quyết định này./.
-                  </p>
-                </div>
-
-                <div className="pt-8 flex justify-between items-end">
-                  <div className="text-[11.5px] text-gray-500 italic space-y-0.5">
-                    <div>Nơi nhận:</div>
-                    <div>- Hội Sinh viên TP. Đà Nẵng (báo cáo);</div>
-                    <div>- Các trường thành viên (thực hiện);</div>
-                    <div>- Lưu: VT, HSV.</div>
-                  </div>
-
-                  <div className="text-center space-y-1">
-                    <div className="text-[12.5px] font-bold uppercase text-gray-800">
-                      GIÁM ĐỐC ĐẠI HỌC ĐÀ NẴNG
-                    </div>
-                    <div className="text-[11px] italic text-[#16A34A] py-3 flex items-center justify-center gap-1">
-                      <ShieldCheck size={16} />
-                      <span>Đã ký số xác thực (Digital Signature)</span>
-                    </div>
-                    <div className="text-[13.5px] font-bold text-gray-900">
-                      PGS.TS. Nguyễn Ngọc Vũ
-                    </div>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
 
             <div className="px-6 py-3.5 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
               <div className="text-[12px] text-gray-500 font-mono">
                 Tệp: {previewBatchDoc.fileName} (
-                {(previewBatchDoc.fileSize / (1024 * 1024)).toFixed(1)} MB)
+                {((previewBatchDoc.fileSize || 0) / (1024 * 1024)).toFixed(2)} MB)
               </div>
               <Button
                 variant="secondary"
@@ -821,7 +684,6 @@ export const StaffApplicationQueueRouteView: React.FC<
                 const statusMeta = getStaffApplicationStatusMeta(
                   app.workflowStatus
                 );
-                const isHero = app.applicationId === 'APP-2026-DN-102220123';
                 const isRecommended =
                   app.schoolPreliminaryStatus === 'recommended_forwarding' ||
                   app.schoolPreliminaryStatus === 'forwarded_to_city' ||
@@ -837,11 +699,6 @@ export const StaffApplicationQueueRouteView: React.FC<
                       <div>
                         <div className="font-bold text-[#0F2335] text-[14px] flex items-center gap-1.5">
                           <span>{app.student.fullName}</span>
-                          {isHero && (
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#EAF6FC] text-[#0B64A0] border border-[#CBE5F6]">
-                              Hồ sơ mẫu
-                            </span>
-                          )}
                         </div>
                         <div className="text-[11.5px] text-[#526B7C] font-mono tabular-nums mt-0.5">
                           {app.student.studentCode} · {app.applicationId}
@@ -870,7 +727,7 @@ export const StaffApplicationQueueRouteView: React.FC<
                       {isRecommended && (
                         <div className="text-[11px] text-[#0B64A0] font-bold mt-1 flex items-center gap-1">
                           <CheckCircle2 size={12} className="text-[#0D78AE]" />
-                          <span>Đề xuất Thành phố (QĐ 182/QĐ-ĐHĐN)</span>
+                          <span>Đề xuất Thành phố (Đã kèm văn bản PDF)</span>
                         </div>
                       )}
                     </div>
@@ -901,7 +758,7 @@ export const StaffApplicationQueueRouteView: React.FC<
                         </div>
                       </div>
                       <Button
-                        variant={isHero ? 'primary' : 'secondary'}
+                        variant="secondary"
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();

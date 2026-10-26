@@ -161,7 +161,8 @@ export const OfficerReviewTopBanners: React.FC<OfficerReviewTopBannersProps> = (
                 Đơn vị xét sơ tuyển:{' '}
                 <strong className="text-[#172A3A]">
                   {applicationRecord.schoolReviewSummary.schoolReviewUnitName ||
-                    'Đại học Đà Nẵng'}
+                    applicationRecord.schoolReviewUnitName ||
+                    applicationRecord.institution.officialName}
                 </strong>
               </span>
               <span>·</span>
@@ -169,7 +170,8 @@ export const OfficerReviewTopBanners: React.FC<OfficerReviewTopBannersProps> = (
                 Ngày chuyển:{' '}
                 <strong className="tabular-nums">
                   {applicationRecord.schoolReviewSummary.forwardedAt ||
-                    '15/10/2026 · 14:30'}
+                    applicationRecord.updatedAt ||
+                    'Đã tiếp nhận'}
                 </strong>
               </span>
               <span>·</span>
@@ -189,7 +191,7 @@ export const OfficerReviewTopBanners: React.FC<OfficerReviewTopBannersProps> = (
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] bg-white hover:bg-[#F0F7FD] text-[#0D78AE] hover:text-[#095982] text-[12.5px] font-bold transition-colors cursor-pointer border border-[#BFDBFE] shadow-2xs"
             >
               <History size={14} />
-              <span>Xem lịch sử xét sơ tuyển</span>
+              <span>Xem văn bản đề nghị (.PDF) &amp; sơ tuyển</span>
             </button>
           </div>
         </div>

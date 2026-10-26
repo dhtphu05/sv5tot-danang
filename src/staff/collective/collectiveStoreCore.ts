@@ -10,6 +10,7 @@ import {
   DEMO_COMPLETED_COLLECTIVE_APPLICATION,
   DEMO_PUBLISHED_COLLECTIVE_APPLICATION,
 } from "./collectiveFixtures";
+import { isBackendMode } from "../../shared/config/executionMode";
 
 const LOCAL_STORAGE_KEY = '5tot_collective_applications_store';
 
@@ -26,6 +27,8 @@ export function isUserAuthorizedForCollective(
   // Authorized collective preparer check
   if (
     norm === 'mai.nt@dut.udn.vn' ||
+    norm === 'linh.pt@due.udn.vn' ||
+    norm === 'khoa.nd@duytan.edu.vn' ||
     norm.includes('collective') ||
     norm.includes('chihoi') ||
     norm.includes('lch')
@@ -65,21 +68,26 @@ function loadApplicationsFromStorage(): CollectiveApplication[] {
     DEMO_PUBLISHED_COLLECTIVE_APPLICATION,
   ];
   if (typeof window === 'undefined') {
-    return defaultList;
+    return isBackendMode() ? [] : defaultList;
   }
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (!raw) {
+      if (isBackendMode()) return [];
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(defaultList));
       return defaultList;
     }
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed) || parsed.length === 0) {
+      if (isBackendMode()) return [];
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(defaultList));
       return defaultList;
     }
-    // Ensure all 4 canonical demo apps are present if not found
-    let merged = [...parsed];
+    if (isBackendMode()) {
+      return parsed;
+    }
+    // Ensure all 4 canonical demo apps are present in DEMO mode if not found
+    const merged = [...parsed];
     for (const demoApp of defaultList) {
       if (!merged.some((p: any) => p.id === demoApp.id)) {
         merged.push(demoApp);
@@ -88,7 +96,7 @@ function loadApplicationsFromStorage(): CollectiveApplication[] {
     return merged;
   } catch (err) {
     console.warn('Failed to parse collective applications from storage, using initial:', err);
-    return defaultList;
+    return isBackendMode() ? [] : defaultList;
   }
 }
 
@@ -110,6 +118,7 @@ let cachedApps: CollectiveApplication[] | null = null;
 
 export function hydrateCollectiveStore(apps: CollectiveApplication[]): void {
   cachedApps = [...apps];
+  saveApplicationsToStorage(cachedApps);
 }
 
 export function getStoreApps(): CollectiveApplication[] {

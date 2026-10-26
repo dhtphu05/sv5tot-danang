@@ -56,7 +56,7 @@ export const AddEvidenceModal: React.FC<AddEvidenceModalProps> = ({
 
   // Mode 1: Upload state
   const [uploadedFiles, setUploadedFiles] = useState<
-    { id: string; name: string; size: string; fileType: string }[]
+    { id: string; name: string; size: string; fileType: string; url?: string; rawFile?: File }[]
   >([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -148,12 +148,18 @@ export const AddEvidenceModal: React.FC<AddEvidenceModalProps> = ({
       const sizeMb = (f.size / (1024 * 1024)).toFixed(1);
       const sizeStr =
         f.size > 1024 * 1024 ? `${sizeMb} MB` : `${Math.max(1, Math.round(f.size / 1024))} KB`;
+      const objectUrl =
+        typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'
+          ? URL.createObjectURL(f)
+          : undefined;
 
       return {
         id: `upl-${Date.now()}-${i}`,
         name,
         size: sizeStr,
         fileType: ext || 'pdf',
+        url: objectUrl,
+        rawFile: f,
       };
     });
 
@@ -214,6 +220,7 @@ export const AddEvidenceModal: React.FC<AddEvidenceModalProps> = ({
           uploadedAt: new Date().toLocaleDateString('vi-VN'),
           status: 'ready',
           isNewlyAddedSupplement: isSupplementMode,
+          url: f.url,
         });
       });
     } else {
@@ -469,7 +476,7 @@ export const AddEvidenceModal: React.FC<AddEvidenceModalProps> = ({
                   ref={fileInputRef}
                   type="file"
                   multiple
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.heic,.heif"
                   className="hidden"
                   onChange={(e) => {
                     if (e.target.files && e.target.files.length > 0) {
@@ -487,7 +494,7 @@ export const AddEvidenceModal: React.FC<AddEvidenceModalProps> = ({
                   </span>
                 </div>
                 <p className="text-[12px] text-[#728391] mt-1 max-w-sm">
-                  Hỗ trợ định dạng PDF, Word (DOC, DOCX), Excel (XLS, XLSX), và Hình ảnh (JPG, PNG, WEBP). Dung lượng tối đa 100MB/tệp.
+                  Hỗ trợ định dạng PDF, Word (DOC, DOCX), Excel (XLS, XLSX), và Hình ảnh (JPG, PNG, WEBP, HEIC). Dung lượng tối đa 100MB/tệp.
                 </p>
               </div>
 

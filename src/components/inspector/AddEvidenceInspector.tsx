@@ -76,6 +76,10 @@ export const AddEvidenceInspector: React.FC<AddEvidenceInspectorProps> = ({
         // Create new ApplicationEvidence items
         const newEvs: ApplicationEvidence[] = pendingUploadFiles.map((file, i) => {
           const isPdf = file.name.toLowerCase().endsWith('.pdf');
+          const objectUrl =
+            typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'
+              ? URL.createObjectURL(file)
+              : undefined;
           return {
             id: `ev-uploaded-${Date.now()}-${i}`,
             name: file.name,
@@ -83,6 +87,7 @@ export const AddEvidenceInspector: React.FC<AddEvidenceInspectorProps> = ({
             size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
             uploadedAt: new Date().toLocaleDateString('vi-VN'),
             status: 'reading_document',
+            url: objectUrl,
           };
         });
 
@@ -193,8 +198,8 @@ export const AddEvidenceInspector: React.FC<AddEvidenceInspectorProps> = ({
             {/* Upload Zone */}
             <DropZone
               label="Kéo thả tệp minh chứng hoặc bấm để duyệt"
-              subtext="Định dạng PDF, JPG, PNG, WEBP (tối đa 100MB)"
-              accept=".pdf,.jpg,.jpeg,.png,.webp"
+              subtext="Định dạng PDF, JPG, PNG, WEBP, HEIC (tối đa 100MB)"
+              accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif"
               multiple
               onFilesSelected={handleDropFiles}
             />

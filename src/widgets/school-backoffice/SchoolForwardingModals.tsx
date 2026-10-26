@@ -62,8 +62,9 @@ export interface SchoolForwardingModalsProps {
 }
 
 export const SchoolForwardingModals: React.FC<SchoolForwardingModalsProps> = ({
+  currentUser,
   unitName,
-  seasonCode = '2026–2027',
+  seasonCode = '2025–2026',
   isBatchConfirmOpen,
   onCloseBatchConfirm,
   selectedApps,
@@ -79,6 +80,7 @@ export const SchoolForwardingModals: React.FC<SchoolForwardingModalsProps> = ({
   onCloseSnapshotModal,
 }) => {
   const [showBreakdown, setShowBreakdown] = useState<boolean>(false);
+  const isUdn = (currentUser?.schoolReviewUnitId || 'unit-udn') === 'unit-udn';
   const normalizedSeason = seasonCode.startsWith('Năm học')
     ? seasonCode
     : `Năm học ${seasonCode}`;
@@ -265,7 +267,7 @@ export const SchoolForwardingModals: React.FC<SchoolForwardingModalsProps> = ({
                 <FileText size={20} className="text-[#38BDF8]" />
                 <div>
                   <h3 className="font-bold text-[14.5px]">
-                    Xem trước Văn bản Quyết định đề nghị xét chọn
+                    Xem trước Văn bản đề nghị xét chọn
                   </h3>
                   <p className="text-[12px] text-[#94A3B8]">
                     {previewDecisionDoc.decisionNumber ? `Số hiệu: ${previewDecisionDoc.decisionNumber} · ` : ''}
@@ -284,118 +286,80 @@ export const SchoolForwardingModals: React.FC<SchoolForwardingModalsProps> = ({
               </button>
             </div>
 
-            {/* Document Body (Simulated Vietnamese Official Letterhead) */}
-            <div className="p-8 overflow-y-auto flex-1 bg-[#F1F5F9]">
-              <div className="max-w-[680px] mx-auto bg-white rounded-md shadow-md p-8 sm:p-12 text-[#1E293B] border border-[#CBD5E1] space-y-6 font-serif">
-                {/* Official Letterhead */}
-                <div className="flex items-start justify-between text-center pb-4 border-b border-gray-300 gap-4">
-                  <div className="w-1/2 text-left">
-                    <div className="text-[12px] font-bold uppercase tracking-wider text-gray-700">
-                      ỦY BAN NHÂN DÂN THÀNH PHỐ ĐÀ NẴNG
+            {/* Document Body: Render actual uploaded PDF file */}
+            <div className="p-4 sm:p-6 overflow-y-auto flex-1 bg-[#F1F5F9]">
+              {previewDecisionDoc.fileUrl ? (
+                <iframe
+                  src={previewDecisionDoc.fileUrl}
+                  title={previewDecisionDoc.fileName}
+                  className="w-full h-[65vh] rounded-[8px] border border-[#CBD5E1] bg-white shadow-xs"
+                />
+              ) : (
+                <div className="max-w-xl mx-auto bg-white rounded-[12px] border border-[#CBD5E1] p-6 space-y-4 text-[#1E293B]">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-[8px] bg-[#EFF6FF] text-[#1D4ED8] flex items-center justify-center shrink-0">
+                      <FileCheck2 size={22} />
                     </div>
-                    <div className="text-[13px] font-extrabold uppercase text-[#0B64A0] mt-0.5">
-                      {unitName.toUpperCase()}
-                    </div>
-                    {previewDecisionDoc.decisionNumber && (
-                      <div className="text-[12px] text-gray-600 font-mono mt-1">
-                        Số: {previewDecisionDoc.decisionNumber}
+                    <div className="min-w-0">
+                      <div className="text-[14px] font-bold text-[#0F2335] truncate">
+                        {previewDecisionDoc.fileName}
                       </div>
-                    )}
-                  </div>
-
-                  <div className="w-1/2 text-center">
-                    <div className="text-[12px] font-bold uppercase text-gray-800">
-                      CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
-                    </div>
-                    <div className="text-[12.5px] font-bold text-gray-800 underline underline-offset-4 decoration-1">
-                      Độc lập – Tự do – Hạnh phúc
-                    </div>
-                    <div className="text-[11.5px] italic text-gray-600 mt-2">
-                      Đà Nẵng, ngày{' '}
-                      {previewDecisionDoc.decisionDate
-                        ? new Date(previewDecisionDoc.decisionDate).getDate()
-                        : 18}{' '}
-                      tháng{' '}
-                      {previewDecisionDoc.decisionDate
-                        ? new Date(previewDecisionDoc.decisionDate).getMonth() + 1
-                        : 10}{' '}
-                      năm{' '}
-                      {previewDecisionDoc.decisionDate
-                        ? new Date(previewDecisionDoc.decisionDate).getFullYear()
-                        : 2026}
+                      <div className="text-[12px] text-[#64748B]">
+                        Đơn vị: {unitName} · {normalizedSeason}
+                      </div>
                     </div>
                   </div>
-                </div>
-
-                {/* Document Title */}
-                <div className="text-center space-y-1.5 pt-2">
-                  <h2 className="text-[18px] font-extrabold uppercase text-gray-900 tracking-wide">
-                    QUYẾT ĐỊNH
-                  </h2>
-                  <p className="text-[13.5px] font-bold text-gray-700 max-w-lg mx-auto">
-                    {previewDecisionDoc.decisionTitle ||
-                      `Về việc đề xuất danh sách sinh viên đạt danh hiệu "Sinh viên 5 tốt" cấp Thành phố ${normalizedSeason}`}
-                  </p>
-                </div>
-
-                {/* Preamble */}
-                <div className="space-y-2 text-[12.5px] leading-relaxed text-gray-700 italic">
-                  <p>
-                    - Căn cứ Hướng dẫn liên tịch số 02-HD/TWHSV về tiêu chuẩn xét chọn danh hiệu &quot;Sinh viên 5 tốt&quot; cấp Thành phố;
-                  </p>
-                  <p>
-                    - Căn cứ kết quả xét sơ tuyển của Hội đồng sơ duyệt các trường đại học thành viên và đơn vị trực thuộc;
-                  </p>
-                  <p>
-                    - Xét đề nghị của Ban Thư ký Hội Sinh viên {unitName},
-                  </p>
-                </div>
-
-                {/* Resolves */}
-                <div className="space-y-3 pt-2 text-[13px] text-gray-900">
-                  <div className="font-bold uppercase text-center text-[14px]">
-                    QUYẾT ĐỊNH:
-                  </div>
-                  <p>
-                    <strong>Điều 1.</strong> Thống nhất đề xuất Hội Sinh viên Việt Nam TP. Đà Nẵng xét chọn danh hiệu &quot;Sinh viên 5 tốt&quot; cấp Thành phố {normalizedSeason} cho các cá nhân sinh viên tiêu biểu thuộc danh sách kèm theo Quyết định này.
-                  </p>
-                  <p>
-                    <strong>Điều 2.</strong> Ban Thư ký Hội Sinh viên và các đơn vị trực thuộc {unitName} chịu trách nhiệm thi hành Quyết định này./.
-                  </p>
-                </div>
-
-                {/* Sign-off & Digital Stamp */}
-                <div className="pt-8 flex justify-between items-end">
-                  <div className="text-[11.5px] text-gray-500 italic space-y-0.5">
-                    <div>Nơi nhận:</div>
-                    <div>- Hội Sinh viên TP. Đà Nẵng (báo cáo);</div>
-                    <div>- Các trường thành viên (thực hiện);</div>
-                    <div>- Lưu: VT, HSV.</div>
-                  </div>
-
-                  <div className="text-center space-y-1">
-                    <div className="text-[12.5px] font-bold uppercase text-gray-800">
-                      {previewDecisionDoc.signedByTitle || 'GIÁM ĐỐC'}
+                  {(previewDecisionDoc.decisionNumber ||
+                    previewDecisionDoc.decisionDate ||
+                    previewDecisionDoc.signedByName) && (
+                    <div className="pt-3 border-t border-[#E2E8F0] grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-[12.5px]">
+                      {previewDecisionDoc.decisionNumber && (
+                        <div>
+                          <span className="text-[#64748B]">Số hiệu văn bản:</span>{' '}
+                          <strong className="text-[#0F2335]">{previewDecisionDoc.decisionNumber}</strong>
+                        </div>
+                      )}
+                      {previewDecisionDoc.decisionDate && (
+                        <div>
+                          <span className="text-[#64748B]">Ngày ban hành:</span>{' '}
+                          <strong className="text-[#0F2335]">{previewDecisionDoc.decisionDate}</strong>
+                        </div>
+                      )}
+                      {previewDecisionDoc.signedByName && (
+                        <div className="sm:col-span-2">
+                          <span className="text-[#64748B]">Người ký:</span>{' '}
+                          <strong className="text-[#0F2335]">
+                            {previewDecisionDoc.signedByName}
+                            {previewDecisionDoc.signedByTitle
+                              ? ` (${previewDecisionDoc.signedByTitle})`
+                              : ''}
+                          </strong>
+                        </div>
+                      )}
                     </div>
-                    <div className="text-[11px] italic text-[#16A34A] py-3 flex items-center justify-center gap-1">
-                      <ShieldCheck size={16} />
-                      <span>Đã ký số xác thực (Digital Signature)</span>
-                    </div>
-                    <div className="text-[13.5px] font-bold text-gray-900">
-                      {previewDecisionDoc.signedByName || 'PGS.TS. Nguyễn Ngọc Vũ'}
-                    </div>
-                  </div>
+                  )}
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Modal Footer */}
             <div className="px-6 py-3.5 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-              <div className="text-[12px] text-gray-500 font-mono">
+              <div className="text-[12px] text-gray-500 font-mono truncate max-w-[60%]">
                 Tệp: {previewDecisionDoc.fileName} (
-                {(previewDecisionDoc.fileSize / (1024 * 1024)).toFixed(1)} MB)
+                {((previewDecisionDoc.fileSize || 0) / (1024 * 1024)).toFixed(2)} MB)
               </div>
               <div className="flex items-center gap-2">
+                {previewDecisionDoc.fileUrl && (
+                  <a
+                    href={previewDecisionDoc.fileUrl}
+                    download={previewDecisionDoc.fileName}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3 py-1.5 rounded-[7px] bg-[#EAF6FC] hover:bg-[#DCEEFA] text-[#0D78AE] font-semibold text-[12px] transition-colors"
+                  >
+                    Tải xuống PDF
+                  </a>
+                )}
                 <Button
                   variant="secondary"
                   size="sm"
@@ -438,7 +402,7 @@ export const SchoolForwardingModals: React.FC<SchoolForwardingModalsProps> = ({
                 {snapshotModalApp.student.fullName} (MSSV: {snapshotModalApp.student.studentCode})
               </div>
               <div className="text-[12px] text-[#526B7C]">
-                {snapshotModalApp.institution.officialName} · Năm học {snapshotModalApp.schoolYear}
+                {snapshotModalApp.institution.officialName} · {normalizedSeason}
               </div>
             </div>
 
