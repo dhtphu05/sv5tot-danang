@@ -1,0 +1,45 @@
+{
+  "name": "@5tot-danang/backend-v2",
+  "version": "2.0.0",
+  "description": "5TOT Đà Nẵng — Authoritative Production Backend V2 (Express, TypeScript, PostgreSQL, Prisma)",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/app/server.ts",
+    "build": "tsc",
+    "start": "tsx src/app/server.ts",
+    "test": "tsx --test tests/unit/*.test.ts tests/http/*.test.ts tests/integration/*.test.ts",
+    "test:unit": "tsx --test tests/unit/*.test.ts",
+    "test:http": "tsx --test tests/http/*.test.ts",
+    "test:integration": "tsx --test tests/integration/*.test.ts",
+    "lint": "eslint -c eslint.config.mjs src && tsc --noEmit",
+    "lint:fix": "eslint -c eslint.config.mjs src --fix",
+    "lint:types": "tsc --noEmit",
+    "prisma:generate": "prisma generate --schema=prisma/schema.prisma",
+    "prisma:validate": "prisma validate --schema=prisma/schema.prisma",
+    "db:push": "prisma db push --schema=prisma/schema.prisma",
+    "db:migrate": "prisma migrate deploy --schema=prisma/schema.prisma",
+    "db:seed": "tsx src/scripts/seedNeonDatabase.ts",
+    "verify:cloud": "tsx src/scripts/verifyCloudIntegration.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "argon2": "^0.45.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.3",
+    "zod": "^4.6.6"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^22.14.0",
+    "@typescript-eslint/eslint-plugin": "^8.71.1",
+    "@typescript-eslint/parser": "^8.71.1",
+    "eslint": "^10.12.0",
+    "prisma": "^5.22.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.6.3"
+  }
+}

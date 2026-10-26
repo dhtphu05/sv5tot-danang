@@ -1,0 +1,1385 @@
+# 5TOT ĐÀ NẴNG — LEAN-0
+## COMPLETE BUSINESS WORKFLOW AUDIT & LEAN UX REFACTOR BLUEPRINT
+
+**Priority:** P0 — Customer-Approved Product Direction  
+**Execution Mode:** SOURCE AUDIT → BUSINESS FLOW ANALYSIS → UX RESTRUCTURING → IMPLEMENTATION BLUEPRINT  
+**Phase:** LEAN-0 of LEAN-0 through LEAN-6  
+**Implementation Permission:** AUDIT AND PLANNING ONLY — DO NOT IMPLEMENT PRODUCTION CODE YET
+
+**Frontend:** React + Vite + Strict TypeScript + Feature-Sliced Design  
+**Backend:** Node.js + Express + Strict TypeScript + Prisma/PostgreSQL Modular Monolith
+
+---
+
+# 1. CUSTOMER FEEDBACK — PRODUCT DIRECTION HAS CHANGED
+
+The 5TOT Đà Nẵng application currently has a modern and visually polished frontend.
+
+However, the customer has identified a significant product design problem:
+
+**The system is becoming operationally more complicated than the actual Student 5-Good selection process requires.**
+
+Compared with the Central Youth Union's existing online award application systems, the current 5TOT implementation introduces too many:
+
+- Intermediate workflow states.
+- Nested review interfaces.
+- Criteria navigation layers.
+- Artificial review completion steps.
+- Repeated buttons and confirmations.
+- Technical status indicators.
+- Unnecessarily structured declaration forms.
+- Complex supplementation interactions.
+- Management and administrative screens.
+- AI-related badges and explanations.
+
+The customer wants a LEAN system.
+
+The ideal product is a simple, familiar Student Association dossier management and award selection application.
+
+It should allow:
+
+**STUDENT:**
+Declare achievements → Attach evidence → Submit.
+
+**SCHOOL REVIEWER:**
+Read declarations → Assess Pass/Fail → Conclude criteria → Recommend and select applications.
+
+**SCHOOL FORWARDING:**
+Select recommended applications → Attach one official decision → Send the consolidated list once.
+
+**CITY REVIEWER:**
+Read dossiers → Verify declarations and evidence → Record assessments.
+
+**COMMITTEE:**
+See actual School and City results → Review the dossier where needed → Record an official decision.
+
+Everything else should support these activities, not force users through additional unnecessary processes.
+
+---
+
+# 2. REFERENCE SYSTEMS
+
+The customer provided screenshots of legacy Central-level Student 5-Good systems and the PDF:
+
+"HD nop ho so Nha giao tre tieu bieu Trung uong 2026.pdf"
+
+The PDF demonstrates a straightforward submission and explanation pattern.
+
+### Declaration
+
+The applicant:
+
+1. Opens the applicable criterion.
+2. Clicks "+".
+3. Enters achievement content.
+4. Attaches evidence.
+5. Clicks Add.
+6. Sees the achievement appear in the result list.
+
+### Explanation and supplementation
+
+A reviewing authority identifies an insufficient or unsuccessful declaration.
+
+The applicant sees the reason and can submit an explanation or additional evidence.
+
+The reviewing authority examines the updated content and records a subsequent assessment.
+
+### Important distinction
+
+The Young Teacher award reference includes a one-explanation limit.
+
+That restriction belongs to the reference award and must NOT automatically be imposed on 5TOT.
+
+Likewise, the reference's national/provincial review stages and dates do not override the customer-approved two-level 5TOT process.
+
+Use the reference for simplicity and user interaction patterns, not as a replacement for 5TOT regulations.
+
+Do not copy the legacy visual appearance.
+
+---
+
+# 3. CORE PRODUCT PRINCIPLE
+
+**SIMPLIFY THE WORK PEOPLE MUST DO, NOT THE BUSINESS RULES THAT PROTECT CORRECTNESS.**
+
+Reduce unnecessary user-facing steps.
+
+Preserve:
+
+- Legitimate assessments.
+- Eligibility rules.
+- Evidence verification.
+- Submitted application snapshots.
+- Scoped supplementation.
+- Human decision authority.
+- Audit history.
+- Correct institution scopes.
+- Correct School forwarding.
+- Data integrity.
+- Security.
+- Concurrent update safety.
+
+A simpler frontend does NOT justify:
+
+- Skipping mandatory human decisions.
+- Inventing calculated results.
+- Automatically approving applications.
+- Removing audit trails.
+- Bypassing authorization.
+- Losing evidence version history.
+- Breaking regulatory requirements.
+
+---
+
+# 4. THE APPROVED 5TOT BUSINESS MODEL
+
+## 4.1 Individual Student 5-Good
+
+There are five core criteria:
+
+1. Đạo đức tốt.
+2. Học tập tốt.
+3. Thể lực tốt.
+4. Tình nguyện tốt.
+5. Hội nhập tốt.
+
+Approved high-level flow:
+
+Student
+→ School preliminary review
+→ School consolidated recommendation
+→ City independent review
+→ Committee official decision.
+
+## 4.2 University of Da Nang
+
+The following original institutions remain distinct:
+
+- DUT.
+- DUE.
+- UED.
+- UFL.
+- UTE.
+- VKU.
+- VNUK.
+- SMP.
+
+They share:
+
+`unit-udn`
+
+Requirements:
+
+- One shared School Review Unit.
+- One common School reviewer account under the existing configuration.
+- One consolidated recommendation list per season.
+- One common School official decision document.
+- One successful forwarding operation per unit/season.
+
+Do not introduce intermediate University-level review.
+
+## 4.3 Independent Schools
+
+Each independent School Review Unit maintains its own authorized review scope and seasonal forwarding list.
+
+## 4.4 City Review
+
+Authorized City Reviewers work in a shared queue.
+
+No mandatory individual assignment.
+
+No Officer workload allocation workflow.
+
+No ResolutionCase.
+
+No ambiguous-case escalation.
+
+Retain actual actor attribution and authorization.
+
+## 4.5 Committee
+
+The Committee records authorized official award decisions.
+
+Do not invent:
+
+- Formal voting systems.
+- Meeting scheduling.
+- Hearings.
+- Questioning.
+- Quorum.
+- Meeting minutes.
+
+Human Committee authority remains final.
+
+## 4.6 Collective Student 5-Good
+
+Collective applications use TT01–TT04.
+
+They go directly to City.
+
+They do not participate in Individual School preliminary forwarding.
+
+---
+
+# 5. LEAN-0 OBJECTIVES
+
+Perform an evidence-based audit and prepare the implementation blueprint for six follow-up phases.
+
+### LEAN-1
+Simple Student declaration entry and automatic numbering.
+
+### LEAN-2
+Direct inline human review of declarations, requirements and criteria.
+
+### LEAN-3
+Simple inline explanation and evidence supplementation.
+
+### LEAN-4
+Lean School recommendation selection and one-time forwarding.
+
+### LEAN-5
+Simplified statuses, natural Vietnamese language, City/Committee UX and responsive consistency.
+
+### LEAN-6
+End-to-end regression, security, responsive QA and manual customer UAT.
+
+Do not implement these phases during LEAN-0.
+
+---
+
+# 6. MANDATORY SOURCE AUDIT
+
+Inspect the actual frontend and backend source.
+
+Do not rely only on prior agent summaries.
+
+## Frontend
+
+Audit:
+
+- Student application pages.
+- Student profile.
+- Declaration creation/edit forms.
+- Evidence upload and preview.
+- Student dossier.
+- Shared dossier components.
+- School review workspace.
+- City review workspace.
+- Committee detail.
+- Collective dossiers.
+- School recommendation list.
+- School forwarding.
+- Supplementation UI.
+- Review notes.
+- Review progress.
+- Status badges.
+- Application lists.
+- Navigation.
+- Responsive layouts.
+- Demo/Real adapters.
+- Existing AI components.
+
+## Backend
+
+Audit:
+
+- Individual applications.
+- Collective applications.
+- Declaration models.
+- Evidence models and versions.
+- Criteria and requirement evaluation.
+- School reviews.
+- School recommendation.
+- School forwarding batches.
+- City reviews.
+- Committee decisions.
+- Supplementation.
+- Application states.
+- Award season.
+- Authorization.
+- Audit trail.
+- Domain services.
+- Prisma schema.
+- API contracts.
+
+Identify the actual paths, components, enums, state transitions, endpoint handlers and business invariants.
+
+Do not claim a capability exists merely because a folder or button exists.
+
+---
+
+# 7. CRITICAL AUDIT — WORKFLOW STATE COMPLEXITY
+
+Inventory EVERY current state that affects Student, School, City and Committee operations.
+
+For each state, document:
+
+- Technical enum/value.
+- Domain entity.
+- Who can enter the state.
+- Triggering action.
+- Which backend service writes it.
+- Whether it is required for business correctness.
+- Whether it is required for audit.
+- Whether the frontend displays it.
+- Whether a user must manually trigger it.
+- Whether it can be derived from existing records.
+- Whether it duplicates another state.
+- Whether it should remain visible to ordinary users.
+
+Classify states into:
+
+**A. Essential business state**
+
+Must remain part of the actual workflow.
+
+**B. Essential backend/internal state**
+
+Must be retained for correctness but does not need prominent UI exposure.
+
+**C. Derived presentation state**
+
+Should be computed rather than recorded through unnecessary manual user actions, where safe.
+
+**D. Legacy/obsolete state**
+
+No longer needed in the approved active flow.
+
+**E. Suspected redundant state**
+
+Requires further verification before changing.
+
+Do not delete enum values or database records during this audit.
+
+Produce a source-backed state transition map.
+
+---
+
+# 8. CRITICAL AUDIT — EVERY REVIEW BUTTON
+
+Inventory the real user-visible review controls.
+
+Examples:
+
+- Xét kê khai.
+- Đạt.
+- Không đạt.
+- Xét tiêu chí.
+- Kết luận tiêu chí.
+- Hoàn tất nội dung.
+- Hoàn tất thẩm định.
+- Ghi nhận đánh giá.
+- Lưu kết quả.
+- Tiếp tục.
+- Yêu cầu bổ sung.
+- Gửi bổ sung.
+- Xét lại.
+- Đề nghị.
+- Không đề nghị.
+- Chọn hồ sơ.
+- Gửi danh sách.
+
+For each control, record:
+
+1. Where it appears.
+2. What the user believes it does.
+3. What it actually does.
+4. Which backend action it invokes.
+5. What data is persisted.
+6. Whether it duplicates another control.
+7. Whether it creates an unnecessary transition.
+8. Whether it is truly required.
+9. Whether it can be moved inline.
+10. Whether removing it would change the approved domain lifecycle.
+
+The highest-priority question:
+
+**Are reviewers currently required to record the same logical decision multiple times at different UI levels without a genuine business requirement?**
+
+Examples to investigate:
+
+- Review declaration.
+- Complete requirement.
+- Conclude criterion.
+- Complete Officer review.
+
+Do not assume all of these are redundant.
+
+Verify the actual persisted data and policy first.
+
+---
+
+# 9. LEAN STUDENT DECLARATION DESIGN
+
+The customer wants declaration entry to resemble a straightforward award application system.
+
+The Student should not need to understand a complex data model.
+
+## Default interaction
+
+1. Select applicable criterion/form.
+2. Click "+ Thêm kê khai".
+3. Enter "Nội dung kê khai".
+4. Attach evidence.
+5. Click "Thêm kê khai".
+6. See the declaration in a numbered list.
+
+## Automatic numbering
+
+The UI automatically displays:
+
+1.
+2.
+3.
+
+within the relevant declaration list.
+
+Numbering is presentational.
+
+Stable backend declaration IDs remain authoritative.
+
+Adding/removing a declaration must not corrupt evidence references, reviewer judgments or audit history.
+
+## Dynamic structured fields
+
+Inspect every existing declaration form.
+
+Classify fields as:
+
+- Required by approved policy.
+- Required for actual machine-verifiable aggregation.
+- Useful but optional.
+- Derivable.
+- Redundant.
+- Unnecessarily technical.
+
+Simple achievements may need only:
+
+- Content.
+- Evidence.
+
+Some achievements require:
+
+- GPA.
+- Conduct score.
+- Duration.
+- Quantitative count.
+- Certificate result.
+- Other genuine eligibility values.
+
+Do not delete structured fields required for accurate eligibility assessment.
+
+Instead, design progressive, criterion-specific forms with the fewest necessary inputs.
+
+## Output required
+
+A field-by-field simplification matrix for every current declaration form.
+
+---
+
+# 10. LEAN REVIEW WORKSPACE DESIGN
+
+The customer wants direct inline review similar to the familiar Central system.
+
+Avoid wizard-like flows.
+
+## Default
+
+Display one continuous Individual dossier with five criterion sections.
+
+For each relevant review row, present:
+
+**Tiêu chuẩn / Nội dung kê khai / Minh chứng / Kết quả xét**
+
+The reviewer should be able to:
+
+1. Read the declaration.
+2. Open supporting evidence.
+3. Click Đạt or Không đạt at the actual canonical judgment scope.
+4. See the saved result.
+5. Continue reading the next row.
+
+Avoid:
+
+- Giant sticky review toolbars.
+- Previous/Next navigation as a mandatory workflow.
+- Forced zoom into each criterion.
+- Multiple duplicate criterion selectors.
+- Multiple accordion layers before viewing evidence.
+- AI badges dominating ordinary human reviews.
+- Repeated review completion actions without business justification.
+
+## Preserve granularity
+
+Investigate whether the existing backend persists human assessment at:
+
+- Evidence level.
+- Declaration level.
+- Requirement level.
+- Criterion level.
+- Review completion level.
+
+Do not invent a new boolean-based assessment model.
+
+Recommend the smallest visible interaction surface that still maps exactly to legitimate persisted decisions.
+
+## Distinguish outcomes
+
+A declaration being marked Pass does not automatically mean the whole criterion is Pass.
+
+A criterion being assessed Pass does not automatically mean the Student is officially recognized.
+
+The Committee remains the official decision authority.
+
+---
+
+# 11. ONE_OF / ALL_OF SEMANTICS
+
+This is a major acceptance criterion.
+
+Some criteria have:
+
+- Mandatory requirements.
+- Alternative forms of evidence.
+- ONE_OF requirement groups.
+- ALL_OF requirement groups.
+
+Example:
+
+One qualifying option out of four may be sufficient.
+
+The Student may submit additional achievements voluntarily.
+
+The reviewer should not need to reject every undeclared optional alternative.
+
+Audit whether the current system:
+
+- Requires assessing undeclared alternatives.
+- Treats empty optional fields as failures.
+- Blocks criterion completion unnecessarily.
+- Overcounts declaration requirements.
+- Requires duplicate conclusion clicks.
+
+Determine how the actual policy evaluates each criterion.
+
+Document the correct human review completion rules.
+
+Do not change eligibility rules merely to make progress appear complete.
+
+---
+
+# 12. LEAN EXPLANATION AND SUPPLEMENTATION
+
+The customer wants supplementation to be a small correction loop inside the original dossier.
+
+## Desired interaction
+
+Reviewer:
+
+- Sees a declaration.
+- Identifies insufficient evidence.
+- Clicks "Yêu cầu bổ sung".
+- Enters the reason.
+- Submits the request.
+
+Student:
+
+- Opens the same dossier.
+- Sees the exact affected declaration.
+- Reads the reason.
+- Enters an explanation and/or attaches additional evidence.
+- Submits the response.
+
+Reviewer:
+
+- Sees the updated content.
+- Compares relevant evidence versions.
+- Reassesses.
+- Records the next human judgment.
+
+## UI simplification
+
+Avoid unnecessary separate workspaces for:
+
+- ResolutionCase.
+- Explanation case management.
+- Escalation.
+- Ambiguous-case review.
+- Supplementation task orchestration.
+
+A compact notification inbox for finding outstanding supplement requests may remain useful.
+
+However, actual editing and assessment should happen inside the relevant dossier.
+
+## Backend invariants
+
+Preserve:
+
+- Exact request scope.
+- Requesting review level.
+- Reviewer identity.
+- Student response.
+- Evidence versions.
+- Audit timestamps.
+- Authorized reopening.
+- Correct return to the requesting review stage.
+
+Do not confuse a "Không đạt" judgment with an automatic supplementation request.
+
+Do not import the one-explanation limit from the Young Teacher award reference.
+
+Do not automatically create an additional application.
+
+---
+
+# 13. LEAN SCHOOL RECOMMENDATION & FORWARDING
+
+The customer wants a simple School workflow.
+
+**Review dossiers → Record recommendations → Tick selected applications → Attach one decision → Send once.**
+
+## Application list
+
+Show:
+
+- Student identity.
+- Original institution.
+- Five criterion results.
+- Number of reviewed criteria.
+- Number meeting requirements.
+- School recommendation.
+- Current selection status.
+- Checkbox.
+- Clear Open Dossier action.
+
+Avoid excessive KPI cards and multiple competing tabs.
+
+## Selected list
+
+Allow authorized selected recommended applications.
+
+Do not confuse:
+
+- Fully assessed.
+- Meeting all five criteria.
+- Recommended.
+- Selected.
+- Forwarded.
+
+These are separate business concepts.
+
+## Official document
+
+One common School decision attachment per School Review Unit and season.
+
+## Forwarding
+
+One explicit high-impact confirmation.
+
+One successful forwarding operation.
+
+Transactionally safe backend behavior.
+
+Do not remove genuine one-time forwarding protections.
+
+## UX
+
+Use natural Vietnamese:
+
+- Danh sách đề nghị xét chọn.
+- Chọn hồ sơ.
+- Đã chọn.
+- Văn bản đề nghị.
+- Gửi danh sách lên Thành phố.
+- Đã gửi Thành phố.
+
+Avoid technical terms such as:
+
+- Batch orchestration.
+- Canonical forwarding.
+- Read-only lock.
+- Finalization pipeline.
+
+---
+
+# 14. LEAN CITY REVIEW
+
+The City reviewer uses a shared application list.
+
+No personal assignment is required.
+
+The same canonical dossier is used.
+
+The City reviewer can:
+
+- Find applications.
+- Open the dossier.
+- Inspect original declarations.
+- Review School assessments.
+- View evidence.
+- Perform independent City judgments.
+- Request supplementation.
+- Complete the actual City review.
+
+Do not introduce extra handoff or routing buttons merely because the backend supports internal workflow stages.
+
+Audit whether City review can be safely simplified to:
+
+**Open → Assess → Finish.**
+
+Retain actual concurrency controls and audit.
+
+---
+
+# 15. LEAN COMMITTEE EXPERIENCE
+
+The Committee should not be forced through the entire Officer-level assessment workflow again.
+
+The Committee needs:
+
+- Student or Collective identity.
+- Original dossier.
+- Relevant evidence.
+- School recommendation, for Individual applications.
+- City assessment.
+- Key criterion outcomes.
+- Official decision action.
+
+Recommended experience:
+
+**Open application → Inspect accumulated results → Decide.**
+
+Do not require Committee members to click Pass/Fail on every declaration unless the actual approved business contract demands it.
+
+Preserve decision permissions and history.
+
+Do not introduce meetings, voting, hearings or ResolutionCases.
+
+---
+
+# 16. FRONTEND STATUS SIMPLIFICATION
+
+The current UI displays too many statuses and badges.
+
+Audit every visible status.
+
+Propose a small coherent vocabulary.
+
+## Declaration human judgment
+
+- Chưa xét.
+- Đạt.
+- Không đạt.
+
+Supplementation may add contextual indications:
+
+- Cần bổ sung.
+- Đã bổ sung — Chờ xét lại.
+
+## School recommendation
+
+- Chưa có kết luận.
+- Đề nghị.
+- Không đề nghị.
+- Đã gửi Thành phố, as appropriate for actual forwarding state.
+
+## City
+
+- Chờ thẩm định.
+- Đang thẩm định.
+- Đã thẩm định.
+
+## Committee
+
+- Chờ quyết định.
+- Được công nhận.
+- Không được công nhận.
+
+These are proposed UI labels, not automatically approved new database enum values.
+
+Map each visible status to existing canonical records.
+
+Do not conflate independent dimensions into a single misleading value.
+
+Avoid simultaneously showing multiple badges that convey the same information.
+
+AI advisory outcomes must remain separate from human judgments.
+
+---
+
+# 17. VIETNAMESE CONTENT & REAL ADMINISTRATIVE LANGUAGE
+
+Audit user-visible wording across Student, School, City and Committee.
+
+The system should feel like a real Vietnamese Student Association administration platform.
+
+Not a developer console.
+
+Not an AI prototype.
+
+Avoid ordinary UI copy containing:
+
+- Canonical.
+- Pipeline.
+- Snapshot engine.
+- Read-only.
+- Workflow orchestration.
+- ResolutionCase.
+- AI confidence.
+- Internal state enum.
+- Processing engine.
+
+Use concise business language.
+
+Examples:
+
+Bad:
+"Hoàn tất quá trình xác lập trạng thái đánh giá"
+
+Better:
+"Lưu kết quả xét"
+
+Bad:
+"Chốt batch forwarding"
+
+Better:
+"Gửi danh sách lên Thành phố"
+
+Bad:
+"Initialize Review Session"
+
+Better:
+"Xét hồ sơ"
+
+Keep legally required official terminology intact.
+
+---
+
+# 18. RESPONSIVE AND VISUAL PRINCIPLES
+
+The system must remain premium and modern.
+
+Do not create a dated spreadsheet clone.
+
+## Desktop
+
+Use a clear table for:
+
+- Requirements.
+- Student declarations.
+- Evidence.
+- Direct human assessment.
+
+The content area should use the available width.
+
+## Tablet
+
+Adapt table columns or row composition based on actual content width.
+
+## Mobile
+
+Present compact vertically arranged review rows.
+
+Keep Pass/Fail actions close to the corresponding declaration.
+
+## Avoid
+
+- Large nested cards.
+- Huge blank regions.
+- Overly wide sidebars.
+- Duplicate navigation bars.
+- Sticky review controls covering evidence.
+- Excessive animation.
+- Multiple simultaneous AI overlays.
+- Horizontal page overflow.
+- Unreadable text.
+- Hidden primary actions.
+
+Test layout constraints at:
+
+320, 360, 390, 430, 768, 1024, 1280, 1440, 1660 and 1920px.
+
+Use existing 5TOT design tokens.
+
+Do not propose a full design-system replacement.
+
+---
+
+# 19. KEEP SCHOOL, CITY AND COMMITTEE CONSISTENT
+
+The existing SRW-2 canonical shared dossier architecture must remain.
+
+The SRW-6 submitted profile snapshot must remain stable.
+
+The Student identity appears at the top of the dossier in ONE compact information card.
+
+School, City and Committee must see consistent submitted profile values subject to authorized field visibility.
+
+Do not duplicate dossier renderers.
+
+Use role-specific assessment controls within the same presentation architecture.
+
+Preserve original UDN member institutions.
+
+Do not accidentally substitute the shared Review Unit for the original institution.
+
+---
+
+# 20. DEMO AND REAL MODE
+
+## Demo
+
+Synthetic, deterministic, interactive.
+
+It must accurately model the approved business process.
+
+A user clicking Pass or Fail must update actual Demo judgment state.
+
+Supplementation must update correct synthetic records.
+
+Counters must match underlying data.
+
+Reset must work.
+
+## Real
+
+Authenticated production-oriented backend paths.
+
+No fake saves.
+
+No synthetic data fallback.
+
+No local-only human decisions pretending to be persisted.
+
+Respect role and resource authorization.
+
+Do not claim PostgreSQL persistence verification if the test database was unavailable.
+
+Do not reconnect Supabase.
+
+Do not apply database migrations.
+
+Do not deploy.
+
+---
+
+# 21. REQUIRED PROCESS MAPS
+
+Produce the following source-backed Mermaid diagrams.
+
+### Diagram 1 — Existing Individual Workflow
+
+Actual current frontend and backend flow, including all real transition actions.
+
+### Diagram 2 — Proposed LEAN Individual Workflow
+
+Student → School → City → Committee.
+
+Highlight which user interactions disappear or move inline.
+
+### Diagram 3 — Existing Declaration Review
+
+All existing human assessment scopes and manual completion steps.
+
+### Diagram 4 — Proposed Inline Review
+
+Read → Preview Evidence → Pass/Fail → Persist.
+
+Show where explicit criterion conclusions remain necessary.
+
+### Diagram 5 — Supplementation
+
+Existing versus proposed interaction, while retaining the actual backend lifecycle.
+
+### Diagram 6 — School Consolidated Forwarding
+
+Review → Recommend → Select → Attach Decision → Send Once.
+
+### Diagram 7 — Collective Workflow
+
+Direct City review → Committee.
+
+### Diagram 8 — Application/Review Status Transitions
+
+Separate:
+
+- Application lifecycle.
+- Human judgment status.
+- School recommendation.
+- Forwarding status.
+- City review.
+- Committee decision.
+
+Do not invent transitions that the current backend does not support.
+
+Mark proposed transitions separately from verified existing ones.
+
+---
+
+# 22. BEFORE/AFTER CLICK ANALYSIS
+
+Measure or count actual interaction steps from inspected source and UI where possible.
+
+Use the same task scenarios.
+
+## Scenario A — Student declaration
+
+Add a simple achievement with evidence.
+
+## Scenario B — School declaration review
+
+Open a Student dossier and assess one declaration.
+
+## Scenario C — Criterion conclusion
+
+Finish the required assessments and record or obtain the criterion conclusion.
+
+## Scenario D — Supplementation
+
+Reviewer requests clarification and Student responds.
+
+## Scenario E — School recommendation
+
+Review and recommend an Individual application.
+
+## Scenario F — School forwarding
+
+Select applications, attach a common decision and send once.
+
+## Scenario G — City assessment
+
+Open and review a City-received application.
+
+## Scenario H — Committee official decision
+
+Inspect results and record an authorized decision.
+
+For each scenario report:
+
+- Current number of clicks.
+- Proposed number of clicks.
+- Current required navigation changes.
+- Proposed navigation changes.
+- Current modal count.
+- Proposed modal count.
+- Actual backend writes that must remain.
+- Potential usability/security regression.
+
+Distinguish measured actual clicks from estimated proposed click paths.
+
+Do not fabricate percentages of productivity improvement.
+
+---
+
+# 23. FEATURE PRESERVATION MATRIX
+
+This is mandatory.
+
+Create a table covering EVERY legitimate capability.
+
+For each capability specify:
+
+- Existing source implementation.
+- Existing API.
+- Existing business purpose.
+- Current UI placement.
+- Proposed LEAN placement.
+- Preserved / Simplified / Moved / Deprecated.
+- Data integrity impact.
+- Permission impact.
+- Test requirements.
+
+Particular attention:
+
+- Multiple declarations.
+- Multiple evidence files.
+- ONE_OF/ALL_OF.
+- Review comments.
+- Supplementation.
+- Submitted snapshot.
+- School recommendation.
+- UDN forwarding.
+- City shared queue.
+- Committee decisions.
+- Collective TT01–TT04.
+- Analytics.
+- Excel exports.
+- Audit history.
+- AI optional support.
+
+No legitimate capability should disappear silently.
+
+---
+
+# 24. IMPLEMENTATION PHASE BACKLOG
+
+Produce an actionable implementation backlog for:
+
+## LEAN-1 — Simplify Declaration Entry
+
+Expected focus:
+
+- Minimal default form.
+- Dynamic fields only where required.
+- Automatic numbering.
+- Direct evidence attachment.
+- Student/reviewer display consistency.
+
+## LEAN-2 — Direct Inline Review
+
+Expected focus:
+
+- Continuous dossier.
+- Direct Pass/Fail.
+- Correct canonical assessment scope.
+- Accurate criterion conclusion.
+- No giant review toolbar.
+- No duplicate navigation.
+
+## LEAN-3 — Inline Supplementation
+
+Expected focus:
+
+- Reason attached to exact declaration/requirement.
+- Student explanation.
+- Additional evidence.
+- Reassessment.
+- Version history.
+
+## LEAN-4 — School Recommendation and Forwarding
+
+Expected focus:
+
+- Clear five-criterion results.
+- Simple checkbox selection.
+- One common official decision.
+- One confirmation.
+- One successful forwarding.
+
+## LEAN-5 — City, Committee, Status and Product Language
+
+Expected focus:
+
+- Shared City review.
+- Simple Committee decision UX.
+- Normal Vietnamese administrative wording.
+- Fewer redundant badges.
+- Complete responsive harmonization.
+
+## LEAN-6 — Functional, Security and UAT
+
+Expected focus:
+
+- Student full journey.
+- School full journey.
+- UDN forwarding.
+- Independent School.
+- City.
+- Committee.
+- Collective.
+- Supplementation.
+- Concurrent review.
+- Analytics reconciliation.
+- Excel.
+- Demo/Real isolation.
+- Detailed manual UAT.
+
+Each phase must have:
+
+- Goal.
+- User-facing behavior.
+- Exact current components likely affected.
+- Backend contract requirements.
+- Dependencies.
+- Parallelizable tasks.
+- Explicit non-goals.
+- Acceptance criteria.
+- Test scenarios.
+- Definition of Done.
+
+Do not begin implementation yet.
+
+---
+
+# 25. PRIORITIZE LEAN CHANGES
+
+Assign findings to:
+
+### P0 — Critical
+
+- Duplicate official judgment actions.
+- Incorrect human status calculations.
+- Unnecessary mandatory workflow steps.
+- Incorrect ONE_OF/ALL_OF completion.
+- Inaccessible Pass/Fail controls.
+- Broken supplementation.
+- Incorrect School forwarding selection.
+- Incorrect role authority.
+
+### P1 — Major UX
+
+- Excessive forms.
+- Duplicate criterion navigation.
+- Repetitive status badges.
+- Overcomplicated confirmation.
+- Poor responsive layouts.
+- Unnatural Vietnamese UI copy.
+- Unnecessary AI controls.
+
+### P2 — Polish
+
+- Spacing.
+- Icon alignment.
+- Minor visual density.
+- Optional keyboard shortcuts.
+- Secondary refinements.
+
+Prioritize the actual user workflow over decorative redesign.
+
+---
+
+# 26. DELIVERABLE DOCUMENTS
+
+Create the following in the project's documentation directory, adapting paths to existing conventions where appropriate:
+
+### `docs/lean/LEAN_0_CURRENT_STATE_AUDIT.md`
+
+Verified existing functionality and actual source findings.
+
+### `docs/lean/LEAN_0_BUSINESS_STATE_MATRIX.md`
+
+All current states, responsible actors, transitions, visible labels and simplification decisions.
+
+### `docs/lean/LEAN_0_ACTION_AND_CLICK_AUDIT.md`
+
+Current user actions, duplicate controls and before/after interaction comparisons.
+
+### `docs/lean/LEAN_0_DECLARATION_FORM_MATRIX.md`
+
+Every declaration form, necessary fields, removable complexity and eligibility dependencies.
+
+### `docs/lean/LEAN_0_REVIEW_CONTRACT.md`
+
+Actual review judgment granularity, eligibility aggregation, persistence and authority boundaries.
+
+### `docs/lean/LEAN_0_BEFORE_AFTER_FLOWS.md`
+
+Mermaid diagrams showing the verified existing and proposed LEAN workflows.
+
+### `docs/lean/LEAN_0_FEATURE_PRESERVATION.md`
+
+Capability preservation, permissions and data-integrity matrix.
+
+### `docs/lean/LEAN_0_IMPLEMENTATION_PLAN.md`
+
+Detailed LEAN-1 through LEAN-6 execution plan and acceptance criteria.
+
+### `docs/lean/LEAN_0_DECISION_LOG.md`
+
+Confirmed assumptions, unresolved business questions, proposed changes and potential blockers.
+
+These documents must contain verified source paths, component references, actual API names and concrete recommendations.
+
+Do not deliver generic UX advice detached from the source.
+
+---
+
+# 27. IMPORTANT CHANGE-SAFETY RULES
+
+LEAN-0 is analysis and planning only.
+
+Do not:
+
+- Modify production frontend source.
+- Modify backend services.
+- Rewrite Prisma schema.
+- Delete statuses.
+- Delete migrations.
+- Delete ReviewTasks.
+- Remove audit fields.
+- Invent new review permissions.
+- Change School forwarding.
+- Change Committee authority.
+- Modify real application data.
+- Run database migrations.
+- Reconnect Supabase.
+- Deploy.
+- Push.
+- Merge.
+- Rebase.
+- Overwrite the historical Golden Frontend manifest.
+
+Record the current Git baseline and working-tree state.
+
+If source findings conflict with previously documented behavior, report the discrepancy.
+
+Do not silently rewrite the approved business model.
+
+---
+
+# 28. REQUIRED FINAL REPORT
+
+Provide a concise executive report after the documents are created.
+
+Include:
+
+1. Current confirmed frontend/backend implementation.
+2. Main reasons the workflow feels overcomplicated.
+3. Actual unnecessary steps.
+4. Suspected unnecessary steps requiring domain verification.
+5. Redundant UI-only statuses.
+6. Essential backend states to preserve.
+7. Current review assessment granularity.
+8. Proposed simpler Student declaration UX.
+9. Proposed direct Pass/Fail review UX.
+10. Proposed supplementation UX.
+11. Proposed School selection/forwarding UX.
+12. City/Committee simplification.
+13. Responsive architecture recommendations.
+14. Exact LEAN-1 through LEAN-6 backlog.
+15. Dependencies and safe parallel work.
+16. Security/data-integrity risks.
+17. Outstanding business decisions.
+18. Files created.
+19. Git baseline and absence of runtime source modifications.
+20. LEAN-0 verdict: PASS / PARTIAL / BLOCKED.
+
+Distinguish verified source behavior from recommendations.
+
+Do not claim production integration PASS based only on offline inspection.
+
+---
+
+# FINAL PRODUCT PRINCIPLE
+
+**5TOT IS A STUDENT AWARD APPLICATION AND SELECTION SYSTEM, NOT A WORKFLOW MANAGEMENT PLATFORM.**
+
+A Student should only need to:
+
+**Declare an achievement → Attach evidence → Submit.**
+
+A School or City reviewer should only need to:
+
+**Read the declaration → Inspect evidence → Click Đạt / Không đạt → Continue.**
+
+A School should only need to:
+
+**Conclude preliminary review → Select recommended applications → Attach one decision → Send once.**
+
+A Committee should only need to:
+
+**Inspect accumulated review outcomes → Record its authorized official decision.**
+
+The system can retain sophisticated integrity and security mechanisms internally.
+
+The interface must remain intuitive, familiar, clear, modern and professionally designed.
+
+**LEAN DOES NOT MEAN REMOVING FEATURES. LEAN MEANS REMOVING UNNECESSARY HUMAN WORK.**
+
+## HARD STOP
+
+Finish the source-backed LEAN-0 audit, diagrams, matrices and implementation backlog.
+
+DO NOT BEGIN LEAN-1 AUTOMATICALLY.
+
+Wait for the next explicitly authorized implementation phase.

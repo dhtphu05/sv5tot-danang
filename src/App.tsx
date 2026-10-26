@@ -1,0 +1,975 @@
+/**
+ * 5TOT Đà Nẵng — Application Root & Shared Student Store Coordinator (FSD App Layer)
+ * Cơ quan quản lý: Thành Đoàn Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
+ *
+ * Composes initialSessionResolver, useAdminControlPlane, useStaffWorkflowCoordination,
+ * useStudentPortalWorkflow, usePublicAuthSessionTransition, DemoLauncherPage,
+ * CollectiveLoginPage, CollectivePortal, StaffPortalPage, PublicEntryPortalPage, and StudentPortalPage.
+ */
+
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { NotificationFilterTab } from './components/notifications/StudentNotificationsView';
+import {
+  StudentNotificationItem,
+  NotificationDemoScenarioId,
+  ResolvedDeepLinkDestination,
+} from './components/notifications/notificationTypes';
+import { getActionableNotifications } from './demo/studentSelectors';
+import {
+  HomeDevScenarioId,
+  HOME_COHERENT_SCENARIOS,
+  CoherentStudentStoreState,
+} from './demo/fixtures/homeScenarios';
+import { StudentApplicationData } from './demo/fixtures/studentApplication';
+import { ResultDemoScenarioId } from './components/results/resultTypes';
+import { ApplicationSubmissionState } from './components/submission/submissionTypes';
+import { CollectivePortal } from './components/collective/CollectivePortal';
+import { CollectiveLoginPage } from './components/collective/CollectiveLoginPage';
+import { subscribeToCollectiveStore } from './staff/collectiveStore';
+import {
+  PublicEntryRoute,
+  SafeInternalReturnTarget,
+} from './components/public/publicTypes';
+import { DemoLauncherPage } from './components/demo/DemoLauncherPage';
+import { PrototypeDemoToolbar } from './components/demo/PrototypeDemoToolbar';
+import {
+  IS_DEMO_MODE_ENABLED,
+  PrototypeScenarioId,
+  PROTOTYPE_SCENARIO_MAP,
+  DEFAULT_PROTOTYPE_SCENARIO_ID,
+  resolveScenarioFromUrlParam,
+  clonePristineStoreForScenario,
+  savePersistedDemoSession,
+} from './demo/prototypeDemoMode';
+import { MOCK_STUDENT } from './tokens';
+import { StaffRole, StaffRouteId } from './staff/types';
+import { STAFF_DEMO_USERS } from './staff/fixtures/staffDataset';
+import { CommitteeDemoScenarioId } from './staff/committeeTypes';
+import { SchoolDemoScenarioId } from './staff/fixtures/schoolReviewFixtures';
+import {
+  TopLevelViewMode,
+  resolveInitialRouteAndSession,
+} from './app/routing/initialSessionResolver';
+import { useAdminControlPlane } from './features/admin-control-plane/useAdminControlPlane';
+import { useStaffWorkflowCoordination } from './features/staff-workflow/useStaffWorkflowCoordination';
+import { useStudentPortalWorkflow } from './features/student-portal/useStudentPortalWorkflow';
+import { usePublicAuthSessionTransition } from './features/public-auth/usePublicAuthSessionTransition';
+import { StaffPortalPage } from './pages/staff-portal/StaffPortalPage';
+import { StudentPortalPage } from './pages/student-portal/StudentPortalPage';
+import { PublicEntryPortalPage } from './pages/public-portal/PublicEntryPortalPage';
+import { resolveDomainServices } from './entities/services';
+import { setApiActorContext } from './shared/api/httpClient';
+
+export default function App() {
+  const initialSession = useMemo(() => resolveInitialRouteAndSession(), []);
+
+  const [viewMode, setViewMode] = useState<TopLevelViewMode>(
+    initialSession.viewMode
+  );
+  const [isDemoActive, setIsDemoActive] = useState<boolean>(
+    initialSession.isDemoActive
+  );
+  const [isToolbarHidden, setIsToolbarHidden] = useState<boolean>(
+    initialSession.isToolbarHidden
+  );
+  const [scenarioResetKey, setScenarioResetKey] = useState<number>(0);
+
+  const [publicRoute, setPublicRoute] = useState<PublicEntryRoute>('landing');
+  const [loginPrefillEmail, setLoginPrefillEmail] = useState<string>('');
+  const [loginPresetError, setLoginPresetError] = useState<
+    'invalid_credentials' | 'general_error' | null
+  >(null);
+  const [isSessionExpiredNotice, setIsSessionExpiredNotice] =
+    useState<boolean>(false);
+  const [safeReturnTarget, setSafeReturnTarget] =
+    useState<SafeInternalReturnTarget | null>(null);
+  const [signupPresetMode, setSignupPresetMode] = useState<
+    | 'normal'
+    | 'combobox_open'
+    | 'validation_errors'
+    | 'institution_load_error'
+  >('normal');
+
+  const [studentIdentity, setStudentIdentity] = useState<{
+    fullName: string;
+    studentId: string;
+    university: string;
+  }>(() => ({
+    fullName:
+      initialSession.store.application.student.fullName ||
+      MOCK_STUDENT.fullName,
+    studentId:
+      initialSession.store.application.student.studentId ||
+      MOCK_STUDENT.studentId,
+    university:
+      initialSession.store.application.student.university ||
+      MOCK_STUDENT.university,
+  }));
+
+  const handleProfileUpdated = useCallback(
+    (updated: import('./entities/application/studentApplicationTypes').StudentProfileDto) => {
+      setStudentIdentity((prev) => ({
+        ...prev,
+        fullName: updated.fullName,
+        university: updated.institutionName || prev.university,
+      }));
+    },
+    []
+  );
+
+  const [activeNavId, setActiveNavId] = useState<string>(initialSession.navId);
+
+  const [prototypeScenarioId, setPrototypeScenarioId] =
+    useState<PrototypeScenarioId>(initialSession.scenarioId);
+  const [homeScenario, setHomeScenario] = useState<HomeDevScenarioId>(
+    initialSession.store.scenarioId
+  );
+  const [sharedApplication, setSharedApplication] =
+    useState<StudentApplicationData>(() => initialSession.store.application);
+  const [hasMultipleSupplements, setHasMultipleSupplements] =
+    useState<boolean>(false);
+  const [isHomeLoading, setIsHomeLoading] = useState<boolean>(false);
+  const [isHomeError, setIsHomeError] = useState<boolean>(false);
+  const [isUpdatesError, setIsUpdatesError] = useState<boolean>(false);
+
+  const [appSubmissionState, setAppSubmissionState] =
+    useState<ApplicationSubmissionState>(initialSession.store.submissionState);
+  const [focusCriterionId, setFocusCriterionId] = useState<string | null>(null);
+
+  const [notifScenario, setNotifScenario] =
+    useState<NotificationDemoScenarioId>('scenario_a_hero');
+  const [notifications, setNotifications] = useState<StudentNotificationItem[]>(
+    () => initialSession.store.notifications
+  );
+  const [notifTab, setNotifTab] = useState<NotificationFilterTab>('actionable');
+  const [savedNotifScrollY, setSavedNotifScrollY] = useState<number>(0);
+  const [cameFromNotifications, setCameFromNotifications] =
+    useState<boolean>(false);
+
+  const [pendingDeepLink, setPendingDeepLink] =
+    useState<ResolvedDeepLinkDestination | null>(null);
+  const [resultUnavailableNotice, setResultUnavailableNotice] = useState<
+    string | null
+  >(null);
+
+  const [collectiveUserEmail, setCollectiveUserEmail] = useState<string>(
+    () => initialSession.collectiveUserEmail || 'mai.nt@dut.udn.vn'
+  );
+  const [, setCollectiveStoreTick] = useState(0);
+
+  useEffect(() => {
+    return subscribeToCollectiveStore(() => {
+      setCollectiveStoreTick((t) => t + 1);
+    });
+  }, []);
+
+  const updateBrowserUrl = useCallback((path: string) => {
+    if (typeof window === 'undefined') return;
+    if (window.location.pathname + window.location.search !== path) {
+      window.history.pushState({}, '', path);
+    }
+  }, []);
+
+  const incrementScenarioResetKey = useCallback(() => {
+    setScenarioResetKey((prev) => prev + 1);
+  }, []);
+
+  const applyPrototypeScenario = useCallback(
+    (
+      nextScenarioId: PrototypeScenarioId,
+      options?: { navigateToDefaultScreen?: boolean; preserveUrl?: boolean }
+    ) => {
+      const config =
+        PROTOTYPE_SCENARIO_MAP[nextScenarioId] ||
+        PROTOTYPE_SCENARIO_MAP[DEFAULT_PROTOTYPE_SCENARIO_ID];
+      const pristine = clonePristineStoreForScenario(config.id);
+
+      setPrototypeScenarioId(config.id);
+      setHomeScenario(pristine.scenarioId);
+      setAppSubmissionState(pristine.submissionState);
+      setSharedApplication({
+        ...pristine.application,
+        student: {
+          ...pristine.application.student,
+          fullName: studentIdentity.fullName,
+          studentId: studentIdentity.studentId,
+          university: studentIdentity.university,
+        },
+      });
+      setNotifications(pristine.notifications);
+      setHasMultipleSupplements(false);
+      setIsHomeLoading(false);
+      setIsHomeError(false);
+      setIsUpdatesError(false);
+      setCameFromNotifications(false);
+      setResultUnavailableNotice(null);
+      setFocusCriterionId(
+        config.id === 'supplement_required' ? 'volunteer' : null
+      );
+      setPendingDeepLink(null);
+      setScenarioResetKey((prev) => prev + 1);
+
+      const hasActionable = pristine.notifications.some(
+        (n) => n.isActionable && !n.isActionResolved
+      );
+      setNotifTab(hasActionable ? 'actionable' : 'all');
+
+      const shouldNavigate = options?.navigateToDefaultScreen ?? true;
+      const targetNavId = shouldNavigate ? config.defaultNavId : activeNavId;
+
+      setViewMode('student_app');
+      setIsDemoActive(true);
+      setActiveNavId(targetNavId);
+
+      savePersistedDemoSession({
+        scenarioId: config.id,
+        isDemoActive: true,
+        viewMode: 'student_app',
+        navId: targetNavId,
+        mutatedApplication: null,
+        mutatedNotifications: null,
+      });
+
+      if (!options?.preserveUrl) {
+        updateBrowserUrl(config.defaultPath);
+      }
+
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+    },
+    [studentIdentity, activeNavId, updateBrowserUrl]
+  );
+
+  const staffWorkflow = useStaffWorkflowCoordination({
+    initialStaffRole: (initialSession as { staffRole?: StaffRole }).staffRole,
+    initialStaffUser: initialSession.staffUserOverride,
+    initialStaffRouteId: initialSession.staffRouteId,
+    initialOfficerScenarioId: initialSession.officerScenarioId,
+    initialCommitteeScenarioId: (
+      initialSession as { committeeScenarioId?: CommitteeDemoScenarioId }
+    ).committeeScenarioId,
+    initialSchoolScenarioId: (
+      initialSession as { schoolScenarioId?: SchoolDemoScenarioId }
+    ).schoolScenarioId,
+    updateBrowserUrl,
+    setViewMode,
+    setIsDemoActive,
+    incrementScenarioResetKey,
+    applyPrototypeScenario,
+    setPrototypeScenarioId,
+    setHomeScenario,
+    setAppSubmissionState,
+  });
+
+  const {
+    staffUser,
+    setStaffUser,
+    staffRouteId,
+    setStaffRouteId,
+    activeOfficerScenarioId,
+    activeCommitteeScenarioId,
+    activeSchoolScenarioId,
+    selectedStaffAppId,
+    initialHeroOfficerBundle,
+    staffApplications,
+    setStaffApplications,
+    committeeCasesMap,
+    staffNotifications,
+    setStaffNotifications,
+    officerStudentAppMap,
+    setOfficerStudentAppMap,
+    officerWorkspaceMap,
+    setOfficerWorkspaceMap,
+    handleApplyOfficerScenario,
+    handleApplySchoolScenario,
+    handleOpenSchoolQueue,
+    handleOpenOfficerQueue,
+    handleOpenStaffApplicationReview,
+    handleMutateOfficerWorkspace,
+    handleAssignOfficerInStaff,
+    handleApplyCommitteeScenario,
+    handleResolveCommitteeFlag,
+    handleAddCommitteeNote,
+    handleRecordCommitteeDecision,
+    handleFinalizeResultSet,
+    handlePublishResults,
+    handleRecordRecommendation,
+    handleForwardToCity,
+  } = staffWorkflow;
+
+  const adminControlPlane = useAdminControlPlane(
+    staffUser,
+    setStaffApplications
+  );
+
+  const activeStoreState: CoherentStudentStoreState = useMemo(() => {
+    const base = HOME_COHERENT_SCENARIOS[homeScenario];
+    const configuredDeadline =
+      adminControlPlane.adminDeadlines.find(
+        (d) => d.id === 'dl-submission-end'
+      )?.dateTime ||
+      base.submissionDeadlineText ||
+      '15/10/2026 · 20:00';
+    const activeSeasonYear =
+      adminControlPlane.adminSeasons.find((s) => s.isCurrentActive)
+        ?.schoolYear || sharedApplication.student.academicYear;
+
+    return {
+      ...base,
+      submissionState: appSubmissionState,
+      submissionDeadlineText: configuredDeadline,
+      application: {
+        ...sharedApplication,
+        student: {
+          ...sharedApplication.student,
+          fullName: studentIdentity.fullName,
+          studentId: studentIdentity.studentId,
+          university: studentIdentity.university,
+          academicYear: activeSeasonYear,
+        },
+      },
+    };
+  }, [
+    homeScenario,
+    appSubmissionState,
+    sharedApplication,
+    studentIdentity,
+    adminControlPlane.adminDeadlines,
+    adminControlPlane.adminSeasons,
+  ]);
+
+  const studentWorkflow = useStudentPortalWorkflow({
+    studentIdentity,
+    activeNavId,
+    setActiveNavId,
+    activeStoreState,
+    appSubmissionState,
+    setAppSubmissionState,
+    prototypeScenarioId,
+    setPrototypeScenarioId,
+    setHomeScenario,
+    setSharedApplication,
+    setNotifications,
+    setNotifScenario,
+    setNotifTab,
+    savedNotifScrollY,
+    setSavedNotifScrollY,
+    setCameFromNotifications,
+    setResultUnavailableNotice,
+    setPendingDeepLink,
+    setFocusCriterionId,
+    setIsHomeLoading,
+    setIsHomeError,
+    setIsUpdatesError,
+    incrementScenarioResetKey,
+    applyPrototypeScenario,
+    setStaffApplications,
+    setOfficerStudentAppMap,
+    setOfficerWorkspaceMap,
+    setStaffNotifications,
+  });
+
+  const { handleLoginSuccess, handleSignupSuccess } =
+    usePublicAuthSessionTransition({
+      safeReturnTarget,
+      setSafeReturnTarget,
+      setCollectiveUserEmail,
+      setViewMode,
+      setIsSessionExpiredNotice,
+      setStaffUser,
+      setStaffRouteId,
+      setIsDemoActive,
+      setFocusCriterionId,
+      setPendingDeepLink,
+      setActiveNavId,
+      setStudentIdentity,
+      setPrototypeScenarioId,
+      setHomeScenario,
+      setAppSubmissionState,
+      setSharedApplication,
+      setNotifications,
+      incrementScenarioResetKey,
+      updateBrowserUrl,
+    });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handlePopState = () => {
+      const pathname = window.location.pathname.replace(/\/+$/, '') || '/';
+      const params = new URLSearchParams(window.location.search);
+      const urlScenario = resolveScenarioFromUrlParam(params.get('scenario'));
+
+      if (IS_DEMO_MODE_ENABLED && urlScenario) {
+        applyPrototypeScenario(urlScenario.id, {
+          navigateToDefaultScreen: true,
+          preserveUrl: true,
+        });
+        return;
+      }
+
+      if (IS_DEMO_MODE_ENABLED && pathname === '/demo') {
+        setViewMode('demo_launcher');
+        setIsDemoActive(true);
+        setIsToolbarHidden(false);
+        savePersistedDemoSession({
+          viewMode: 'demo_launcher',
+          isDemoActive: true,
+          isToolbarHidden: false,
+        });
+        return;
+      }
+
+      if (pathname === '/collective/login') {
+        setViewMode('collective_login');
+        savePersistedDemoSession({ viewMode: 'collective_login' });
+        return;
+      }
+
+      if (pathname === '/collective' || pathname.startsWith('/collective')) {
+        setViewMode('collective_portal');
+        savePersistedDemoSession({ viewMode: 'collective_portal' });
+        return;
+      }
+
+      if (pathname.startsWith('/app')) {
+        setViewMode('student_app');
+        if (pathname === '/app/results') setActiveNavId('results');
+        else if (pathname === '/app/notifications')
+          setActiveNavId('notifications');
+        else if (pathname === '/app/evidence') setActiveNavId('evidence');
+        else if (pathname === '/app/application') setActiveNavId('application');
+        savePersistedDemoSession({ viewMode: 'student_app' });
+        return;
+      }
+
+      setViewMode('public');
+      setPublicRoute('landing');
+      savePersistedDemoSession({ viewMode: 'public' });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [applyPrototypeScenario]);
+
+  const actionableBadgeCount = useMemo(
+    () => getActionableNotifications(notifications).length,
+    [notifications]
+  );
+
+  const isSupplementResolved = useMemo(
+    () =>
+      notifications.some(
+        (n) => n.id === 'notif-supp-vol-mhx' && !!n.isActionResolved
+      ),
+    [notifications]
+  );
+
+  const isEvidenceResolved = useMemo(
+    () =>
+      notifications.some(
+        (n) => n.id === 'notif-ev-ielts-confirm' && !!n.isActionResolved
+      ),
+    [notifications]
+  );
+
+  const derivedResultScenario: ResultDemoScenarioId = useMemo(() => {
+    if (homeScenario === 'state_k_recognized') return 'recognized_hero';
+    if (homeScenario === 'state_l_not_recognized') return 'not_recognized';
+    if (homeScenario === 'state_j_waiting_final')
+      return 'waiting_final_completed';
+    return 'waiting_review_ongoing';
+  }, [homeScenario]);
+
+  const publishedResultState: 'recognized' | 'not_recognized' = useMemo(() => {
+    return homeScenario === 'state_l_not_recognized'
+      ? 'not_recognized'
+      : 'recognized';
+  }, [homeScenario]);
+
+  const handleSidebarNavSelect = useCallback(
+    (navId: string) => {
+      if (navId === 'public-entry') {
+        resolveDomainServices()
+          .auth.logout()
+          .catch(() => {});
+        setApiActorContext(null);
+        setViewMode('public');
+        setPublicRoute('landing');
+        savePersistedDemoSession({
+          viewMode: 'public',
+          staffRole: '',
+          staffRouteId: '',
+        });
+        updateBrowserUrl('/');
+        if (typeof window !== 'undefined') {
+          window.scrollTo({ top: 0, behavior: 'instant' });
+        }
+        return;
+      }
+
+      setCameFromNotifications(false);
+      setResultUnavailableNotice(null);
+      setActiveNavId(navId);
+      savePersistedDemoSession({ navId });
+      updateBrowserUrl(navId === 'results' ? '/app/results' : '/app');
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+    },
+    [updateBrowserUrl]
+  );
+
+  const handleConsumeDeepLink = useCallback(() => {
+    setPendingDeepLink(null);
+  }, []);
+
+  const handleSelectManagerRoute = useCallback(
+    (routeId: StaffRouteId) => {
+      setStaffUser(STAFF_DEMO_USERS.CITY_MANAGER);
+      setViewMode('staff_app');
+      setIsDemoActive(true);
+      setStaffRouteId(routeId);
+      updateBrowserUrl(routeId === 'overview' ? '/staff' : `/staff/${routeId}`);
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+    },
+    [updateBrowserUrl, setStaffUser, setStaffRouteId]
+  );
+
+  const handleSelectAdminRoute = useCallback(
+    (routeId: StaffRouteId) => {
+      setStaffUser(STAFF_DEMO_USERS.ADMIN);
+      setViewMode('staff_app');
+      setIsDemoActive(true);
+      setStaffRouteId(routeId);
+      updateBrowserUrl(routeId === 'overview' ? '/staff' : `/staff/${routeId}`);
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+    },
+    [updateBrowserUrl, setStaffUser, setStaffRouteId]
+  );
+
+  const handleResetActiveModeScenario = useCallback(() => {
+    if (viewMode === 'staff_app') {
+      if (staffUser.primaryRole === 'CITY_COMMITTEE') {
+        handleApplyCommitteeScenario(activeCommitteeScenarioId, {
+          openRoute: staffRouteId,
+          preserveUrl: true,
+        });
+      } else if (staffUser.primaryRole === 'ADMIN') {
+        adminControlPlane.resetAdminState();
+        setStaffRouteId('overview');
+      } else {
+        handleApplyOfficerScenario(activeOfficerScenarioId, {
+          openRoute: staffRouteId,
+          preserveUrl: true,
+        });
+      }
+    } else {
+      studentWorkflow.handleResetCurrentScenario();
+    }
+  }, [
+    viewMode,
+    staffUser.primaryRole,
+    activeCommitteeScenarioId,
+    activeOfficerScenarioId,
+    staffRouteId,
+    handleApplyCommitteeScenario,
+    handleApplyOfficerScenario,
+    studentWorkflow,
+    adminControlPlane,
+    setStaffRouteId,
+  ]);
+
+  const handleOpenDemoLauncher = useCallback(() => {
+    setViewMode('demo_launcher');
+    setIsDemoActive(true);
+    setIsToolbarHidden(false);
+    savePersistedDemoSession({
+      viewMode: 'demo_launcher',
+      isDemoActive: true,
+      isToolbarHidden: false,
+    });
+    updateBrowserUrl('/demo');
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [updateBrowserUrl]);
+
+  const handleOpenPublicFromDemo = useCallback(() => {
+    resolveDomainServices()
+      .auth.logout()
+      .catch(() => {});
+    setApiActorContext(null);
+    setViewMode('public');
+    setPublicRoute('landing');
+    setIsDemoActive(true);
+    savePersistedDemoSession({
+      viewMode: 'public',
+      isDemoActive: true,
+      staffRole: '',
+      staffRouteId: '',
+      staffUserOverride: null,
+      collectiveUserEmail: '',
+    });
+    updateBrowserUrl('/');
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [updateBrowserUrl]);
+
+  const handleEnterStudentAppFromDemo = useCallback(() => {
+    const config =
+      PROTOTYPE_SCENARIO_MAP[prototypeScenarioId] ||
+      PROTOTYPE_SCENARIO_MAP[DEFAULT_PROTOTYPE_SCENARIO_ID];
+    setViewMode('student_app');
+    setIsDemoActive(true);
+    savePersistedDemoSession({
+      viewMode: 'student_app',
+      isDemoActive: true,
+    });
+    updateBrowserUrl(config.defaultPath);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [prototypeScenarioId, updateBrowserUrl]);
+
+  if (IS_DEMO_MODE_ENABLED && viewMode === 'demo_launcher') {
+    return (
+      <DemoLauncherPage
+        activeScenarioId={prototypeScenarioId}
+        activeOfficerScenarioId={activeOfficerScenarioId}
+        activeCommitteeScenarioId={activeCommitteeScenarioId}
+        activeSchoolScenarioId={activeSchoolScenarioId}
+        onLaunchScenario={(scenarioId) =>
+          applyPrototypeScenario(scenarioId, { navigateToDefaultScreen: true })
+        }
+        onLaunchOfficerScenario={(officerScenarioId) =>
+          handleApplyOfficerScenario(officerScenarioId, {
+            openRoute: 'application_review',
+          })
+        }
+        onLaunchCommitteeScenario={(committeeScenarioId) =>
+          handleApplyCommitteeScenario(committeeScenarioId)
+        }
+        onLaunchSchoolScenario={(schoolScenarioId) =>
+          handleApplySchoolScenario(schoolScenarioId, {
+            openRoute: 'application_review',
+          })
+        }
+        onLaunchManagerScenario={handleSelectManagerRoute}
+        onLaunchAdminRoute={handleSelectAdminRoute}
+        onOpenOfficerQueue={handleOpenOfficerQueue}
+        onOpenSchoolQueue={handleOpenSchoolQueue}
+        onResetCurrentScenario={handleResetActiveModeScenario}
+        onOpenPublicEntry={handleOpenPublicFromDemo}
+        onEnterStudentApp={handleEnterStudentAppFromDemo}
+        onLaunchCollectivePortal={() => {
+          setViewMode('collective_portal');
+          updateBrowserUrl('/collective');
+          if (typeof window !== 'undefined')
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        }}
+      />
+    );
+  }
+
+  if (viewMode === 'collective_login') {
+    return (
+      <CollectiveLoginPage
+        onLoginSuccess={(email) => {
+          setCollectiveUserEmail(email);
+          setViewMode('collective_portal');
+          savePersistedDemoSession({ viewMode: 'collective_portal' });
+          updateBrowserUrl('/collective');
+          if (typeof window !== 'undefined')
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        }}
+        onNavigateToPublicLanding={() => {
+          setViewMode('public');
+          setPublicRoute('landing');
+          updateBrowserUrl('/');
+          if (typeof window !== 'undefined')
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        }}
+        onNavigateToStudentLogin={() => {
+          setViewMode('public');
+          setPublicRoute('login');
+          updateBrowserUrl('/login');
+          if (typeof window !== 'undefined')
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        }}
+      />
+    );
+  }
+
+  if (viewMode === 'collective_portal') {
+    return (
+      <>
+        <CollectivePortal
+          currentEmail={collectiveUserEmail}
+          onLogout={() => {
+            resolveDomainServices()
+              .auth.logout()
+              .catch(() => {});
+            setApiActorContext(null);
+            setViewMode('public');
+            setPublicRoute('landing');
+            savePersistedDemoSession({
+              viewMode: 'public',
+              staffRole: '',
+              staffRouteId: '',
+            });
+            updateBrowserUrl('/');
+            if (typeof window !== 'undefined')
+              window.scrollTo({ top: 0, behavior: 'instant' });
+          }}
+          onSwitchToStudentPortal={() => {
+            setViewMode('student_app');
+            setActiveNavId('overview');
+            updateBrowserUrl('/app');
+            if (typeof window !== 'undefined')
+              window.scrollTo({ top: 0, behavior: 'instant' });
+          }}
+        />
+        <PrototypeDemoToolbar
+          isVisible={IS_DEMO_MODE_ENABLED}
+          isHiddenByUser={isToolbarHidden}
+          activeScenarioId={prototypeScenarioId}
+          activeOfficerScenarioId={activeOfficerScenarioId}
+          activeCommitteeScenarioId={activeCommitteeScenarioId}
+          activeSchoolScenarioId={activeSchoolScenarioId}
+          activeStaffRole={staffUser.primaryRole}
+          isStaffMode={false}
+          isOnPublicPage={false}
+          onSelectScenario={(scenarioId) =>
+            applyPrototypeScenario(scenarioId, { navigateToDefaultScreen: true })
+          }
+          onSelectOfficerScenario={(officerScenarioId) =>
+            handleApplyOfficerScenario(officerScenarioId, {
+              openRoute: 'application_review',
+            })
+          }
+          onSelectCommitteeScenario={(committeeScenarioId) =>
+            handleApplyCommitteeScenario(committeeScenarioId)
+          }
+          onSelectSchoolScenario={(schoolScenarioId) =>
+            handleApplySchoolScenario(schoolScenarioId, {
+              openRoute: 'application_review',
+            })
+          }
+          onSelectManagerScenario={handleSelectManagerRoute}
+          onSelectAdminRoute={handleSelectAdminRoute}
+          onOpenOfficerQueue={handleOpenOfficerQueue}
+          onOpenSchoolQueue={handleOpenSchoolQueue}
+          onResetScenario={handleResetActiveModeScenario}
+          onOpenDemoLauncher={handleOpenDemoLauncher}
+          onOpenPublicEntry={handleOpenPublicFromDemo}
+          onEnterStudentApp={handleEnterStudentAppFromDemo}
+          onHideToolbar={() => {
+            setIsToolbarHidden(true);
+            savePersistedDemoSession({ isToolbarHidden: true });
+          }}
+          onRestoreToolbar={() => {
+            setIsToolbarHidden(false);
+            savePersistedDemoSession({ isToolbarHidden: false });
+          }}
+        />
+      </>
+    );
+  }
+
+  if (viewMode === 'staff_app') {
+    return (
+      <StaffPortalPage
+        staffUser={staffUser}
+        setStaffUser={setStaffUser}
+        staffRouteId={staffRouteId}
+        setStaffRouteId={setStaffRouteId}
+        selectedStaffAppId={selectedStaffAppId}
+        scenarioResetKey={scenarioResetKey}
+        prototypeScenarioId={prototypeScenarioId}
+        activeOfficerScenarioId={activeOfficerScenarioId}
+        activeCommitteeScenarioId={activeCommitteeScenarioId}
+        activeSchoolScenarioId={activeSchoolScenarioId}
+        isToolbarHidden={isToolbarHidden}
+        setIsToolbarHidden={setIsToolbarHidden}
+        staffApplications={staffApplications}
+        staffNotifications={staffNotifications}
+        setStaffNotifications={setStaffNotifications}
+        committeeCasesMap={committeeCasesMap}
+        officerStudentAppMap={officerStudentAppMap}
+        officerWorkspaceMap={officerWorkspaceMap}
+        initialHeroOfficerBundle={initialHeroOfficerBundle}
+        updateBrowserUrl={updateBrowserUrl}
+        applyPrototypeScenario={applyPrototypeScenario}
+        handleApplyOfficerScenario={handleApplyOfficerScenario}
+        handleApplyCommitteeScenario={handleApplyCommitteeScenario}
+        handleApplySchoolScenario={handleApplySchoolScenario}
+        handleSelectManagerRoute={handleSelectManagerRoute}
+        handleSelectAdminRoute={handleSelectAdminRoute}
+        handleOpenOfficerQueue={handleOpenOfficerQueue}
+        handleOpenSchoolQueue={handleOpenSchoolQueue}
+        handleResetActiveModeScenario={handleResetActiveModeScenario}
+        handleOpenDemoLauncher={handleOpenDemoLauncher}
+        handleOpenPublicFromDemo={handleOpenPublicFromDemo}
+        handleEnterStudentAppFromDemo={handleEnterStudentAppFromDemo}
+        handleOpenStaffApplicationReview={handleOpenStaffApplicationReview}
+        handleMutateOfficerWorkspace={handleMutateOfficerWorkspace}
+        handleAssignOfficerInStaff={handleAssignOfficerInStaff}
+        handleResolveCommitteeFlag={handleResolveCommitteeFlag}
+        handleAddCommitteeNote={handleAddCommitteeNote}
+        handleRecordCommitteeDecision={handleRecordCommitteeDecision}
+        handleFinalizeResultSet={handleFinalizeResultSet}
+        handlePublishResults={handlePublishResults}
+        handleRecordRecommendation={handleRecordRecommendation}
+        handleForwardToCity={handleForwardToCity}
+        {...adminControlPlane}
+      />
+    );
+  }
+
+  if (viewMode === 'public') {
+    return (
+      <PublicEntryPortalPage
+        publicRoute={publicRoute}
+        setPublicRoute={setPublicRoute}
+        loginPrefillEmail={loginPrefillEmail}
+        setLoginPrefillEmail={setLoginPrefillEmail}
+        loginPresetError={loginPresetError}
+        setLoginPresetError={setLoginPresetError}
+        isSessionExpiredNotice={isSessionExpiredNotice}
+        setIsSessionExpiredNotice={setIsSessionExpiredNotice}
+        safeReturnTarget={safeReturnTarget}
+        signupPresetMode={signupPresetMode}
+        setSignupPresetMode={setSignupPresetMode}
+        handleLoginSuccess={handleLoginSuccess}
+        handleSignupSuccess={handleSignupSuccess}
+        onNavigateToCollectiveLogin={() => {
+          setViewMode('collective_login');
+          updateBrowserUrl('/collective/login');
+          window.scrollTo({ top: 0, behavior: 'instant' });
+        }}
+        onEnterAuthenticatedHome={() => {
+          setViewMode('student_app');
+          setActiveNavId('overview');
+          savePersistedDemoSession({
+            viewMode: 'student_app',
+            navId: 'overview',
+          });
+          updateBrowserUrl('/app');
+          window.scrollTo({ top: 0, behavior: 'instant' });
+        }}
+        isDemoActive={isDemoActive}
+        isToolbarHidden={isToolbarHidden}
+        setIsToolbarHidden={setIsToolbarHidden}
+        prototypeScenarioId={prototypeScenarioId}
+        activeOfficerScenarioId={activeOfficerScenarioId}
+        activeCommitteeScenarioId={activeCommitteeScenarioId}
+        activeSchoolScenarioId={activeSchoolScenarioId}
+        activeStaffRole={staffUser.primaryRole}
+        applyPrototypeScenario={applyPrototypeScenario}
+        handleApplyOfficerScenario={handleApplyOfficerScenario}
+        handleApplyCommitteeScenario={handleApplyCommitteeScenario}
+        handleApplySchoolScenario={handleApplySchoolScenario}
+        handleSelectManagerRoute={handleSelectManagerRoute}
+        handleSelectAdminRoute={handleSelectAdminRoute}
+        handleOpenOfficerQueue={handleOpenOfficerQueue}
+        handleOpenSchoolQueue={handleOpenSchoolQueue}
+        handleResetActiveModeScenario={handleResetActiveModeScenario}
+        handleOpenDemoLauncher={handleOpenDemoLauncher}
+        handleOpenPublicFromDemo={handleOpenPublicFromDemo}
+        handleEnterStudentAppFromDemo={handleEnterStudentAppFromDemo}
+      />
+    );
+  }
+
+  return (
+    <StudentPortalPage
+      activeNavId={activeNavId}
+      handleSidebarNavSelect={handleSidebarNavSelect}
+      actionableBadgeCount={actionableBadgeCount}
+      studentIdentity={studentIdentity}
+      activeStoreState={activeStoreState}
+      notifications={notifications}
+      hasMultipleSupplements={hasMultipleSupplements}
+      setHasMultipleSupplements={setHasMultipleSupplements}
+      isHomeLoading={isHomeLoading}
+      setIsHomeLoading={setIsHomeLoading}
+      isHomeError={isHomeError}
+      setIsHomeError={setIsHomeError}
+      isUpdatesError={isUpdatesError}
+      setIsUpdatesError={setIsUpdatesError}
+      handleSelectHomeScenario={studentWorkflow.handleSelectHomeScenario}
+      handleResetCurrentScenario={studentWorkflow.handleResetCurrentScenario}
+      handleStartNewApplication={studentWorkflow.handleStartNewApplication}
+      handleOpenApplicationFromHome={
+        studentWorkflow.handleOpenApplicationFromHome
+      }
+      handleOpenSupplementFromHome={
+        studentWorkflow.handleOpenSupplementFromHome
+      }
+      handleOpenEvidenceAttentionFromHome={
+        studentWorkflow.handleOpenEvidenceAttentionFromHome
+      }
+      handleActivateNotification={studentWorkflow.handleActivateNotification}
+      notifTab={notifTab}
+      setNotifTab={setNotifTab}
+      handleMarkAllRead={studentWorkflow.handleMarkAllRead}
+      notifScenario={notifScenario}
+      handleSelectNotifScenario={studentWorkflow.handleSelectNotifScenario}
+      isSupplementResolved={isSupplementResolved}
+      handleToggleSupplementResolved={
+        studentWorkflow.handleToggleSupplementResolved
+      }
+      isEvidenceResolved={isEvidenceResolved}
+      handleToggleEvidenceResolved={
+        studentWorkflow.handleToggleEvidenceResolved
+      }
+      handleResetNotifDemo={studentWorkflow.handleResetNotifDemo}
+      derivedResultScenario={derivedResultScenario}
+      scenarioResetKey={scenarioResetKey}
+      handleNavigateToApplicationFromResults={
+        studentWorkflow.handleNavigateToApplicationFromResults
+      }
+      cameFromNotifications={cameFromNotifications}
+      handleReturnToNotifications={studentWorkflow.handleReturnToNotifications}
+      resultUnavailableNotice={resultUnavailableNotice}
+      homeScenario={homeScenario}
+      appSubmissionState={appSubmissionState}
+      focusCriterionId={focusCriterionId}
+      publishedResultState={publishedResultState}
+      pendingDeepLink={pendingDeepLink}
+      handleConsumeDeepLink={handleConsumeDeepLink}
+      handleApplicationChange={studentWorkflow.handleApplicationChange}
+      handleApplicationSubmitted={studentWorkflow.handleApplicationSubmitted}
+      handleSupplementBusinessResolved={
+        studentWorkflow.handleSupplementBusinessResolved
+      }
+      handleEvidenceBusinessResolved={
+        studentWorkflow.handleEvidenceBusinessResolved
+      }
+      isToolbarHidden={isToolbarHidden}
+      setIsToolbarHidden={setIsToolbarHidden}
+      prototypeScenarioId={prototypeScenarioId}
+      activeOfficerScenarioId={activeOfficerScenarioId}
+      activeCommitteeScenarioId={activeCommitteeScenarioId}
+      activeStaffRole={staffUser.primaryRole}
+      applyPrototypeScenario={applyPrototypeScenario}
+      handleApplyOfficerScenario={handleApplyOfficerScenario}
+      handleApplyCommitteeScenario={handleApplyCommitteeScenario}
+      handleSelectManagerRoute={handleSelectManagerRoute}
+      handleSelectAdminRoute={handleSelectAdminRoute}
+      handleOpenOfficerQueue={handleOpenOfficerQueue}
+      handleResetActiveModeScenario={handleResetActiveModeScenario}
+      handleOpenDemoLauncher={handleOpenDemoLauncher}
+      handleOpenPublicFromDemo={handleOpenPublicFromDemo}
+      handleEnterStudentAppFromDemo={handleEnterStudentAppFromDemo}
+      onProfileUpdated={handleProfileUpdated}
+    />
+  );
+}

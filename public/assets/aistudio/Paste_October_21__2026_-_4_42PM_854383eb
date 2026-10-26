@@ -1,0 +1,1373 @@
+# 5TOT ĐÀ NẴNG — SRW-2
+## SHARED STUDENT DOSSIER UI — ONE DOSSIER EXPERIENCE FOR STUDENTS, SCHOOL OFFICERS, CITY OFFICERS AND COMMITTEE
+
+**Priority:** P0 — Customer-Validated UX Refactor  
+**Phase:** SRW-2 — Frontend Implementation  
+**Task:** AUDIT → REFACTOR → IMPLEMENT → TEST → VISUALLY VERIFY  
+**Frontend:** Existing React + Vite + Strict TypeScript + Feature-Sliced Design  
+**Backend:** Existing Node.js + Express Backend V2  
+**Database:** Keep OFFLINE during this phase  
+**Primary Goal:** Reuse the ACTUAL existing Student dossier presentation across authorized reviewer roles while preserving Student functionality, human review controls, security, responsive behavior and the original Golden Frontend.
+
+---
+
+# 1. CRITICAL CUSTOMER REQUIREMENT
+
+After demonstrating 5TOT Đà Nẵng to the customer, we received important feedback:
+
+**"Why do officers need a completely different interface to review an application? Why not reuse the same dossier interface that the Student already uses?"**
+
+This is an approved product direction.
+
+The existing Student application experience already provides:
+
+- Five criterion navigation.
+- Requirement groups.
+- Student declarations.
+- Linked evidence.
+- Evidence attachments and previews.
+- Applicable regulation information.
+- Clear application organization.
+- Established layout and visual hierarchy.
+
+The School Officer, City Officer and Committee should inspect this SAME dossier presentation.
+
+Currently, different staff review pages have introduced duplicated UI structures, dense review panels, separate criterion layouts and unnecessary cognitive overhead.
+
+Simplify this.
+
+## NEW DESIGN PRINCIPLE
+
+**ONE CANONICAL DOSSIER PRESENTATION. MULTIPLE AUTHORIZED ACTION MODES.**
+
+The source content and visual organization remain shared.
+
+Only the actions available to the current user change.
+
+Do not copy Student JSX into three new review pages.
+
+Do not create three visually similar but technically independent dossier renderers.
+
+Actually reuse existing Student presentation components.
+
+---
+
+# 2. PHASE GATE AND SOURCE AUDIT
+
+Before implementation, inspect the actual current frontend and backend API contracts.
+
+Check:
+
+- Latest SRW-0 audit.
+- SRW-1 School Batch Forwarding API contract, if completed.
+- Current source baseline.
+- Existing Git working-tree changes.
+- Historical Golden Frontend manifest.
+- Current post-AI-UX source checkpoint.
+- Existing Student dossier components.
+- Existing School review components.
+- Existing City Officer review components.
+- Existing Committee dossier components.
+- Existing evidence viewers.
+- Existing role/capability system.
+- Existing Demo/Real adapters.
+
+If SRW-1 is incomplete, do not pretend School batch forwarding works in Real Mode.
+
+SRW-2 may still implement the shared dossier UI using the existing canonical application data and Demo Mode, as long as the missing backend dependencies are clearly marked.
+
+Do not silently alter the SRW-1 backend contract.
+
+If current application schemas or review read APIs are incompatible with correct source presentation, document the blocker rather than fabricating data.
+
+## Required initial output
+
+Produce a brief source audit:
+
+1. Current Student dossier renderer.
+2. Current Staff review renderer.
+3. Reusable components.
+4. Components requiring extraction.
+5. Duplicated components to retire.
+6. Role-specific review controls.
+7. Current source data adapters.
+8. Current responsive limitations.
+9. Expected file changes.
+10. Regression risks.
+
+Then implement the approved refactor.
+
+Do not stop after the audit unless a genuine critical blocker prevents safe implementation.
+
+---
+
+# 3. GOLDEN FRONTEND PROTECTION
+
+The project has a historical Golden Frontend baseline containing 348 protected files.
+
+Previous authorized AI UX work may already have intentionally modified some of these files.
+
+Therefore:
+
+- Preserve the original manifest as a historical recovery baseline.
+- Preserve the current working frontend checkpoint.
+- Verify source integrity before editing.
+- Document current differences from the historical Golden baseline.
+- Do not roll back approved recent AI features.
+- Do not regenerate the entire frontend.
+- Do not replace App.tsx.
+- Do not rewrite global navigation.
+- Do not introduce a new application shell.
+- Do not rebuild the UI design system.
+- Do not silently update manifest checksums.
+
+SRW-2 explicitly permits targeted refactoring of existing frontend source code to share dossier presentation.
+
+However, any change must be necessary and documented.
+
+Create a recoverable current-state checkpoint before editing.
+
+Ensure unrelated frontend features remain unchanged.
+
+---
+
+# 4. REQUIRED FRONTEND ARCHITECTURE
+
+Build a real shared dossier presentation foundation.
+
+Inspect current Feature-Sliced Design architecture before choosing file locations.
+
+Prefer an appropriate shared entity/widget composition.
+
+Suggested conceptual architecture:
+
+```text
+Shared Application Dossier Presentation
+│
+├── Dossier Header
+├── Five-Criterion Navigation
+├── Criterion Details
+│   ├── Requirement Groups
+│   ├── Student Declaration Cards
+│   └── Evidence Cards / Viewer
+├── Applicable Regulations
+└── Dossier Navigation / Anchors
+```
+
+These are the shared presentation capabilities.
+
+Role-specific actions must be composed separately:
+
+```text
+Student Dossier
+  └── Shared Dossier + Student editing actions
+
+School Officer Dossier
+  └── Shared Dossier + School preliminary review actions
+
+City Officer Dossier
+  └── Shared Dossier + Assigned City review actions
+
+Committee Dossier
+  └── Shared Dossier + Committee authorized controls
+```
+
+Do not make shared presentation components import an entire role-specific feature module.
+
+Respect FSD dependency direction.
+
+Avoid circular imports.
+
+Do not create one gigantic component containing all four role implementations.
+
+Use composition and small, cohesive role-specific components.
+
+---
+
+# 5. CANONICAL DOSSIER VIEW MODEL
+
+Reuse the existing application/domain types.
+
+Avoid inventing new duplicate application schemas.
+
+Where necessary, introduce a typed presentation view model representing the dossier's readable information.
+
+The shared renderer should receive canonical structured data such as:
+
+- Application ID.
+- Student profile.
+- Original institution.
+- Award season.
+- Application type.
+- Application status.
+- Five criteria.
+- Requirement groups.
+- Declarations.
+- Evidence associations.
+- Evidence metadata.
+- Applicable rules.
+- Current evidence versions.
+
+Use the actual project entities and types.
+
+Do not mix official review judgments into the Student's submitted declaration values.
+
+Do not mutate Student data just to make it easier to render Staff views.
+
+## Core requirement
+
+The same application data must produce the same declaration and evidence presentation for Student and Staff users.
+
+The Staff viewer must not silently transform, summarize away or omit Student-submitted information.
+
+---
+
+# 6. ROLE-BASED PRESENTATION MODES
+
+Use a strongly typed capabilities model consistent with the existing authorization architecture.
+
+Suggested conceptual modes:
+
+```typescript
+type DossierPresentationMode =
+  | "student_edit"
+  | "student_readonly"
+  | "school_review"
+  | "city_review"
+  | "committee_review";
+```
+
+Adapt to existing canonical conventions.
+
+This type is illustrative, not a mandate to duplicate already existing models.
+
+## Important
+
+The presentation mode controls UI composition only.
+
+It is not a replacement for backend RBAC or ABAC.
+
+The server must remain authoritative for every read and write operation.
+
+Do not assume a frontend role string grants actual permission.
+
+Do not hardcode access based only on the existence of a button.
+
+---
+
+# 7. STUDENT MODE — PRESERVE THE ORIGINAL EXPERIENCE
+
+This is a critical regression gate.
+
+The Student interface must continue to support:
+
+- Viewing the five criteria.
+- Requirement group navigation.
+- ONE_OF / ALL_OF requirements.
+- Creating declarations.
+- Editing drafts.
+- Removing draft declarations where allowed.
+- Multiple declarations for eligible options.
+- Multiple evidence files.
+- Evidence associations.
+- Uploading evidence.
+- Removing/replacing draft evidence where permitted.
+- Saving drafts.
+- Submitting an application.
+- Viewing a submitted application.
+- Responding to scoped supplementation requests.
+- Viewing existing application status.
+
+Do not simplify the Student experience by deleting important functionality.
+
+Do not accidentally change application eligibility or Student submission rules.
+
+Advisory readiness warnings must remain advisory.
+
+The shared dossier refactor must preserve the Student's actual previously working interactions.
+
+---
+
+# 8. SCHOOL OFFICER MODE
+
+School Officers should inspect the dossier using the same Student-facing presentation.
+
+## Read-only Student content
+
+The officer must not be able to:
+
+- Edit Student declaration values.
+- Add declarations on behalf of the Student.
+- Delete Student declarations.
+- Replace Student evidence.
+- Change Student-uploaded files.
+- Trigger Student submission actions.
+
+All submitted content is read-only to the reviewer.
+
+## School actions
+
+The interface may provide the existing authorized:
+
+- Preliminary criterion assessment.
+- Evidence inspection.
+- Review comments.
+- Scoped supplementation request.
+- Supplement response inspection.
+- Reassessment after supplementation.
+- School recommendation selection.
+
+Use the actual established School review contract.
+
+Do not add fictional case-resolution steps.
+
+## Important School forwarding boundary
+
+The School Officer may recommend applications during individual assessment.
+
+However, the actual:
+
+**"Chốt danh sách và chuyển Thành phố"**
+
+operation is a separate batch workflow implemented in SRW-1 and exposed through SRW-3.
+
+Do NOT place a separate "Chuyển Thành phố" action in each Student dossier.
+
+Do NOT recreate individual School-to-City forwarding.
+
+---
+
+# 9. CITY OFFICER MODE
+
+Assigned City Officers use the same shared dossier presentation.
+
+The Student's five criteria, declarations and evidence must remain visually consistent with the Student interface.
+
+## City-specific capabilities
+
+Preserve existing authorized:
+
+- Independent assessment.
+- Evidence examination.
+- Criterion judgment.
+- Reviewer comments.
+- Scoped supplementation.
+- Review completion.
+
+The Officer must not edit Student-submitted content.
+
+Do not automatically inherit the School Officer's judgments as City judgments.
+
+School review outcomes may be shown as reference information if authorized.
+
+City Officer assessment remains independent.
+
+## Remove unnecessary complexity
+
+Do not require:
+
+- ResolutionCase creation.
+- Escalation to an ambiguous-case queue.
+- Resolution Hub navigation.
+- Unnecessary intermediate review screens.
+
+The reviewer should be able to inspect the dossier, record assessment and continue working without switching between multiple redundant workspaces.
+
+Preserve genuine supplementation and existing authorized processing actions.
+
+---
+
+# 10. COMMITTEE MODE
+
+The City Committee should view the same canonical dossier presentation.
+
+## Read-only dossier content
+
+The Committee can inspect:
+
+- Original Student declarations.
+- Five criteria.
+- Evidence.
+- Applicable regulations.
+- Recorded School preliminary assessments.
+- Recorded City Officer assessments.
+- Actual processing history.
+- Authorized final decision information.
+
+## Committee actions
+
+Compose the EXISTING authorized Committee decision controls separately.
+
+Do not give the Committee an automatically editable Student dossier.
+
+Do not make the Committee submit City Officer judgments.
+
+Do not introduce:
+
+- Formal meeting sessions.
+- Officer questioning workflows.
+- Explanation hearings.
+- Fictional meeting minutes.
+- New ResolutionCase procedures.
+- Mandatory voting/quorum systems.
+
+The Committee is a group of authorized internal accounts using the existing product workflow.
+
+Keep that experience straightforward.
+
+## Evidence visibility
+
+Make it easy to inspect the exact source document associated with a criterion or declaration.
+
+Do not require navigating through several report modals to find evidence.
+
+---
+
+# 11. KEEP INDIVIDUAL AND COLLECTIVE APPLICATIONS DISTINCT
+
+This SRW-2 refactor focuses primarily on Individual Student dossiers.
+
+Individual applications have five official criteria:
+
+- Đạo đức tốt.
+- Học tập tốt.
+- Thể lực tốt.
+- Tình nguyện tốt.
+- Hội nhập tốt.
+
+Collective applications use TT01–TT04.
+
+Do not render the five-criterion Individual dossier for Collective applications.
+
+Do not force the Collective interface through an incompatible Student Individual view model.
+
+Reuse shared evidence/document presentation primitives where appropriate.
+
+Preserve existing Collective workflows, including direct submission to City without an in-system School preliminary review stage.
+
+Do not remove Collective functionality.
+
+---
+
+# 12. TARGET VISUAL EXPERIENCE
+
+The customer expects the reviewer to feel familiar with the Student dossier.
+
+Therefore:
+
+**Reuse the actual Student dossier's visual language and information hierarchy.**
+
+Preserve:
+
+- Criterion order.
+- Criterion numbering.
+- Criterion colors where used.
+- Requirement group organization.
+- Declaration layout.
+- Evidence layout.
+- Document preview behavior.
+- Typography.
+- Spacing conventions.
+- Navigation conventions.
+
+The reviewer should recognize the dossier immediately.
+
+Avoid redesigning the same content into a completely different Staff dashboard.
+
+## Visual distinction
+
+Student-facing editing controls disappear in Staff view.
+
+Reviewer controls are added around the shared presentation, not mixed into Student submission content.
+
+This should look like:
+
+**Student dossier + concise professional review controls.**
+
+Not:
+
+**Another complex reviewer interface.**
+
+---
+
+# 13. SIMPLE REVIEW CONTROL AREA
+
+Create or reuse one compact reviewer-action area.
+
+Possible presentation:
+
+- Compact contextual panel.
+- Small sidecar on sufficiently wide screens.
+- Sticky action area when appropriate.
+- Inline actions near a declaration or criterion only when necessary.
+
+Use the existing design system.
+
+Do not force one fixed layout across all viewport sizes.
+
+## Requirements
+
+- Official review status clearly visible.
+- Actions easy to find.
+- No duplicated judgment buttons.
+- No excessively tall review cards.
+- No giant empty panels.
+- No numerous floating controls.
+- No actions hidden behind unrelated AI modals.
+- No clutter from redundant status labels.
+
+Prioritize:
+
+1. Submitted information.
+2. Supporting evidence.
+3. Human review controls.
+4. Optional AI assistance.
+
+The Student's original dossier remains the primary visual surface.
+
+---
+
+# 14. CRITERION AND DECLARATION REVIEW UX
+
+Reviewers should be able to inspect information quickly.
+
+Suggested behavior:
+
+1. Select criterion.
+2. See the existing Student declaration layout.
+3. Expand the relevant declaration.
+4. Open linked evidence.
+5. Inspect the applicable requirement.
+6. Record authorized judgment.
+7. Continue to the next relevant item.
+
+Avoid creating a separate multi-step wizard for normal review.
+
+## Preserve existing review semantics
+
+If the system records judgments at declaration, evidence, requirement or criterion level, keep those existing domain semantics.
+
+Do not silently replace them with a single criterion-level PASS button if the backend requires more granular recorded decisions.
+
+Likewise, do not introduce more granular review actions merely to make the UI appear sophisticated.
+
+Use the actual authorized backend workflow.
+
+## Supplementation
+
+The existing scoped supplementation capability must remain functional.
+
+Do not add the removed ambiguous-case process back under another name.
+
+---
+
+# 15. EVIDENCE VIEWER REUSE
+
+This is an important requirement.
+
+Reuse the original Student evidence card/viewer infrastructure wherever compatible.
+
+Support:
+
+- Images.
+- PDF preview.
+- Document metadata.
+- Evidence title.
+- Linked declaration.
+- Evidence version.
+- Open/close behavior.
+- Existing source navigation.
+
+Reviewer-specific evidence assessments can be presented alongside the source when necessary.
+
+Do not duplicate a separate evidence modal for every Staff role.
+
+Use a shared evidence viewer with permission-aware operations.
+
+## Security
+
+Real Mode must retrieve evidence only through authorized backend access.
+
+Do not rely on public permanent links for private evidence.
+
+Do not accidentally expose evidence attachments to another reviewer or Student.
+
+Do not use Demo evidence as a Real Mode fallback.
+
+---
+
+# 16. SUPPLEMENTATION AND VERSION INTEGRITY
+
+Some applications may contain Student responses to reviewer supplementation requests.
+
+The shared dossier presentation must respect actual versions.
+
+The reviewer should be able to distinguish, where existing data supports it:
+
+- Previously submitted evidence.
+- Newly supplemented evidence.
+- Current evidence version.
+- Actual supplementation request.
+- Existing recorded reviewer assessment.
+
+Do not merge old and new document contents incorrectly.
+
+Do not present replaced evidence as current.
+
+Preserve existing Student supplementation permissions and workflows.
+
+Do not create a new supplementation domain.
+
+---
+
+# 17. APPLICATION NAVIGATION AND STATE RESTORATION
+
+Reviewers often open applications from a list and return to continue processing.
+
+Preserve:
+
+- Current list filters.
+- Current pagination.
+- Selected application.
+- Selected criterion.
+- Expanded requirement group where appropriate.
+- Selected declaration.
+- Evidence viewer state.
+- Unsaved human review input.
+
+Example:
+
+Officer application queue
+→ Open dossier
+→ Select Academic
+→ Open transcript
+→ Close transcript
+→ Continue review
+→ Return to queue.
+
+The original queue context should be restored where supported.
+
+Avoid unexpected jumps to the top.
+
+Avoid losing local edits because the user opened a document.
+
+Do not trigger unnecessary full-page reloads.
+
+---
+
+# 18. AI INTEGRATION — MINIMAL BY DEFAULT
+
+The current product includes AI Review Copilot features.
+
+Preserve working AI capabilities.
+
+However, expert reviewers do not need intrusive assistance.
+
+## Default appearance
+
+Show at most one compact, contextual AI entry.
+
+Example:
+
+"AI đã rà soát · 2 điểm cần đối chiếu"
+
+Or:
+
+"AI hỗ trợ thẩm định"
+
+Do not automatically open AI reports.
+
+Do not auto-start Guided Review.
+
+Do not add large AI boxes into every shared declaration card.
+
+Do not allow AI widgets to overlap official review controls.
+
+## On-demand experience
+
+When requested, AI may provide:
+
+- Preliminary Meets / Not Meets / Insufficient Evidence.
+- Concise reasoning.
+- Source-linked findings.
+- Conversational review report.
+- Evidence navigation.
+- Editable supplement draft.
+
+The official judgment remains entirely human-controlled.
+
+Do not rewrite the AI backend or create another Copilot subsystem in this phase.
+
+Only adapt existing AI entry points to the new shared dossier presentation.
+
+---
+
+# 19. UDN REVIEW SCOPE
+
+Maintain the approved University of Da Nang configuration.
+
+Eight configured member institutions:
+
+- DUT.
+- DUE.
+- UED.
+- UFL.
+- UTE.
+- VKU.
+- VNUK.
+- SMP.
+
+Share:
+
+`unit-udn`
+
+and one authorized School reviewer account.
+
+## Presentation behavior
+
+The dossier header must display the Student's ACTUAL original institution.
+
+Do not replace DUT or another member with a generic UDN institution label.
+
+The reviewer may filter School applications by member institution.
+
+But that filtering must not change review-unit scope.
+
+No access to independent non-UDN institutions.
+
+## Batch forwarding
+
+UDN has ONE shared seasonal forwarding batch, not eight member-institution batches.
+
+That workflow belongs to SRW-1/SRW-3.
+
+The shared dossier must not accidentally bring back per-application forwarding controls.
+
+---
+
+# 20. REAL MODE API AND CONTRACT INTEGRITY
+
+The finished product must eventually run with the real Backend V2.
+
+Inspect the existing canonical API contracts.
+
+Use the secure `/api/v2` architecture where available.
+
+Do not silently wire new Staff presentation actions to insecure prototype `/api/*` endpoints.
+
+Do not invent an API success response.
+
+Do not use in-memory production persistence.
+
+When the actual backend is offline:
+
+- Demo Mode remains fully functional.
+- Real Mode uses truthful unavailable/error states.
+- No silent Demo fallback.
+- No fake successful judgments.
+- No fake evidence upload.
+
+If a necessary read contract does not exist, identify the exact missing Backend V2 endpoint and DTO.
+
+Do not create an unauthorized parallel backend implementation during SRW-2.
+
+---
+
+# 21. RESPONSIVE REQUIREMENTS — HARD ACCEPTANCE GATE
+
+Previous screenshots demonstrated serious issues with Staff and Committee layouts.
+
+The shared dossier must not reproduce these problems.
+
+Test at:
+
+- 320px.
+- 360px.
+- 390px.
+- 430px.
+- 768px.
+- 1024px.
+- 1280px.
+- 1440px.
+- 1660px.
+- 1920px.
+
+Test both Student and Staff presentation modes.
+
+## Desktop
+
+- Reuse Student dossier structure.
+- Use available main content width properly.
+- Avoid excessively narrow central content.
+- Keep reviewer actions accessible.
+- Keep evidence readable.
+- No giant empty right-side space.
+- No floating Assistant covering decisions.
+
+## Tablet
+
+- Adapt criterion navigation and content.
+- Avoid compressing columns into unreadable widths.
+- Reviewer controls should not compete with evidence width.
+- Keep navigation practical.
+
+## Mobile
+
+- Single-column reading experience.
+- Usable criterion navigation.
+- Full-width declaration/evidence cards.
+- Compact review controls.
+- Accessible evidence viewer.
+- Safe modal/sheet behavior.
+- Touch-friendly buttons.
+- Safe-area insets.
+- No horizontal overflow.
+
+## Important layout rules
+
+Inspect actual parent width constraints.
+
+Use:
+
+- Correct `min-width: 0`.
+- Responsive CSS Grid/Flex.
+- Content-aware wrapping.
+- Viewport-safe overlays.
+- Appropriate scroll containers.
+- Existing breakpoint conventions.
+
+Do not fix layout errors by applying global `overflow-x: hidden`.
+
+Fix the actual source of the problem.
+
+---
+
+# 22. MODAL, DRAWER AND POPUP HARDENING
+
+Test shared document viewer and role-specific review dialogs.
+
+Required behavior:
+
+- Open reliably.
+- Close reliably.
+- Escape dismissal.
+- Clear Close control.
+- Proper focus trap when modal.
+- Focus restoration after closing.
+- Correct backdrop cleanup.
+- No invisible blocking overlay.
+- No duplicate modal instances.
+- No broken z-index.
+- No scroll traps.
+- No cut-off footer buttons.
+- No loss of unsaved review input.
+- No accidental navigation after closing.
+- No mobile keyboard overlap.
+
+Avoid opening AI dialogs on top of review confirmation dialogs.
+
+Do not let the Demo persona selector cover review actions.
+
+Use existing accessible UI primitives.
+
+---
+
+# 23. SIMPLIFY WITHOUT DELETING REAL FUNCTIONALITY
+
+The customer wants a calmer interface.
+
+That means reducing unnecessary presentation and duplicated navigation.
+
+It does NOT mean removing:
+
+- Criterion judgments.
+- Evidence assessment where required.
+- Supplementation.
+- City assignment.
+- School recommendation.
+- Committee official decisions.
+- Audit/history.
+- Existing security controls.
+
+Avoid visual clutter.
+
+Retire redundant Staff dossier presentation components only AFTER the shared renderer is functional and its replacement interactions are verified.
+
+Do not delete existing functionality simply because it makes the layout simpler.
+
+No destructive backend changes in this phase.
+
+---
+
+# 24. DEMO SCENARIO REQUIREMENTS
+
+Implement or adapt deterministic Demo scenarios.
+
+## UI01 — Student original dossier
+
+Open a complete Student application.
+
+Verify:
+
+- Correct profile.
+- Five criteria.
+- Requirement groups.
+- Declarations.
+- Evidence.
+- Original interactions.
+
+## UI02 — School Officer shared dossier
+
+Open the SAME synthetic application as School Officer.
+
+Verify:
+
+- Same canonical dossier content.
+- Same presentation components.
+- Student content readonly.
+- School review controls visible.
+- Student editing controls absent.
+
+## UI03 — City Officer shared dossier
+
+Open an assigned application.
+
+Verify:
+
+- Same dossier presentation.
+- Correct original institution.
+- City Officer controls.
+- School review results remain reference-only.
+- No access outside assignment.
+
+## UI04 — Committee shared dossier
+
+Open an authorized application.
+
+Verify:
+
+- Same original Student submission content.
+- Existing School/City recorded results accessible.
+- Committee actions are separate and authorized.
+- No fictional case-resolution UI.
+
+## UI05 — Student editing regression
+
+Create or modify a Student draft.
+
+Add declarations and evidence.
+
+Save and reopen.
+
+Verify no shared component regression.
+
+## UI06 — Student submitted readonly
+
+Submitted content is readonly according to existing rules.
+
+No accidental edit controls.
+
+## UI07 — Supplementation
+
+Student responds to an existing scoped request.
+
+Reviewer inspects the updated evidence version.
+
+## UI08 — UDN original institution
+
+A DUT Student remains associated with DUT.
+
+The shared UDN reviewer can inspect the authorized application.
+
+No non-UDN data leakage.
+
+## UI09 — Evidence viewer reuse
+
+Open the same evidence item from Student and Officer modes.
+
+Verify both use the shared viewer behavior with appropriate permissions.
+
+## UI10 — AI remains optional
+
+Open dossier.
+
+No unsolicited AI popup.
+
+Manually open AI and navigate to a finding.
+
+Close and continue review.
+
+## UI11 — Queue navigation
+
+Open an application from a filtered queue.
+
+Inspect evidence.
+
+Return with queue context preserved.
+
+## UI12 — Responsive
+
+Test Student, School, City and Committee modes at all required viewport widths.
+
+## UI13 — Real Mode offline
+
+Real Mode does not fabricate application data or review success while backend is unavailable.
+
+## UI14 — Collective regression
+
+Collective TT01–TT04 workflows remain intact.
+
+## UI15 — Human authority
+
+AI/opening dossier/navigation never records a human judgment automatically.
+
+---
+
+# 25. AUTOMATED TESTING
+
+Add or update tests for:
+
+### Shared component identity
+
+- Student and Staff views reuse the same actual presentation components.
+- No duplicate independent five-criterion renderer is introduced.
+- Same application data produces consistent visible content.
+
+### Student regression
+
+- Draft editing.
+- Declaration management.
+- Evidence associations.
+- Student submit.
+- Supplement response.
+- Readonly submitted state.
+
+### School Officer
+
+- Authorized School review controls.
+- Student write controls unavailable.
+- Scoped application access.
+- UDN review-unit mapping.
+
+### City Officer
+
+- Assigned-case controls.
+- No School impersonation.
+- No Committee decision authority.
+
+### Committee
+
+- Correct readonly dossier.
+- Correct official decision controls.
+- No unauthorized edits.
+
+### Evidence
+
+- Correct source identity.
+- Correct evidence version.
+- Correct viewer open/close.
+- Unauthorized evidence access denied by backend contract.
+
+### Navigation
+
+- Queue context.
+- Criterion selection.
+- Declaration focus.
+- Evidence navigation.
+- Back navigation.
+
+### UI
+
+- Responsive.
+- Modal behavior.
+- Focus.
+- Overlay cleanup.
+- AI optional behavior.
+- No duplicate floating controls.
+
+### Architecture
+
+- FSD boundaries.
+- No circular imports.
+- Strict TypeScript.
+- No unexpected giant components.
+- No unrelated source loss.
+
+---
+
+# 26. ACTUAL BROWSER ACCEPTANCE TESTS
+
+Do not declare success based only on TypeScript compilation.
+
+Where browser or Preview interaction tools are available, perform the following:
+
+### Desktop — 1440px and 1660px
+
+1. Open Student dossier.
+2. Capture criterion/declaration/evidence presentation.
+3. Switch to School Officer Demo mode.
+4. Open the same application.
+5. Verify identical dossier presentation foundation.
+6. Verify reviewer controls are cleanly composed.
+7. Open evidence.
+8. Close evidence.
+9. Record a permitted Demo review action.
+10. Return to queue.
+
+### Tablet — 768px
+
+Repeat essential navigation.
+
+Ensure criterion navigation and reviewer actions remain accessible.
+
+### Mobile — 390px
+
+1. Open dossier.
+2. Change criterion.
+3. Expand declaration.
+4. Open evidence.
+5. Close evidence.
+6. Open review action.
+7. Close review dialog.
+8. Navigate back.
+
+Verify no horizontal overflow, focus traps or blocked controls.
+
+Also run viewport checks at all other required widths.
+
+Capture screenshots of real rendered UI.
+
+If browser verification is unavailable, report NOT VERIFIED.
+
+Do not invent screenshots.
+
+---
+
+# 27. QUALITY GATES
+
+Run actual available project commands for:
+
+- Strict TypeScript.
+- Frontend production build.
+- Existing frontend regression suite.
+- Student application tests.
+- Staff review tests.
+- Committee tests.
+- Shared dossier tests.
+- Evidence tests.
+- Navigation tests.
+- Modal/overlay tests.
+- Responsive browser verification.
+- FSD architecture audit.
+- Circular dependency audit.
+- Source-size audit.
+- Demo/Real separation.
+- Golden Frontend intentional-diff audit.
+
+Do not claim the original manifest hashes remain unchanged if protected source files were intentionally refactored.
+
+Document the exact differences.
+
+Do not automatically accept a new Golden Baseline.
+
+---
+
+# 28. IMPLEMENTATION CHECKPOINTS
+
+Execute in this order.
+
+## SRW-2A — Component Extraction
+
+Identify and extract the genuinely reusable Student dossier presentation.
+
+Acceptance:
+
+- No Student UX regression.
+- Shared components follow FSD.
+- No duplicated renderer.
+
+## SRW-2B — School Integration
+
+Replace the existing redundant School dossier presentation with the shared view.
+
+Compose School-specific assessment controls.
+
+Acceptance:
+
+- Student content readonly.
+- Review actions work.
+- Original institution correct.
+- No individual forwarding buttons.
+
+## SRW-2C — City Officer Integration
+
+Integrate the shared view into assigned City Officer application detail.
+
+Acceptance:
+
+- Independent City assessment preserved.
+- Evidence/viewing works.
+- Correct authorization.
+- No ResolutionCase dependency introduced.
+
+## SRW-2D — Committee Integration
+
+Integrate the shared dossier into existing Committee application detail.
+
+Acceptance:
+
+- Original Student dossier readable.
+- Human review summaries still available.
+- Official Committee controls preserved.
+- No unnecessary meeting/case workflows.
+
+## SRW-2E — Responsive and Regression Hardening
+
+Fix actual layout defects.
+
+Run the full Demo interaction matrix.
+
+Acceptance:
+
+- Student/School/City/Committee flows work.
+- Responsive checks are documented.
+- No broken evidence navigation.
+- No loss of Golden Frontend functionality.
+
+If a checkpoint fails, fix it before claiming completion.
+
+---
+
+# 29. REQUIRED DELIVERY REPORT
+
+Provide:
+
+## A. Initial audit
+
+- Actual Student renderer.
+- Actual Staff renderers.
+- Reusable components.
+- Existing duplication.
+- Current checkpoint.
+
+## B. Shared architecture
+
+- Shared component tree.
+- FSD file placement.
+- Canonical dossier view model.
+- Role-specific capability composition.
+
+## C. Implemented UI
+
+- Student mode.
+- School Officer mode.
+- City Officer mode.
+- Committee mode.
+- Evidence viewer.
+- Navigation.
+- Review controls.
+- AI entry point.
+
+## D. Exact source changes
+
+List:
+
+- Newly created files.
+- Modified files.
+- Retired duplicated files.
+- Files intentionally left unchanged.
+
+## E. Test results
+
+- TypeScript.
+- Production build.
+- Student regression.
+- School regression.
+- City regression.
+- Committee regression.
+- Evidence interaction.
+- Responsive and overlay behavior.
+- Demo/Real isolation.
+- FSD audit.
+
+## F. Browser verification
+
+Provide:
+
+- Desktop screenshot status.
+- Tablet screenshot status.
+- Mobile screenshot status.
+- Tested viewports.
+- Actual interaction results.
+
+## G. Safety
+
+- Golden Frontend preservation.
+- Student data immutability in Staff modes.
+- RBAC/ABAC boundaries.
+- Original UDN institution identity.
+- Official human judgment isolation.
+- Unchanged Collective workflow.
+
+## H. Unresolved dependencies
+
+Identify any missing Backend V2 read APIs or data contracts.
+
+## I. Final verdict
+
+PASS / PARTIAL / BLOCKED.
+
+Do not report PASS if only the shared component files were created but the Staff screens still use separate duplicated dossier renderers.
+
+Do not report PASS if the Student editing experience is broken.
+
+Do not report PASS if the responsive interface has critical overlay or layout defects.
+
+---
+
+# 30. HARD STOP
+
+STOP after SRW-2.
+
+Do not automatically proceed to SRW-3.
+
+Do not:
+
+- Build the School batch forwarding UI yet.
+- Reimplement the SRW-1 backend.
+- Add new official workflow states.
+- Create another Staff dossier interface.
+- Restore per-application School forwarding.
+- Remove legitimate review actions.
+- Remove supplementation.
+- Add ResolutionCase processing.
+- Add fictional Committee meeting features.
+- Rebuild the Golden Frontend.
+- Update Golden Manifest automatically.
+- Reconnect Supabase.
+- Run Prisma migrations.
+- Deploy to production.
+
+## FINAL NORTH STAR
+
+**ONE APPLICATION. ONE CANONICAL DOSSIER PRESENTATION. MULTIPLE AUTHORIZED REVIEW MODES.**
+
+Students create and submit their dossiers using the existing familiar interface.
+
+School Officers inspect the same dossier and perform preliminary review.
+
+City Officers inspect the same dossier and conduct independent assessment.
+
+Committee members inspect the same dossier together with actual recorded human review results and perform authorized decisions.
+
+The original Student content is never silently changed by reviewer actions.
+
+The reviewer controls are simple, clear and separate.
+
+Evidence navigation remains fast and familiar.
+
+AI remains helpful, quiet and optional.
+
+All layouts are responsive.
+
+**SUCCESS = A GENUINELY SHARED STUDENT DOSSIER INTERFACE THAT SIMPLIFIES REVIEWER UX WITHOUT REBUILDING THE FRONTEND, DUPLICATING CODE OR BREAKING THE REAL BUSINESS WORKFLOW.**

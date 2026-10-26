@@ -1,0 +1,1345 @@
+# 5TOT ĐÀ NẴNG — UX-S5
+## FINAL UX INTEGRATION, PREMIUM VISUAL QA, END-TO-END WORKFLOW TESTING & CUSTOMER UAT READINESS
+
+**Priority:** P0 — Final Frontend Product Quality Gate  
+**Phase:** UX-S5 — Final Integration & Acceptance  
+**Execution:** SOURCE AUDIT → INTEGRATION VERIFICATION → BROWSER TESTING → TARGETED FIXES → REGRESSION → UAT HANDOFF  
+**Frontend:** Existing React + Vite + Strict TypeScript + Feature-Sliced Design  
+**Backend:** Existing Node.js + Express + Prisma/PostgreSQL Modular Monolith  
+**Primary Objective:** Deliver one coherent, beautiful, responsive and fully interactive 5TOT product experience across all authorized user roles.
+
+---
+
+# 1. MISSION
+
+The 5TOT Đà Nẵng product has undergone a customer-validated simplification and UX redesign.
+
+Previous phases include:
+
+- SRW-1: One-time School forwarding backend.
+- SRW-2: Shared Student dossier presentation.
+- SRW-3: School consolidated batch forwarding UI.
+- SRW-4: Simplified City and Committee workflows.
+- SRW-6: Student personal profile and submitted application snapshot.
+- UX-S1: Information Architecture.
+- UX-S2: Simplified Review Workspace.
+- UX-S3: Application Lists, Dashboard, Statistics and Excel.
+- UX-S4: Administration and Award Program Navigation.
+
+UX-S5 is the final integration and usability acceptance phase.
+
+Do not assume these phases are complete simply because their prompts were previously issued.
+
+Inspect the actual source and verify the actual implementation.
+
+The objective is to eliminate fragmented UI, broken navigation, incomplete interactions, layout defects, inconsistent data, misleading statuses and role-specific workflow regressions.
+
+**Do not implement another large redesign. Make the existing product cohesive, efficient and production-oriented.**
+
+---
+
+# 2. MANDATORY PREFLIGHT
+
+Before making changes:
+
+1. Inspect actual Git HEAD and working tree.
+2. Identify existing uncommitted work.
+3. Preserve the current source checkpoint.
+4. Inspect the original Golden Frontend manifest.
+5. Inspect previous SRW and UX checkpoint reports where they exist.
+6. Determine which capabilities are implemented.
+7. Determine which capabilities are Demo-only.
+8. Determine which capabilities use actual Backend V2 APIs.
+9. Identify critical unfinished functionality.
+10. Prepare an integration and regression inventory.
+
+Classify each capability as:
+
+- VERIFIED FUNCTIONAL.
+- IMPLEMENTED BUT NOT VERIFIED.
+- PARTIAL.
+- BROKEN.
+- MISSING.
+- BLOCKED BY BACKEND.
+- OBSOLETE.
+
+Do not claim earlier phases passed without evidence.
+
+Do not delete or overwrite valuable functionality from previous phases.
+
+## Initial deliverable
+
+Produce a concise implementation status matrix before applying fixes.
+
+---
+
+# 3. CUSTOMER-APPROVED BUSINESS WORKFLOW
+
+The final frontend must reflect these approved business rules.
+
+## Individual Student 5-Good
+
+Student prepares application
+→ Student submits
+→ School preliminary review
+→ School consolidates recommended applications
+→ School attaches one official decision document
+→ School forwards one batch
+→ City receives applications
+→ Authorized City reviewers assess directly
+→ Committee records official decisions.
+
+## University of Da Nang
+
+Eight original member institutions:
+
+- DUT.
+- DUE.
+- UED.
+- UFL.
+- UTE.
+- VKU.
+- VNUK.
+- SMP.
+
+Share:
+
+`unit-udn`
+
+The School reviewer uses one consolidated unit-wide list.
+
+One forwarding batch per season.
+
+One common official decision document.
+
+One successful final forwarding.
+
+Original student institution identities remain distinct.
+
+## City review
+
+No mandatory individual City Officer assignment.
+
+No workload allocation subsystem.
+
+No separate ambiguous-case Resolution Hub.
+
+Authorized City reviewers use the shared review workspace.
+
+## Committee
+
+Internal review by authorized accounts.
+
+No fictional meetings, hearings, officer questioning, voting/quorum procedures or generated meeting minutes.
+
+Committee official decisions remain human-controlled.
+
+## Collective
+
+Collective applications use TT01–TT04 and proceed directly to City.
+
+They must not enter the Individual School forwarding batch.
+
+## AI
+
+Optional, helpful and non-intrusive.
+
+AI advisory assessments never create official human decisions.
+
+---
+
+# 4. PREMIUM VISUAL QUALITY GATE
+
+The final 5TOT product must look like a modern, high-quality administrative SaaS product.
+
+Preserve and polish:
+
+- Existing blue-and-white visual identity.
+- Clean professional typography.
+- Consistent spacing.
+- Balanced content width.
+- Refined card design.
+- Readable tables.
+- Well-designed form controls.
+- Elegant status indicators.
+- Meaningful icons.
+- Proper alignment.
+- Clean filters.
+- Polished loading and empty states.
+- Subtle interaction feedback.
+
+Avoid:
+
+- Dense legacy Excel styling.
+- Large amounts of unused whitespace.
+- Tiny illegible text.
+- Oversized nested cards.
+- Competing status badges.
+- Multiple duplicate toolbars.
+- Inconsistent button sizes.
+- Overwhelming AI elements.
+- Unnecessary confirmation popups.
+- Visually incomplete administrative pages.
+
+## Visual consistency
+
+The Student, School, City, Committee and Admin interfaces must appear to belong to one product.
+
+Do not let each role use a completely different design language.
+
+Use existing design tokens and reusable components.
+
+Do not rebuild the global design system.
+
+---
+
+# 5. SHARED DOSSIER CONSISTENCY
+
+The shared Student dossier is a major customer requirement.
+
+Verify that Student, School, City and Committee views reuse the actual canonical dossier presentation foundation.
+
+All relevant Individual application views must have:
+
+1. Application header.
+2. One compact Student information card.
+3. Five-criterion navigation.
+4. Requirement groups.
+5. Declarations.
+6. Evidence.
+7. Applicable regulations.
+8. Role-appropriate actions.
+
+## Personal information
+
+The submitted information card must:
+
+- Appear above the criteria.
+- Use one unified outer card.
+- Avoid repeated identity information.
+- Preserve all approved profile fields.
+- Display the original institution.
+- Use the submission-time snapshot for submitted dossiers.
+- Show the same canonical values across review levels, subject to authorized field visibility.
+
+Do not use a reviewer's logged-in account profile in place of Student application identity.
+
+Current profile edits must not silently alter submitted historical snapshots.
+
+Do not add duplicate profile cards in reviewer screens.
+
+---
+
+# 6. REVIEW WORKSPACE FUNCTIONAL QUALITY
+
+This is the most important practical UX acceptance area.
+
+Reviewers are experienced and should be able to work quickly.
+
+The expected interaction is:
+
+**Chọn tiêu chí → Xem kê khai → Kiểm tra minh chứng → Đánh giá → Lưu → Tiếp tục.**
+
+Verify:
+
+- Only one canonical five-criterion navigation.
+- Correct active criterion.
+- Correct synchronization between heading, content and human assessment controls.
+- No mismatched review context.
+- Simple declaration navigation.
+- Easy-to-open evidence.
+- Visible and understandable human judgment controls.
+- Accurate review progress.
+- Reliable save feedback.
+- Clear supplementation action.
+- Next/previous criterion navigation.
+- Proper handling of unsaved input.
+- No unnecessary ResolutionCase action.
+
+## Important
+
+Do not simplify away legitimate evidence/declaration-level review semantics.
+
+Read the actual backend contract.
+
+If a criterion requires granular judgments, keep the required domain behavior while making the UI easy to use.
+
+Do not replace real review persistence with a local status toggle.
+
+---
+
+# 7. REVIEWER BUTTON INTERACTION AUDIT
+
+Inspect EVERY primary review action.
+
+Examples:
+
+- Xem hồ sơ.
+- Tiếp tục xét.
+- Xét tiêu chí.
+- Đạt.
+- Không đạt.
+- Lưu đánh giá.
+- Ghi nhận xét.
+- Yêu cầu bổ sung.
+- Xem minh chứng.
+- Hoàn tất thẩm định.
+- Xem kết quả xét.
+- Ghi nhận quyết định Hội đồng.
+
+For each control verify:
+
+1. Is it visible in the correct context?
+2. Does it have an understandable label?
+3. Is it accessible with keyboard and pointer?
+4. Is it enabled only in valid states?
+5. Does it invoke the correct action?
+6. Does the request contain the correct application/criterion/declaration/evidence identifier?
+7. Does it respect authorization?
+8. Does the UI wait for actual completion?
+9. Does it show accurate success or failure?
+10. Does the resulting state remain correct after navigation or refresh?
+
+A button with an onClick handler is not necessarily functional.
+
+A button producing a toast without changing the canonical state is not accepted.
+
+---
+
+# 8. STUDENT UAT
+
+Verify the complete Student journey.
+
+## Account and profile
+
+- Login.
+- Registration where currently supported.
+- View account.
+- Edit personal information.
+- Validate missing or malformed fields.
+- Save profile.
+- Reload and verify saved values.
+- Original institution correctness.
+
+## Application
+
+- Open Student 5-Good application.
+- Inspect five criteria.
+- Enter declarations.
+- Add multiple declarations where allowed.
+- Attach evidence.
+- Open uploaded evidence.
+- Replace/remove draft evidence where permitted.
+- Save draft.
+- Leave and return.
+- Submit application.
+- Inspect submitted snapshot.
+- View current application status.
+
+## Supplementation
+
+- Receive a valid supplement request.
+- Open requested scope.
+- Upload or correct permitted evidence.
+- Submit supplementation response.
+- Verify the updated evidence version.
+
+Preserve ONE_OF and ALL_OF requirement semantics.
+
+Do not create new eligibility submission blockers based solely on advisory AI warnings.
+
+---
+
+# 9. SCHOOL REVIEWER UAT
+
+Verify an authorized School reviewer.
+
+## Review
+
+- Open School application list.
+- Search by Student or MSSV.
+- Filter by original institution.
+- Open Student dossier.
+- View submitted profile.
+- Inspect five criteria.
+- Open evidence.
+- Record preliminary human assessment.
+- Add a comment.
+- Request supplementation.
+- Review Student response.
+- Record School recommendation.
+
+## UDN consolidation
+
+Verify the shared UDN account can work within one Review Unit containing eight distinct original institutions.
+
+No extra intermediate UDN review level.
+
+## Batch forwarding
+
+- Open consolidated selected list.
+- Inspect eligible applications.
+- Add/remove selected applications before forwarding.
+- Switch institution filters without losing selection.
+- Inspect selected counts.
+- Attach one common official decision file.
+- Preview the attachment.
+- Validate the batch.
+- Open confirmation.
+- Cancel safely.
+- Confirm one-time forwarding.
+- Observe successful locked state.
+- Refresh.
+- Verify there is no normal second-forwarding action.
+
+The frontend must handle retries and network uncertainty safely.
+
+Do not assume a successful operation from an HTTP timeout.
+
+---
+
+# 10. CITY REVIEWER UAT
+
+Verify the simplified shared City workflow.
+
+An authorized City reviewer must be able to:
+
+1. Open the City application list.
+2. See valid City-received applications.
+3. Search and filter applications.
+4. Open an application without manual assignment.
+5. Inspect the original Student dossier.
+6. View the correct submitted profile snapshot.
+7. View the School recommendation.
+8. Inspect the School forwarding decision document when authorized.
+9. Inspect evidence.
+10. Record legitimate City judgments.
+11. Add notes.
+12. Request scoped supplementation.
+13. Inspect supplemented evidence.
+14. Complete normal City review.
+15. Return to the correct filtered list.
+
+No active ResolutionCase or Escalation Hub is required.
+
+Do not remove authenticated actor attribution or review audit history.
+
+---
+
+# 11. COMMITTEE UAT
+
+Verify the Committee experience is simple and understandable.
+
+The Committee should be able to:
+
+- Open authorized application lists.
+- See review progress.
+- Filter Individual and Collective applications appropriately.
+- Open the original Student dossier.
+- Inspect submitted personal information.
+- Inspect actual School preliminary assessments.
+- Inspect actual City assessments.
+- View common School decision attachments.
+- Inspect evidence where needed.
+- See accurate official status.
+- Record an authorized Committee decision.
+- Review the persisted result.
+
+Do not require fictional Committee sessions or voting mechanisms.
+
+Do not introduce an ambiguous-case Resolution Hub.
+
+Do not let AI preliminary results become official decisions.
+
+A technical ADMIN account must not automatically be authorized to make Committee decisions.
+
+---
+
+# 12. COLLECTIVE APPLICATION UAT
+
+Verify Collective applications independently.
+
+They use:
+
+- TT01.
+- TT02.
+- TT03.
+- TT04.
+
+Test:
+
+- Collective application identity.
+- Collective declarations.
+- Evidence.
+- Correct numerical ratios where applicable.
+- Direct City review.
+- Committee official decision.
+- Results display.
+- Analytics.
+- Responsive application list and detail.
+
+Do not reuse Individual five-criterion aggregation for Collective applications.
+
+Do not fabricate a School forwarding batch for Collective cases.
+
+---
+
+# 13. UX-S3 DASHBOARD AND REPORTING REGRESSION
+
+Verify:
+
+- School Dashboard.
+- City Dashboard.
+- Committee Dashboard.
+- Individual application list.
+- Collective application list.
+- Statistics.
+- Filters.
+- Charts.
+- KPI drilldowns.
+- Export actions.
+
+## Data consistency
+
+Every KPI must be derived from the same canonical records as its related list.
+
+Verify:
+
+- Selected season.
+- Authorized unit/workspace.
+- Original institution.
+- Application type.
+- Actual review state.
+- Human-reviewed criterion count.
+- Human criteria meeting requirements.
+- Actual Committee decision.
+
+Do not count AI advisory outcomes as official judgments.
+
+Do not confuse 5/5 criteria meeting requirements with official recognition.
+
+## Excel export
+
+Verify:
+
+- Actual valid XLSX file.
+- Correct rows.
+- Correct columns.
+- Correct current filter scope.
+- Correct Vietnamese text.
+- Leading-zero identifiers preserved.
+- No formula injection.
+- No unauthorized data.
+- No sensitive document URLs.
+
+An export button must produce a valid file, not a simulated success toast.
+
+---
+
+# 14. UX-S4 ADMINISTRATION REGRESSION
+
+Verify actual supported administration operations.
+
+### Program and season
+
+- Appropriate program context.
+- Correct season selection.
+- Valid season metadata.
+- Authorized configuration actions.
+- Historical policy stability.
+
+### Criteria
+
+- Correct five Individual criteria.
+- Correct Collective TT01–TT04.
+- Correct requirement hierarchy.
+- Correct regulation/policy version.
+
+### Institutions
+
+- Original institution preservation.
+- UDN shared Review Unit mapping.
+- Independent School separation.
+
+### Accounts
+
+- User list.
+- Search and filters.
+- Valid supported account operations.
+- Active-role authorization.
+- Correct security boundaries.
+
+### Audit
+
+- Actual history.
+- Authorized visibility.
+- No editable audit records.
+
+No restored Officer assignment/workload administration.
+
+No restored ResolutionCase configuration.
+
+Do not claim unsupported administration mutations work in Real Mode.
+
+---
+
+# 15. RESPONSIVE QA — MAJOR PRIORITY
+
+Several earlier customer screenshots showed severe responsive defects.
+
+Do not test only viewport-level dimensions.
+
+Account for available content width after:
+
+- Global sidebar.
+- Criterion navigation.
+- Review controls.
+- Filter panels.
+- Secondary drawers.
+
+Test these viewport widths:
+
+- 320.
+- 360.
+- 390.
+- 430.
+- 768.
+- 1024.
+- 1280.
+- 1440.
+- 1660.
+- 1920.
+
+## Critical pages
+
+- Student personal information form.
+- Student dossier.
+- School reviewer dossier.
+- School batch forwarding.
+- City shared review.
+- Committee Individual review.
+- Committee Collective review.
+- Dashboards.
+- Application lists.
+- Excel/reporting pages.
+- Season administration.
+- Criteria administration.
+- Institution management.
+- User management.
+
+## Acceptance requirements
+
+- No horizontal page overflow.
+- No excessively compressed desktop table columns.
+- No huge unused content area.
+- No clipped text.
+- No repeated profile cards.
+- No inaccessible review buttons.
+- No sticky toolbar covering evidence.
+- No AI popup blocking official actions.
+- No Demo selector covering controls.
+- No inaccessible file preview.
+- No nested scrolling traps.
+- No broken mobile navigation.
+- No clipped modal footers.
+- No disappearing Save/Confirm button.
+
+Use content-width-aware layouts where appropriate.
+
+Fix root layout constraints.
+
+Do not conceal defects using global overflow-x hidden.
+
+---
+
+# 16. ACCESSIBILITY AND INTERACTION QA
+
+Check:
+
+- Keyboard navigation.
+- Visible focus indicators.
+- Logical tab order.
+- Dialog focus trapping.
+- Focus restoration.
+- Escape dismissal.
+- Accessible field labels.
+- Clear validation messages.
+- Adequate touch targets.
+- Text contrast.
+- Long Vietnamese content wrapping.
+- Reduced-motion support.
+- Loading states.
+- Disabled-state explanation.
+- Screen-reader-appropriate controls.
+
+Also inspect:
+
+- Date pickers.
+- Select dropdowns.
+- File uploads.
+- Evidence previews.
+- Confirmation dialogs.
+- Mobile bottom sheets.
+- Long administration forms.
+
+Do not rely only on automated accessibility scan results.
+
+Perform actual interaction checks where tools are available.
+
+---
+
+# 17. NAVIGATION AND STATE PRESERVATION
+
+Users frequently open dossiers from filtered lists.
+
+Verify:
+
+List
+→ Filter
+→ Open application
+→ Select criterion
+→ Open evidence
+→ Close viewer
+→ Record assessment
+→ Return to list.
+
+Preserve where appropriate:
+
+- Search term.
+- Active filters.
+- Sorting.
+- Pagination.
+- Selected application.
+- Selected criterion.
+- Scroll context.
+- Unsaved input.
+
+Do not perform unnecessary full-page reloads.
+
+Do not discard locally edited review notes without confirmation.
+
+Do not let opening AI overwrite human review inputs.
+
+---
+
+# 18. AI UX ACCEPTANCE
+
+AI is not the main focus of UX-S5, but existing AI must work safely.
+
+Verify:
+
+- AI does not automatically open.
+- AI can be invoked on demand.
+- AI advisory results are distinguishable.
+- AI reports link to the correct evidence.
+- AI can be closed and reopened safely.
+- AI does not block official controls.
+- AI does not create fictional Committee operations.
+- AI does not create ResolutionCases.
+- AI does not submit official human judgments.
+- AI does not fabricate real processing when the model is offline.
+
+If actual model integration is unavailable, show the true operational state.
+
+Demo analysis must remain clearly synthetic or fixture-backed.
+
+---
+
+# 19. BACKEND API CONTRACT VERIFICATION
+
+For every major frontend feature, map its actual API integration.
+
+Include:
+
+- Frontend action.
+- Actual HTTP method.
+- Actual path.
+- Request schema.
+- Response schema.
+- Required active role.
+- Required resource scope.
+- Backend handler.
+- Current implementation status.
+
+Prioritize:
+
+- Student profile.
+- Submitted profile snapshot.
+- Student applications.
+- Evidence.
+- School review.
+- School forwarding batch.
+- Decision attachment.
+- City shared review.
+- Supplementation.
+- Committee official decisions.
+- Dashboard aggregation.
+- Excel exports.
+- Admin settings.
+
+Avoid undocumented frontend assumptions.
+
+Do not create duplicate production API clients.
+
+Do not silently return Demo fixtures from Real Mode adapters.
+
+---
+
+# 20. REAL MODE VS DEMO MODE
+
+Treat these as distinct execution modes.
+
+## Demo Mode
+
+Must provide a complete, coherent, interactive synthetic end-to-end scenario.
+
+Requirements:
+
+- Correct fixture identities.
+- Consistent application statuses.
+- Working review actions.
+- Working batch forwarding simulation.
+- Working Committee decision simulation.
+- Coherent Dashboard totals.
+- Valid Demo exports.
+- Deterministic reset.
+- No fake live-data claims.
+
+## Real Mode
+
+Must use actual authorized backend contracts.
+
+Requirements:
+
+- No synthetic fallback.
+- No fabricated successful API responses.
+- Correct authorization.
+- Actual server-confirmed mutation states.
+- Honest network/database errors.
+- No localStorage pretending to be durable production persistence.
+
+When PostgreSQL is offline, do not claim full Real Mode integration testing has passed.
+
+---
+
+# 21. SECURITY VERIFICATION
+
+Verify negative authorization cases.
+
+At minimum:
+
+1. Student cannot modify another Student's dossier.
+2. School Officer cannot access unrelated School Review Units.
+3. UDN Reviewer sees all eight authorized member institutions but not independent Schools.
+4. City Reviewer cannot perform Committee final decisions.
+5. Technical ADMIN cannot perform Committee final decisions merely because of ADMIN role.
+6. Committee cannot edit original Student declarations.
+7. Unauthenticated users cannot view private evidence.
+8. Private School decision attachments cannot be downloaded without authorization.
+9. Inactive secondary roles do not grant privileges.
+10. Cross-season mutations are rejected where unauthorized.
+11. Stale human review mutations do not overwrite newer results silently.
+12. No assignment requirement blocks valid shared City review.
+
+Frontend tests alone cannot establish backend authorization.
+
+Use actual available backend HTTP/security tests for server-side guarantees.
+
+---
+
+# 22. CUSTOMER UAT — CLICK-BY-CLICK CHECKLIST
+
+Prepare a separate Vietnamese manual UAT checklist.
+
+For each scenario include:
+
+- Test ID.
+- User role.
+- Preconditions.
+- Screen and navigation path.
+- Exact button/field to click.
+- Exact data to enter.
+- Expected visual response.
+- Expected persisted business state.
+- Negative/failure case.
+- Expected authorization behavior.
+- Screenshot/evidence to capture.
+- Actual result.
+- PASS/FAIL/BLOCKED status.
+
+The checklist must be practical enough for a real Student Association staff member to follow without reading source code.
+
+Organize it into:
+
+1. Student onboarding/profile.
+2. Student declaration and evidence.
+3. Student submission.
+4. School preliminary review.
+5. School supplementation.
+6. UDN consolidated forwarding.
+7. Independent School forwarding.
+8. City shared review.
+9. City supplementation.
+10. Committee decision.
+11. Collective applications.
+12. Dashboards/statistics.
+13. Excel exports.
+14. Administration.
+15. Security/permission checks.
+16. Responsive/mobile use.
+17. Demo recovery/reset.
+
+Do not produce only a high-level checklist with vague steps.
+
+Make it operational and directly executable.
+
+---
+
+# 23. TARGETED DEFECT REMEDIATION
+
+UX-S5 is allowed to implement targeted fixes.
+
+Examples:
+
+- Broken button handler.
+- Incorrect UI state mapping.
+- Missing loading feedback.
+- Modal close defect.
+- Incorrect active criterion.
+- Broken evidence navigation.
+- Duplicate profile card.
+- Responsive grid defect.
+- Incorrect filter persistence.
+- Dashboard counting mismatch.
+- Valid export formatting defect.
+- Incorrect role-specific control visibility.
+
+For every fix:
+
+1. Identify the reproducible defect.
+2. Identify the root cause.
+3. Apply the smallest maintainable correction.
+4. Add or update tests.
+5. Verify intended behavior.
+6. Run relevant regression tests.
+7. Document affected files.
+
+Do not use this phase to introduce broad new features or perform a large architecture rewrite.
+
+For a critical missing backend contract or unsafe database mutation, report the blocker and propose a separately scoped remediation task.
+
+---
+
+# 24. PERFORMANCE AND PRACTICAL UX
+
+Inspect realistic application-list and dossier interactions.
+
+Prioritize:
+
+- Reasonable initial page render.
+- No excessive rerenders.
+- No duplicate unnecessary API requests.
+- Paginated large lists.
+- Efficient evidence metadata loading.
+- Lazy preview of large documents where appropriate.
+- Stable interaction when switching criteria.
+- Responsive charts.
+- No layout shift from delayed content.
+- Reliable feedback during saves.
+
+Measure performance when possible.
+
+Do not invent latency or percentage time-saving claims.
+
+Compare actual click paths for:
+
+Open dossier
+→ Select criterion
+→ Inspect evidence
+→ Record judgment
+→ Continue.
+
+Identify unnecessary navigation steps.
+
+The redesigned flow should demonstrably require fewer unnecessary interactions than the old 5TOT implementation.
+
+---
+
+# 25. QA EXECUTION CHECKPOINTS
+
+## UX-S5A — Source & Contract Audit
+
+Produce:
+
+- Source baseline.
+- Previous phase completion matrix.
+- Current feature inventory.
+- Missing or broken integration list.
+- API compatibility matrix.
+- Priority defects.
+
+## UX-S5B — Business Workflow Verification
+
+Execute:
+
+- Student.
+- School.
+- UDN forwarding.
+- Independent School forwarding.
+- City shared review.
+- Committee.
+- Collective.
+
+Verify real UI transitions in Demo.
+
+Verify actual backend contracts where available.
+
+## UX-S5C — Visual & Responsive QA
+
+Test:
+
+- Desktop.
+- Laptop.
+- Tablet.
+- Mobile.
+- Evidence viewers.
+- Dialogs.
+- Tables.
+- Review action controls.
+- Administration forms.
+
+Fix actual responsive defects.
+
+## UX-S5D — Dashboard & Export Verification
+
+Verify:
+
+- KPI reconciliation.
+- Filters.
+- Drilldowns.
+- Charts.
+- XLSX exports.
+- Role-scoped data.
+- Privacy.
+
+## UX-S5E — Security & Regression
+
+Verify:
+
+- RBAC/ABAC.
+- Active-role checks.
+- Cross-unit isolation.
+- Human decision boundaries.
+- Demo/Real isolation.
+- Student functionality.
+- Individual/Collective separation.
+
+## UX-S5F — UAT Handoff
+
+Prepare:
+
+- Detailed manual test checklist.
+- Demo scenario guide.
+- Known issue register.
+- Verified screenshot evidence.
+- Unverified Real Mode dependencies.
+- Pilot-readiness recommendation.
+
+Do not claim customer UAT has been completed without actual customer participation.
+
+---
+
+# 26. AUTOMATED QUALITY GATES
+
+Run actual available commands.
+
+### Frontend
+
+- Strict TypeScript.
+- Production build.
+- Unit tests.
+- Integration/component tests.
+- FSD boundaries.
+- Circular dependency checks.
+- Review interaction tests.
+- Responsive browser tests.
+
+### Backend
+
+Where applicable and safely available:
+
+- Strict TypeScript.
+- Production build.
+- ESLint.
+- Unit tests.
+- HTTP contract tests.
+- Authorization tests.
+- Offline integration tests.
+- Prisma schema validation without connecting to a live database where possible.
+
+### End-to-end
+
+Use actual browser testing if available.
+
+If browser testing is unavailable, provide an explicit NOT VERIFIED result and manual reproduction steps.
+
+Do not report tests passed without executing them.
+
+---
+
+# 27. SCREENSHOT-READY PRODUCT DEMO
+
+The frontend should be suitable for customer demos and institutional communication.
+
+Prepare an accurate demonstration state with synthetic, non-sensitive data.
+
+Recommended screenshot targets:
+
+- Student dossier.
+- School review workspace.
+- UDN consolidated forwarding.
+- City shared review.
+- Committee review.
+- Committee Dashboard.
+- Statistics.
+- Admin overview.
+
+Preferred desktop presentation sizes:
+
+- 1440×900.
+- 1920×1080.
+
+Capture actual rendered browser screens where supported.
+
+Use:
+
+- Clean alignment.
+- Readable labels.
+- Correct data.
+- Appropriate status colors.
+- Balanced card and table proportions.
+
+Avoid:
+
+- Exposed real Student personal information.
+- Fake AI accuracy claims.
+- Invented official recognition totals.
+- Static mock screenshots unrelated to the functioning Demo.
+
+Do not build a separate fake marketing dashboard.
+
+The Demo should be a functioning product presentation.
+
+---
+
+# 28. RELEASE READINESS CLASSIFICATION
+
+Report independently:
+
+### Frontend
+
+- Code quality.
+- Visual quality.
+- Responsive quality.
+- Accessibility.
+- Functional UI.
+- Role-specific consistency.
+
+### Backend integration
+
+- API contracts.
+- Authentication.
+- Authorization.
+- Persistence.
+- Transactions.
+- File storage.
+- Concurrent review safety.
+
+### Business workflows
+
+- Student.
+- School.
+- UDN batch.
+- City shared review.
+- Committee.
+- Collective.
+- Administration.
+
+### Deployment readiness
+
+- Local Demo readiness.
+- Controlled pilot readiness.
+- Real production readiness.
+
+Use:
+
+PASS / PARTIAL / BLOCKED / NOT VERIFIED.
+
+A polished Demo is not equivalent to production readiness.
+
+A successful build is not equivalent to real integration testing.
+
+Offline unit tests do not verify PostgreSQL concurrency guarantees.
+
+---
+
+# 29. GOLDEN FRONTEND SAFETY
+
+Preserve the current accepted frontend source baseline and historical Golden Frontend recovery manifest.
+
+Before editing:
+
+- Capture Git HEAD and dirty state.
+- Establish a recoverable checkpoint.
+- Identify intended modifications.
+
+During fixes:
+
+- Do not overwrite unrelated source.
+- Preserve existing Student interactions.
+- Preserve SRW-6 snapshots.
+- Preserve the shared dossier.
+- Preserve legitimate review controls.
+- Preserve School batch forwarding.
+- Preserve City shared review.
+- Preserve Committee decisions.
+- Preserve Collective TT01–TT04.
+- Preserve existing AI capability where functional.
+
+After fixes:
+
+- List exact intentional changes.
+- Verify unrelated protected source.
+- Run regression tests.
+- Do not automatically rewrite historical manifest hashes.
+
+---
+
+# 30. REQUIRED FINAL DELIVERABLES
+
+Provide the following as actual project outputs:
+
+**A. UX-S5 Integration Audit Report**
+
+Current baseline and real implementation status.
+
+**B. UX-S5 Functional Test Matrix**
+
+All main workflow scenarios and their actual results.
+
+**C. UX-S5 Responsive QA Report**
+
+Each tested viewport and critical screen.
+
+**D. UX-S5 Visual Quality Report**
+
+Remaining spacing, hierarchy, alignment and polish defects.
+
+**E. UX-S5 API Contract Matrix**
+
+Frontend actions mapped to actual backend operations.
+
+**F. UX-S5 Security Regression Report**
+
+Positive and negative authorization tests.
+
+**G. UX-S5 Dashboard & Export Report**
+
+Data consistency and actual XLSX functionality.
+
+**H. UX-S5 Defect Fix Report**
+
+Exact reproduction, root cause, corrected source and regression tests.
+
+**I. UX-S5 Customer UAT Checklist**
+
+Vietnamese click-by-click scenarios suitable for real reviewer accounts.
+
+**J. UX-S5 Demo Walkthrough**
+
+A repeatable end-to-end demonstration script.
+
+**K. UX-S5 Readiness Assessment**
+
+Explicitly distinguish Demo, Pilot and Production readiness.
+
+**L. Exact File Change List**
+
+Frontend and backend modifications.
+
+**M. Test Execution Evidence**
+
+Commands, counts, exit codes and relevant browser screenshots.
+
+**N. Outstanding Blockers**
+
+P0/P1/P2, exact impact, owners or suggested workstreams and acceptance criteria.
+
+**O. Final Verdict**
+
+PASS / PARTIAL / BLOCKED with clear evidence.
+
+---
+
+# 31. HARD BOUNDARIES
+
+Do not:
+
+- Rebuild the frontend.
+- Replace the design system.
+- Rewrite Modular Monolith architecture.
+- Introduce NestJS.
+- Add a generic award workflow engine.
+- Restore City Officer assignments.
+- Restore ResolutionCase.
+- Create fictional Committee meetings.
+- Change UDN batch business rules.
+- Give AI official decision authority.
+- Delete historical application data.
+- Reconnect Supabase.
+- Apply live Prisma migrations.
+- Seed production users.
+- Use real personal data in public screenshots.
+- Deploy.
+- Merge/push automatically.
+- Rewrite historical Golden Frontend checksums.
+
+Stop after verification, targeted fixes, regression and UAT preparation.
+
+If controlled database integration requires separate authorization, prepare the plan but do not execute it.
+
+---
+
+# FINAL NORTH STAR
+
+The completed 5TOT product must be:
+
+**BEAUTIFUL — INTUITIVE — FAST — RESPONSIVE — SECURE — BUSINESS-CORRECT.**
+
+Students can complete and submit their dossiers naturally.
+
+School reviewers can assess the familiar Student dossier and forward one consolidated list with a common decision.
+
+City reviewers can open the shared queue and perform legitimate assessments without staff assignments or ResolutionCase complexity.
+
+Committee members can inspect actual recorded School and City results and make authorized official decisions.
+
+Administrators can manage seasons, criteria, institutions and accounts without confusing workflows.
+
+Dashboards and exports present accurate, authorized information.
+
+AI remains quiet, optional and genuinely useful.
+
+The interface is consistent across desktop, laptop, tablet and mobile.
+
+No misleading statuses.
+
+No duplicated navigation.
+
+No inaccessible primary actions.
+
+No fake production persistence.
+
+No unnecessary workflow complexity.
+
+**SUCCESS = A COHESIVE, PREMIUM AND VERIFIED 5TOT EXPERIENCE THAT REAL STUDENT ASSOCIATION STAFF CAN USE CONFIDENTLY WITH MINIMAL TRAINING.**

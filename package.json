@@ -1,0 +1,55 @@
+{
+  "name": "@5tot-danang/monorepo",
+  "description": "Hệ thống Xét chọn Sinh viên 5 tốt & Tập thể Sinh viên 5 tốt TP. Đà Nẵng — Thành Đoàn & Hội Sinh viên Việt Nam TP. Đà Nẵng",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "dev:fe": "vite",
+    "dev:be": "npm --prefix backend run dev",
+    "build": "vite build && npm --prefix backend run build",
+    "start": "npm --prefix backend run start",
+    "preview": "vite preview",
+    "clean": "rm -rf dist backend/dist",
+    "lint": "tsc --noEmit",
+    "audit:source-size": "tsx scripts/audit-source-size.ts",
+    "audit:architecture": "tsx scripts/audit-architecture.ts",
+    "manifest:generate": "tsx scripts/generate-golden-manifest.ts",
+    "manifest:verify": "tsx scripts/verify-golden-manifest.ts",
+    "test": "tsx --test src/test/*.test.ts",
+    "test:be": "npm --prefix backend test"
+  },
+  "dependencies": {
+    "@google/genai": "^2.4.0",
+    "@gsap/react": "^2.1.2",
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^6.1.1",
+    "argon2": "^0.45.1",
+    "dotenv": "^17.2.3",
+    "esbuild": "^0.25.0",
+    "express": "^4.21.2",
+    "gsap": "^3.15.0",
+    "jsonwebtoken": "^9.0.3",
+    "lucide-react": "^0.546.0",
+    "motion": "^12.23.24",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "tsx": "^4.21.0",
+    "vite": "^8.3.0",
+    "zod": "^4.6.6"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "autoprefixer": "^10.4.21",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2"
+  }
+}

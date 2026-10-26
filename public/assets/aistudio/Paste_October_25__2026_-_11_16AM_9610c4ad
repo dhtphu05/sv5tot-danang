@@ -1,0 +1,1114 @@
+# 5TOT ĐÀ NẴNG — LEAN-1
+## PRODUCTION STUDENT DECLARATION SIMPLIFICATION, SMART EVIDENCE ATTACHMENT & AUTOMATIC NUMBERING
+
+**Priority:** P0 — Core Student Experience Refactor  
+**Execution:** VERIFY BASELINE → SOURCE AUDIT → IMPLEMENT → INTEGRATE → TEST → RESPONSIVE QA → REPORT  
+**Implementation Authorization:** YES — Targeted production source implementation  
+**Scope:** Student Individual declaration entry and shared declaration presentation  
+**Out of Scope:** LEAN-2 through LEAN-6
+
+**Frontend:** React + Vite + Strict TypeScript + Feature-Sliced Design  
+**Backend:** Existing Express/Prisma Modular Monolith  
+**Product:** 5TOT Đà Nẵng — Sinh viên 5 tốt
+
+---
+
+# 1. MISSION
+
+LEAN-0.1 has corrected the business contracts and restored the approved implementation roadmap.
+
+Now implement LEAN-1.
+
+The customer has repeatedly emphasized that the current Student declaration experience is unnecessarily complicated.
+
+The current forms feel like data-entry screens designed around database structures instead of a real Student award application process.
+
+The desired experience is inspired by the Central Youth Union's award submission interfaces.
+
+A Student should be able to:
+
+1. Find the relevant criterion.
+2. Click "+ Thêm kê khai".
+3. Enter a short achievement description.
+4. Attach evidence directly.
+5. Save.
+6. Immediately see the declaration in an automatically numbered list.
+
+For requirements that genuinely need structured values, display only the fields necessary for accurate assessment.
+
+The user must not need to understand the underlying data model.
+
+**PRIMARY PRODUCT GOAL: MAKE DECLARING AN ACHIEVEMENT FEEL AS SIMPLE AS ADDING AN ITEM TO A LIST.**
+
+This phase must implement real functional changes, not just produce a design specification.
+
+---
+
+# 2. MANDATORY LEAN-0.1 CONTRACT VERIFICATION
+
+Before changing production code, locate and read the corrected documents:
+
+- `docs/lean/LEAN_0_CURRENT_STATE_AUDIT.md`
+- `docs/lean/LEAN_0_BUSINESS_STATE_MATRIX.md`
+- `docs/lean/LEAN_0_ACTION_AND_CLICK_AUDIT.md`
+- `docs/lean/LEAN_0_DECLARATION_FORM_MATRIX.md`
+- `docs/lean/LEAN_0_REVIEW_CONTRACT.md`
+- `docs/lean/LEAN_0_BEFORE_AFTER_FLOWS.md`
+- `docs/lean/LEAN_0_FEATURE_PRESERVATION.md`
+- `docs/lean/LEAN_0_IMPLEMENTATION_PLAN.md`
+- `docs/lean/LEAN_0_DECISION_LOG.md`
+- `docs/lean/LEAN_0_1_CORRECTION_REPORT.md`
+- `docs/lean/LEAN_0_1_REVIEW_STATE_TRUTH_TABLE.md`
+
+Use actual discovered paths.
+
+Verify the documents exist and contain the corrected rules.
+
+Do not treat a prior agent-generated PASS statement as sufficient implementation evidence.
+
+In particular, confirm:
+
+- Reviewed does not equal Passed.
+- Passing criteria does not equal School recommendation.
+- School recommendation does not equal forwarding.
+- City review completion does not equal Committee recognition.
+- Optional unused alternatives do not become failures.
+- Multiple declarations remain supported.
+- Eligibility policy remains season-specific.
+- Official decisions remain human-controlled.
+
+### Additional policy verification
+
+Some prior documents mention different volunteer participation thresholds, including 2.5 days and 5 days.
+
+Do not choose a threshold arbitrarily.
+
+Do not hardcode either as a new universal rule.
+
+Identify the active criterion configuration and applicable approved regulation.
+
+Keep any unresolved differences documented.
+
+LEAN-1 must not change award eligibility thresholds.
+
+---
+
+# 3. SOURCE-LEVEL IMPLEMENTATION AUDIT
+
+Inspect the actual current implementation.
+
+Find:
+
+- Student Individual application page.
+- Five-criterion declaration UI.
+- Requirement and declaration form components.
+- Dynamic field schemas.
+- Declaration creation/update/delete actions.
+- Evidence attachment flow.
+- Evidence upload state.
+- Data validation.
+- Draft persistence.
+- Real API integration.
+- Demo data adapter.
+- Submitted application snapshot.
+- Shared dossier renderer.
+- School and City read-only declaration presentation.
+- Supplementation permission checks.
+- Criterion definition source.
+- Award season criteria configuration.
+
+Previously reported source paths include:
+
+- `src/entities/application/studentApplicationTypes.ts`
+- `src/demo/fixtures/criteriaDefinitions.ts`
+- `src/staff/reviewTypes.ts`
+- `src/staff/components/review/OfficerReviewWorkspace.tsx`
+
+Treat these only as leads, not as proof of the current implementation.
+
+Discover the real Student form components and backend contracts.
+
+### Audit deliverable
+
+Create a concise implementation matrix:
+
+| Existing UI | Problem | Proposed LEAN behavior | Canonical API/data impact |
+|---|---|---|---|
+
+Identify which code is shared and can be reused.
+
+Do not create a second competing declaration system.
+
+---
+
+# 4. NEW STUDENT USER EXPERIENCE
+
+## 4.1 Entry point
+
+Each applicable requirement or declaration form should provide a clear action:
+
+**+ Thêm kê khai**
+
+The Student must immediately understand what is being added.
+
+Examples:
+
+- Thêm hoạt động.
+- Thêm thành tích.
+- Thêm chứng chỉ.
+- Thêm minh chứng.
+
+Use the generic label "Thêm kê khai" where it provides the most consistent and natural UI.
+
+Avoid technical labels such as:
+
+- Create declaration entity.
+- Add evidence scope.
+- Create requirement instance.
+- Select canonical record.
+- Save assessment object.
+
+## 4.2 Default form
+
+For a straightforward achievement, display:
+
+**Nội dung kê khai**
+
+Example:
+
+"Tham gia Chiến dịch Mùa hè xanh năm 2026 tại xã ..."
+
+**Minh chứng**
+
+Upload the supporting PDF/image files.
+
+**Primary action:**
+
+"Thêm kê khai"
+
+The Student should not need to navigate through separate declaration and evidence management screens.
+
+## 4.3 Secondary fields
+
+Display additional fields only where justified by the relevant requirement.
+
+Use progressive disclosure.
+
+Avoid opening unnecessary fields by default.
+
+For simple text-based achievements, content and evidence may be sufficient.
+
+For numerical or otherwise rule-sensitive achievements, preserve the required structured information.
+
+---
+
+# 5. REQUIREMENT-SPECIFIC FORM BEHAVIOR
+
+Do NOT use the same large generic form for every requirement.
+
+Audit each requirement individually.
+
+## A. Conduct score
+
+Possible required information:
+
+- Điểm rèn luyện.
+- Relevant academic year where not already reliably derived.
+- Evidence.
+
+Use a numeric input.
+
+Do not replace the score with free-form text.
+
+## B. Academic score
+
+Possible required information:
+
+- GPA.
+- Applicable grading scale.
+- Evidence.
+
+Preserve the grading scale and the actual approved calculation semantics.
+
+Do not infer missing GPA values from the achievement description.
+
+## C. Achievement or award
+
+Preferred default:
+
+- Tên thành tích / Nội dung kê khai.
+- Evidence.
+
+Additional information such as award level should appear only if required for the applicable eligibility rule or canonical backend contract.
+
+## D. Scientific research
+
+Preferred:
+
+- Tên công trình hoặc thành tích.
+- Relevant required research type or result when necessary.
+- Evidence.
+
+Avoid unnecessary repeated metadata when the evidence already sufficiently expresses optional details and the rule does not require machine-readable fields.
+
+## E. Physical activities
+
+Preferred:
+
+- Relevant qualifying form.
+- Short declaration content.
+- Actual mandatory eligibility fields.
+- Evidence.
+
+Do not force entry into alternative forms that are not selected.
+
+## F. Volunteer activities
+
+Preferred:
+
+- Tên hoạt động.
+- Required participation duration or count, only when the applicable rule needs it.
+- Evidence.
+
+Do not globally impose a new number-of-days rule.
+
+## G. Integration
+
+Preferred:
+
+- Certificate or activity type when necessary.
+- Score or level when necessary.
+- Achievement description.
+- Evidence.
+
+A numeric certificate result must be stored in an appropriate structured field if the system needs it for validation.
+
+Do not use a generic description as a substitute for required structured data.
+
+---
+
+# 6. AUTOMATIC DECLARATION NUMBERING
+
+This is a mandatory customer requirement.
+
+Each relevant declaration list must automatically show:
+
+1. First declaration.
+2. Second declaration.
+3. Third declaration.
+
+The Student must never be asked to enter the display sequence number manually.
+
+### Implementation rules
+
+- Number declarations according to their actual display order.
+- Use numbering within the appropriate requirement or declaration group.
+- Maintain deterministic ordering across refreshes.
+- Recalculate display numbers after an authorized deletion.
+- Preserve stable declaration IDs.
+- Do not use array index as a backend identity.
+- Do not renumber evidence IDs.
+- Do not change persisted reviewer references.
+- Do not corrupt evidence version history.
+
+### Important distinction
+
+Display number:
+
+`1`, `2`, `3`
+
+Persistent declaration identity:
+
+Existing stable canonical declaration ID.
+
+These are different things.
+
+If ordering metadata already exists, use it.
+
+If ordering is implicit, verify that the selected ordering remains stable after persistence and reload.
+
+Do not add a database migration solely to create visible numbering.
+
+---
+
+# 7. ALLOW MULTIPLE DECLARATIONS
+
+The Student may have more than one achievement satisfying a requirement.
+
+Example:
+
+**Tình nguyện tốt**
+
+1. Tham gia Chiến dịch Mùa hè xanh.
+2. Tham gia Chủ nhật xanh.
+3. Tham gia hiến máu tình nguyện.
+
+All legitimate declarations must remain visible.
+
+Do not enforce:
+
+"One declaration per criterion."
+
+Do not enforce:
+
+"One declaration per selected form."
+
+unless the existing approved policy specifically does so.
+
+The user may voluntarily submit additional achievements even after satisfying the minimum requirement.
+
+Preserve multiple evidence files on each declaration.
+
+---
+
+# 8. ONE_OF / AT_LEAST_N / ALL_REQUIRED
+
+The Student interface must correctly distinguish mandatory and alternative requirements.
+
+## Mandatory
+
+Show required requirements clearly.
+
+## Alternatives
+
+Let the Student choose one or more qualifying forms as permitted.
+
+Do not automatically preselect one form just because the UI needs an initial value.
+
+Do not mark every unselected alternative as incomplete or failed.
+
+Do not disable adding another valid alternative after the first one has been selected.
+
+### Example
+
+A criterion requires at least one of two qualifying forms.
+
+The Student declares Option A.
+
+The UI may show Option B as:
+
+"Phương án khác"
+
+with a discreet Add action.
+
+It must not force the Student to complete Option B.
+
+### Important
+
+The frontend should display rules and advisory completion indicators correctly.
+
+Do not introduce hard submission blockers based solely on preliminary eligibility warnings unless an existing approved lifecycle rule explicitly requires them.
+
+The customer previously confirmed that advisory warnings must not automatically prevent application submission.
+
+---
+
+# 9. COMPACT DECLARATION EDITOR
+
+Choose the interaction pattern based on actual usability.
+
+Preferred options:
+
+- Inline expandable form.
+- Compact dialog.
+- Responsive sheet for mobile where appropriate.
+
+Do not implement multiple separate editing steps.
+
+## Desired visual structure
+
+Title:
+
+"Thêm kê khai"
+
+Context:
+
+"Tiêu chí Tình nguyện tốt"
+
+Input:
+
+"Nội dung kê khai"
+
+Evidence:
+
+"Đính kèm minh chứng"
+
+Primary action:
+
+"Thêm kê khai"
+
+Secondary:
+
+"Hủy"
+
+### Avoid
+
+- Huge multi-step modal.
+- Nested dialogs.
+- Multiple long instructional panels.
+- Redundant field-group cards.
+- Separate Save Evidence and Save Declaration steps where they can be safely combined.
+- English technical labels.
+- Overly decorative AI-style explanatory content.
+
+### Editing
+
+When a Student edits an existing authorized declaration, use the same compact editor prefilled with the actual saved values.
+
+Do not reset attachments unexpectedly.
+
+Do not save unrelated draft fields when editing another declaration.
+
+---
+
+# 10. EVIDENCE ATTACHMENT MUST BE FIRST-CLASS
+
+Each declaration must display its relevant evidence immediately.
+
+## Required capabilities
+
+- Add evidence directly while creating a declaration.
+- Support the actual approved file formats and size limits.
+- Show upload progress where meaningful.
+- Display uploaded file names.
+- Preview PDF and image evidence.
+- Remove or replace allowed attachments before submission.
+- Handle upload failure honestly.
+- Retry safely.
+- Preserve links between declarations and uploaded files.
+- Correctly handle multiple attachments.
+
+### Important persistence behavior
+
+If the implementation stores files before the declaration is finalized, inspect the existing temporary-file and cleanup behavior.
+
+Avoid orphaned uploads.
+
+If declaration creation succeeds but evidence upload fails, do not display an incorrect completed state.
+
+Use the canonical file storage contract.
+
+Do not fake file uploads in Real Mode.
+
+Do not replace real storage with synthetic blob URLs.
+
+---
+
+# 11. CLEAN SAVED DECLARATION LIST
+
+After saving, show a numbered list of declarations.
+
+Suggested presentation:
+
+**1. Tham gia Chiến dịch Mùa hè xanh năm 2026**
+
+Minh chứng: `Giay_xac_nhan.pdf`
+
+Actions:
+
+- Xem.
+- Sửa.
+- Xóa.
+
+Only display actions permitted in the current application lifecycle.
+
+### UI priorities
+
+- Achievement title/content should stand out.
+- Numbering should be obvious.
+- Evidence should be easy to access.
+- No excessive metadata.
+- No repeated status badges.
+- No deeply nested cards.
+- No raw internal IDs.
+
+The list should remain readable with many declarations.
+
+Use subtle dividers rather than placing a large decorative card inside another card for every item.
+
+---
+
+# 12. STUDENT SUBMISSION LIFECYCLE
+
+Preserve application lifecycle behavior.
+
+## Draft
+
+The Student can create, edit and remove declarations according to existing permissions.
+
+## Submitted
+
+The original Student-submitted dossier and its personal profile snapshot must remain immutable according to the approved backend contract.
+
+Do not allow ordinary editing merely because the new UI has convenient Edit buttons.
+
+## Supplementation
+
+If the Student receives a valid scoped supplementation request, editing must be restricted to the explicitly permitted scope and actions.
+
+Do not implement a new supplementation workflow in LEAN-1.
+
+Preserve the existing behavior and avoid regressions.
+
+LEAN-3 will streamline this UX separately.
+
+---
+
+# 13. CROSS-ROLE DECLARATION CONSISTENCY
+
+The same declaration must be displayed consistently to:
+
+- Student.
+- School Reviewer.
+- City Reviewer.
+- Committee.
+
+Use the existing shared dossier architecture wherever supported.
+
+Do not duplicate persisted declaration content into separate role-specific records.
+
+### Numbering
+
+A Student's first declaration should remain the first declaration when viewed by School or City, unless explicit legitimate sorting or filtering is being applied.
+
+The number is a presentation aid, not an identity.
+
+### Review integrity
+
+Do not alter existing School or City human judgment records while changing declaration rendering.
+
+Do not automatically set declaration review to Pass because the new form is considered valid.
+
+Input validation is not a human assessment.
+
+---
+
+# 14. DEMO MODE
+
+Demo Mode must demonstrate the same LEAN declaration behavior as Real Mode.
+
+Requirements:
+
+- Deterministic synthetic data.
+- Multiple achievements.
+- Relevant evidence examples.
+- Automatic numbering.
+- Functional creation and editing.
+- Correct saved synthetic state.
+- Deletion where authorized.
+- Reload or persistence behavior according to the actual Demo adapter.
+- Correct requirement grouping.
+- Correct submission lifecycle.
+
+Use plausible Vietnamese administrative content.
+
+Do not fabricate official approvals or use actual private Student records.
+
+Do not insert unrelated coursework documents as evidence of award achievements.
+
+---
+
+# 15. REAL MODE — ACTUAL BACKEND INTEGRATION
+
+Real Mode must use existing authenticated APIs.
+
+Inspect:
+
+- Create declaration.
+- Update declaration.
+- Delete declaration.
+- Upload evidence.
+- Link evidence.
+- Retrieve dossier.
+- Submit application.
+
+Use the actual authorized API contracts.
+
+### Do not
+
+- Return a fake success response.
+- Silently fall back to Demo data.
+- Persist only in component state.
+- Invent unsupported endpoints.
+- Assume backend DTOs from filenames alone.
+- Bypass required authorization.
+- Weaken server-side validation.
+
+Where a frontend/backend mismatch is confirmed:
+
+1. Diagnose the mismatch.
+2. Prefer a small, contract-compatible change.
+3. Preserve API consumers.
+4. Add focused tests.
+5. Document the exact change.
+
+If the necessary production operation cannot be implemented without an unauthorized schema migration or unavailable backend contract, isolate that blocker and complete the safe remaining work.
+
+Do not falsely report full Real Mode PASS.
+
+No live database migrations.
+
+No unauthorized production data changes.
+
+---
+
+# 16. DATA MODEL PRESERVATION
+
+Preserve:
+
+- Canonical declaration IDs.
+- Criterion IDs.
+- Requirement IDs.
+- Evidence IDs.
+- Submission snapshots.
+- Original institution.
+- Award season.
+- Declaration timestamps.
+- Evidence versions.
+- Existing assessment relationships.
+- Audit history.
+
+Do not replace all structured declaration data with one opaque text field.
+
+Instead, implement a simpler presentation layer over the existing appropriate canonical data.
+
+If the original declaration model already contains both content and structured values, reuse it.
+
+Avoid introducing a parallel Student achievement store.
+
+---
+
+# 17. RESPONSIVE — FIRST-CLASS ACCEPTANCE REQUIREMENT
+
+The Student declaration UX must work especially well on mobile.
+
+Test widths:
+
+- 320px.
+- 360px.
+- 390px.
+- 430px.
+- 768px.
+- 1024px.
+- 1280px.
+- 1440px.
+- 1660px.
+- 1920px.
+
+## Desktop
+
+- Compact form.
+- Readable achievement list.
+- Efficient evidence attachment.
+- No wasted space.
+
+## Tablet
+
+- Adequate spacing.
+- Comfortable file selection.
+- Correct dialog sizing.
+
+## Mobile
+
+- Single-column layout.
+- Full-width readable inputs.
+- Clearly accessible Add and Save actions.
+- No truncated attachments or button labels.
+- No horizontal scrolling.
+- No nested modal overflow.
+- No giant fixed action toolbar obscuring fields.
+- Minimum comfortable interactive touch targets.
+
+Use responsive behavior according to available container width where necessary.
+
+Do not assume that viewport size always equals the actual content width.
+
+---
+
+# 18. ACCESSIBILITY AND CONTENT QUALITY
+
+Implement:
+
+- Proper field labels.
+- Clear validation errors.
+- Keyboard navigation.
+- Visible focus indicators.
+- Accessible file input.
+- Descriptive remove/preview controls.
+- Screen-reader-friendly numbering.
+- Appropriate disabled states.
+- Clear upload feedback.
+- Clear save feedback.
+
+Use natural Vietnamese.
+
+Prefer:
+
+- Thêm kê khai.
+- Nội dung kê khai.
+- Minh chứng.
+- Tải minh chứng.
+- Xem tệp.
+- Sửa.
+- Xóa.
+- Đã lưu.
+
+Avoid:
+
+- Entity.
+- Schema.
+- Canonical.
+- Scope.
+- Pipeline.
+- Technical enum names.
+- AI-generated instructional paragraphs.
+
+---
+
+# 19. REQUIRED AUTOMATED TESTS
+
+Implement and actually run targeted tests.
+
+## D01 — Simple declaration
+
+A Student creates a basic achievement using only genuinely required fields.
+
+## D02 — Structured requirement
+
+Numeric or otherwise policy-required fields remain correctly validated.
+
+## D03 — Multiple declarations
+
+A Student creates several achievements in one allowed requirement.
+
+## D04 — Automatic numbering
+
+Numbers appear as 1, 2, 3.
+
+## D05 — Deletion
+
+After authorized deletion, display numbers update without changing persistent declaration IDs.
+
+## D06 — Reload
+
+Numbering and declaration content remain correct after reload.
+
+## D07 — ONE_OF
+
+Selecting one allowed form does not create required work in unused alternatives.
+
+## D08 — Additional alternative
+
+The Student can add another valid form even after the minimum is met.
+
+## D09 — Evidence upload
+
+Evidence correctly links to the intended declaration.
+
+## D10 — Multiple evidence files
+
+All supported attachments remain accessible.
+
+## D11 — Failed upload
+
+The UI does not falsely report a completed save.
+
+## D12 — Edit declaration
+
+Editing one achievement does not overwrite another.
+
+## D13 — Submitted lifecycle
+
+Ordinary editing is restricted after submission.
+
+## D14 — Supplement scope
+
+An existing scoped supplement cannot be used to modify unrelated declarations.
+
+## D15 — Shared dossier
+
+School and City see the same submitted declaration data.
+
+## D16 — Human judgments
+
+New numbering does not break existing human assessment references.
+
+## D17 — Demo isolation
+
+Demo state does not enter Real Mode.
+
+## D18 — Real persistence
+
+When an authorized test backend is available, saved declarations survive a fresh authenticated fetch.
+
+## D19 — Authorization
+
+A different Student cannot change another Student's declaration.
+
+## D20 — Advisory rules
+
+Missing optional alternatives do not cause false mandatory validation errors.
+
+## D21 — Collective regression
+
+TT01–TT04 and their existing submission paths remain unaffected.
+
+## D22 — Submission warning policy
+
+The refactor does not add new hard blockers based solely on advisory eligibility failures.
+
+## D23 — Responsive
+
+Create, edit, upload and list interactions remain usable at 390px and 1440px.
+
+## D24 — Error recovery
+
+API errors do not cause the UI to pretend that unsaved data has persisted.
+
+---
+
+# 20. MANUAL BROWSER VERIFICATION
+
+Use actual browser interaction where available.
+
+Test at minimum:
+
+### Scenario A — Simple achievement
+
+Open Student dossier.
+
+Choose a criterion.
+
+Click "+ Thêm kê khai".
+
+Enter a brief description.
+
+Attach evidence.
+
+Save.
+
+Confirm a numbered row appears.
+
+### Scenario B — Several achievements
+
+Add three declarations in the same applicable group.
+
+Confirm stable numbering.
+
+Edit the second.
+
+Verify the first and third are unchanged.
+
+### Scenario C — ONE_OF
+
+Choose one qualifying alternative.
+
+Leave another unused.
+
+Confirm the UI does not falsely demand the unused alternative.
+
+### Scenario D — Reload
+
+Save declarations.
+
+Reload the relevant page.
+
+Verify actual retained values.
+
+### Scenario E — Mobile
+
+Repeat create/edit/evidence interaction at 390px.
+
+Verify no clipped primary actions.
+
+### Scenario F — School dossier
+
+Open the same submitted dossier with an authorized School role.
+
+Verify declaration contents and evidence are identical to the Student submission snapshot.
+
+Do not claim browser QA PASS without actually rendering and interacting with the application.
+
+---
+
+# 21. PERFORMANCE AND UX MEASUREMENT
+
+Previous LEAN-0 reports included unverified click and completion-time statistics.
+
+Do not repeat those figures as measured facts.
+
+For this phase, report:
+
+- Current number of interaction steps observed for simple declaration creation.
+- New number of interaction steps observed after refactor.
+- Fields displayed by default before and after.
+- Navigation changes before and after.
+- Number of independent Save actions before and after.
+- Actual responsive issues discovered.
+
+Mark estimates separately from observed results.
+
+Do not fabricate user study measurements.
+
+---
+
+# 22. TECHNICAL QUALITY GATES
+
+Run actual available:
+
+- TypeScript typecheck.
+- Frontend production build.
+- Relevant component tests.
+- Declaration form tests.
+- Evidence integration tests.
+- Student lifecycle tests.
+- Shared dossier regression tests.
+- Demo/Real isolation tests.
+- Responsive browser QA.
+
+If authorized backend source was changed:
+
+- Backend typecheck.
+- Backend build.
+- Relevant API tests.
+- Authorization tests.
+- Persistence contract tests.
+
+Record commands and results.
+
+Do not claim a green build without command evidence.
+
+---
+
+# 23. SOURCE AND SCOPE PROTECTION
+
+Preserve the existing Golden Frontend historical baseline.
+
+Create or maintain recoverable local checkpoints.
+
+Do not overwrite the historical Golden manifest.
+
+Do not modify unrelated functionality.
+
+Do not rebuild the entire frontend.
+
+Do not replace FSD architecture.
+
+Do not introduce a new backend framework.
+
+Do not create a second declaration domain model.
+
+Do not automatically merge, push, rebase or deploy.
+
+Do not run production database migrations.
+
+Do not seed or modify production accounts.
+
+Do not reconnect Supabase or any external database without explicit authorization.
+
+### Scope restrictions
+
+Do not start:
+
+- LEAN-2 review workspace rewrite.
+- LEAN-3 supplementation refactor.
+- LEAN-4 forwarding refactor.
+- LEAN-5 Committee or City redesign.
+- LEAN-6 full pilot release.
+
+Only modify shared reviewer presentation where necessary to display the newly simplified and numbered declarations correctly.
+
+Do not change human review authority or official decisions.
+
+---
+
+# 24. REQUIRED DELIVERABLES
+
+Create:
+
+`docs/lean/LEAN_1_IMPLEMENTATION_REPORT.md`
+
+Include:
+
+1. Initial LEAN-0.1 baseline verification.
+2. Current Student declaration form inventory.
+3. Field-level simplification decisions.
+4. Approved regulation dependencies.
+5. Actual components changed.
+6. Actual backend API contracts used.
+7. New compact declaration-entry UX.
+8. Automatic numbering design.
+9. Multiple declaration behavior.
+10. ONE_OF/ALL_REQUIRED compatibility.
+11. Evidence upload integration.
+12. Submitted dossier immutability.
+13. Cross-role shared dossier consistency.
+14. Demo vs Real implementation status.
+15. Browser screenshots and interaction results.
+16. Typecheck/build/test results.
+17. Before/after observed interaction comparison.
+18. Exact source files changed.
+19. Known blockers.
+20. Remaining LEAN-2 dependencies.
+21. Final verdict: PASS / PARTIAL / BLOCKED.
+
+Also create or update a targeted manual UAT checklist for LEAN-1.
+
+Provide click-by-click steps in Vietnamese suitable for a real Student tester.
+
+The checklist must cover create, edit, upload, delete, multiple declarations, reload, submission, mobile and read-only viewing.
+
+---
+
+# 25. DEFINITION OF DONE
+
+LEAN-1 is complete only when:
+
+- A simple Student achievement can be created with minimal required input.
+- Evidence can be attached in the same workflow.
+- Additional structured fields appear only when genuinely required.
+- Automatic numbering works reliably.
+- Multiple declarations are supported.
+- ONE_OF alternatives behave correctly.
+- Actual Student data persists through the authorized backend contract.
+- Demo Mode works independently.
+- The shared School/City dossier displays consistent submitted information.
+- Submission and supplementation permissions remain intact.
+- No assessment, criterion or official decision semantics are changed.
+- Mobile and desktop layouts are usable.
+- Targeted tests pass.
+- Any unverified Real Mode behavior is transparently marked.
+
+Do not call the phase PASS if only the visual Demo interface has been implemented.
+
+---
+
+# FINAL PRODUCT VISION
+
+The previous interface required the Student to understand the system's data structures.
+
+The new interface should understand the Student's task.
+
+**The Student should think: "I have an achievement. I will describe it and attach proof."**
+
+They should not think:
+
+"Which fields, classification objects, requirement scopes and workflow stages must I create?"
+
+Every declaration should be:
+
+- Easy to add.
+- Easy to read.
+- Automatically numbered.
+- Correctly linked to its evidence.
+- Easy to edit when permitted.
+- Consistent across reviewers.
+- Fully compatible with the approved business rules.
+
+**LEAN-1 SUCCESS = MINIMAL STUDENT INPUT, MAXIMUM CLARITY, ZERO LOSS OF BUSINESS CORRECTNESS.**
+
+## HARD STOP
+
+Implement, verify and report LEAN-1 only.
+
+Do not begin LEAN-2 automatically.

@@ -1,0 +1,994 @@
+# 5TOT ĐÀ NẴNG — LEAN UX FEEDBACK CONSOLIDATION
+## VISUAL ALIGNMENT, SUBMISSION SUCCESS UX, REDUNDANT ACTION REMOVAL, TERMINOLOGY, NAVIGATION AND ROUTING BUGFIX
+
+**Priority:** P0/P1 — Customer-Reported UX and Functional Defects
+
+**Execution:** Screenshot Review → Source Audit → Root Cause Analysis → Targeted Implementation → Automated Tests → Browser QA → Final Report
+
+**Authorization:** Implement targeted frontend fixes and narrowly necessary backend integration corrections.
+
+**Scope:** Student Individual, Student Collective, School Reviewer, City Reviewer, shared navigation, status presentation and relevant UI components.
+
+**Restriction:** No deployment, push, merge, rebase, production migration or modification of live application data.
+
+---
+
+# 1. MISSION
+
+The customer has submitted six screenshots documenting remaining UI and UX defects after the LEAN-1 through LEAN-5 refactors.
+
+The application has improved, but several interfaces remain visually inconsistent, contain unnecessary actions, or navigate to the wrong business page.
+
+The customer wants a focused correction pass.
+
+**Do not create another workflow layer. Do not redesign the application from scratch. Fix the actual identified problems.**
+
+The main goals are:
+
+1. Correct table column alignment.
+2. Remove duplicated Add icons.
+3. Introduce a clear centered submission-success dialog.
+4. Remove redundant dashboard/header action buttons.
+5. Standardize School preliminary review wording.
+6. Consolidate duplicate School forwarding navigation.
+7. Repair Statistics and Notifications routing/content.
+8. Simplify duplicated evidence controls.
+9. Fix Collective dashboard contrast.
+10. Preserve business correctness, responsiveness and all valid functionality.
+
+---
+
+# 2. SCREENSHOT-TO-DEFECT MAPPING
+
+Inspect all six customer screenshots in the conversation.
+
+Use these mappings to locate the relevant code.
+
+## Screenshot 1 — Student declaration table
+
+Visible problems:
+
+- Header columns and body columns appear misaligned.
+- Requirement/group rows do not align cleanly with the main column structure.
+- The Add button displays a duplicated plus sign: "+ + Thêm".
+- Some long text and evidence information are truncated unnecessarily.
+
+## Screenshot 2 — City dashboard
+
+The customer marked the top header and two redundant navigation/action buttons.
+
+Inspect the buttons corresponding to:
+
+- "Hồ sơ xét duyệt cấp Thành phố (38)".
+- "Mở thẩm định: Nguyễn Minh Anh".
+
+Determine whether they duplicate the City sidebar and normal application list.
+
+Remove redundant shortcuts from this dashboard if they do not provide a unique necessary capability.
+
+Do not remove the actual City application list or dossier-review functionality.
+
+## Screenshot 3 — Collective dashboard
+
+The Collective overview contains a hero/header area with very poor text contrast.
+
+White or nearly white text appears on a very light background.
+
+This makes the main title and institution information difficult to read.
+
+Correct the color contrast while preserving the design system.
+
+## Screenshot 4 — School dashboard
+
+Two prominent header buttons appear to duplicate existing navigation:
+
+- "Hồ sơ sinh viên (27)".
+- "Tiếp tục xét sơ: Nguyễn Minh Anh".
+
+Remove the redundant header actions where existing navigation already provides the same destination.
+
+Also audit the dashboard for excessive repeated counters and sections.
+
+Do not remove legitimate statistical data.
+
+## Screenshot 5 — School recommendation sidebar
+
+Two navigation destinations overlap:
+
+- "Danh sách đề nghị Thành phố".
+- "Đã chuyển Thành phố".
+
+The customer wants these handled as one coherent list workflow.
+
+Before forwarding, the destination displays selection and the attached official PDF.
+
+After forwarding, the same destination displays the actual forwarded list and PDF.
+
+There should not be two permanent sidebar entries for the same seasonal forwarding lifecycle.
+
+## Screenshot 6 — Expanded Student evidence detail
+
+The expanded evidence section contains nested evidence-management controls, status labels and preview actions.
+
+Inspect whether controls such as:
+
+- "Quản lý minh chứng".
+- "Xem".
+- Repeated evidence-status indicators.
+
+create redundant or confusing actions.
+
+Simplify the evidence presentation without removing supported editing, replacement, preview, or historical-version functionality.
+
+---
+
+# 3. FIX 01 — SHARED TABLE COLUMN ALIGNMENT
+
+**Priority: P1**
+
+The Student dossier declaration table must use consistent alignment across:
+
+- Column headers.
+- Criterion section rows.
+- Requirement group rows.
+- Declaration rows.
+- Evidence cells.
+- Status/action cells.
+
+Target headings:
+
+1. "Tiêu chuẩn & yêu cầu".
+2. "Khai báo của sinh viên".
+3. "Minh chứng".
+4. "Trạng thái".
+
+Use these labels for the Student view where appropriate.
+
+For reviewers, retain the role-appropriate assessment heading.
+
+### Implementation requirements
+
+- Inspect the current grid/table layout.
+- Find inconsistent independent width calculations.
+- Use a shared column template or semantic table layout.
+- Ensure headers and data use the same column boundaries.
+- Ensure nested rows do not introduce horizontal offsets that break alignment.
+- Handle expand/collapse controls within their designated cells.
+- Maintain appropriate content wrapping.
+- Avoid artificial empty columns.
+- Avoid excessive fixed widths.
+- Keep column alignment stable when scrollbars appear.
+
+If using CSS Grid, prefer one source of truth for column templates rather than separate arbitrary percentages in each child component.
+
+Do not solve alignment using unrelated negative margins or fixed pixel offsets.
+
+### Responsive
+
+At wide desktop widths, show all relevant columns.
+
+At narrower widths, adapt the table into readable stacked content.
+
+Do not shrink everything to unreadably small font sizes.
+
+### Acceptance
+
+All column boundaries and content align correctly at 1024px, 1440px, 1660px and 1920px.
+
+Mobile does not suffer page-level horizontal overflow.
+
+---
+
+# 4. FIX 02 — DUPLICATED PLUS ICON
+
+**Priority: P1**
+
+The current declaration Add button displays:
+
+"+ + Thêm"
+
+This likely occurs because the icon component and literal button text both contain a plus sign.
+
+### Correct result
+
+Use either:
+
+- One plus icon followed by "Thêm".
+
+Or:
+
+- A text-only "+ Thêm" button.
+
+Never render both.
+
+### Audit
+
+Check:
+
+- Student Individual declaration forms.
+- Alternative-form Add buttons.
+- Student Collective declaration forms.
+- Evidence Add buttons.
+- Shared Add components.
+
+Fix the actual reusable component or label definition.
+
+Do not apply ad hoc fixes separately to every occurrence when one shared bug is responsible.
+
+### Acceptance
+
+Every relevant Add action has exactly one visible plus sign.
+
+Existing actions continue to work.
+
+---
+
+# 5. FIX 03 — CENTERED SUBMISSION SUCCESS DIALOG
+
+**Priority: P1**
+
+The customer explicitly requests a clear visual confirmation after successfully submitting a dossier.
+
+This applies to the actual authorized Student submission flow.
+
+### Desired behavior
+
+After the Student clicks:
+
+"Kiểm tra & gửi"
+
+and subsequently confirms the final submission through the existing approved flow:
+
+1. The frontend sends the actual submission request.
+2. The backend validates and persists the submission.
+3. The frontend receives or reconciles confirmed success.
+4. A small centered success dialog appears.
+
+### Dialog design
+
+Centered on screen.
+
+Compact, visually clean and responsive.
+
+Large green check-circle icon.
+
+Main message:
+
+**"Nộp hồ sơ thành công!"**
+
+Secondary message:
+
+"Hồ sơ của bạn đã được gửi thành công."
+
+Where relevant, display a concise accurate status or application reference.
+
+Use one clear action:
+
+"Xem hồ sơ"
+
+or "Đóng", according to the established post-submission destination.
+
+Avoid adding several unnecessary buttons.
+
+### Important
+
+This is a submission confirmation, NOT a recognition/award success message.
+
+Do not say the Student has passed five criteria or received the award.
+
+### Reliability
+
+The dialog must never appear when:
+
+- API submission fails.
+- Server rejects the submission.
+- Validation fails.
+- Network timeout leaves the outcome unknown.
+- The user merely saved a draft.
+- The user only uploaded evidence.
+
+For uncertain timeouts, reconcile actual backend submission state before claiming success.
+
+The dialog must not cause duplicate submission requests.
+
+### Accessibility
+
+- Proper dialog semantics.
+- Keyboard focus management.
+- Large understandable success icon.
+- Accessible success announcement.
+- Functional close/continue action.
+- No clipping on mobile.
+- Respect reduced-motion preferences.
+
+### Individual and Collective
+
+Inspect both submission paths.
+
+Reuse the component where the two flows share the same valid successful-submission semantics.
+
+Do not add it to unrelated operations such as saving one declaration or forwarding a School list unless separately approved.
+
+---
+
+# 6. FIX 04 — REMOVE REDUNDANT TOP-HEADER ACTIONS
+
+**Priority: P2**
+
+The customer identified unnecessary top-right action buttons on School and City dashboards.
+
+Audit the visible buttons and their actual destinations.
+
+### City dashboard
+
+Inspect:
+
+- "Hồ sơ xét duyệt cấp Thành phố".
+- "Mở thẩm định: [Student]".
+
+If the existing City sidebar/application list provides the same functionality, remove these redundant dashboard buttons.
+
+### School dashboard
+
+Inspect:
+
+- "Hồ sơ sinh viên".
+- "Tiếp tục xét sơ: [Student]".
+
+Remove these if they merely duplicate the existing School application-management navigation.
+
+### Requirements
+
+- Do not delete the underlying legitimate pages.
+- Do not break deep links.
+- Do not remove unique actions without relocating them.
+- Do not replace the removed buttons with another redundant banner.
+- Keep dashboard headers visually clean.
+- Preserve meaningful role, unit and season context.
+
+The dashboard should focus on status and statistics, not multiple competing entry points into the same workflow.
+
+---
+
+# 7. FIX 05 — STANDARDIZE "XÉT SƠ TUYỂN" TERMINOLOGY
+
+**Priority: P1**
+
+The customer wants the terminology to be consistent.
+
+Replace abbreviated user-facing expressions such as:
+
+- "Xét sơ".
+- "Tiếp tục xét sơ".
+- "Đang xét sơ".
+- "Chờ xét sơ".
+
+with natural full expressions where appropriate:
+
+- "Xét sơ tuyển".
+- "Tiếp tục xét sơ tuyển".
+- "Đang xét sơ tuyển".
+- "Chờ xét sơ tuyển".
+
+### Important
+
+Do not blindly replace text inside:
+
+- Database enums.
+- API contracts.
+- Source identifiers.
+- Historical audit event codes.
+- Official stored data.
+
+Only modify user-facing wording unless the actual domain contract requires a separate authorized change.
+
+Keep labels concise and consistent.
+
+Do not introduce awkward expressions such as "sơ tuyển sơ tuyển".
+
+### Audit areas
+
+- School navigation.
+- School dashboard.
+- Application list.
+- Dossier detail.
+- Action buttons.
+- Toasts.
+- Confirmation dialogs.
+- Empty states.
+- Notification copy.
+- Export headings where relevant.
+
+Use one centralized label mapping where appropriate.
+
+---
+
+# 8. FIX 06 — CONSOLIDATE DUPLICATE SCHOOL FORWARDING MENU ITEMS
+
+**Priority: P1**
+
+The School sidebar currently separates:
+
+- "Danh sách đề nghị Thành phố".
+- "Đã chuyển Thành phố".
+
+The customer has identified duplicated or highly overlapping content.
+
+### Target
+
+Use one navigation destination:
+
+**"Danh sách đề nghị"**
+
+### Before forwarding
+
+Show:
+
+- Student selection list.
+- Correct five-criterion outcomes.
+- Selected Student count.
+- One common official PDF attachment.
+- Final "Gửi lên Thành phố" action.
+
+### After forwarding
+
+The same page should show:
+
+- Successful forwarding status.
+- Actual forwarded Students.
+- Correct School Review Unit.
+- Correct season.
+- The exact official PDF.
+- Actual forwarding time.
+- Appropriate read-only state.
+
+No second routine forwarding operation.
+
+### Navigation behavior
+
+Remove the duplicate sidebar entry after verifying the source routes.
+
+Preserve existing deep links through safe redirects or route aliases.
+
+Do not create redirect loops.
+
+Do not lose historical forwarding data.
+
+Do not show forwarded drafts as if they were editable.
+
+### Business invariants
+
+Preserve:
+
+- Human selection.
+- One common PDF.
+- One successful forwarding per School Review Unit and season.
+- UDN's eight member institutions under `unit-udn`.
+- Independent School isolation.
+- Correct City intake.
+- Audit and authorization.
+
+---
+
+# 9. FIX 07 — STATISTICS AND NOTIFICATIONS DISPLAY THE WRONG CONTENT
+
+**Priority: P0**
+
+The customer reports that the School "Thống kê đơn vị" and "Thông báo" screens are not displaying their intended content.
+
+Instead, these destinations display content resembling "Cần xét sơ tuyển".
+
+This is a functional routing/rendering bug, not just a visual design issue.
+
+### Audit the actual cause
+
+Inspect:
+
+- Sidebar route definitions.
+- Route nesting.
+- Route matching order.
+- Fallback route behavior.
+- Role-based screen selection.
+- Conditional rendering.
+- Shared page/component mappings.
+- Navigation state.
+- Query/search parameter handling.
+- Demo and Real adapters.
+- Page data-loading hooks.
+
+Determine whether the problem is:
+
+- Wrong route destination.
+- Duplicate route configuration.
+- Incorrect component mapping.
+- Accidental fallback to the review list.
+- Stale shared state.
+- Incorrect role-specific routing.
+- Demo fixture mismatch.
+
+Do not fix this by simply changing page titles.
+
+### Target: Statistics
+
+"Thống kê đơn vị" must display actual authorized School-unit statistics.
+
+Use real existing reporting functionality.
+
+Possible content, only where supported:
+
+- Total submitted Individual dossiers.
+- Review progress.
+- Criteria review outcomes.
+- Supplementation counts.
+- Forwarded application counts.
+- Institution breakdown for UDN.
+- Season-specific data.
+- Existing charts or exports.
+
+Do not fabricate statistics.
+
+If an existing dedicated statistics page exists, route correctly to it.
+
+If it is truly absent, show an honest state and document the functional gap rather than rendering an unrelated application queue.
+
+### Target: Notifications
+
+"Thông báo" must display actual notifications accessible to the current School user.
+
+Where supported:
+
+- New notifications.
+- Read/unread status.
+- Relevant title and content.
+- Timestamp.
+- Link to the affected application or document.
+
+Do not display the preliminary-review application list as notification content.
+
+If there are no notifications:
+
+Display an accurate empty state such as:
+
+"Chưa có thông báo."
+
+Do not manufacture notification records.
+
+### Acceptance
+
+Navigating to each menu destination results in a distinct, appropriate screen.
+
+Statistics shows statistics.
+
+Notifications shows notifications.
+
+Preliminary review shows applications requiring review.
+
+These pages must not silently render one another.
+
+---
+
+# 10. FIX 08 — SIMPLIFY EXPANDED EVIDENCE PRESENTATION
+
+**Priority: P1**
+
+The expanded Student declaration panel currently contains excessive nested visual structure.
+
+The customer screenshot highlights the evidence area.
+
+Audit whether the same operation is exposed through:
+
+- Evidence chip.
+- "Quản lý minh chứng".
+- Another "Xem" action.
+- Repeated preview/verification links.
+
+### Desired experience
+
+Evidence should be directly available beside its declaration.
+
+Preferred:
+
+- Filename.
+- File-type icon.
+- Preview/open action.
+- Edit/replace only when authorized.
+- Existing evidence status where actually necessary.
+
+Do not require navigating through an additional evidence-management screen merely to view a file already attached to the declaration.
+
+### Simplification
+
+Remove duplicate actions after verifying their behavior.
+
+Preserve unique capabilities.
+
+Do not remove:
+
+- Multiple evidence support.
+- Secure preview.
+- Authorized replacement.
+- Submission lifecycle restrictions.
+- Supplementation scope.
+- Evidence version history.
+- Real storage integration.
+
+Use the minimum necessary nesting and status labels.
+
+---
+
+# 11. FIX 09 — COLLECTIVE DASHBOARD CONTRAST
+
+**Priority: P1**
+
+The Collective dashboard hero area has insufficient text contrast.
+
+Visible text uses very light colors against a similarly light background.
+
+### Required changes
+
+- Make the page title easily readable.
+- Make institution information readable.
+- Maintain contrast for secondary text.
+- Preserve clear primary-action contrast.
+- Use existing theme tokens.
+- Support light and dark modes if the application supports both.
+- Do not use white text on a light-blue or near-white panel.
+- Verify responsive presentation at mobile widths.
+
+Also inspect nearby cards and status badges for contrast problems.
+
+Do not redesign the entire Collective product.
+
+---
+
+# 12. ADDITIONAL CROSS-ROLE REGRESSION
+
+Although this correction pass targets specific UI defects, verify that changes do not reintroduce earlier LEAN problems.
+
+### Student
+
+- Five criteria visible and readable.
+- Short declaration forms.
+- Multiple declarations.
+- Automatic numbering.
+- ONE_OF/ALL_REQUIRED correctness.
+- Evidence links remain functional.
+- Submission remains authorized.
+- Success dialog only after actual submission success.
+
+### School
+
+- No redundant per-Student recommendation workflow.
+- School criterion conclusions remain human-controlled.
+- School forwarding remains intentional.
+- One PDF only for School forwarding.
+- No duplicate forwarding menu.
+- Correct statistics and notifications.
+
+### City
+
+- Shared review queue.
+- No mandatory reviewer assignment.
+- No redundant reviewer column.
+- School and City judgments remain independent.
+- Correct City intake stage.
+- Manual authorized criterion conclusions.
+- No premature City review for unforwarded dossiers.
+
+### Committee
+
+- No new voting workflow.
+- Official recognition remains authorized and human-controlled.
+
+### Collective
+
+- Direct-to-City workflow.
+- TT01–TT04 preserved.
+- Correct dossier submission and visual accessibility.
+
+---
+
+# 13. RESPONSIVE AND VISUAL QA
+
+Test actual browser rendering at:
+
+320, 360, 390, 430, 768, 1024, 1280, 1440, 1660 and 1920px.
+
+### Desktop
+
+- Table headers align with rows.
+- No excessive vertical whitespace.
+- No duplicate action bars.
+- Clear page titles.
+- Comfortable information density.
+- Readable Student declarations.
+
+### Tablet
+
+- Tables adapt correctly.
+- No overlapping status chips.
+- Dialogs fit the viewport.
+- Primary actions remain visible.
+
+### Mobile
+
+- Declaration content remains readable.
+- Submission-success dialog is centered and accessible.
+- All Add actions are usable.
+- Navigation remains functional.
+- Evidence preview and controls remain accessible.
+- No horizontal page overflow.
+- No clipped notifications.
+
+Do not treat screenshots from generated designs as actual application testing evidence.
+
+---
+
+# 14. AUTOMATED TEST MATRIX
+
+Implement and actually run targeted tests.
+
+## Visual structure
+
+- UI01 — Student declaration header/body column alignment.
+- UI02 — Nested group rows preserve alignment.
+- UI03 — Add buttons have exactly one plus sign.
+- UI04 — Evidence detail does not duplicate unnecessary controls.
+- UI05 — Collective hero contrast is acceptable.
+
+## Submission success
+
+- UI06 — Successful Individual submission opens centered success dialog.
+- UI07 — Failed submission does not open success dialog.
+- UI08 — Network timeout/unknown outcome does not cause false success.
+- UI09 — Dialog is keyboard accessible and closable.
+- UI10 — Duplicate submission is prevented.
+- UI11 — Collective submission uses correct success UX where supported.
+
+## Navigation
+
+- UI12 — Redundant City dashboard action buttons removed.
+- UI13 — Redundant School dashboard action buttons removed.
+- UI14 — Visible "Xét sơ" shorthand corrected.
+- UI15 — One School recommendation/forwarding sidebar destination.
+- UI16 — Historical forwarded-list deep links still work.
+- UI17 — Statistics route renders the proper statistics screen.
+- UI18 — Notifications route renders the actual notification screen.
+- UI19 — Review queue remains a separate correct screen.
+- UI20 — Role-specific routes do not display unrelated pages.
+
+## Business regression
+
+- UI21 — School can still review dossiers.
+- UI22 — School criterion conclusions persist.
+- UI23 — School can select Students and attach one PDF.
+- UI24 — School can forward only once.
+- UI25 — Forwarded list remains accessible.
+- UI26 — UDN member institutions retain their identity.
+- UI27 — City receives only properly forwarded applications.
+- UI28 — Notifications link to permitted resources.
+- UI29 — Evidence permissions remain intact.
+- UI30 — Demo and Real data are isolated.
+
+## Responsive
+
+- UI31 — Student table at 1440px.
+- UI32 — Student table at 390px.
+- UI33 — Collective dashboard at 390px.
+- UI34 — School navigation at 390px.
+- UI35 — Submission dialog at 390px.
+- UI36 — City dashboard at 1024px.
+- UI37 — No unwanted horizontal overflow.
+- UI38 — No duplicate or overlapping primary actions.
+
+---
+
+# 15. REQUIRED MANUAL BROWSER UAT
+
+Perform actual click-by-click browser testing where available.
+
+### Journey A — Student declaration
+
+1. Open "Hồ sơ của tôi".
+2. Verify column headers align.
+3. Expand a criterion.
+4. Click Add.
+5. Verify only one plus sign.
+6. Add a declaration and evidence.
+7. Verify correct saved content.
+
+### Journey B — Student submission
+
+1. Open a valid Student draft.
+2. Click "Kiểm tra & gửi".
+3. Complete the existing submission confirmation.
+4. Verify actual server success.
+5. Verify centered dialog appears.
+6. Verify large green check.
+7. Verify "Nộp hồ sơ thành công!".
+8. Dismiss or navigate appropriately.
+9. Refresh.
+10. Verify actual submitted state.
+
+### Journey C — School dashboard
+
+1. Sign in as School reviewer.
+2. Open "Tổng quan".
+3. Verify redundant header buttons are removed.
+4. Open "Hồ sơ sơ tuyển".
+5. Verify the normal review function still works.
+
+### Journey D — School forwarding navigation
+
+1. Open "Danh sách đề nghị".
+2. Select Students.
+3. Attach official PDF.
+4. Confirm one-time forwarding in an isolated authorized test environment.
+5. Reopen the same menu destination.
+6. Verify the forwarded list and document are visible.
+7. Verify a second official forwarding is not available.
+
+### Journey E — Statistics
+
+1. Click "Thống kê đơn vị".
+2. Verify the correct statistics page loads.
+3. Verify actual unit and season.
+4. Verify counters match authoritative records.
+5. Verify it does not render the preliminary-review queue.
+
+### Journey F — Notifications
+
+1. Click "Thông báo".
+2. Verify notification content or the correct empty state.
+3. Open an existing permitted notification.
+4. Verify the destination is correct.
+5. Verify it does not render the preliminary-review queue.
+
+### Journey G — City
+
+1. Open City dashboard.
+2. Verify redundant top-right buttons are removed.
+3. Open City Individual applications through the normal navigation.
+4. Open a dossier and perform an authorized review.
+5. Verify no essential functionality was lost.
+
+### Journey H — Collective
+
+1. Open Collective overview.
+2. Verify title and institution information are readable.
+3. Open Collective declaration flow.
+4. Verify TT01–TT04 remains accessible.
+5. Verify responsive layout.
+
+---
+
+# 16. CODE QUALITY AND CHANGE SAFETY
+
+Preserve:
+
+- Approved LEAN-0.1 contract and later explicit customer amendments.
+- Student declaration persistence.
+- Submitted dossier snapshots.
+- School and City independent review results.
+- Manual criterion conclusions.
+- Scoped supplementation.
+- One-time School forwarding.
+- Committee authority.
+- Collective direct-to-City flow.
+- Role authorization.
+- Evidence history.
+- Notification privacy.
+- Real/Demo separation.
+- Existing FSD frontend architecture.
+- Historical Golden Frontend manifest.
+
+Do not:
+
+- Add workflow states to support visual changes.
+- Invent new approval procedures.
+- Remove actual backend validation.
+- Replace statistics with fabricated data.
+- Invent notifications.
+- Alter eligibility thresholds.
+- Weaken School/City authorization.
+- Connect or reset production databases.
+- Run unapproved migrations.
+- Deploy, push, merge or rebase automatically.
+
+Fix verified root causes, not only visible symptoms.
+
+---
+
+# 17. REQUIRED DELIVERABLES
+
+Create:
+
+`docs/lean/LEAN_UX_FEEDBACK_FIX_REPORT.md`
+
+Include:
+
+1. Initial baseline.
+2. Screenshot-to-defect mapping.
+3. Verified root cause of each issue.
+4. Components and routes changed.
+5. Column layout correction.
+6. Duplicate Add icon correction.
+7. Submission-success dialog implementation.
+8. Removed dashboard actions and their original destinations.
+9. School terminology changes.
+10. Forwarding navigation consolidation.
+11. Statistics routing fix.
+12. Notifications routing fix.
+13. Evidence control simplification.
+14. Collective contrast correction.
+15. Actual browser screenshots.
+16. Actual automated tests and commands.
+17. Demo vs Real verification.
+18. Remaining defects.
+19. Final verdict: PASS / PARTIAL / BLOCKED.
+
+Also create:
+
+`docs/lean/LEAN_UX_FEEDBACK_MANUAL_UAT.md`
+
+Write detailed testing steps in Vietnamese.
+
+Each test case must contain:
+
+- Test ID.
+- Screen.
+- Role.
+- Steps.
+- Expected result.
+- Actual result.
+- PASS/FAIL/BLOCKED.
+- Evidence screenshot.
+- Defect reference where applicable.
+
+---
+
+# 18. DEFINITION OF DONE
+
+This feedback correction is complete only when:
+
+- Student table headings and row content are properly aligned.
+- Add buttons display only one plus sign.
+- A centered green-check success dialog appears after confirmed dossier submission.
+- Failed submissions never show success.
+- Unnecessary School and City dashboard buttons are removed without losing functionality.
+- "Xét sơ tuyển" terminology is consistent.
+- The School forwarding workflow uses one clear menu destination.
+- Statistics displays actual appropriate statistics, not the review queue.
+- Notifications displays actual notification content, not the review queue.
+- Evidence controls are clear and nonduplicative.
+- Collective overview text is legible.
+- Responsive layouts work.
+- Existing valid role workflows are preserved.
+- Relevant tests have execution evidence.
+- No unauthorized official action or data modification occurs.
+
+## FINAL PRODUCT STANDARD
+
+**ONE USER TASK → ONE CLEAR SCREEN → ONE PRIMARY ACTION.**
+
+Do not create multiple navigation destinations for the same business operation.
+
+Do not use duplicate buttons to compensate for confusing navigation.
+
+Do not force users to understand internal workflow states.
+
+Do not present a green success message before the server confirms success.
+
+Do not sacrifice business correctness while simplifying the interface.
+
+## HARD STOP
+
+Implement the listed customer feedback fixes only.
+
+Do not initiate another full LEAN refactor.
+
+Do not deploy.
+
+Do not push or merge automatically.
+
+Finish with a source-backed report and actual test evidence.

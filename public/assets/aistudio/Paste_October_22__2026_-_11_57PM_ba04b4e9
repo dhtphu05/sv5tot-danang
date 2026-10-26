@@ -1,0 +1,1293 @@
+# 5TOT ĐÀ NẴNG — UX-S4
+## PREMIUM ADMINISTRATION WORKSPACE & EXTENSIBLE AWARD PROGRAM NAVIGATION
+
+**Priority:** P0 — Customer-Validated Product Experience
+**Phase:** UX-S4 — Administration, Configuration and Award Program Navigation
+**Execution:** AUDIT → DESIGN → IMPLEMENT → INTEGRATE → TEST → VERIFY
+**Frontend:** Existing React + Vite + Strict TypeScript + Feature-Sliced Design
+**Backend:** Existing Node.js + Express + Strict TypeScript + Prisma/PostgreSQL Modular Monolith
+**Design Direction:** Premium modern SaaS administration, expert-friendly workflows, precise permissions and responsible future extensibility.
+
+---
+
+# 1. MISSION
+
+The 5TOT Đà Nẵng system has completed or is implementing:
+
+- UX-S1 — UX and Information Architecture audit.
+- UX-S2 — Simplified criterion review workspace.
+- UX-S3 — Application lists, dashboards, statistics and Excel reporting.
+
+UX-S4 focuses on the ADMINISTRATION and PROGRAM NAVIGATION experience.
+
+The customer wants an intuitive, beautiful and professionally organized system that can support:
+
+1. The current Student 5-Good award program.
+2. Individual Student 5-Good applications.
+3. Collective Student 5-Good applications.
+4. Award seasons.
+5. Applicable criterion sets and regulatory versions.
+6. Participating institutions and review units.
+7. User accounts and permissions.
+8. Operational system settings.
+9. Authorized audit information.
+10. Future student award programs when separately approved.
+
+Do not turn this into a new generic low-code award platform.
+
+Do not redesign the entire application shell unnecessarily.
+
+The goal is a cleaner, more coherent administration experience built on existing working source code and backend contracts.
+
+---
+
+# 2. CUSTOMER UX REQUIREMENT
+
+The customer appreciated the old system's clear navigation between different award categories.
+
+However, the old system's appearance is outdated.
+
+The new design must combine:
+
+- Simple, understandable navigation.
+- Modern premium visual quality.
+- Fast administrative operations.
+- Clear grouping of related functions.
+- Correct role-based visibility.
+- Consistent page layouts.
+- Reusable components.
+- Excellent responsiveness.
+- Real production API integration.
+
+Do NOT simplify by removing legitimate controls.
+
+Do NOT add unnecessary configuration layers merely to demonstrate extensibility.
+
+**SIMPLIFY THE USER EXPERIENCE WITHOUT REDUCING REAL FUNCTIONALITY.**
+
+---
+
+# 3. MANDATORY SOURCE AUDIT
+
+Before making changes, inspect the ACTUAL project source.
+
+Verify:
+
+- Current Git HEAD and working tree.
+- Current post-UX-S3 frontend.
+- UX-S1 Information Architecture documents, if present.
+- UX-S2 shared review workspace.
+- UX-S3 application lists and analytics.
+- Existing navigation and routing.
+- Existing Admin pages.
+- Existing City operational configuration pages.
+- Account and user management.
+- Institution administration.
+- School Review Units.
+- Award seasons.
+- Criterion sets and versions.
+- Application types.
+- Authorization and active-role handling.
+- Audit/history interfaces.
+- Current Demo personas and fixtures.
+- Demo/Real adapters.
+- Actual Backend V2 endpoints.
+- Golden Frontend baseline and subsequent approved changes.
+
+Do not assume earlier prompt descriptions equal completed source functionality.
+
+Classify each administrative feature as:
+
+- Existing and working.
+- Existing but difficult to use.
+- Partially implemented.
+- Demo-only.
+- Real API-integrated.
+- Missing backend capability.
+- Legacy/obsolete.
+- Requires customer approval.
+
+Identify the exact components and services affected.
+
+Create a recoverable source checkpoint.
+
+Do not overwrite the historical Golden Frontend manifest.
+
+---
+
+# 4. APPROVED BUSINESS MODEL — NON-NEGOTIABLE
+
+## Individual Student 5-Good
+
+Student application
+→ School preliminary review
+→ One consolidated School forwarding list with one official decision attachment
+→ One-time School-to-City forwarding
+→ City shared review
+→ Committee official decision.
+
+## University of Da Nang
+
+Eight configured member institutions:
+
+- DUT
+- DUE
+- UED
+- UFL
+- UTE
+- VKU
+- VNUK
+- SMP
+
+They share ONE School Review Unit:
+
+`unit-udn`
+
+The original Student institution must remain distinct.
+
+There is one shared School reviewer account under the approved current configuration.
+
+UDN sends ONE consolidated list with ONE common decision document per award season.
+
+Do not expose administrative controls that unintentionally divide UDN forwarding into eight separate batches.
+
+## City
+
+Authorized reviewers use one shared City review workspace.
+
+No mandatory Officer assignment.
+
+No separate staff workload allocation subsystem.
+
+No active ResolutionCase workflow.
+
+## Committee
+
+Authorized Committee accounts review actual recorded results and execute official decisions.
+
+No fictional meetings, hearings, voting or questioning system.
+
+## Collective
+
+Collective Student 5-Good uses TT01–TT04.
+
+Collective applications go directly to City.
+
+No in-system School preliminary forwarding for Collective applications.
+
+## AI
+
+AI remains optional and non-intrusive.
+
+AI does not execute official judgments, assignments, forwarding or Committee decisions.
+
+UX-S4 must preserve all of these constraints.
+
+---
+
+# 5. INFORMATION ARCHITECTURE — TWO CLEAR LEVELS
+
+Design the navigation around two distinct concepts.
+
+## LEVEL 1 — Award Program Context
+
+Represents the current award program being operated.
+
+For the current implementation:
+
+**Danh hiệu Sinh viên 5 tốt**
+
+Associated context:
+
+- Selected award season.
+- Application types.
+- Applicable review workflow.
+- Relevant reporting.
+
+Future programs may be added only when separately configured and implemented.
+
+## LEVEL 2 — Role-Specific Workspaces
+
+Examples:
+
+- Tổng quan.
+- Hồ sơ xét chọn.
+- Xét duyệt.
+- Kết quả xét chọn.
+- Thống kê & Báo cáo.
+- Quản trị chương trình.
+- Quản trị hệ thống.
+
+Only display authorized and relevant entries.
+
+Do not make every role see every workspace.
+
+Do not create an unrelated global navigation hierarchy that breaks existing routes.
+
+---
+
+# 6. PROGRAM SELECTOR — READY FOR FUTURE EXTENSION
+
+Design one coherent Award Program selector if the existing architecture has or can safely support explicit program context.
+
+Suggested UI:
+
+**Chương trình: Sinh viên 5 tốt**
+
+Display the current authorized program.
+
+Do not create fake functioning future award programs.
+
+If the system currently supports only Student 5-Good:
+
+- Show the existing program normally.
+- Do not add a dropdown filled with fictional programs.
+- A selector is optional until multiple genuine programs are configured.
+- Prepare a reusable presentation abstraction only where useful.
+
+When more than one real program exists later, the selector should allow switching context without duplicating the entire application shell.
+
+### Essential context behavior
+
+Changing the program context must not silently mix:
+
+- Applications.
+- Criteria.
+- Seasons.
+- Statistics.
+- Permissions.
+- Official results.
+
+If the current backend does not support program-level isolation, do not pretend frontend state alone creates it.
+
+Report any missing architectural capability.
+
+Do not build a new generic award workflow engine in this phase.
+
+---
+
+# 7. AWARD SEASON MANAGEMENT
+
+Create or improve an administration screen for award seasons.
+
+Use actual existing `seasons` functionality.
+
+## Main list
+
+Show:
+
+- Season name.
+- Academic year.
+- Relevant application deadlines.
+- School review/forwarding periods where supported.
+- City review periods where supported.
+- Current season status.
+- Relevant actions.
+
+Use only actual canonical lifecycle states.
+
+## Season detail
+
+Provide a clear structured form for existing authorized:
+
+- Season metadata.
+- Applicable dates.
+- Intake configuration.
+- Relevant review periods.
+- Criteria version reference.
+- Current activation state.
+
+Do not invent new deadlines or business lifecycle stages.
+
+### Important
+
+Award seasons may already contain submitted applications and recorded decisions.
+
+Do not permit changing a season's applicable criteria or rules in a way that silently rewrites historical assessments.
+
+High-impact changes must respect the actual backend validation and audit controls.
+
+## UX requirements
+
+- Clean list.
+- Compact search/filter controls.
+- Clear active-season indication.
+- Easy-to-understand edit form.
+- Helpful validation.
+- Safe confirmation for high-impact mutations.
+- No unnecessary nested dialogs.
+
+---
+
+# 8. CRITERIA AND REGULATION MANAGEMENT
+
+The system has structured Individual and Collective criteria.
+
+## Individual
+
+- Đạo đức tốt.
+- Học tập tốt.
+- Thể lực tốt.
+- Tình nguyện tốt.
+- Hội nhập tốt.
+
+## Collective
+
+- TT01.
+- TT02.
+- TT03.
+- TT04.
+
+Design a professional criterion administration interface around the ACTUAL existing data model.
+
+Do not replace structured criterion rules with arbitrary unvalidated free text.
+
+Preserve:
+
+- Criterion identity.
+- Requirement groups.
+- Requirement structure.
+- Mandatory/optional rules.
+- ONE_OF/ALL_OF semantics.
+- Evidence requirements.
+- Applicable season.
+- Regulation version.
+- Existing declaration mapping.
+
+### UX
+
+Prefer a clear hierarchy:
+
+Criterion
+→ Requirement group
+→ Requirement
+→ Allowed declaration/evidence structure.
+
+Use understandable expansion and structured editing.
+
+Do not expose internal JSON configuration as the normal interface unless the system genuinely requires technical editing.
+
+### Important
+
+Do not automatically make all criteria freely editable.
+
+Inspect current administrative permissions and change restrictions.
+
+Existing submitted applications must continue to use their correct applicable policy version.
+
+Do not silently update old applications when a criterion is changed for a future season.
+
+If criteria editing is not currently supported safely by the backend, provide a clear read-only management view and report the mutation capability as blocked.
+
+Do not fabricate persistence.
+
+---
+
+# 9. INSTITUTION MANAGEMENT
+
+Reuse actual `institutions` and `schoolReviewUnits` contracts.
+
+The administration UI must clearly distinguish:
+
+1. Original educational institution.
+2. School Review Unit.
+3. Organizational parent or shared review grouping.
+
+These are not interchangeable.
+
+## UDN example
+
+A DUT Student retains DUT as the original institution.
+
+That institution maps to:
+
+`unit-udn`
+
+for School preliminary review.
+
+The other seven UDN member institutions map to the same review unit.
+
+The UI must not imply that the shared School reviewer account makes all UDN institutions identical.
+
+### Suggested institution table
+
+Show:
+
+- Institution name.
+- Short code.
+- Parent relationship where available.
+- School Review Unit.
+- Participation status.
+- Authorized management action.
+
+Do not create eight duplicate UDN review units.
+
+Do not add another University of Da Nang intermediate review level.
+
+### Mapping safeguards
+
+Changing an institution-to-review-unit mapping may affect:
+
+- School review access.
+- Student application scope.
+- School forwarding batch membership.
+- Historical review data.
+
+Treat such mutations as high-impact and validate against active seasons, submitted applications and existing batches.
+
+Do not allow routine UI editing to break existing forwarding or authorization invariants.
+
+---
+
+# 10. USER ACCOUNTS & PERMISSIONS
+
+The customer no longer requires complex City Officer assignment or workload management.
+
+Therefore, redesign account administration for the remaining genuine needs.
+
+Support existing authorized operations such as:
+
+- View users.
+- Search users.
+- Filter by role.
+- Filter by authorized review unit/workspace.
+- Inspect account status.
+- Create or provision accounts where current backend supports it.
+- Manage supported role memberships.
+- Activate/deactivate accounts where permitted.
+- Inspect relevant access scope.
+- Review audit history.
+
+Do not invent or expose unsupported destructive account operations.
+
+## Role distinction
+
+Examples of genuine role responsibilities:
+
+### Student
+Own profile, application and supplementation.
+
+### School Officer
+Authorized School Review Unit and preliminary review.
+
+### City Reviewer
+Authorized shared City review workspace.
+
+### City Committee
+Authorized official decisions.
+
+### Administrator
+Technical/system management according to explicitly granted permissions.
+
+### Other operational roles
+Retain only their legitimate remaining responsibilities if they still exist.
+
+## Critical security
+
+Technical ADMIN authority must not automatically permit:
+
+- School forwarding.
+- City Officer assessments.
+- Committee official decisions.
+- Official result publication.
+
+Preserve canonical active-role and resource-level authorization.
+
+Do not offer a fake "Switch role" control that bypasses backend authorization in Real Mode.
+
+---
+
+# 11. SIMPLIFY LEGACY STAFF ADMINISTRATION
+
+Audit the old administration features for:
+
+- City Officer assignments.
+- Officer workload balancing.
+- Specialization-based distribution.
+- Reassignment queues.
+- ResolutionCase configuration.
+- Escalation rules.
+- Fictional meeting-related settings.
+
+These are no longer normal active user workflows.
+
+Remove obsolete navigation and controls from the new active UI where they no longer have a legitimate purpose.
+
+Do not delete historical data.
+
+Do not drop database tables without an explicit separate migration plan.
+
+If legacy endpoints remain for historical compatibility, ensure they cannot bypass the current approved business workflow.
+
+Do not invent replacement assignment or case-processing modules.
+
+---
+
+# 12. AUDIT AND OPERATIONAL HISTORY
+
+Provide a clean administrative audit view if actual backend functionality supports it.
+
+Useful information:
+
+- Event type.
+- Actor.
+- Role.
+- Authorized workspace/unit.
+- Related resource.
+- Timestamp.
+- Outcome.
+
+Important audited actions may include:
+
+- Season configuration changes.
+- Criteria version changes.
+- School forwarding.
+- Official decision changes.
+- Authorized account administration.
+- Relevant security events.
+
+Do not log or publicly display raw sensitive personal information unnecessarily.
+
+Do not make audit records editable.
+
+Use existing backend audit infrastructure.
+
+Avoid exposing internal secrets, tokens or private document contents.
+
+Do not fabricate historic events in Real Mode.
+
+---
+
+# 13. ADMIN INTERFACE — PREMIUM MODERN DESIGN
+
+Use the established Golden Frontend design system.
+
+### Overall experience
+
+Professional institutional SaaS.
+
+- Refined blue/white palette.
+- Elegant page headings.
+- Balanced whitespace.
+- Clear form organization.
+- Beautiful but compact tables.
+- Consistent buttons.
+- Accessible dialogs.
+- Subtle status colors.
+- Well-designed empty states.
+- Thoughtful error states.
+- Proper skeleton loading.
+
+### Admin tables
+
+Use readable columns and concise actions.
+
+Provide practical filters.
+
+Do not create excessively dense spreadsheet-style management pages.
+
+Avoid unnecessary action icons without labels or tooltips.
+
+### Forms
+
+Use labeled controls with contextual validation.
+
+Group related settings.
+
+For ordinary editing, avoid unnecessary multi-step wizard flows.
+
+For high-impact actions, provide clear confirmation.
+
+### Important
+
+Do not sacrifice functionality merely to make the page visually minimal.
+
+The UI must look and behave like a polished, production-oriented product.
+
+---
+
+# 14. REUSABLE ADMIN UI COMPONENTS
+
+Audit current reusable components.
+
+Where appropriate, reuse or refine:
+
+- PageHeader.
+- DataTable.
+- FilterToolbar.
+- SearchInput.
+- StatusIndicator.
+- EmptyState.
+- ConfirmationDialog.
+- FormSection.
+- DetailPanel.
+- DateField.
+- RoleSelector.
+- InstitutionSelector.
+- SeasonSelector.
+- PermissionGuard.
+
+Use actual existing component names and FSD conventions.
+
+Do not generate a duplicate parallel design system.
+
+Do not extract every tiny element into a new abstraction.
+
+Prefer useful shared components with demonstrated reuse.
+
+Avoid giant generic admin components with many unrelated conditional props.
+
+---
+
+# 15. FRONTEND / BACKEND INTEGRATION
+
+Inspect actual existing `/api/v2` contracts and permission guards.
+
+For each admin operation, establish:
+
+- Frontend component.
+- Actual backend route.
+- HTTP method.
+- Request schema.
+- Response schema.
+- Active-role permission.
+- Resource scope.
+- Current UI state.
+- Actual persistence behavior.
+
+Do not invent working Real Mode features where backend endpoints do not exist.
+
+### If a missing API is required
+
+Prefer a narrow addition within the existing backend module.
+
+Follow:
+
+Route → Controller → Service → Repository → Prisma.
+
+Preserve the existing Manual DI architecture.
+
+Enforce validation, permissions and audit.
+
+Do not create an independent admin backend.
+
+If a change requires a new domain model, significant schema migration or unapproved business configuration capability, document it as a dependency rather than silently implementing a generic system.
+
+---
+
+# 16. PRODUCTION CORRECTNESS
+
+Admin mutations can affect many Student applications.
+
+Prioritize correctness.
+
+Verify:
+
+- Canonical validation.
+- Server-side permission checks.
+- Database uniqueness where applicable.
+- Version/concurrency controls.
+- Safe failure behavior.
+- Auditability.
+- Historical data preservation.
+- No unauthorized bulk mutation.
+- No silent cross-season effects.
+
+Examples:
+
+Changing an institution mapping must not silently reassign historical submitted applications.
+
+Changing criteria must not silently re-evaluate official human judgments.
+
+Changing a user role must not automatically create unauthorized Committee authority.
+
+Closing a season must not ignore existing confirmed forwarding or decision states.
+
+Do not mark a mutation successful until the backend confirms it.
+
+---
+
+# 17. PERSONAL INFORMATION CONSISTENCY
+
+Preserve SRW-6.
+
+The Student personal profile and submitted application snapshot remain separate data concepts.
+
+Submitted dossier identity is displayed in one compact shared card.
+
+School, City and Committee see the same application-specific submitted snapshot, subject to appropriate permissions.
+
+Do not allow admin-side user edits to silently overwrite historical submitted identity records.
+
+Original UDN institution identity must remain intact.
+
+Do not introduce duplicate identity mappings in the admin feature.
+
+---
+
+# 18. MULTI-AWARD EXTENSIBILITY — WITHOUT PREMATURE GENERALIZATION
+
+The customer may later want to manage additional Student awards or recognition programs.
+
+Design the UI architecture to accommodate that future possibility.
+
+## Preferred direction
+
+Maintain a clear separation between:
+
+- Program identity.
+- Season.
+- Criteria version.
+- Application type.
+- Program-specific workflow.
+- Authorized reporting scope.
+
+Use existing domain types and configuration where available.
+
+### Critical scope boundary
+
+Do not:
+
+- Create fictional award programs.
+- Build arbitrary visual workflow designers.
+- Convert every business process into unvalidated JSON.
+- Rewrite the entire Prisma schema.
+- Replace specialized 5TOT logic with one universal award engine.
+- Make all programs inherit the Individual five-criterion review model.
+- Invent future award requirements.
+
+If additional programs are not yet backed by real approved business rules, keep them out of active operational navigation.
+
+Provide a concise future extensibility plan in the delivery report.
+
+The goal is to avoid navigation and component dead ends, not to build future products prematurely.
+
+---
+
+# 19. DEMO MODE
+
+Preserve deterministic Interactive Demo Mode.
+
+Implement coherent synthetic admin scenarios.
+
+### A01 — Admin overview
+
+Authorized Admin sees configuration sections.
+
+### A02 — Season list
+
+View available synthetic seasons and the active season.
+
+### A03 — Season detail
+
+Inspect the configured dates and status.
+
+### A04 — Authorized season edit
+
+Demo supports an actual permitted change with validation and state update.
+
+### A05 — Criteria inspection
+
+View existing Individual and Collective criterion structures.
+
+### A06 — Regulation version
+
+Inspect which criteria version applies to the synthetic season.
+
+### A07 — Institution list
+
+View participating institutions.
+
+### A08 — UDN mapping
+
+All eight configured UDN members correctly map to `unit-udn`.
+
+### A09 — Independent institution
+
+A non-UDN School Review Unit remains separate.
+
+### A10 — User directory
+
+Search and filter synthetic users.
+
+### A11 — Role visibility
+
+Only appropriate admin actions appear for each active Demo role.
+
+### A12 — Role security
+
+A technical Admin cannot perform Committee official decisions through the normal application interface.
+
+### A13 — High-impact configuration
+
+Unsupported mutations fail clearly rather than showing fake success.
+
+### A14 — Audit history
+
+Actual Demo state transitions produce coherent synthetic audit events where supported.
+
+### A15 — No legacy assignment
+
+No normal City Officer assignment or workload-management UI is required.
+
+### A16 — No ResolutionCase
+
+No active ambiguous-case processing configuration is reintroduced.
+
+### A17 — Program context
+
+The Student 5-Good program and season context remain consistent across navigation.
+
+### A18 — Demo reset
+
+Reset restores the original deterministic synthetic configuration.
+
+Do not claim all admin configuration is production-functional merely because Demo fixtures are interactive.
+
+---
+
+# 20. REAL MODE
+
+Real Mode must use actual authenticated Backend V2 services.
+
+No Demo fallback.
+
+No hardcoded fake season or institution records.
+
+No fake successful user creation.
+
+No fake criteria persistence.
+
+No fake audit events.
+
+No artificial AwardProgram configuration presented as real.
+
+When PostgreSQL is offline:
+
+- Show accurate unavailable/error states.
+- Do not fabricate persisted changes.
+- Keep safe read-only navigation where supported.
+- Report database integration as NOT VERIFIED.
+
+Do not reconnect Supabase or run migrations without authorization.
+
+---
+
+# 21. RESPONSIVE AND ACCESSIBILITY
+
+Verify at:
+
+- 320px.
+- 360px.
+- 390px.
+- 430px.
+- 768px.
+- 1024px.
+- 1280px.
+- 1440px.
+- 1660px.
+- 1920px.
+
+### Desktop
+
+- Clear admin navigation.
+- Balanced form/card layouts.
+- Readable tables.
+- Appropriate utilization of content width.
+- No excessive blank space.
+
+### Tablet
+
+- Adaptive tables and panels.
+- Practical filter arrangements.
+- No tiny multicolumn forms.
+- No clipped admin controls.
+
+### Mobile
+
+- Stack forms.
+- Use accessible navigation.
+- Avoid compressed tables.
+- Keep Save and Cancel controls reachable.
+- Use safe modal/sheet patterns.
+- No page-level horizontal overflow.
+
+### Also verify
+
+- Keyboard accessibility.
+- Visible focus states.
+- Modal focus restoration.
+- Long institution names.
+- Long role labels.
+- Long season names.
+- Confirmation dialogs.
+- Validation errors.
+- Tooltip usability.
+- No floating Demo/AI widget collisions.
+
+Responsive layout must reflect actual available content width.
+
+Do not mask defects with global overflow-x hidden.
+
+---
+
+# 22. SECURITY TESTS
+
+Implement or update tests for:
+
+- Unauthorized admin route access.
+- Inactive-role privilege escalation.
+- Cross-unit institution administration.
+- Unauthorized criteria mutation.
+- Unauthorized season mutation.
+- Unauthorized user role changes.
+- Technical ADMIN attempting Committee decision.
+- Student attempting admin operations.
+- Sensitive profile access.
+- Invalid user IDs.
+- Stale concurrent configuration edits.
+- Historical submitted-data preservation.
+- Private document access restrictions.
+
+The UI permission model must match actual backend checks.
+
+Hidden buttons do not constitute security.
+
+---
+
+# 23. ACCEPTANCE TEST MATRIX
+
+### UX4-01
+Authorized admin navigation displays correct sections.
+
+### UX4-02
+Unauthorized roles cannot enter protected admin workspaces.
+
+### UX4-03
+Program and season context remain consistent during navigation.
+
+### UX4-04
+Season list displays real canonical states.
+
+### UX4-05
+Authorized season changes validate and persist where supported.
+
+### UX4-06
+Historical submitted applications remain unchanged after permitted configuration edits.
+
+### UX4-07
+Individual criterion hierarchy is correctly displayed.
+
+### UX4-08
+Collective TT01–TT04 criteria remain separate.
+
+### UX4-09
+ONE_OF/ALL_OF semantics are preserved.
+
+### UX4-10
+Policy version applicability remains correct by season.
+
+### UX4-11
+Eight UDN institutions map to one School Review Unit.
+
+### UX4-12
+Original member institution identities remain distinct.
+
+### UX4-13
+Institution changes cannot bypass forwarding invariants.
+
+### UX4-14
+User list and filters work.
+
+### UX4-15
+Account role operations respect actual authorization.
+
+### UX4-16
+Technical ADMIN cannot perform official Committee decisions by default.
+
+### UX4-17
+Obsolete City assignment administration is not required.
+
+### UX4-18
+ResolutionCase configuration is not reintroduced.
+
+### UX4-19
+Audit history is accurate and read-only.
+
+### UX4-20
+Real Mode uses only actual backend records.
+
+### UX4-21
+Demo reset restores deterministic state.
+
+### UX4-22
+Mobile admin forms remain usable.
+
+### UX4-23
+Tablet and desktop tables remain readable.
+
+### UX4-24
+Existing UX-S2 review workspace is not regressed.
+
+### UX4-25
+Existing UX-S3 dashboard, filters and exports are not regressed.
+
+### UX4-26
+The administration UI remains premium, consistent and visually polished.
+
+For every test, report PASS / FAIL / BLOCKED / NOT VERIFIED based on actual execution evidence.
+
+---
+
+# 24. IMPLEMENTATION CHECKPOINTS
+
+## UX-S4A — Audit and Admin UX Contract
+
+Produce:
+
+- Current admin source inventory.
+- Actual backend API mapping.
+- Permission matrix.
+- Current/target navigation.
+- Component reuse strategy.
+- UX issues and proposed fixes.
+- Source checkpoint.
+
+## UX-S4B — Administration Navigation
+
+Implement:
+
+- Clean section structure.
+- Correct role-based visibility.
+- Program/season context.
+- Responsive admin navigation.
+- No obsolete staff allocation menus.
+
+## UX-S4C — Season and Criteria Management
+
+Implement or refine authorized:
+
+- Season list/detail.
+- Criteria list/detail.
+- Rule/version presentation.
+- Supported safe edit operations.
+- Correct backend integration.
+
+Do not fabricate unsupported writes.
+
+## UX-S4D — Institutions and Users
+
+Implement:
+
+- Institution directory.
+- UDN shared review-unit presentation.
+- User directory.
+- Actual supported role/account actions.
+- Appropriate authorization and confirmations.
+
+## UX-S4E — Audit and Operational Configuration
+
+Improve existing legitimate:
+
+- Audit/history view.
+- Relevant system configuration.
+- Error/empty/loading states.
+- Permission-scoped actions.
+
+No legacy ResolutionCase or staff workload subsystem.
+
+## UX-S4F — Visual and Functional Hardening
+
+Verify:
+
+- Premium design.
+- Consistent navigation.
+- Role permissions.
+- Responsive layouts.
+- Demo/Real separation.
+- Integration with existing backend.
+- Student, School, City and Committee regressions.
+
+Stop at the end of UX-S4.
+
+---
+
+# 25. GOLDEN FRONTEND PROTECTION
+
+Preserve the current frontend baseline and historical Golden Frontend manifest.
+
+Before editing:
+
+- Record Git HEAD.
+- Inspect uncommitted changes.
+- Create a recoverable checkpoint.
+- Identify intended modifications.
+
+During implementation:
+
+- Respect FSD boundaries.
+- Preserve UX-S2.
+- Preserve UX-S3.
+- Preserve SRW-6 profile snapshot presentation.
+- Preserve legitimate Student functions.
+- Preserve School one-time forwarding.
+- Preserve City shared review.
+- Preserve Committee final authority.
+- Preserve Collective TT01–TT04.
+
+After implementation:
+
+- List exact modified files.
+- Verify unrelated source integrity.
+- Run appropriate regression tests.
+- Do not silently update the historical manifest.
+
+---
+
+# 26. QUALITY GATES
+
+Run actual available:
+
+- Frontend TypeScript.
+- Frontend production build.
+- Frontend tests.
+- FSD boundary checks.
+- Circular dependency checks.
+- Admin interaction tests.
+- Authorization tests.
+- Existing UX-S2 regression.
+- Existing UX-S3 regression.
+- Demo/Real isolation tests.
+- Browser responsive checks.
+
+If backend code is modified:
+
+- Backend TypeScript.
+- Backend production build.
+- ESLint.
+- Relevant HTTP/unit tests.
+- DI integration checks.
+
+If PostgreSQL remains offline, report actual database verification as NOT VERIFIED.
+
+Capture actual browser screenshots for:
+
+- Admin navigation at 1440px.
+- Season management at 1440px.
+- Criteria view at 1440px.
+- Institution management at 1440px.
+- User management at 1440px.
+- Admin form at 390px.
+- Admin table/cards at 768px.
+- Program/season context at 1024px.
+
+Do not invent screenshots or passing test results.
+
+---
+
+# 27. REQUIRED FINAL REPORT
+
+Provide:
+
+A. Verified current source baseline.
+
+B. Existing admin functionality audit.
+
+C. Updated information architecture.
+
+D. Program/season navigation implementation.
+
+E. Role-based admin navigation.
+
+F. Season management.
+
+G. Criteria and regulation version management.
+
+H. Institution and UDN Review Unit management.
+
+I. User accounts and permissions.
+
+J. Audit and operational history.
+
+K. Removed obsolete administration UI.
+
+L. Reused frontend components.
+
+M. Exact Backend V2 contracts used.
+
+N. Any missing production APIs.
+
+O. Admin security and authorization results.
+
+P. Demo test matrix.
+
+Q. Real Mode status.
+
+R. Responsive screenshots and visual QA.
+
+S. Accessibility results.
+
+T. Exact new/modified files.
+
+U. Golden Frontend preservation.
+
+V. UX-S2/UX-S3 regression results.
+
+W. Future multi-award extensibility recommendations.
+
+X. Outstanding blockers.
+
+Y. Final status: PASS / PARTIAL / BLOCKED.
+
+Do not report PASS solely because the administration screens look attractive.
+
+Do not report Real Mode PASS if admin mutations have not been validated against an authorized database.
+
+---
+
+# 28. HARD STOP
+
+STOP after UX-S4.
+
+Do not automatically start UX-S5.
+
+Do not:
+
+- Rebuild the application shell.
+- Replace the existing design system.
+- Introduce a generic workflow-builder platform.
+- Invent operational future award programs.
+- Rewrite all Prisma models.
+- Replace Modular Monolith with microservices.
+- Install a new DI framework without need.
+- Restore City Officer assignment.
+- Restore ResolutionCase.
+- Add fictional Committee meetings.
+- Change UDN one-time forwarding.
+- Alter official recognition permissions.
+- Reconnect Supabase.
+- Apply live database migrations.
+- Deploy.
+- Rewrite Golden Frontend Manifest.
+
+## FINAL PRODUCT NORTH STAR
+
+**ONE COHERENT ADMINISTRATION EXPERIENCE. CLEAR PROGRAM AND SEASON CONTEXT. SIMPLE CONFIGURATION. STRONG SECURITY. FUTURE-READY NAVIGATION.**
+
+The 5TOT platform should allow authorized staff to understand and manage:
+
+- The current selection program.
+- Its award seasons.
+- Its approved criteria and regulations.
+- Participating institutions.
+- School Review Units.
+- Legitimate accounts and permissions.
+- Relevant operational history.
+
+The administration interface must be beautiful, modern and highly usable.
+
+The business model remains simple.
+
+Future awards can be accommodated through deliberate reuse and incremental extension, without premature generic architecture.
+
+**SUCCESS = A PREMIUM, PRODUCTION-ORIENTED ADMINISTRATION WORKSPACE THAT IS EASY TO OPERATE TODAY AND READY TO EVOLVE TOMORROW.**

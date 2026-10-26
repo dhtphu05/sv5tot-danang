@@ -1,0 +1,8 @@
+{
+  "name": "@5tot/contracts",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts"
+}

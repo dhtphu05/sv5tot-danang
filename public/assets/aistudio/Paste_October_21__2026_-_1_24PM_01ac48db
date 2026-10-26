@@ -1,0 +1,1302 @@
+# 5TOT ĐÀ NẴNG — SIMPLIFIED REVIEW WORKFLOW REFACTOR V2
+## SHARED STUDENT DOSSIER UI + ONE-TIME SCHOOL BATCH FORWARDING + SIMPLIFIED CITY/COMMITTEE REVIEW
+
+**Priority:** P0 — Customer-Validated Business Workflow Refactor  
+**Task:** AUDIT → DESIGN CONTRACT → IMPLEMENT → TEST → VERIFY  
+**Product:** 5TOT Đà Nẵng  
+**Frontend:** Existing React + Vite + Strict TypeScript + Feature-Sliced Design  
+**Backend:** Existing Node.js + Express + Strict TypeScript + Prisma/PostgreSQL Modular Monolith  
+**Current database state:** Offline development mode  
+**Primary goal:** Align the product with actual customer-validated operational practices without losing working functionality.
+
+---
+
+# 1. CRITICAL CUSTOMER FEEDBACK
+
+Following a real customer demonstration, three major product changes have been approved.
+
+## CHANGE 1 — Reuse the Student dossier interface
+
+The reviewer should inspect the SAME dossier presentation that the Student uses.
+
+Do not maintain two independently designed dossier interfaces.
+
+Create a reusable dossier presentation foundation that supports different role-based capabilities.
+
+## CHANGE 2 — Forward the School's selected application list ONE TIME
+
+At School level, reviewers perform preliminary assessment as usual.
+
+After the School finishes preparing its selected applications, it must:
+
+1. Review the complete selected list.
+2. Attach the official School decision document.
+3. Confirm the batch.
+4. Forward the entire selected list to City exactly once per authorized School Review Unit and award season.
+
+For the University of Da Nang, ONE shared forwarding batch covers ALL eight configured member institutions.
+
+## CHANGE 3 — Simplify internal City and Committee review
+
+The customer does not want complex ambiguous-case workflows, separate Resolution Hub processing, artificial escalation steps, or fictional Committee meeting workflows.
+
+Keep the real review functions.
+
+Remove unnecessary workflow complexity.
+
+The outcome must be a more intuitive, faster, calmer application for experienced reviewers.
+
+---
+
+# 2. IMPORTANT: USE THE LATEST APPROVED BUSINESS RULES
+
+Earlier project documents and backend plans may contain obsolete features, including:
+
+- Multi-level cascade reviews.
+- Resolution Hub.
+- ResolutionCase states.
+- Separate escalation workflows.
+- Older organizational hierarchies.
+- Legacy Committee case-processing screens.
+
+Treat these as historical implementation context, not automatically authoritative current requirements.
+
+The following customer-validated rules supersede conflicting older plans:
+
+- Two administrative review levels: School and City.
+- University of Da Nang shared School Review Unit.
+- One-time School list forwarding.
+- One common decision document for the UDN batch.
+- Simplified City Officer and Committee processing.
+- Human-controlled official decisions.
+
+Do not silently retain obsolete workflows merely because they already exist in code.
+
+However, do not destructively delete historical database records, audit information, or required review functions.
+
+---
+
+# 3. PHASE SRW-0 — REAL SOURCE AUDIT AND CONTRACT FREEZE
+
+Before writing implementation code, inspect BOTH repositories and their actual current state.
+
+Audit:
+
+### Frontend
+
+- Student application detail and declaration components.
+- Student five-criterion layout.
+- Evidence cards and viewers.
+- Student supplement mode.
+- School preliminary reviewer pages.
+- School reviewer queues.
+- School forwarding actions.
+- City Officer review workspace.
+- City Committee application list.
+- Committee application detail.
+- Collective application review.
+- Existing AI integration.
+- Existing Demo Store.
+- Execution-mode adapters.
+- Shared UI primitives and responsive layout.
+
+### Backend
+
+- Actual Prisma schema and applied migrations.
+- School Review Unit model.
+- UDN institution mappings.
+- School assessment services.
+- Application state transitions.
+- Current School-to-City forwarding implementation.
+- City intake and assignments.
+- City Officer review.
+- Supplement workflow.
+- Committee decisions and finalization.
+- ResolutionCase and related legacy dependencies.
+- Evidence/file storage contracts.
+- JWT/RBAC/ABAC.
+- Audit and transactional outbox.
+- Existing tests.
+
+Produce:
+
+1. Current-state workflow diagram.
+2. Approved target workflow diagram.
+3. Existing-to-target state transition mapping.
+4. API/DTO change matrix.
+5. Prisma migration impact assessment.
+6. Frontend component reuse strategy.
+7. Legacy feature retirement matrix.
+8. Authorization impact matrix.
+9. Data preservation and rollback plan.
+10. Execution plan with ordered checkpoints.
+
+Do not assume a previously mentioned source file exists; inspect the actual repository.
+
+Stop and report BLOCKED if an essential existing workflow or data relationship cannot be determined safely.
+
+---
+
+# 4. NON-NEGOTIABLE UDN SHARED REVIEW CONFIGURATION
+
+The University of Da Nang has eight member institutions configured for the platform:
+
+- DUT.
+- DUE.
+- UED.
+- UFL.
+- UTE.
+- VKU.
+- VNUK.
+- SMP.
+
+Each institution must preserve its own canonical identity.
+
+A student's institution MUST remain the specific member institution.
+
+However, all eight institutions share:
+
+- ONE School Review Unit: `unit-udn`.
+- ONE authorized shared School reviewer account.
+- ONE common forwarding list per award season.
+- ONE common School decision document for that forwarding batch.
+- ONE successful forwarding operation per award season.
+
+Example:
+
+DUT applications + DUE applications + UED applications + UFL applications + UTE applications + VKU applications + VNUK applications + SMP applications
+
+→ Shared UDN School Review Unit
+
+→ One consolidated selected list
+
+→ One common decision attachment
+
+→ One forwarding confirmation
+
+→ City intake.
+
+Do NOT:
+
+- Create eight separate School Reviewer accounts.
+- Create eight separate forwarding batches.
+- Replace individual institution IDs with the UDN parent institution.
+- Add a University of Da Nang intermediate review level.
+- Require independent member-school decisions inside this workflow.
+
+Preserve filtering by original member institution for user convenience.
+
+Independent non-UDN institutions use their own School Review Unit and their own one-time seasonal batch.
+
+---
+
+# 5. TARGET END-TO-END INDIVIDUAL REVIEW WORKFLOW
+
+The approved workflow is:
+
+Student prepares application
+→ Student submits application
+→ School preliminary assessment
+→ School chooses recommended applications
+→ School prepares consolidated selected list
+→ School attaches official decision document
+→ School confirms and forwards ONE batch
+→ City receives selected applications
+→ City Manager performs authorized intake/assignment
+→ Assigned City Officers independently assess
+→ Committee performs authorized official decision
+→ Final result follows existing publication controls.
+
+Preserve the existing scoped supplementation process where applicable.
+
+Student applications must not be blocked solely because advisory eligibility or evidence-readiness warnings are unresolved.
+
+Preserve structural submission requirements, authorization and actual season deadlines.
+
+Do not add a new City processing level.
+
+Do not add a mandatory meeting, hearing, questioning session or voting system.
+
+---
+
+# 6. PHASE SRW-1 — REAL SCHOOL BATCH FORWARDING BACKEND
+
+Implement an actual production-ready School-to-City batch-forwarding workflow inside the current Modular Monolith.
+
+This is a REAL backend implementation task.
+
+Not a DTO-only or repository-stub exercise.
+
+## 6.1 Batch aggregate
+
+First inspect whether a suitable existing batch aggregate already exists.
+
+If yes, extend it carefully.
+
+If not, design a cohesive `SchoolForwardingBatch` or equivalently named aggregate.
+
+Suggested conceptual fields:
+
+- ID.
+- Award season ID.
+- School Review Unit ID.
+- Preparation status.
+- Submitted/forwarded status.
+- Decision file ID.
+- Decision metadata.
+- Submitted by user ID.
+- Submitted timestamp.
+- Version.
+- Created/updated timestamps.
+
+Maintain a relation between the batch and its exact selected Individual applications.
+
+Each forwarded application retains:
+
+- Student identity.
+- Original institution ID.
+- School reviewer unit.
+- School assessment result.
+- Source application ID.
+- Current City workflow identity.
+
+Do not create duplicate applications for City.
+
+## 6.2 Draft versus final forwarding
+
+Allow the authorized School reviewer to:
+
+- Prepare the batch.
+- Review available recommendations.
+- Add eligible selected applications.
+- Remove selected applications before submission.
+- Filter by institution.
+- View selected counts.
+- Attach or replace the common decision document before final confirmation.
+
+This is preparation, NOT multiple transfers.
+
+After successful final confirmation:
+
+- The batch becomes immutable through the normal School interface.
+- Its selected application list is locked.
+- Its official decision attachment is locked.
+- Another batch must not be forwarded for the same unit and season.
+- Duplicate API calls must not create duplicate City intake records.
+
+Do not offer a normal second forwarding operation.
+
+An exceptional administrative correction, if genuinely required later, must be separately authorized, audited and explicitly specified. Do not implement an unrestricted reopen feature now.
+
+## 6.3 Selection validation
+
+Before forwarding, validate:
+
+- Correct authorized School Review Unit.
+- Correct award season.
+- Correct Individual application type.
+- All selected applications belong to the same School Review Unit.
+- UDN applications may belong to any of the eight configured member institutions.
+- No non-UDN application appears in the UDN batch.
+- No application is already forwarded through another batch.
+- Selected applications have the School recommendation state required by the approved workflow.
+- No selected application has an unresolved active supplementation step that makes its School assessment incomplete.
+- Selection is nonempty.
+- A valid common decision document is attached.
+- The season's forwarding window permits submission.
+
+Present pending or unselected applications explicitly before final confirmation.
+
+Do not silently include all submitted applications if only selected/recommended applications should be forwarded.
+
+The final batch should be consistent with the completed School selection.
+
+## 6.4 Complete-list review
+
+Design a pre-forwarding validation summary showing:
+
+- Total applications in School scope.
+- Reviewed applications.
+- Selected applications.
+- Not-selected applications.
+- Applications with outstanding actions.
+- Breakdown by original institution.
+- Number of selected applications included in the final batch.
+- Common decision attachment.
+
+Use actual database records.
+
+Avoid misleading counts from temporary frontend state.
+
+If a material pending application is not resolved or deliberately excluded according to the approved process, do not silently finalize an incomplete list.
+
+Use clear validation or an explicit authorized confirmation policy grounded in current requirements.
+
+## 6.5 Mandatory decision document
+
+The batch requires ONE primary official decision attachment.
+
+Implement:
+
+- Existing private file storage integration where available.
+- File type and actual content validation.
+- Size validation using established system policy.
+- Secure access control.
+- Upload metadata.
+- Immutable reference at finalization.
+- Audit trail.
+- File download/preview for authorized City users.
+
+Prefer signed PDF documents when supported by existing file policy.
+
+Do not expose private evidence or decision documents through public URLs.
+
+Do not send the document to an external AI provider during this phase.
+
+Do not claim storage is working in Real Mode if the storage adapter is not actually available.
+
+## 6.6 Exactly-once forwarding semantics
+
+Enforce uniqueness at the database level for:
+
+`schoolReviewUnitId + awardSeasonId + normal forwarding batch scope`.
+
+Implement:
+
+- Idempotency key.
+- Transactional finalization.
+- Appropriate row locking or optimistic version checks.
+- Unique constraints.
+- Atomic batch/application status transitions.
+- Atomic creation of required City intake records.
+- Transactional audit and outbox events.
+
+If the request is retried with the same idempotency key, return the original completed result.
+
+If a different request attempts a second forwarding, return an explicit business conflict.
+
+Handle concurrent submissions by two active sessions safely.
+
+Avoid partial forwardings.
+
+The City should never receive half of a confirmed batch.
+
+## 6.7 API design
+
+Reuse existing API conventions under `/api/v2`.
+
+Suggested conceptual operations:
+
+- GET School forwarding batch for unit and season.
+- GET eligible applications and selection summary.
+- Create/get batch draft.
+- Update selected application IDs before forwarding.
+- Attach/replace decision document before forwarding.
+- Validate batch.
+- Confirm final batch forwarding.
+- GET forwarded batch detail.
+- GET City incoming batches.
+- GET City batch detail and decision attachment.
+
+Inspect existing endpoints before creating new ones.
+
+Do not expose duplicate legacy and V2 flows that can both forward applications independently.
+
+Use thin route → controller → service → repository/Prisma layering.
+
+All important transitions require authorization, validation, transaction and audit.
+
+---
+
+# 7. PHASE SRW-2 — REUSE STUDENT DOSSIER COMPONENTS
+
+The customer explicitly requested that reviewers use the same dossier presentation as Students.
+
+## 7.1 The correct architecture
+
+Do not copy entire Student pages into staff screens.
+
+Extract or reuse a common presentation layer compatible with the existing FSD boundaries.
+
+Suggested conceptual view modes:
+
+- STUDENT_EDIT.
+- STUDENT_SUBMITTED_READONLY.
+- SCHOOL_REVIEW.
+- CITY_OFFICER_REVIEW.
+- COMMITTEE_READONLY_OR_DECISION.
+
+Use the actual existing project conventions.
+
+Do not create a new competing dossier UI architecture.
+
+## 7.2 Shared dossier presentation
+
+Reuse:
+
+- Student profile header.
+- Five-criterion navigation.
+- Requirement groups.
+- Declaration cards.
+- Evidence cards.
+- Evidence preview.
+- Regulations.
+- Existing declaration organization.
+- Existing source navigation.
+
+Reviewers must see the Student's submitted values as submitted, without unauthorized editing.
+
+## 7.3 Staff actions
+
+Add a restrained reviewer-specific action area.
+
+School Officer:
+
+- Inspect.
+- Record preliminary assessment.
+- Add authorized comments.
+- Request scoped supplementation.
+- Include/exclude an application from final recommended list where allowed.
+
+City Officer:
+
+- Inspect assigned case.
+- Record authorized criterion/evidence judgments.
+- Request supplementation.
+- Complete authorized review actions.
+
+Committee:
+
+- Inspect submitted dossier.
+- Inspect School recommendation and City assessment.
+- View decision-supporting evidence and audit history.
+- Execute only its existing authorized final decision actions.
+
+Do not replace Student actions with Staff actions using fragile DOM or CSS manipulation.
+
+Use typed capabilities and actual server authorization.
+
+## 7.4 Preserve Student functions
+
+Ensure the Student still can:
+
+- Create/edit draft.
+- Add multiple declarations.
+- Add multiple evidence items.
+- Use ONE_OF/ALL_OF declarations correctly.
+- Save draft.
+- Submit.
+- Respond to authorized supplement requests.
+- View readonly submitted information.
+
+This refactor must not destroy the Golden Student UX.
+
+---
+
+# 8. PHASE SRW-3 — NEW SCHOOL FORWARDING UI
+
+Add one obvious workflow entry to the existing School reviewer interface:
+
+**"Chốt danh sách chuyển Thành phố"**
+
+Do not put forwarding controls in every dossier card.
+
+## 8.1 Main School list
+
+Show:
+
+- Applications requiring review.
+- Reviewed applications.
+- Recommended applications.
+- Applications awaiting supplementation.
+- Already forwarded state.
+
+Make statuses concise.
+
+Allow filtering by member institution within the shared UDN unit.
+
+## 8.2 Batch preparation
+
+Implement a clean, focused screen or side panel with:
+
+- Season.
+- School Review Unit.
+- Selected application count.
+- Breakdown by institution.
+- Selected candidate list.
+- Review completion summary.
+- Outstanding validation issues.
+- Common decision attachment.
+
+The reviewer may review and edit the batch before submitting.
+
+## 8.3 Final confirmation
+
+Before the final action, display:
+
+"Bạn sắp chuyển [actual count] hồ sơ thuộc [actual School Review Unit] lên cấp Thành phố cho mùa xét [actual season]."
+
+Display the attached decision document.
+
+Explain:
+
+"Thao tác chuyển danh sách chỉ được thực hiện một lần. Sau khi xác nhận, danh sách và quyết định sẽ được khóa."
+
+Require explicit confirmation.
+
+Do not use two or three confusing nested confirmation dialogs.
+
+## 8.4 Post-forwarding state
+
+Show:
+
+- "Đã chuyển Thành phố".
+- Forwarding date.
+- Number of applications.
+- Institution breakdown.
+- Common decision file.
+- Submitted-by account.
+- Batch ID.
+- City intake status if recorded.
+
+The final Forward button must not remain available.
+
+Allow authorized users to view the submitted information.
+
+Do not fabricate a City acknowledgment if City has not actually recorded one.
+
+## 8.5 UDN-specific behavior
+
+The shared UDN account must view ONE common batch.
+
+Filtering to DUT/DUE/etc. must never create a separate batch.
+
+After a batch is forwarded, changing the institution filter must not expose an additional forwarding action.
+
+The batch decision document belongs to the shared UDN batch.
+
+---
+
+# 9. PHASE SRW-4 — SIMPLIFY CITY OFFICER AND COMMITTEE
+
+Remove unnecessary resolution-case complexity from the active workflow.
+
+## 9.1 City Officer
+
+Keep the actual assigned review workflow.
+
+The Officer should:
+
+- Open the assigned application.
+- Inspect the original Student dossier.
+- Review criteria and evidence.
+- Record authorized human judgments.
+- Request supplementation if necessary.
+- Complete assigned review work.
+
+Do not require creating a ResolutionCase.
+
+Do not require escalating an ambiguous case to a separate portal.
+
+If evidence is uncertain, the Officer can use the existing valid human judgment/supplementation process.
+
+## 9.2 City Committee
+
+The Committee should:
+
+- See authorized applications.
+- See the School forwarding batch and attached decision.
+- See actual School preliminary assessments.
+- See actual City Officer assessments.
+- See current evidence.
+- See processing history.
+- Record authorized final decisions.
+
+No separate ambiguous-case review queue.
+
+No fictional meeting workflow.
+
+No mandatory explanation hearing.
+
+No automatic Committee decision by AI.
+
+## 9.3 Remove redundant UI
+
+Audit and retire obsolete UI elements such as:
+
+- Resolution Hub.
+- Escalate case.
+- Ambiguous case queue.
+- Resolution classification.
+- Unnecessary intermediate processing panels.
+- Duplicate review summary modals.
+- Unsupported Committee meeting or interrogation functions.
+
+Retain audit history and genuine supplementation functionality.
+
+Do not indiscriminately delete stored ResolutionCase records.
+
+Historical resolution information may remain accessible in an appropriate read-only history view when necessary.
+
+## 9.4 Legacy backend safety
+
+Identify all dependencies on legacy ResolutionCase status before changing code.
+
+No new ResolutionCase should be created in the simplified workflow.
+
+Existing unresolved legacy records require an explicit compatibility or administrative migration plan.
+
+Do not silently transform all legacy cases into approved, rejected or completed states.
+
+No database history deletion.
+
+No unaudited status rewrite.
+
+## 9.5 Preserve assignment
+
+The removal of Resolution Hub does not mean removing the City Manager's actual intake and assignment function.
+
+Keep assignment and reviewer scope if they are part of the approved real process.
+
+Do not grant City Officers unrestricted access to all applications.
+
+---
+
+# 10. AI ADJUSTMENT — EXPERT-FIRST, QUIET, OPTIONAL
+
+The current AI system has:
+
+- Preliminary verdicts.
+- Criterion findings.
+- Evidence comparison.
+- Conversational reporting.
+- Guided Review.
+- Committee intelligence.
+- Dashboard concepts.
+
+Preserve valuable AI capabilities.
+
+But simplify their presentation.
+
+## Default behavior
+
+- No auto-opening AI modals.
+- No mandatory Guided Review.
+- No flashing AI indicators.
+- No repetitive AI cards.
+- No large AI panel on every declaration.
+- No AI-generated official judgments.
+
+Show one compact optional entry:
+
+"AI hỗ trợ rà soát"
+
+When requested, offer:
+
+- Preliminary PASS / NOT PASS / INSUFFICIENT assessment.
+- Decisive evidence links.
+- Short conversational report.
+- Next useful verification action.
+- Editable note/supplement draft where authorized.
+
+Committee AI may summarize actual workload and recorded results.
+
+Do not make AI drive a fictional ResolutionCase or formal meeting process.
+
+AI should be useful without interrupting experienced staff.
+
+---
+
+# 11. COLLECTIVE APPLICATIONS — PRESERVE THE DIFFERENT FLOW
+
+Do not accidentally include Collective applications in School Individual forwarding batches.
+
+Collective applications currently:
+
+- Have their own authorized preparer.
+- Use TT01–TT04.
+- Submit directly to City.
+- Do not have an in-system School preliminary review stage.
+
+Preserve:
+
+- Collective profiles.
+- TT01–TT04 values and evidence.
+- City Officer review.
+- Committee authorized decisions.
+- Existing Collective submission and review flows.
+
+Do not apply Individual five-criterion aggregation to Collective records.
+
+Fix responsive issues in the existing Committee Collective table where affected by shared layout changes.
+
+---
+
+# 12. AUTHORIZATION REQUIREMENTS
+
+Preserve actual RBAC and resource-level ABAC.
+
+Student:
+- Own application only.
+
+School Officer:
+- Authorized School Review Unit.
+- UDN shared account accesses all eight configured members.
+- No outside-unit application access.
+- May prepare and forward only its own unit's batch.
+
+City Manager:
+- Authorized City intake and assignment.
+- No Officer judgments by default.
+
+City Officer:
+- Assigned application review.
+- No Committee final decision by default.
+
+City Committee:
+- Authorized final decision scope.
+- No impersonation of School reviewer.
+
+Admin:
+- System administration only by default.
+- No City Officer or Committee decision authority automatically.
+
+Never rely on frontend role hiding alone.
+
+Server access checks must apply to:
+
+- Application IDs.
+- Batch IDs.
+- Decision attachment IDs.
+- Selected application lists.
+- City intake records.
+- Evidence.
+- Review actions.
+
+Use scope-filtered queries before pagination.
+
+Add explicit tests against cross-unit access, IDOR and UDN/non-UDN mixing.
+
+---
+
+# 13. BACKEND MUST BE REAL, NOT A SKELETON
+
+The user intends to download and deploy the complete frontend and backend.
+
+Therefore:
+
+- Implement actual Express endpoints.
+- Implement controllers, services and Prisma repositories.
+- Wire production dependencies.
+- Implement real transaction boundaries.
+- Implement authorization and validation.
+- Implement audit/outbox.
+- Implement error handling.
+- Implement idempotency and concurrency protection.
+- Implement genuine file metadata/storage adapter integration where supported.
+- Add realistic integration tests.
+
+Do not:
+
+- Return static success responses.
+- Use FakeRepository in production.
+- Use in-memory batch forwarding as production persistence.
+- Leave important Prisma repository methods empty.
+- Write TODO/NOT_IMPLEMENTED for core production behavior.
+- Claim real persistence has been tested without PostgreSQL.
+
+The project is currently operating in OFFLINE database development mode.
+
+Do not reconnect Supabase during this phase unless explicitly authorized.
+
+Do not apply migrations, seed live records or upload real documents.
+
+You may prepare real Prisma schema/migration source and production code for later DB verification.
+
+Clearly report DB integration as NOT VERIFIED while offline.
+
+Do not deploy Real Mode before the schema and real end-to-end forwarding workflow have been verified against the authorized development database.
+
+---
+
+# 14. DATA MIGRATION AND LEGACY COMPATIBILITY
+
+This is a structural business refactor.
+
+Prepare a migration impact matrix before changing schema.
+
+Review:
+
+- Existing forwarded Individual applications.
+- Existing School recommendations.
+- Existing City intake records.
+- Existing decision attachments, if any.
+- Existing ResolutionCases.
+- Existing supplementary requests.
+- Existing review task relations.
+- Existing audit logs.
+
+Never discard historical records.
+
+Do not use Prisma `db push` to bypass migration review.
+
+Do not use `migrate reset`.
+
+Do not rename or drop columns without checking existing dependencies and migration safety.
+
+For records that predate the new batch feature, propose explicit grandfathering or administrative handling.
+
+Do not silently create fake historical decision files.
+
+Do not falsely claim old individually forwarded applications belonged to a verified official batch.
+
+---
+
+# 15. DEMO MODE HARDENING
+
+The interactive Demo must demonstrate the customer-approved new workflow.
+
+Create realistic deterministic scenarios.
+
+## Scenario S01 — Student dossier
+
+Student can open and inspect a complete five-criterion application.
+
+## Scenario S02 — Shared reviewer UI
+
+School reviewer opens the same dossier presentation in readonly review mode.
+
+## Scenario S03 — UDN consolidated list
+
+One authorized UDN reviewer views recommended applications from all eight configured member institutions.
+
+Filtering does not change the underlying batch identity.
+
+## Scenario S04 — Common decision attachment
+
+Reviewer attaches one synthetic common decision document to the batch.
+
+The Demo visibly identifies the file as synthetic.
+
+## Scenario S05 — Final confirmation
+
+Reviewer reviews selected counts, institution breakdown and attachment.
+
+One confirmation forwards the entire batch.
+
+## Scenario S06 — Duplicate forwarding blocked
+
+A second forwarding attempt does not create another batch or City intake.
+
+## Scenario S07 — Other School isolation
+
+An independent School has its own batch and cannot modify UDN's batch.
+
+## Scenario S08 — City receives the batch
+
+City Manager sees the forwarded applications and common decision attachment.
+
+## Scenario S09 — City assigned review
+
+Assigned Officer opens the Student dossier and performs normal review.
+
+No ResolutionCase is needed.
+
+## Scenario S10 — Supplementation
+
+Officer requests valid scoped supplementation.
+
+Student responds.
+
+Officer reassesses.
+
+No fictional escalation workflow.
+
+## Scenario S11 — Committee decision
+
+Committee sees School and City assessments and records an authorized human final decision.
+
+## Scenario S12 — Collective remains direct-to-City
+
+Collective TT01–TT04 workflow is unchanged.
+
+## Scenario S13 — AI is optional
+
+Reviewer works normally without opening AI.
+
+When requested, AI provides a concise, source-linked advisory assessment.
+
+## Scenario S14 — Responsive
+
+School batching, shared dossier view, City review and Committee list work across supported breakpoints.
+
+## Scenario S15 — Demo reset
+
+Reset returns to the exact original synthetic state.
+
+No duplicated batches or audit records.
+
+All Demo actions must work, not merely render.
+
+Never use Demo fixtures as a Real Mode fallback.
+
+---
+
+# 16. RESPONSVIE AND VISUAL UX — ZERO LAYOUT BREAKAGE
+
+The customer has already observed cramped Committee tables and overlapping AI widgets.
+
+Treat responsive quality as an acceptance blocker.
+
+Test:
+
+- 320px.
+- 360px.
+- 390px.
+- 430px.
+- 768px.
+- 1024px.
+- 1280px.
+- 1440px.
+- 1660px.
+- 1920px.
+
+Audit:
+
+- Sidebar/main-content sizing.
+- Parent max-width constraints.
+- Flex/grid minimum widths.
+- Card readability.
+- Table columns.
+- Decision upload panels.
+- Batch preview.
+- Long institution names.
+- Action button grouping.
+- AI Companion positioning.
+- Modal/drawer close behavior.
+- Mobile safe areas.
+- Sticky action bars.
+- Evidence preview.
+
+Desktop must use available width effectively.
+
+Mobile must not display crushed desktop tables.
+
+No horizontal page overflow.
+
+No inaccessible Close button.
+
+No blocked official review actions.
+
+No overlapping Demo selector and AI Companion.
+
+No trapped nested scrolling.
+
+No giant empty AI popup.
+
+Use existing design tokens and accessible primitives.
+
+Do not globally hide overflow to mask the underlying defect.
+
+Actual browser testing is required for a verified PASS.
+
+---
+
+# 17. FRONTEND PROTECTION
+
+The project has a historical 348-file Golden Frontend SHA-256 baseline.
+
+Previous phases may have intentionally changed protected files.
+
+This refactor explicitly permits targeted changes to the dossier and staff UX, but requires disciplined preservation.
+
+Before editing:
+
+- Record the current Git state.
+- Preserve historical Golden Manifest.
+- Create a recoverable current source checkpoint.
+- Identify affected frontend components.
+
+During editing:
+
+- Preserve original Student functionality.
+- Refactor shared presentation carefully.
+- Avoid unrelated global styling changes.
+- Preserve routes and navigation semantics.
+- Follow established FSD import boundaries.
+- Avoid duplicate dossier renderer implementations.
+
+After editing:
+
+- List intentionally modified files.
+- Verify unrelated protected files remain unchanged.
+- Run comprehensive regression tests.
+- Do not silently rewrite original baseline hashes.
+
+A new accepted baseline requires explicit user approval.
+
+---
+
+# 18. REQUIRED PHASE CHECKPOINTS
+
+Implement in the following order.
+
+## SRW-0 — Contract Audit
+
+Deliver:
+
+- Actual code inventory.
+- Workflow delta.
+- State and API matrix.
+- Schema migration impact.
+- Risk register.
+- Phase plan.
+
+Gate: No unresolved critical business contradiction.
+
+## SRW-1 — Batch Backend
+
+Deliver:
+
+- Real production backend implementation.
+- Prisma model/migration sources as needed.
+- Business validations.
+- Authorization.
+- Idempotency.
+- Transaction/audit.
+- Offline unit/HTTP tests.
+
+Gate: All offline tests PASS; database integration explicitly NOT VERIFIED.
+
+## SRW-2 — Shared Dossier UI
+
+Deliver:
+
+- Reused Student dossier presentation.
+- Staff readonly/review capabilities.
+- Student regression results.
+- Responsive checks.
+
+Gate: Student and Staff dossier presentations remain consistent.
+
+## SRW-3 — School Batch UI
+
+Deliver:
+
+- Eligible list.
+- Institution filtering.
+- Selected list.
+- Common decision upload.
+- Confirmation.
+- One-time forwarded state.
+- City intake navigation.
+
+Gate: Complete Demo journey works.
+
+## SRW-4 — City/Committee Simplification
+
+Deliver:
+
+- Simplified City Officer workspace.
+- Simplified Committee workspace.
+- No new ResolutionCase creation.
+- Legacy compatibility.
+- Preserved human decisions and supplementation.
+
+Gate: All authorized human review workflows work end to end.
+
+## SRW-5 — Integrated Verification
+
+Deliver:
+
+- Full Demo scenario matrix.
+- Regression results.
+- Golden Frontend intentional diff.
+- Responsive screenshots.
+- Security tests.
+- Real backend integration blockers.
+- Final release-readiness assessment.
+
+Gate: Do not claim production readiness without actual PostgreSQL, private storage and end-to-end verification.
+
+At each checkpoint, report what was actually implemented and tested.
+
+If a checkpoint fails, repair it before advancing.
+
+Do not skip backend dependencies just to make the frontend look finished.
+
+Do not produce a final PASS if critical workflows are placeholders.
+
+---
+
+# 19. COMPLETE ACCEPTANCE TEST MATRIX
+
+## Business
+
+- One UDN School Review Unit.
+- Eight distinct member institutions.
+- One authorized shared reviewer account.
+- One batch per unit per season.
+- One common mandatory decision attachment.
+- One successful final forwarding.
+- Multiple drafts allowed before final forwarding.
+- No second normal forwarding.
+- No duplicate City intake.
+- Original institution preserved.
+- Correct School recommendation membership.
+- Atomic forwarding.
+- Correct season.
+- Correct Collective exclusion.
+
+## Security
+
+- Cross-unit batch access forbidden.
+- Cross-unit file access forbidden.
+- Unauthorized forwarding forbidden.
+- Unauthorized decision attachment replacement forbidden.
+- City Officer assignment scope enforced.
+- Committee final authority enforced.
+- Admin cannot bypass official role permissions by default.
+- Duplicate concurrent submission handled safely.
+
+## Student
+
+- Existing five criteria work.
+- Multiple declarations work.
+- Multiple evidence attachments work.
+- Student draft editing works.
+- Submit works.
+- Supplement response works.
+- Readonly after submit remains correct.
+
+## Staff
+
+- Same dossier UI presentation.
+- Correct review controls by role.
+- Correct evidence navigation.
+- Scoped supplementation.
+- Correct City intake.
+- City assignment.
+- City Officer assessment.
+- Committee decision.
+- No Resolution Hub dependency in the active workflow.
+
+## UX
+
+- School batch preview understandable.
+- One-time consequence explained.
+- Decision preview works when storage available.
+- Clear success/conflict/error states.
+- Responsive layouts.
+- Modal open/close.
+- Focus and scrolling.
+- No overlapping widgets.
+- No broken Committee/Collective table.
+- AI remains optional.
+
+## Architecture
+
+- Strict TypeScript.
+- Backend ESLint.
+- Frontend build.
+- Backend build.
+- FSD audit.
+- Existing regression suites.
+- No production FakeRepository.
+- Proper Prisma repository implementation.
+- No unrelated source loss.
+
+---
+
+# 20. REPORTING FORMAT
+
+After each phase provide:
+
+1. Phase name and objective.
+2. Current source baseline.
+3. Real changes implemented.
+4. Exact frontend files changed.
+5. Exact backend files changed.
+6. Prisma changes, if any.
+7. API/DTO changes.
+8. Authorization behavior.
+9. Demo verification.
+10. Test command results.
+11. Browser verification evidence.
+12. Known blockers.
+13. Actual readiness status.
+14. Recommended next phase.
+
+Use:
+
+PASS / PARTIAL / BLOCKED.
+
+Do not use PASS if major implementation is missing or not verified.
+
+Clearly distinguish:
+
+- Coded.
+- Unit tested.
+- HTTP tested.
+- Browser verified.
+- Database integration verified.
+- Production ready.
+
+These are not equivalent.
+
+---
+
+# 21. HARD SAFETY BOUNDARIES
+
+Do not:
+
+- Invent another review level.
+- Separate UDN into eight forwarding batches.
+- Create multiple UDN School reviewer accounts.
+- Change Individual Student identity to a parent UDN institution.
+- Automatically include every submitted application in the recommended batch.
+- Forward without a required decision document.
+- Allow unrestricted second forwarding.
+- Remove scoped supplementation.
+- Remove City Manager assignment.
+- Grant City Officer or Admin Committee powers.
+- Delete historical review or resolution records.
+- Invent Committee meetings.
+- Automatically approve/reject via AI.
+- Create another frontend application.
+- Create another backend service.
+- Run destructive migrations.
+- Reconnect Supabase.
+- Run live database migrations.
+- Seed real user accounts.
+- Upload real decision documents while offline.
+- Deploy to production.
+- Automatically rewrite the Golden Manifest.
+
+---
+
+# 22. FINAL PRODUCT NORTH STAR
+
+The Student submits a familiar 5TOT dossier.
+
+The School reviewer opens that SAME dossier presentation, performs preliminary review and selects recommended applications.
+
+For UDN, one shared reviewer account prepares ONE consolidated selected list containing applications from all eight member institutions.
+
+The reviewer attaches ONE common official decision and forwards the batch ONE TIME.
+
+City receives the batch and its document.
+
+City Officers perform their authorized assessments in the familiar shared dossier interface.
+
+Committee members inspect the recorded School and City results and make authorized official decisions.
+
+There is no unnecessary Resolution Hub or fictional Committee meeting process.
+
+AI remains a quiet optional assistant.
+
+The interface is elegant, easy to understand and responsive.
+
+The backend implements real persistence, security, transactions and audit.
+
+**SUCCESS = A SIMPLER, CUSTOMER-VALIDATED, END-TO-END WORKING 5TOT REVIEW SYSTEM — NOT A UI MOCKUP, NOT A BACKEND SKELETON AND NOT AN OVERENGINEERED WORKFLOW.**

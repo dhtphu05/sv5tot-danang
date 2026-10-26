@@ -1,0 +1,1121 @@
+# 5TOT ĐÀ NẴNG — UX-S3
+## PREMIUM APPLICATION MANAGEMENT, ANALYTICS DASHBOARD & EXCEL REPORTING
+
+**Priority:** P0 — Customer-Validated Product UX Refactor
+**Phase:** UX-S3 — Application Lists, Operational Dashboard, Statistics and Exports
+**Execution:** AUDIT → DESIGN → IMPLEMENT → INTEGRATE → TEST → VISUALLY VERIFY
+**Frontend:** Existing React + Vite + Strict TypeScript + Feature-Sliced Design
+**Backend:** Existing Express + TypeScript + Prisma/PostgreSQL Modular Monolith
+**Visual direction:** Premium modern SaaS, professional, responsive and highly efficient for experienced Student Association reviewers.
+
+---
+
+# 1. MISSION
+
+The current 5TOT system has a sophisticated UI but too many fragmented operational screens.
+
+The customer prefers the clarity of the old Student 5-Good management system:
+
+- Easy application lists.
+- Immediate visibility into review results.
+- Filtering by institution.
+- Filtering by the number of criteria met.
+- Convenient dossier access.
+- Operational statistics.
+- Excel exports.
+- Simple navigation across award categories.
+
+However, the old system's cramped spreadsheet styling must NOT be copied.
+
+Implement modern, beautiful, production-oriented application management and analytics experiences that are faster to use than the legacy system.
+
+This phase covers:
+
+1. Individual application lists.
+2. Collective application lists.
+3. Application filtering and search.
+4. Five-criterion review progress summaries.
+5. School and City review statistics.
+6. Committee operational dashboard.
+7. Charts and analytical drilldowns.
+8. Excel and relevant report exports.
+9. Consistent role-specific data scope.
+10. Mobile, tablet and desktop responsiveness.
+
+Do not redesign the criterion-level review workspace again.
+
+UX-S2 owns criterion review interactions.
+
+UX-S3 owns finding, monitoring, filtering, reporting and opening applications.
+
+---
+
+# 2. PREFLIGHT — INSPECT THE ACTUAL SOURCE
+
+Before implementing, inspect the current:
+
+- UX-S1 information architecture.
+- UX-S2 review workspace implementation.
+- Student application lists.
+- School reviewer application list.
+- School forwarding batch interface.
+- City shared-review workspace.
+- Committee application list.
+- Collective application list.
+- Current Dashboard.
+- Current Analytics and Reporting modules.
+- Current Excel export capabilities.
+- Existing filters and pagination.
+- Existing shared table components.
+- Current backend analytics APIs.
+- School Review Unit and institution mappings.
+- Demo/Real data adapters.
+- Golden Frontend checkpoint.
+
+Do not assume a previous phase is complete merely because a prompt was issued.
+
+Classify each desired capability as:
+
+- Already implemented and reusable.
+- Implemented but requiring UX changes.
+- Partially implemented.
+- Missing frontend functionality.
+- Missing backend contract.
+- Legacy or obsolete functionality.
+
+Create a source-level modification plan.
+
+Preserve implemented UX-S2 review interactions.
+
+---
+
+# 3. PREMIUM PRODUCT QUALITY
+
+The frontend must look like a polished institutional management SaaS product.
+
+Use:
+
+- Beautiful, consistent typography.
+- Balanced white/blue visual language.
+- Subtle shadows and borders.
+- Refined KPI cards.
+- Clear page headers.
+- Professional data tables.
+- Elegant charts.
+- Readable status indicators.
+- Thoughtful empty states.
+- Skeleton loading states.
+- Compact filter bars.
+- Clean icons.
+- Accessible navigation.
+- Consistent spacing.
+
+Avoid:
+
+- Old-fashioned Excel-style layouts.
+- Excessive dense borders.
+- Tiny text.
+- Giant empty panels.
+- Oversized cards with very little information.
+- Too many competing colors.
+- Repetitive badges.
+- Multiple unnecessary dashboard widgets.
+- Decorative charts without useful meaning.
+- Tables overflowing the entire viewport.
+
+Modernization must improve practical usability, not merely aesthetics.
+
+---
+
+# 4. SIMPLIFIED INFORMATION ARCHITECTURE
+
+Respect UX-S1.
+
+For the currently selected Student 5-Good program, organize operational screens around:
+
+- Tổng quan.
+- Hồ sơ xét chọn.
+- Xét duyệt, where the role needs a separate entry.
+- Kết quả xét chọn.
+- Thống kê & Báo cáo.
+- Quản trị, only for authorized accounts.
+
+Where appropriate, use two application tabs:
+
+**Cá nhân | Tập thể**
+
+Do not create numerous redundant sidebar pages for slightly different subsets of applications.
+
+Use filters and tabs instead of duplicating entire application lists.
+
+### Important
+
+Role-specific navigation must remain meaningful.
+
+Student accounts must not see administrative analytics or reviewer-only operations.
+
+School reviewers must not see unauthorized City operations.
+
+City reviewers must not gain Committee final decision authority.
+
+Committee users see their authorized decision and reporting functions.
+
+Do not restore obsolete individual Officer assignment or ResolutionCase menus.
+
+---
+
+# 5. INDIVIDUAL APPLICATION LIST — MAIN OPERATIONAL SCREEN
+
+Implement a clean, responsive list.
+
+A reviewer should understand an application's status without opening the full dossier.
+
+### Recommended columns
+
+1. Student information:
+   - Name.
+   - MSSV.
+   - Original institution.
+2. School preliminary review result.
+3. City human review progress.
+4. Human-assessed criteria meeting requirements.
+5. Current application workflow status.
+6. Appropriate primary action.
+
+Use compact status and progress presentation.
+
+Example:
+
+**3/5 tiêu chí đã xét · 2 đạt**
+
+This means:
+
+- Three criteria have completed the required human assessment.
+- Two of those criteria meet the requirements.
+
+It does NOT mean:
+
+- The Student is officially recognized.
+- AI has approved two criteria.
+- Five criteria have been fully evaluated.
+
+### Primary actions
+
+Depending on role and status:
+
+- Xem hồ sơ.
+- Tiếp tục xét.
+- Xem kết quả.
+
+Keep one obvious primary action per row.
+
+Do not put multiple large action buttons into every row.
+
+Secondary actions may use a compact menu when they are genuinely secondary.
+
+Never hide the only available review action.
+
+---
+
+# 6. HUMAN REVIEW PROGRESS AND "ĐẠT BAO NHIÊU"
+
+The customer specifically wants to see how many criteria an application has met.
+
+Implement an accurate, easy-to-understand presentation.
+
+For Individual Student 5-Good applications:
+
+- Đạo đức tốt.
+- Học tập tốt.
+- Thể lực tốt.
+- Tình nguyện tốt.
+- Hội nhập tốt.
+
+At the appropriate human review level, calculate:
+
+- Number of criteria with completed review.
+- Number assessed as meeting requirements.
+- Number assessed as not meeting requirements.
+- Number not yet completely reviewed.
+- Number awaiting supplementation, where applicable.
+
+Use existing canonical aggregation logic.
+
+If a criterion has unresolved mandatory requirement judgments, do not simply count it as completed.
+
+Preserve actual ONE_OF and ALL_OF criteria semantics.
+
+### Important distinctions
+
+**5/5 tiêu chí đạt** is an assessed criteria result.
+
+It is NOT automatically a Committee recognition decision.
+
+An application partially reviewed but currently meeting 3 criteria must not be falsely classified as a fully assessed "Đạt 3/5" dossier.
+
+Use clear labels or filters to distinguish:
+
+- Review in progress.
+- Fully reviewed.
+- Number of criteria meeting requirements.
+- Final official recognition result.
+
+No AI preliminary outcome may contribute to official human review counters.
+
+---
+
+# 7. FILTER SYSTEM
+
+Build a single compact, practical filter toolbar.
+
+Support actual authorized filters such as:
+
+- Search by Student name.
+- Search by MSSV.
+- Award season.
+- School Review Unit.
+- Original institution.
+- Application type.
+- Workflow status.
+- Review completion.
+- Number of criteria meeting requirements.
+- Pending supplementation.
+- School recommendation.
+- Committee official result, when applicable.
+
+Do not show irrelevant filters to every role.
+
+### Expected UX
+
+Users should be able to:
+
+- Apply multiple filters.
+- See active filters.
+- Clear one filter.
+- Clear all filters.
+- Preserve filters when opening an application and returning.
+- Preserve pagination.
+- Sort relevant columns.
+- View accurate total matching results.
+
+Use server-side filtering and pagination for Real Mode when the backend supports it.
+
+Do not filter only the currently loaded page and pretend the result covers the entire database.
+
+The result count, pagination and export scope must correspond to the same query.
+
+---
+
+# 8. UDN SHARED REVIEW UNIT
+
+The University of Da Nang has eight configured member institutions:
+
+- DUT.
+- DUE.
+- UED.
+- UFL.
+- UTE.
+- VKU.
+- VNUK.
+- SMP.
+
+They share one School Review Unit:
+
+`unit-udn`
+
+Preserve:
+
+- Original Student institution.
+- Shared School reviewer account.
+- One consolidated selected forwarding batch per award season.
+- One common School decision attachment.
+- One successful forwarding operation.
+
+### Reporting requirements
+
+The authorized UDN School reviewer can:
+
+- See combined UDN statistics.
+- Filter by original member institution.
+- Compare member-institution application counts.
+- Export the consolidated selected list.
+- View the submitted forwarding batch.
+
+Filtering by member institution must not create separate batches.
+
+Do not duplicate the UDN School Review Unit.
+
+For independent Schools, restrict data to their own authorized review scope.
+
+---
+
+# 9. SCHOOL DASHBOARD
+
+Design a clean operational dashboard for the School reviewer.
+
+Prioritize:
+
+- Total applications in School scope.
+- Applications awaiting preliminary review.
+- Applications under review.
+- Applications awaiting supplementation.
+- Completed preliminary reviews.
+- Applications recommended for City.
+- Applications not recommended.
+- Batch forwarding status.
+
+Where relevant, display:
+
+- Institution breakdown for UDN.
+- Common decision attachment status.
+- Whether the final School batch has been forwarded.
+- Actual forwarding timestamp.
+
+Provide direct navigation from each useful metric to its corresponding filtered list.
+
+Do not place per-application City forwarding controls on the list.
+
+One-time forwarding remains in the SRW-3 batch interface.
+
+---
+
+# 10. CITY SHARED-REVIEW DASHBOARD
+
+The customer no longer needs individual City Officer assignment.
+
+Do not introduce:
+
+- Officer workload allocation.
+- Manual assignment dashboards.
+- Per-Officer task balancing.
+- Mandatory Officer-specific queues.
+- Assignment-dependent review navigation.
+
+Use one authorized shared City review workspace.
+
+Dashboard metrics should help answer:
+
+- How many applications arrived from Schools?
+- How many Individual applications await City review?
+- How many are under review?
+- How many need supplementation?
+- How many completed City review?
+- How many are awaiting Committee consideration?
+- How many Collective applications are in processing?
+
+Use actual backend records.
+
+Do not count the same application twice across supposedly exclusive status buckets.
+
+Do not add fictional City acknowledgment events.
+
+---
+
+# 11. COMMITTEE DASHBOARD — IMPORTANT
+
+Provide a high-quality Committee overview.
+
+The Committee should quickly understand the entire current selection cycle.
+
+### Primary KPIs
+
+- Total applications in authorized consideration scope.
+- Individual applications.
+- Collective applications.
+- Completed City assessments.
+- Applications awaiting Committee decision.
+- Applications with official decisions.
+- Applications officially recognized, if recorded.
+
+### Useful analytics
+
+- Applications by School Review Unit.
+- Original institution breakdown.
+- Review progress.
+- Completed assessment distribution.
+- Number of criteria meeting requirements.
+- Official Committee result distribution.
+- Supplementation statistics.
+
+### Critical
+
+Keep School, City and Committee results separate.
+
+A School recommendation is not a City assessment.
+
+A City assessment is not a Committee official decision.
+
+AI analysis is advisory only.
+
+### Drilldown
+
+Clicking a metric should open the relevant filtered application list.
+
+The Committee should be able to inspect any authorized application and navigate to the original Student dossier.
+
+Do not make the dashboard a collection of static numbers or visual decoration.
+
+---
+
+# 12. COLLECTIVE STUDENT 5-GOOD ANALYTICS
+
+Collective applications use TT01–TT04.
+
+They submit directly to City.
+
+They do not go through School preliminary forwarding.
+
+Create suitable Collective reporting fields such as:
+
+- Collective name.
+- Type.
+- Original organization/institution.
+- Current City review status.
+- TT01–TT04 recorded human assessment state.
+- Committee official result.
+
+Preserve correct denominators and ratio calculations.
+
+Do not apply Individual five-criterion counts to Collective applications.
+
+Do not place Collective applications in School forwarding batch statistics.
+
+Do not mix Individual and Collective statistics into a single misleading criteria chart.
+
+---
+
+# 13. MODERN ANALYTICS AND CHARTS
+
+Create a polished reporting experience.
+
+Choose useful chart types such as:
+
+- Bar chart: applications by institution.
+- Stacked bar chart: workflow status by institution.
+- Donut chart: major status breakdown.
+- Bar chart: number of human-assessed criteria meeting requirements.
+- Trend chart: submissions over time, only where meaningful timestamp data exists.
+
+Do not add charts merely to fill the page.
+
+Each chart must have:
+
+- Clear title.
+- Explicit metric definition.
+- Appropriate denominator.
+- Relevant filters.
+- Accessible labels.
+- Consistent data source.
+- Responsive behavior.
+- Empty/loading/error states.
+
+### Critical counting rules
+
+Document exactly:
+
+- Which application types are included.
+- Which award season is selected.
+- Which review scope is used.
+- Which application statuses are included.
+- Whether a metric is based on submitted, reviewed, recommended or officially recognized records.
+- How cancelled, archived, duplicate and draft records are treated.
+
+Use one authoritative aggregation contract.
+
+Do not calculate a dashboard KPI one way and the corresponding exported report another way.
+
+---
+
+# 14. EXCEL EXPORT — REAL FUNCTIONALITY
+
+The customer values the legacy system's Excel export functions.
+
+Implement or improve authorized Excel exports.
+
+### Recommended exports
+
+- Individual application list.
+- School recommended application list.
+- School consolidated forwarding list.
+- City review progress list.
+- Committee results list.
+- Collective application list.
+- Authorized aggregated statistical report.
+
+Only expose exports actually supported by the implemented business model and permissions.
+
+### Export behavior
+
+- Respect award season.
+- Respect role and resource scope.
+- Respect active filters.
+- Include clear column headings.
+- Include original institution.
+- Preserve leading zeros in identifier fields.
+- Format dates correctly.
+- Represent missing values honestly.
+- Distinguish human review results from AI advisory results.
+- Include official decisions only when actually recorded.
+
+Generate an actual downloadable `.xlsx` file when exporting Excel.
+
+Do not implement a decorative Download button.
+
+Do not merely rename CSV to `.xlsx`.
+
+Use an existing suitable backend/frontend export library if present.
+
+Do not add unnecessary heavy dependencies.
+
+### Export security
+
+Apply resource-level authorization server-side for Real Mode.
+
+Do not let a client export data outside its scope by modifying query parameters.
+
+Prevent spreadsheet formula injection in user-controlled text values.
+
+Protect personal data.
+
+Avoid exporting unnecessary sensitive fields by default.
+
+Do not expose private evidence file URLs.
+
+If bulk exports may be large, use an appropriate efficient existing backend export pattern rather than downloading the entire dataset into the browser.
+
+---
+
+# 15. ADMINISTRATION AND REPORTING ACCESS
+
+Do not automatically make all dashboards and exports visible to ADMIN.
+
+Separate:
+
+- Technical administration.
+- School operational reporting.
+- City review reporting.
+- Committee official result reporting.
+
+Permissions must follow actual authorized business responsibilities.
+
+Technical ADMIN should not automatically receive Committee decision authority.
+
+Sensitive demographic statistics and personal contact details must be restricted appropriately.
+
+Where sensitive statistics involve small groups, use appropriate disclosure safeguards consistent with the approved reporting policy.
+
+Do not create a new user-role hierarchy in this phase.
+
+---
+
+# 16. API AND BACKEND CONTRACT INTEGRATION
+
+Inspect the existing:
+
+- `auditAndAnalytics` module.
+- Individual application list APIs.
+- Collective application list APIs.
+- School review APIs.
+- City review APIs.
+- Committee APIs.
+- School batch APIs.
+- Existing export endpoints.
+
+Reuse current endpoints where possible.
+
+Avoid duplicating analytics engines.
+
+### If a required backend capability is missing
+
+Specify the exact missing method/DTO.
+
+Where safely in scope, implement a narrowly targeted production backend read/query/export capability using the existing Modular Monolith, Prisma repositories, DI and authorization conventions.
+
+Do not create frontend-only aggregate results for Real Mode when the full dataset is only on the backend.
+
+If a missing backend contract requires significant schema/workflow changes, report it as a blocker instead of inventing data.
+
+No separate analytics microservice.
+
+No new generic award platform backend in UX-S3.
+
+---
+
+# 17. DEMO MODE
+
+Preserve interactive Demo Mode.
+
+Create deterministic coherent fixtures covering:
+
+- Individual applications at different review states.
+- Fully reviewed applications.
+- Partially reviewed applications.
+- Five, four, three, two, one and zero criteria meeting requirements where supported.
+- Pending supplementation.
+- School recommended and not recommended.
+- UDN shared forwarding batch.
+- City received applications.
+- Committee pending and decided.
+- Collective TT01–TT04 applications.
+
+### Consistency
+
+The same synthetic records must power:
+
+- Lists.
+- Filters.
+- KPI cards.
+- Charts.
+- Drilldowns.
+- Demo Excel exports.
+- Review dossier navigation.
+
+Do not independently hardcode different totals in dashboard cards and tables.
+
+Do not show a mock statistic that cannot be reconciled to the underlying fixture set.
+
+Demo reset must restore deterministic values.
+
+Clearly label synthetic demonstration data.
+
+---
+
+# 18. REAL MODE
+
+Real Mode must use authorized Backend V2 data.
+
+No silent Demo fallback.
+
+No fake count values.
+
+No fake official result.
+
+No simulated export success.
+
+No fake City review completion.
+
+If the backend is offline or unavailable:
+
+- Show an accurate unavailable state.
+- Preserve safe user navigation.
+- Do not show invented records.
+- Do not claim that production exports or statistics are working.
+
+Database integration remains NOT VERIFIED until actually tested against authorized PostgreSQL.
+
+Do not reconnect Supabase during this phase.
+
+---
+
+# 19. RESPONSIVE LAYOUT — HARD REQUIREMENT
+
+Test at:
+
+- 320px.
+- 360px.
+- 390px.
+- 430px.
+- 768px.
+- 1024px.
+- 1280px.
+- 1440px.
+- 1660px.
+- 1920px.
+
+### Wide desktop
+
+- Balanced KPI cards.
+- Readable full-width tables.
+- Appropriate chart grid.
+- Compact filters.
+- No large unused whitespace.
+- Clear primary actions.
+
+### Laptop
+
+- KPI cards adapt gracefully.
+- Tables remain readable.
+- Filter bar wraps correctly.
+- No overly narrow institution column.
+
+### Tablet
+
+- Responsive cards or contained table scrolling where appropriate.
+- Charts stack intelligently.
+- Filters remain usable.
+
+### Mobile
+
+- Application cards instead of crushed desktop tables.
+- Readable Student identity.
+- Clear human review progress.
+- Accessible Open/Continue button.
+- Compact filter sheet.
+- Single-column KPI layout where necessary.
+- Responsive chart display.
+
+### Check interactions
+
+- Search.
+- Apply/reset filters.
+- Sort.
+- Pagination.
+- KPI drilldown.
+- Open dossier.
+- Return to list.
+- Download export.
+- Switch Individual/Collective tabs.
+- Change season.
+
+No page-level horizontal overflow.
+
+No hidden primary buttons.
+
+No overlay collisions with Demo selector or optional AI Companion.
+
+No sticky elements covering content.
+
+Fix actual layout constraints rather than masking overflow.
+
+---
+
+# 20. FUNCTIONALITY AND PERFORMANCE
+
+Use appropriate pagination for large application datasets.
+
+Avoid loading all evidence contents merely to render a list.
+
+Avoid per-row repeated heavy requests where batched query projections are possible.
+
+Audit N+1 query risks.
+
+Preserve filter and sorting state through navigation.
+
+Use explicit loading, empty and error UI states.
+
+Do not fabricate performance metrics.
+
+If actual profiling tools are available, report measured results.
+
+Do not assume that frontend memoization solves backend query inefficiency.
+
+---
+
+# 21. TEST MATRIX
+
+Implement and run meaningful tests.
+
+### UX3-01
+Individual application list loads with correct authorized data.
+
+### UX3-02
+Search by name and MSSV.
+
+### UX3-03
+Filter by original institution.
+
+### UX3-04
+UDN combined statistics match the eight member institutions.
+
+### UX3-05
+Change season and update all relevant metrics.
+
+### UX3-06
+Human criterion progress is correctly aggregated.
+
+### UX3-07
+Unfinished review is not misclassified as completed.
+
+### UX3-08
+AI preliminary results do not affect human review counters.
+
+### UX3-09
+KPI drilldown opens the correct filtered list.
+
+### UX3-10
+Pagination/filter/sort counts remain consistent.
+
+### UX3-11
+Open application and return with filters preserved.
+
+### UX3-12
+School dashboard reflects actual batch-forwarding state.
+
+### UX3-13
+City reviewer uses a shared queue without assignment.
+
+### UX3-14
+Committee dashboard separates review completion from official decisions.
+
+### UX3-15
+Collective analytics uses TT01–TT04, not five Individual criteria.
+
+### UX3-16
+Real Excel export contains correct selected records.
+
+### UX3-17
+Export respects server-side authorization.
+
+### UX3-18
+Spreadsheet formula injection is prevented.
+
+### UX3-19
+Sensitive personal data is not overexposed.
+
+### UX3-20
+Demo metrics, chart values and list totals reconcile.
+
+### UX3-21
+Demo export works using synthetic records.
+
+### UX3-22
+Real Mode never falls back to Demo statistics.
+
+### UX3-23
+Responsive layouts work at all requested viewports.
+
+### UX3-24
+Actual navigation and review workspace integrations remain functional.
+
+### UX3-25
+School/City/Committee role boundaries are preserved.
+
+---
+
+# 22. IMPLEMENTATION CHECKPOINTS
+
+## UX-S3A — Audit and reporting contract
+
+Deliver:
+
+- Actual list/dashboard inventory.
+- KPI definitions.
+- Filter specification.
+- Frontend-to-backend API mapping.
+- Query scope/authorization rules.
+- Before/after layout plan.
+
+## UX-S3B — Application lists
+
+Implement:
+
+- Modern Individual table.
+- Modern Collective table.
+- Compact filters.
+- Criterion progress summary.
+- Clear actions.
+- Responsive cards.
+- Pagination state preservation.
+
+## UX-S3C — Operational dashboards
+
+Implement:
+
+- School dashboard.
+- City shared-review dashboard.
+- Committee dashboard.
+
+Reuse existing data and chart components.
+
+## UX-S3D — Statistics
+
+Implement:
+
+- Relevant aggregate charts.
+- Institution breakdown.
+- Human criterion outcome distribution.
+- Workflow progress.
+- Authorized result statistics.
+- Interactive drilldown.
+
+## UX-S3E — Excel and reporting
+
+Implement:
+
+- Real authorized export functionality.
+- Correct filtered record scope.
+- Actual valid Excel format.
+- Safe values.
+- Relevant report headings.
+- Download/empty/error states.
+
+## UX-S3F — Integration and visual QA
+
+Verify:
+
+- Correct figures.
+- Role-scoped data.
+- Responsive behavior.
+- Existing review navigation.
+- Demo/Real isolation.
+- Security.
+- Export correctness.
+- Regression tests.
+
+Do not mark a checkpoint PASS when important actions are inert.
+
+---
+
+# 23. GOLDEN FRONTEND PROTECTION
+
+Preserve the current frontend baseline.
+
+Inspect the historical Golden Frontend manifest.
+
+Create a recoverable current-state checkpoint.
+
+Do not:
+
+- Rebuild the application shell.
+- Rewrite the Student dossier.
+- Redesign UX-S2 review controls.
+- Reintroduce per-application School forwarding.
+- Reintroduce City Officer assignment.
+- Reintroduce ResolutionCase.
+- Implement fictional Committee meetings.
+- Create a new award workflow engine.
+- Overwrite Golden Manifest checksums.
+- Reconnect Supabase.
+- Execute database migrations.
+- Deploy.
+
+Only targeted necessary changes are permitted.
+
+---
+
+# 24. VERIFICATION GATES
+
+Run actual available commands:
+
+- Frontend strict TypeScript.
+- Frontend production build.
+- Frontend tests.
+- Backend typecheck if backend query/export code is changed.
+- Backend build and relevant tests if affected.
+- Role authorization tests.
+- Analytics calculation tests.
+- Excel export tests.
+- Demo consistency tests.
+- FSD boundary checks.
+- Responsive browser checks.
+
+Capture actual rendered screenshots for:
+
+- School dashboard at 1440px.
+- City shared-review dashboard at 1440px.
+- Committee dashboard at 1440px.
+- Application table at 1660px.
+- Individual application cards at 390px.
+- Filter interface at 390px.
+- Analytics page at 1024px.
+- Collective list at 768px.
+
+If browser verification cannot be performed, report NOT VERIFIED.
+
+If PostgreSQL remains offline, report real database integration NOT VERIFIED.
+
+Do not invent test counts, screenshots or successful integrations.
+
+---
+
+# 25. REQUIRED FINAL REPORT
+
+Provide:
+
+A. Verified UX-S3 source baseline.
+
+B. Existing versus new functionality.
+
+C. Updated information architecture for lists/statistics.
+
+D. Individual application list changes.
+
+E. Collective application list changes.
+
+F. Filter/search/pagination implementation.
+
+G. Accurate five-criterion progress calculation.
+
+H. School dashboard.
+
+I. City shared-review dashboard.
+
+J. Committee dashboard.
+
+K. Statistical charts and drilldowns.
+
+L. Real Excel export implementation.
+
+M. Exact frontend/backend API integration.
+
+N. Authorization and data-scope verification.
+
+O. Demo/Real isolation.
+
+P. Responsive screenshots and test results.
+
+Q. Performance/query findings.
+
+R. Exact files added/modified.
+
+S. Golden Frontend intentional diff.
+
+T. Remaining blockers.
+
+U. Final PASS / PARTIAL / BLOCKED status.
+
+Distinguish:
+
+- UI implemented.
+- Demo tested.
+- Real API integrated.
+- Real database verified.
+- Actual export tested.
+- Production ready.
+
+These are different levels of completion.
+
+---
+
+# 26. HARD STOP
+
+Stop after UX-S3.
+
+Do not automatically begin UX-S4 or UX-S5.
+
+Do not modify official business rules.
+
+Do not add an extra review level.
+
+Do not change the UDN one-batch policy.
+
+Do not make AI determine official outcomes.
+
+Do not rebuild the entire frontend.
+
+Do not create a new analytics microservice.
+
+Do not deploy.
+
+## FINAL SUCCESS CRITERION
+
+An authorized reviewer or Committee member opens 5TOT and immediately understands:
+
+- How many applications exist.
+- How many have been reviewed.
+- How many criteria each application meets.
+- Which applications require attention.
+- Where applications are in the School/City/Committee workflow.
+- Which results are official.
+- How to find, open and continue a dossier.
+- How to export a reliable report.
+
+The interface is premium, modern, responsive and visually polished.
+
+Every number is derived from consistent authorized data.
+
+Every actionable KPI and filter leads to the correct records.
+
+Excel exports contain real, correctly scoped results.
+
+**SUCCESS = OPERATIONAL CLARITY AND REPORTING POWER OF THE LEGACY SYSTEM, WITH THE VISUAL QUALITY AND USABILITY OF A MODERN PREMIUM SAAS PLATFORM.**

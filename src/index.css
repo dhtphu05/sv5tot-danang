@@ -1,0 +1,210 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Brand Tokens (Hội Sinh viên Việt Nam cyan-blue identity) */
+    --color-brand: #18a6e0;
+    --color-brand-hover: #1390c5;
+    --color-brand-pressed: #0f7ba9;
+    --color-brand-soft: rgba(24, 166, 224, 0.08);
+    --color-brand-soft-hover: rgba(24, 166, 224, 0.14);
+    --color-blue-deep: #0d6eb0;
+
+    /* Canonical Token Aliases (Prompt Section 49) */
+    --brand-primary: #0d6eb0;
+    --brand-deep: #095386;
+    --canvas: #f5f9fd;
+    --surface: #ffffff;
+    --text-primary: #0f2335;
+    --text-secondary: #4a6275;
+    --divider: #dceaf3;
+    --success: #157347;
+
+    /* Workspace Color System (Refined blue-tinted institutional palette) */
+    --color-canvas: #f3f8fc;
+    --color-surface: #ffffff;
+    --color-surface-subtle: #f8fbfd;
+    --color-surface-hover: rgba(24, 166, 224, 0.025);
+    --color-surface-selected: rgba(24, 166, 224, 0.06);
+
+    /* Text Hierarchy (High-contrast academic palette) */
+    --color-text-primary: #172a3a;
+    --color-text-secondary: #607483;
+    --color-text-tertiary: #728391;
+    --color-text-on-brand: #ffffff;
+
+    /* Hairline & Column Separators */
+    --color-divider: #dce7ee;
+    --color-col-sep: #e3ebf1;
+    --color-divider-strong: #c8d8e3;
+
+    /* Semantic States (Color discipline: green strictly for confirmed facts, amber for attention, red for blocking errors) */
+    --color-success: #1a934e;
+    --color-success-soft: rgba(26, 147, 78, 0.09);
+
+    --color-warning: #d97706;
+    --color-warning-soft: rgba(217, 119, 6, 0.08);
+
+    --color-danger: #dc2626;
+    --color-danger-soft: rgba(220, 38, 38, 0.08);
+
+    --color-focus: rgba(24, 166, 224, 0.22);
+
+    /* Elevation Shadows */
+    --shadow-elevated: 0 8px 30px rgba(18, 106, 156, 0.08);
+    --shadow-popover: 0 12px 36px rgba(18, 106, 156, 0.12);
+    --shadow-subtle: 0 2px 8px rgba(18, 106, 156, 0.04);
+
+    /* Controlled Radius */
+    --radius-sm: 8px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius-2xl: 20px;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+  }
+}
+
+/* Custom utility classes aligned with 5TOT design system */
+.bg-canvas {
+  background-color: var(--color-canvas);
+}
+.bg-surface {
+  background-color: var(--color-surface);
+}
+.bg-surface-subtle {
+  background-color: var(--color-surface-subtle);
+}
+.bg-brand {
+  background-color: var(--color-brand);
+}
+.bg-brand-soft {
+  background-color: var(--color-brand-soft);
+}
+.text-brand {
+  color: var(--color-brand);
+}
+.text-blue-deep {
+  color: var(--color-blue-deep);
+}
+.text-primary {
+  color: var(--color-text-primary);
+}
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+.text-tertiary {
+  color: var(--color-text-tertiary);
+}
+.border-divider {
+  border-color: var(--color-divider);
+}
+.border-col-sep {
+  border-color: var(--color-col-sep);
+}
+.shadow-elevated {
+  box-shadow: var(--shadow-elevated);
+}
+.shadow-popover {
+  box-shadow: var(--shadow-popover);
+}
+
+/* Canonical 4-Column Table Grid System (34% / 28% / 22% / 16%)
+   - Column 1: 34% (Tiêu chuẩn & yêu cầu: 3-level visual hierarchy)
+   - Column 2: 28% (Khai báo của sinh viên)
+   - Column 3: 22% (Minh chứng)
+   - Column 4: 16% (Trạng thái / Đánh giá)
+   - Consistent across all desktop breakpoints so all vertical dividers align perfectly
+*/
+.app-table-grid {
+  display: grid;
+  grid-template-columns: 34% 28% 22% 16%;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1440px) {
+  .app-table-grid {
+    grid-template-columns: 34% 28% 22% 16%;
+  }
+}
+
+.grid-col-1,
+.grid-col-2,
+.grid-col-3,
+.grid-col-4 {
+  min-width: 0;
+}
+
+/* Scroll target margin for sticky headers (accounts for sticky review bar + buffer) */
+.scroll-anchor-target {
+  scroll-margin-top: 175px;
+}
+
+/* Optional Grid Alignment Debug Mode */
+.app-table-grid-debug .grid-col-1 {
+  outline: 1px dashed rgba(49, 130, 206, 0.35);
+  background-color: rgba(49, 130, 206, 0.02);
+}
+.app-table-grid-debug .grid-col-2 {
+  outline: 1px dashed rgba(124, 92, 252, 0.35);
+  background-color: rgba(124, 92, 252, 0.02);
+}
+.app-table-grid-debug .grid-col-3 {
+  outline: 1px dashed rgba(14, 159, 154, 0.35);
+  background-color: rgba(14, 159, 154, 0.02);
+}
+.app-table-grid-debug .grid-col-4 {
+  outline: 1px dashed rgba(233, 154, 24, 0.35);
+  background-color: rgba(233, 154, 24, 0.02);
+}
+
+/* Subtle clean scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(18, 106, 156, 0.16);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(18, 106, 156, 0.28);
+}
+
+/* AI-UX3 Section 10: Smart Contextual Spotlight Animation */
+@keyframes ai-spotlight-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(13, 120, 174, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(13, 120, 174, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(13, 120, 174, 0);
+  }
+}
+
+.ai-spotlight-active {
+  animation: ai-spotlight-pulse 1.4s ease-out 2;
+  border-color: #0d78ae !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-spotlight-active {
+    animation: none !important;
+  }
+}

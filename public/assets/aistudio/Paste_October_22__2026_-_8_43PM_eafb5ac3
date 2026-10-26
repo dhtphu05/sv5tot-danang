@@ -1,0 +1,1179 @@
+# 5TOT ĐÀ NẴNG — UX-S2
+## PREMIUM SIMPLIFIED REVIEW WORKSPACE — EXPERT-FIRST REVIEWER EXPERIENCE
+
+**Priority:** P0 — Customer-Validated UX Redesign  
+**Task:** AUDIT → REDESIGN → IMPLEMENT → INTEGRATE → VISUALLY VERIFY  
+**Frontend:** Existing React + Vite + Strict TypeScript + Feature-Sliced Design  
+**Backend:** Existing Express + TypeScript + Prisma Modular Monolith  
+**Scope:** School Reviewer, City Reviewer and Committee dossier review experiences  
+**Core Direction:** Modern premium SaaS UI + simple review operations + shared Student dossier + zero business-functionality loss
+
+---
+
+# 1. CUSTOMER FEEDBACK — CRITICAL
+
+The customer has compared the current 5TOT review workspace with the previous legacy Student 5-Good management system.
+
+The current 5TOT design looks more modern but is unnecessarily complicated to operate.
+
+The current screenshot reveals:
+
+1. The five criteria appear in a large left-side card navigation.
+2. The same five criteria appear again in a second top navigation.
+3. The reviewer has to interpret many simultaneous statuses.
+4. Criterion decision buttons compete with supplementation, AI and completion actions.
+5. A large sticky review toolbar obstructs the application content.
+6. The toolbar may indicate a different criterion from the content currently visible beneath it.
+7. Declarations and evidence are separated by multiple expansion layers.
+8. Reviewers must spend too much effort discovering where to record a judgment.
+9. Global sidebar + criterion rail + dossier table + sticky toolbar leave insufficient usable width.
+10. Responsive behavior is fragile at laptop, tablet and mobile widths.
+
+The legacy interface had a valuable characteristic:
+
+**Criteria, declarations, evidence and relevant actions were immediately understandable.**
+
+However, it used outdated wide tables and dense formatting.
+
+The objective is NOT to copy the old visual appearance.
+
+The objective is to combine:
+
+**LEGACY BUSINESS CLARITY + MODERN 5TOT VISUAL QUALITY + FASTER REVIEW OPERATIONS.**
+
+---
+
+# 2. PRODUCT NORTH STAR
+
+Design the review experience around one simple operation:
+
+**Select criterion → Inspect declaration → View evidence → Record judgment → Continue.**
+
+Vietnamese:
+
+**Chọn tiêu chí → Xem kê khai → Kiểm tra minh chứng → Đánh giá → Tiêu chí tiếp theo.**
+
+An experienced reviewer should not need a tutorial to understand this flow.
+
+The product must remain:
+
+- Visually premium.
+- Professional.
+- Easy to understand.
+- Fast to operate.
+- Accessible.
+- Fully responsive.
+- Complete in legitimate business functionality.
+- Connected to actual existing state and API contracts.
+
+Simplify navigation and presentation.
+
+Do not simplify away genuine review requirements.
+
+---
+
+# 3. AUDIT ACTUAL CODE BEFORE REDESIGN
+
+Inspect the current source and rendered review screens.
+
+Audit:
+
+- Existing Student dossier renderer.
+- SRW-2 shared dossier architecture.
+- SRW-6 submitted Student identity card.
+- School Officer review workspace.
+- City Officer review workspace.
+- Committee application detail.
+- Criterion navigation.
+- Requirement/declaration/evidence review controls.
+- Reviewer progress aggregation.
+- Review notes.
+- Supplementation.
+- Existing sticky toolbars.
+- AI entry points.
+- Evidence viewer.
+- Scroll and anchor behavior.
+- Demo/Real adapters.
+- Backend review APIs and permissions.
+- Current CSS layout and responsive breakpoints.
+
+Identify:
+
+- Duplicated navigation.
+- Duplicated review actions.
+- Redundant statuses.
+- Unnecessary UI layers.
+- Excessive expansion levels.
+- Conflicting active-criterion state.
+- Root causes of responsive layout defects.
+- Review actions that must remain.
+- Actual persisted human judgment granularity.
+
+Produce a concise before/after interaction map.
+
+Then implement the targeted redesign.
+
+Do not stop at generic UX suggestions unless a critical technical blocker makes implementation unsafe.
+
+---
+
+# 4. ONE CRITERION NAVIGATION — NO DUPLICATION
+
+The current UI has two independent ways to select the five criteria.
+
+Replace them with ONE canonical criterion navigation model.
+
+Criteria:
+
+1. Đạo đức tốt.
+2. Học tập tốt.
+3. Thể lực tốt.
+4. Tình nguyện tốt.
+5. Hội nhập tốt.
+
+## Desktop
+
+Choose the best navigation placement based on available content width.
+
+A compact vertical criterion list is acceptable when there is enough room.
+
+Each item should show:
+
+- Criterion number.
+- Criterion name.
+- One primary human-review status.
+- A subtle progress indicator where useful.
+
+Avoid large cards with multiple AI and review badges.
+
+## Tablet and narrow laptop
+
+Convert the navigation into an accessible horizontal criterion selector or another compact control.
+
+Do not keep an unnecessarily wide criterion sidebar while crushing the dossier.
+
+## Mobile
+
+Use one clear compact criterion selector.
+
+All five criteria remain reachable.
+
+Avoid permanently displaying a second sidebar.
+
+## Strict behavior
+
+There must be ONE source of truth for the active criterion.
+
+Selecting a criterion updates:
+
+- Selected navigation state.
+- Criterion heading.
+- Visible requirement/declaration content.
+- Relevant review controls.
+- Applicable current human judgment.
+- Contextual evidence links.
+
+Do not show:
+
+"Đang xét Đạo đức tốt"
+
+while the active review controls are operating on:
+
+"Tình nguyện tốt".
+
+If the user scrolls across criteria in an all-criteria view, synchronize the active criterion correctly or remove contradictory fixed active-criterion labels.
+
+No mismatched action context.
+
+---
+
+# 5. REVIEW WORKSPACE LAYOUT
+
+Build a balanced professional review workspace.
+
+## Recommended structure
+
+### A. Compact application header
+
+Show:
+
+- Student name.
+- MSSV.
+- Original institution.
+- Award season.
+- Actual review status.
+- Human review progress.
+
+Avoid repeated large headers.
+
+### B. Submitted Student information
+
+Preserve SRW-6.
+
+Use ONE compact Student information card above the criteria.
+
+No nested identity cards.
+
+No large snapshot banner.
+
+Keep expandable full details and actual submission-time snapshot semantics.
+
+### C. Criterion navigation
+
+Use one concise navigation area.
+
+### D. Main dossier content
+
+Reuse the existing Student dossier presentation.
+
+Display:
+
+- Requirement groups.
+- Student declarations.
+- Linked evidence.
+- Applicable regulation.
+- Recorded human review states.
+
+### E. Contextual human review controls
+
+Place reviewer actions in ONE consistent area, adjacent to the relevant criterion or judgment target.
+
+No duplicated floating action bars.
+
+## Width management
+
+Prefer:
+
+- Main dossier area.
+- Optional compact contextual review sidecar only when content width genuinely supports it.
+
+Do not require a permanent three-column layout on ordinary laptops.
+
+Avoid adding a new wide review panel beside an already narrow dossier.
+
+Allow the dossier to use the available width.
+
+---
+
+# 6. CRITERION REVIEW — THE MOST IMPORTANT FEATURE
+
+Reviewers must be able to assess criteria quickly.
+
+At the appropriate existing judgment level, display simple, explicit controls.
+
+Suggested visible judgment actions:
+
+**Đạt**  
+**Không đạt**
+
+Supplementation must remain a clearly separate workflow action:
+
+**Yêu cầu bổ sung**
+
+Do not assume requesting supplementation is equivalent to a persisted failed criterion judgment.
+
+If the existing backend supports pending or insufficient-evidence human states, represent them accurately.
+
+## Critical domain requirement
+
+Inspect the actual backend before implementing the controls.
+
+The backend may persist:
+
+- Evidence-level assessment.
+- Declaration-level assessment.
+- Requirement-level assessment.
+- Criterion-level assessment.
+- Review task completion.
+
+Do not replace this canonical model with one fake local `criterionPassed` boolean.
+
+If granular judgments are required to complete review, preserve them.
+
+But make the user interaction concise and contextual.
+
+### Desired behavior
+
+A reviewer opens a criterion.
+
+They can immediately see:
+
+- Relevant requirements.
+- What the Student declared.
+- What evidence was submitted.
+- What has already been reviewed.
+- What still needs attention.
+
+They can perform the valid human review action at the appropriate scope.
+
+Successful saved judgments update the UI and actual review progress.
+
+Do not force reviewers to open an unrelated modal for every routine judgment.
+
+Use direct actions or compact inline controls where appropriate.
+
+Keep existing required confirmations only for genuinely consequential operations.
+
+---
+
+# 7. DECLARATION AND EVIDENCE REVIEW
+
+The legacy system made it easy to locate individual declared results.
+
+The new system must do better.
+
+## Requirement presentation
+
+Each requirement should show:
+
+- Short understandable requirement name.
+- Applicable rule.
+- Student declaration summary.
+- Evidence count.
+- Human review status, if applicable.
+
+Do not require three nested accordion expansions to reach a document.
+
+## Declaration presentation
+
+Each Student declaration should be easy to scan.
+
+Display:
+
+- Declaration title.
+- Relevant values.
+- Date or period when applicable.
+- Associated evidence.
+- Existing human review result when supported.
+
+Keep supporting secondary metadata visually subdued.
+
+## Evidence
+
+Support direct evidence preview.
+
+The reviewer should be able to:
+
+1. Open a declaration.
+2. See its evidence.
+3. Open PDF or image.
+4. Close the viewer.
+5. Continue the same review without losing context.
+
+Preserve evidence version history and scoped supplementation semantics.
+
+Do not introduce automatic evidence approval.
+
+Do not reduce multiple declarations into one combined unsupported record.
+
+Preserve ONE_OF / ALL_OF requirements correctly.
+
+---
+
+# 8. PROGRESS — CLEAR AND TRUSTWORTHY
+
+The current UI shows too many simultaneous status indicators.
+
+Simplify.
+
+At application level, show a small useful summary such as:
+
+- 2/5 tiêu chí đã xét.
+- 1 tiêu chí đạt.
+- 1 tiêu chí không đạt.
+- 3 tiêu chí chưa hoàn tất.
+
+Use the real canonical human review data.
+
+The exact presentation should follow the actual state model.
+
+Do not count AI preliminary assessments as completed human reviews.
+
+Do not count declarations merely because they exist as reviewed.
+
+Do not conflate:
+
+- Declared evidence.
+- Human-reviewed content.
+- Criterion outcome.
+- Completed Officer assessment.
+- Official Committee recognition.
+
+A criterion may require multiple requirement/declaration-level assessments.
+
+Only report it as completed according to the actual existing domain aggregation rules.
+
+## Criterion status
+
+Show ONE main human review state by default.
+
+Examples derived from actual canonical states:
+
+- Chưa xét.
+- Đang xét.
+- Chờ bổ sung.
+- Đạt.
+- Không đạt.
+
+If an AI observation exists, do not create a second competing official-looking status badge.
+
+Keep AI advisory information behind the optional AI entry point or a very subtle separate indicator.
+
+---
+
+# 9. REVIEW ACTION BAR REDESIGN
+
+The current large sticky action toolbar is visually heavy and can cover dossier content.
+
+Replace it with a compact contextual action area.
+
+The reviewer should always understand:
+
+- Which criterion or item is being assessed.
+- Whether the current judgment has been saved.
+- What the available next action is.
+
+## Primary actions
+
+Show appropriate actions such as:
+
+- Lưu đánh giá.
+- Tiếp tục tiêu chí.
+- Hoàn tất thẩm định.
+
+Only when allowed by existing canonical permissions and state transitions.
+
+## Secondary actions
+
+- Yêu cầu bổ sung.
+- Nhận xét.
+- AI hỗ trợ.
+- Xem lịch sử.
+
+Do not display all secondary actions as equally prominent large buttons.
+
+### Sticky behavior
+
+If a sticky area is useful:
+
+- Keep it compact.
+- Scope it to the appropriate scroll container.
+- Never overlay the declaration/evidence rows.
+- Preserve the actual selected judgment context.
+- Maintain accessible controls at narrow widths.
+
+If sticky positioning cannot be made reliable, use a normal-flow contextual action panel.
+
+Do not create a permanent overlay that obstructs the application.
+
+---
+
+# 10. NOTES AND SUPPLEMENTATION
+
+Preserve reviewer notes.
+
+Make them accessible without displaying an unnecessarily large note editor on every criterion.
+
+Suggested interaction:
+
+**Ghi nhận xét**
+
+Opens a concise inline editor when needed.
+
+If existing notes exist, show a short summary with Edit.
+
+Save through the existing authenticated backend contract.
+
+Do not claim a note has been saved until confirmed.
+
+## Supplementation
+
+Use one clear action:
+
+**Yêu cầu bổ sung**
+
+Allow the reviewer to select the appropriate requirement, declaration or evidence scope.
+
+Prepare the authorized request.
+
+Require explicit human submission.
+
+Do not automatically create supplementation because AI detects an issue.
+
+Preserve Student response and subsequent reassessment.
+
+Do not reintroduce ResolutionCase or escalation workflows.
+
+---
+
+# 11. FAST NEXT-CRITERION NAVIGATION
+
+Reviewers often process many applications.
+
+Provide:
+
+- Tiêu chí trước.
+- Tiêu chí tiếp theo.
+
+Allow direct selection of any criterion.
+
+Optional:
+
+- Continue to next unfinished criterion.
+
+Only when this is clear and useful.
+
+Do not automatically record a human decision when moving between criteria.
+
+If unsaved changes exist, handle them safely.
+
+If a save operation is still pending, prevent silent data loss or incorrect navigation.
+
+Preserve selected criterion and user position where practical.
+
+---
+
+# 12. ROLE-SPECIFIC REVIEW ACTIONS
+
+Reuse the same dossier presentation, but compose only legitimate role actions.
+
+## School Officer
+
+- Read Student declarations/evidence.
+- Record School preliminary judgments.
+- Add notes.
+- Request supplementation.
+- Record School recommendation.
+- Continue School review.
+
+No per-application City forwarding.
+
+The one-time School batch forwarding workflow remains separate.
+
+## City Reviewer
+
+- Open shared City review queue.
+- Inspect Student dossier.
+- Record authorized independent human judgments.
+- Add notes.
+- Request supplementation.
+- Complete normal City review.
+
+No mandatory individual Officer assignment.
+
+No ResolutionCase.
+
+No ambiguous-case escalation.
+
+## City Committee
+
+- Inspect original Student dossier.
+- View actual School preliminary result.
+- View actual City assessment.
+- View common School decision attachment.
+- Inspect evidence where needed.
+- Record authorized official Committee decision.
+
+Do not force Committee members to repeat all City Officer evidence judgments unless the actual approved business contract requires it.
+
+Committee decision controls must remain separate from ordinary criterion-assessment controls.
+
+No fictional meeting, voting, questioning or hearing workflow.
+
+## Authorization
+
+Use actual backend RBAC and resource-scoped ABAC.
+
+Technical ADMIN authority alone does not grant Committee decision permissions.
+
+Never use frontend role labels as the only authorization boundary.
+
+---
+
+# 13. AI — ONE OPTIONAL ASSISTANT
+
+AI should not dominate the reviewer workspace.
+
+Use one concise entry point:
+
+**"AI hỗ trợ"**
+
+AI may provide:
+
+- Preliminary criterion assessment.
+- Material evidence discrepancies.
+- Source-linked findings.
+- Concise application review summary.
+- Suggested verification actions.
+
+AI must not:
+
+- Record human judgments.
+- Automatically approve declarations.
+- Automatically submit supplementation.
+- Automatically finalize review.
+- Make Committee official decisions.
+
+Do not display separate AI status labels on every criterion by default if they reduce clarity.
+
+Do not automatically open AI panels.
+
+Do not make AI analysis a mandatory review step.
+
+No new AI backend subsystem in this phase.
+
+---
+
+# 14. RESPONSIVE REDESIGN — MANDATORY
+
+Current review layouts have major responsiveness problems.
+
+Fix the actual parent layout, not only child components.
+
+Inspect:
+
+- Global sidebar.
+- Criterion navigation width.
+- Main dossier grid.
+- Sticky review panel.
+- Evidence table columns.
+- Overlay stacking.
+- Minimum widths.
+- Scroll container boundaries.
+- AI launcher.
+- Demo persona selector.
+
+## Important
+
+Use actual AVAILABLE CONTENT WIDTH as the main responsive constraint.
+
+A 1440px browser with a 250px sidebar and a 300px criterion panel does not have 1440px available for dossier content.
+
+Use container queries where suitable.
+
+Maintain compatible responsive fallbacks.
+
+### Wide desktop
+
+Beautiful professional workspace.
+
+One criterion navigation.
+
+Comfortable dossier width.
+
+Review actions positioned logically.
+
+### Standard laptop
+
+Reduce secondary navigation width.
+
+Allow criterion navigation to become compact.
+
+Do not crush evidence cells.
+
+### Tablet
+
+Prioritize dossier content.
+
+Criterion navigation becomes a compact accessible selector when necessary.
+
+Review actions remain visible.
+
+### Mobile
+
+Single primary content column.
+
+Quick criterion selector.
+
+Easy-to-open evidence.
+
+Touch-friendly judgment controls.
+
+Bottom actions only if they do not obstruct content.
+
+No clipped dialogs or off-screen Save buttons.
+
+### Required viewport checks
+
+320, 360, 390, 430, 768, 1024, 1280, 1440, 1660 and 1920px.
+
+No horizontal page overflow.
+
+No hidden review controls.
+
+No scrolling traps.
+
+No sticky toolbar covering evidence.
+
+No conflicting active criterion.
+
+No Demo selector blocking actions.
+
+No AI overlay blocking official decisions.
+
+---
+
+# 15. PRESERVE THE MODERN VISUAL DESIGN
+
+This is a PREMIUM UX REDESIGN, not a visual downgrade.
+
+Preserve:
+
+- Existing 5TOT brand identity.
+- Modern blue/white palette.
+- Refined typography.
+- Subtle shadows and borders.
+- Meaningful status colors.
+- Clean cards.
+- Well-spaced declaration rows.
+- Elegant evidence badges.
+- Clear human judgment buttons.
+- Strong application information hierarchy.
+
+Avoid:
+
+- Dense old Excel-like grids.
+- Excessive nested cards.
+- Unnecessary borders around every small value.
+- Too many competing colored badges.
+- Giant empty panels.
+- Tiny text.
+- Multiple sticky toolbars.
+- Redundant large buttons.
+- Unnecessary full-screen modals.
+
+The result should be suitable for product demonstrations and institutional presentations.
+
+But visual polish must not compromise review efficiency.
+
+---
+
+# 16. INDIVIDUAL VS COLLECTIVE
+
+Individual Student 5-Good applications have five criteria.
+
+Collective applications use TT01–TT04.
+
+Do not apply the five Individual criteria to Collective cases.
+
+Preserve Collective direct-to-City workflow.
+
+Shared evidence/document components may be reused.
+
+Do not force Collective dossiers into the Individual criterion navigator.
+
+Do not change Collective award rules in this phase.
+
+---
+
+# 17. DEMO AND REAL MODE
+
+## Demo
+
+Use deterministic synthetic applications.
+
+Support real interactive review actions.
+
+Judgments and progress must update the same canonical Demo state.
+
+Verify that moving between criteria preserves saved assessments.
+
+Do not show decorative success toasts without changing underlying state.
+
+Demo reset restores the original state.
+
+## Real
+
+Use actual Backend V2 endpoints.
+
+No fake persistence.
+
+No silent Demo fallback.
+
+No invented success responses.
+
+If the backend is unavailable, show a truthful error or unavailable state.
+
+Do not claim Real Mode is tested against PostgreSQL if it has not been connected to an authorized test database.
+
+Do not reconnect Supabase or apply migrations in this phase.
+
+---
+
+# 18. TEST SCENARIOS
+
+Implement and execute the following scenario matrix.
+
+### UX-R01 — Open Officer dossier
+
+Application and submitted Student profile appear correctly.
+
+### UX-R02 — Single criterion navigation
+
+Only one visible navigation system controls the active criterion.
+
+### UX-R03 — Criterion synchronization
+
+Selecting Volunteer updates content and review controls to Volunteer.
+
+No mismatch with Ethics or another criterion.
+
+### UX-R04 — Open requirement
+
+Requirement, Student declaration and evidence are easy to find.
+
+### UX-R05 — Multiple declarations
+
+All valid declarations remain accessible.
+
+### UX-R06 — Evidence preview
+
+Open PDF/image and return to the same context.
+
+### UX-R07 — Human judgment
+
+Record an authorized judgment at the actual canonical review scope.
+
+### UX-R08 — Review progress
+
+Progress changes based only on persisted human review outcomes.
+
+### UX-R09 — Notes
+
+Create/edit/save legitimate reviewer notes.
+
+### UX-R10 — Supplementation
+
+Submit a scoped supplement request through the existing human-controlled workflow.
+
+### UX-R11 — Continue reviewing
+
+Move to the next criterion without losing saved or unsaved work.
+
+### UX-R12 — School review
+
+School actions and recommendation remain correct.
+
+### UX-R13 — City review
+
+Authorized City reviewer works without individual assignment.
+
+### UX-R14 — Committee
+
+Committee can inspect School/City results and make official decisions using only its authorized controls.
+
+### UX-R15 — AI optional
+
+AI never automatically opens or records human decisions.
+
+### UX-R16 — Mobile
+
+Criterion navigation, evidence viewer and judgment controls work at 390px.
+
+### UX-R17 — Laptop
+
+The content is readable at 1024px and 1280px.
+
+### UX-R18 — Desktop
+
+The layout uses width effectively at 1440px and 1660px.
+
+### UX-R19 — Collective regression
+
+TT01–TT04 review remains functional.
+
+### UX-R20 — Demo/Real separation
+
+No simulated production review completion.
+
+### UX-R21 — Active-role authorization
+
+Role switch never grants invalid human judgment permissions.
+
+### UX-R22 — No status contradictions
+
+Human completion, AI advisory and workflow status remain clearly distinguished.
+
+### UX-R23 — No lost functionality
+
+Existing legitimate review controls remain accessible and wired.
+
+### UX-R24 — No layout collisions
+
+AI, Demo selector, sticky actions and evidence viewer do not block one another.
+
+---
+
+# 19. REVIEW PRODUCTIVITY ACCEPTANCE
+
+Evaluate actual review interactions.
+
+Compare the existing workflow with the redesigned workflow for the same realistic task:
+
+Open application → Select criterion → Open supporting evidence → Record judgment → Move to next criterion.
+
+Report:
+
+- Number of clicks.
+- Number of full-page navigations.
+- Number of modal transitions.
+- Whether important controls are immediately discoverable.
+- Whether any information is duplicated.
+- Whether review context is lost.
+
+Use actual measured interaction paths.
+
+Do not fabricate time-saving percentages.
+
+Do not claim improved speed without evidence.
+
+The redesigned interaction must be at least as functional as the current implementation and should eliminate unnecessary steps.
+
+---
+
+# 20. IMPLEMENTATION CHECKPOINTS
+
+## UX-S2A — Audit and interaction contract
+
+Produce:
+
+- Actual source component inventory.
+- Duplicate navigation root cause.
+- Active criterion state model.
+- Review action mapping.
+- Before/after interaction design.
+- Responsive root-cause report.
+
+## UX-S2B — Single criterion navigation
+
+Implement:
+
+- One canonical criterion selector.
+- Compact status.
+- Correct selected criterion synchronization.
+- Responsive navigation.
+
+## UX-S2C — Simplified dossier review
+
+Implement:
+
+- Clean requirement/declaration hierarchy.
+- Fast evidence opening.
+- Contextual human judgment controls.
+- Notes and supplementation integration.
+
+## UX-S2D — Compact action area
+
+Implement:
+
+- Primary actions.
+- Secondary actions.
+- Safe save behavior.
+- Next criterion navigation.
+- Sticky/overlay correction.
+
+## UX-S2E — Cross-role integration
+
+Apply to:
+
+- School.
+- City Reviewer.
+- Committee, with authorized decision differences.
+
+Reuse the same Student dossier presentation.
+
+Do not introduce another independent renderer.
+
+## UX-S2F — Responsive and quality hardening
+
+Verify:
+
+- Mobile.
+- Tablet.
+- Laptop.
+- Desktop.
+- Accessibility.
+- Security.
+- Demo/Real isolation.
+- Existing workflow regression.
+
+Fix failures before reporting completion.
+
+---
+
+# 21. GOLDEN FRONTEND PROTECTION
+
+Preserve the current source baseline and historical Golden Frontend manifest.
+
+Before modifying:
+
+- Record Git HEAD and working tree.
+- Create a recoverable checkpoint.
+- Identify intended component changes.
+
+Do not:
+
+- Rebuild the entire frontend.
+- Rewrite unrelated Student pages.
+- Modify the official School forwarding lifecycle.
+- Restore City assignment.
+- Restore ResolutionCase.
+- Create a new backend service.
+- Rewrite AI architecture.
+- Replace the existing design system.
+- Silently update the Golden manifest.
+
+After implementation:
+
+- Report all intentional source changes.
+- Run regression tests.
+- Verify no unrelated protected source has been damaged.
+
+---
+
+# 22. REQUIRED VERIFICATION
+
+Run actual available:
+
+- Frontend TypeScript.
+- Production build.
+- Unit tests.
+- Shared dossier tests.
+- School review tests.
+- City review tests.
+- Committee tests.
+- Evidence viewer tests.
+- Review action tests.
+- Navigation synchronization tests.
+- Responsive browser checks.
+- FSD architecture checks.
+- Demo/Real isolation tests.
+
+Capture browser screenshots at:
+
+- City Reviewer — 390px.
+- City Reviewer — 768px.
+- City Reviewer — 1024px.
+- City Reviewer — 1440px.
+- City Reviewer — 1660px.
+- School Reviewer — 1440px.
+- Committee — 1440px.
+
+Screenshots must be of the actual rendered application.
+
+Do not invent screenshots or test results.
+
+If browser testing cannot be performed, report NOT VERIFIED.
+
+## Production correctness
+
+Do not claim real API persistence PASS without confirming the actual backend integration.
+
+Do not claim PostgreSQL transaction correctness while database integration is offline.
+
+---
+
+# 23. REQUIRED FINAL REPORT
+
+Provide:
+
+A. Original UX defects and verified causes.
+
+B. Before/after information architecture.
+
+C. New review workspace layout.
+
+D. Single criterion navigation.
+
+E. Criterion synchronization behavior.
+
+F. Requirement/declaration/evidence improvements.
+
+G. Human judgment controls.
+
+H. Notes and supplementation behavior.
+
+I. Review progress correctness.
+
+J. School reviewer integration.
+
+K. City reviewer integration.
+
+L. Committee integration.
+
+M. AI optional behavior.
+
+N. Actual responsive browser results.
+
+O. Before/after review interaction comparison.
+
+P. Regression test results.
+
+Q. Security and role boundaries.
+
+R. Exact modified files.
+
+S. Golden Frontend preservation.
+
+T. Unverified Real Mode dependencies.
+
+U. Remaining issues.
+
+V. Final status: PASS / PARTIAL / BLOCKED.
+
+A good-looking screenshot alone is not a PASS.
+
+A passing TypeScript build alone is not a PASS.
+
+A simulated Demo judgment does not prove Real Mode persistence.
+
+---
+
+# 24. HARD STOP
+
+Stop after UX-S2 implementation and verification.
+
+Do not automatically begin UX-S3 or redesign Admin.
+
+Do not introduce:
+
+- A new award workflow engine.
+- City assignment.
+- ResolutionCase.
+- Formal Committee meeting or voting.
+- Automatic AI human judgments.
+- New Student submission restrictions.
+- Duplicate School forwarding.
+- Unnecessary new review states.
+
+Do not reconnect Supabase.
+
+Do not run live migrations.
+
+Do not deploy.
+
+Do not rewrite the historical Golden Frontend manifest.
+
+## FINAL PRODUCT PRINCIPLE
+
+**ONE DOSSIER. ONE CRITERION NAVIGATION. ONE CLEAR REVIEW ACTION AREA.**
+
+The reviewer opens an application.
+
+The original Student dossier is presented clearly.
+
+The reviewer selects one criterion.
+
+Relevant declarations and evidence are immediately accessible.
+
+Human assessment controls are intuitive and easy to use.
+
+Saved review results update real progress.
+
+AI stays optional.
+
+The interface works beautifully on desktop, laptop, tablet and mobile.
+
+School, City and Committee share the same presentation while respecting their different authorities.
+
+**DELIVER A PREMIUM, MODERN REVIEW WORKSPACE THAT IS EASIER AND FASTER TO USE THAN BOTH THE CURRENT 5TOT IMPLEMENTATION AND THE LEGACY SYSTEM — WITHOUT LOSING REAL BUSINESS FUNCTIONALITY.**

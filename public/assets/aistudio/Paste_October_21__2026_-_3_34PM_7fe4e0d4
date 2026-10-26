@@ -1,0 +1,1064 @@
+# 5TOT ĐÀ NẴNG — SRW-1
+## PRODUCTION SCHOOL-TO-CITY BATCH FORWARDING — ONE-TIME SUBMISSION WITH OFFICIAL DECISION DOCUMENT
+
+**Priority:** P0 — Customer-Validated Business Workflow  
+**Phase:** SRW-1 — Backend Implementation  
+**Stack:** Existing Node.js + Express + Strict TypeScript + Prisma/PostgreSQL  
+**Architecture:** Existing Backend V2 Modular Monolith  
+**Database Execution Mode:** OFFLINE during this phase  
+**Goal:** Implement actual production backend code for consolidated one-time School-to-City forwarding, with strong authorization, data integrity, concurrency control and auditability.
+
+---
+
+# 1. PROJECT CONTEXT
+
+The 5TOT Đà Nẵng system has recently received important customer feedback.
+
+The previously implemented School-to-City flow allowed or assumed application-level forwarding.
+
+This must be changed.
+
+**NEW APPROVED BUSINESS RULE:**
+
+A School Review Unit completes its preliminary review, prepares one consolidated list of recommended Individual Student applications, attaches one official decision document, and forwards that entire list to City exactly once per award season.
+
+For the University of Da Nang:
+
+- Eight distinct member institutions.
+- One shared School Review Unit.
+- One shared School reviewer account.
+- One consolidated selected list.
+- One common official decision document.
+- One successful School-to-City forwarding operation per season.
+
+This phase implements the real backend capabilities needed to enforce these rules.
+
+Do not create a frontend prototype as a substitute.
+
+Do not create a second backend service.
+
+---
+
+# 2. MANDATORY SRW-0 PREFLIGHT GATE
+
+Before writing code, inspect the actual current codebase and the latest SRW-0 audit.
+
+Verify that SRW-0 established:
+
+1. Current School review state machine.
+2. Current City intake mechanism.
+3. Existing forwarding endpoints.
+4. Actual Prisma models.
+5. Existing file storage architecture.
+6. School Review Unit and Institution mappings.
+7. Current School recommendation records.
+8. Current authorization rules.
+9. Existing audit/outbox architecture.
+10. Existing test infrastructure.
+11. Legacy data compatibility requirements.
+12. Current Git/repository baselines.
+
+If a satisfactory SRW-0 audit already exists, use it.
+
+If the audit is absent, incomplete or inconsistent with the actual code:
+
+**STOP IMPLEMENTATION AND COMPLETE SRW-0 AUDIT FIRST.**
+
+Do not guess model names or business state transitions.
+
+Do not introduce new states that conflict with the existing canonical lifecycle.
+
+Proceed to implementation only when the required contract is understood.
+
+---
+
+# 3. APPROVED UDN CONFIGURATION
+
+The University of Da Nang has eight configured member institutions:
+
+- DUT.
+- DUE.
+- UED.
+- UFL.
+- UTE.
+- VKU.
+- VNUK.
+- SMP.
+
+Every student application preserves its original Institution ID.
+
+All eight member institutions belong to:
+
+`unit-udn`
+
+for School preliminary review.
+
+There is ONE authorized shared School reviewer account.
+
+Do not create separate member-institution reviewer accounts.
+
+Do not introduce a University of Da Nang intermediate review level.
+
+## Critical forwarding rule
+
+The entire UDN forwarding list belongs to:
+
+`schoolReviewUnitId = unit-udn`
+
+and the current:
+
+`awardSeasonId`
+
+It does NOT belong to an individual member institution.
+
+Institution filtering is only a presentation/query capability.
+
+It must not affect batch identity.
+
+A reviewer may filter applications by DUT or DUE while preparing the list, but both institutions' selected applications must belong to the SAME UDN batch.
+
+For an independent non-UDN School Review Unit, the same one-batch-per-season rule applies within its own unit.
+
+---
+
+# 4. REQUIRED BUSINESS WORKFLOW
+
+Implement this precise workflow:
+
+### Step 1 — School preliminary review
+
+The School Officer performs normal Individual application preliminary assessment.
+
+Existing functionality remains:
+
+- Criterion review.
+- Evidence inspection.
+- Human judgment.
+- Reviewer comments.
+- Scoped supplementation.
+- Recommendation selection.
+
+Do not modify the Student's original declarations or evidence through batch operations.
+
+### Step 2 — Prepare selected list
+
+The authorized School Officer opens or creates a batch draft.
+
+The system retrieves eligible Individual applications belonging to that review unit and season.
+
+The Officer prepares the list of applications recommended for City consideration.
+
+### Step 3 — Attach official decision
+
+The Officer attaches one common School-level decision document.
+
+The decision document applies to the entire selected forwarding list.
+
+### Step 4 — Validate
+
+The server validates the exact selected application set, document, permissions, season and current School review states.
+
+### Step 5 — Final confirmation
+
+The Officer explicitly confirms the forwarding.
+
+The entire batch transitions atomically to its final forwarded state.
+
+### Step 6 — City intake
+
+The selected applications become available to the existing authorized City intake and assignment workflow.
+
+The common official decision document remains accessible to authorized City users.
+
+### Step 7 — Locked batch
+
+After successful forwarding:
+
+- The selected list cannot be changed through normal School operations.
+- The decision document cannot be replaced through normal School operations.
+- The same School Review Unit cannot forward another normal batch for that season.
+- Retry must not create duplicate City records.
+
+This is one successful final forwarding operation.
+
+Draft edits before forwarding do NOT count as multiple forwarding operations.
+
+---
+
+# 5. IMPLEMENT A REAL DOMAIN AGGREGATE
+
+First check whether an appropriate aggregate already exists.
+
+Reuse or extend an existing compatible aggregate where possible.
+
+Otherwise introduce a domain concept equivalent to:
+
+`SchoolForwardingBatch`
+
+With an item relationship equivalent to:
+
+`SchoolForwardingBatchItem`
+
+The actual names must follow existing project conventions.
+
+## Batch responsibilities
+
+A batch represents:
+
+- One School Review Unit.
+- One award season.
+- One selected set of Individual applications.
+- One common decision document.
+- One final forwarding event.
+
+Suggested conceptual data:
+
+- Batch ID.
+- School Review Unit ID.
+- Award Season ID.
+- Batch status.
+- Decision attachment reference.
+- Created by.
+- Last modified by.
+- Forwarded by.
+- Forwarded at.
+- Optimistic version.
+- Created at.
+- Updated at.
+
+## Batch item responsibilities
+
+Each item references the EXISTING Individual application.
+
+Do not duplicate Student applications for City.
+
+Maintain:
+
+- Application ID.
+- Original Institution ID through application relations.
+- Actual School recommendation.
+- Actual City workflow identity.
+- Batch membership.
+
+Prevent duplicate application inclusion.
+
+Do not allow one application to belong to multiple successful forwarding batches.
+
+---
+
+# 6. BATCH LIFECYCLE
+
+Use a minimal lifecycle.
+
+Suggested:
+
+- DRAFT.
+- FORWARDED.
+
+Add an explicit operational state only if required by an actual existing business need.
+
+Do not introduce:
+
+- Escalation.
+- ResolutionCase.
+- Committee meeting.
+- Appeal.
+- Complex approval chain.
+- Separate UDN authorization stage.
+
+## DRAFT
+
+May be modified by an authorized School Officer.
+
+Allowed operations:
+
+- View.
+- Select eligible applications.
+- Remove applications.
+- Attach/replace decision document.
+- Validate.
+- Preview totals.
+- Confirm final forwarding.
+
+## FORWARDED
+
+Immutable through the normal School workflow.
+
+Allowed:
+
+- Read.
+- Download authorized attachment.
+- Inspect selected applications.
+- Inspect audit history.
+
+Not allowed:
+
+- Add applications.
+- Remove applications.
+- Replace decision document.
+- Forward a second time.
+- Create another forwarding batch for the same unit/season.
+
+Do not add an unrestricted reopen capability.
+
+---
+
+# 7. DATABASE DESIGN AND UNIQUENESS
+
+Use Prisma and actual PostgreSQL-compatible persistence.
+
+Inspect current models and migrations before changing the schema.
+
+Implement the required constraints.
+
+At minimum enforce:
+
+**One normal batch per School Review Unit per award season.**
+
+Use a database uniqueness strategy consistent with the actual schema.
+
+Also prevent duplicate application membership where required.
+
+Use actual foreign keys for:
+
+- School Review Unit.
+- Award Season.
+- Individual Application.
+- Decision Attachment.
+- Authorized User references.
+
+Add appropriate indexes for:
+
+- Unit + Season lookup.
+- Batch status.
+- Batch items.
+- City intake.
+- Application membership.
+
+Do not introduce redundant tables if existing schema already supports equivalent guarantees.
+
+## Migration rules
+
+Prepare a reviewed, non-destructive Prisma migration.
+
+Do NOT:
+
+- Run Prisma migrate reset.
+- Run destructive schema reset.
+- Use `prisma db push` as a shortcut.
+- Connect to Supabase during this phase.
+- Apply live migrations without authorization.
+- Delete historical application forwarding records.
+
+The migration must be ready for later authorized integration testing.
+
+While offline, clearly report that it has NOT been applied to the real database.
+
+---
+
+# 8. SELECTION ELIGIBILITY
+
+The School Officer must select only valid Individual applications.
+
+Validate server-side:
+
+1. Correct School Review Unit.
+2. Correct award season.
+3. Correct application type.
+4. Correct School preliminary review scope.
+5. Appropriate recorded School recommendation.
+6. Not previously forwarded.
+7. Not already assigned to another forwarded batch.
+8. No unresolved active supplementation state that makes the School recommendation incomplete.
+9. Correct current application lifecycle.
+10. Valid season forwarding window.
+
+For UDN, accept applications from any of its eight configured member institutions.
+
+Reject applications from outside `unit-udn`.
+
+Do not infer membership from institution-name strings alone.
+
+Use canonical configured relationships.
+
+## Important Student submission rule
+
+Do not introduce new eligibility blocking at Student submission.
+
+Student readiness warnings remain advisory.
+
+This forwarding validation applies to School-selected applications after the appropriate human preliminary review.
+
+## Unselected applications
+
+Unselected applications must not be silently forwarded.
+
+If an application is not recommended, it remains outside the selected City forwarding list.
+
+Do not fabricate City intake records for it.
+
+If the approved current workflow requires complete School disposition of all applications before forwarding, enforce that requirement using actual School review states.
+
+Otherwise report unresolved/nonselected applications transparently and apply the explicitly approved finalization policy.
+
+Do not invent a new automatic rejection rule.
+
+---
+
+# 9. COMMON OFFICIAL DECISION DOCUMENT
+
+The batch requires exactly one primary official School decision document reference at final confirmation.
+
+For UDN:
+
+**ONE common decision for the entire eight-member consolidated list.**
+
+Do not request eight different institution decisions.
+
+## Backend requirements
+
+Inspect and reuse the current private file storage infrastructure.
+
+Implement real:
+
+- Attachment metadata.
+- Secure upload authorization.
+- Validated file reference.
+- Content-type validation.
+- Maximum file-size policy.
+- File availability verification.
+- Safe download/preview authorization.
+- Binding of attachment to the correct batch.
+- Finalization immutability.
+
+A file name or client-supplied URL must not count as a verified uploaded decision document.
+
+If private storage is not fully implemented, add the production adapter integration required by the existing architecture, without pretending offline storage has been tested.
+
+In development offline mode, production persistence/file routes must fail closed where their dependencies are unavailable.
+
+Synthetic files are permitted only in Demo Mode or test fixtures.
+
+Do not expose official documents using public unrestricted storage URLs.
+
+---
+
+# 10. ATOMIC ONE-TIME FORWARDING
+
+This is the MOST CRITICAL backend requirement.
+
+The final forwarding operation must be transactional.
+
+The desired atomic effect:
+
+1. Validate current batch version and authorization.
+2. Validate exact membership.
+3. Validate decision document.
+4. Lock or version-check the batch.
+5. Mark the batch forwarded.
+6. Transition selected applications to the approved City-received lifecycle state.
+7. Create the necessary City intake records.
+8. Write audit records.
+9. Write transactional outbox events where the architecture requires them.
+10. Commit.
+
+All effects must either succeed together or roll back together.
+
+Do not allow partial City forwarding.
+
+Do not allow only some selected applications to transition.
+
+Do not mark a batch successful before the required database transaction commits.
+
+## Concurrency
+
+Handle:
+
+- Double-click forwarding.
+- Browser retry.
+- HTTP retry.
+- Two active sessions of the shared UDN account.
+- Two simultaneous forwarding requests.
+- Stale batch versions.
+- Server failure before commit.
+- Network failure after a successful commit.
+
+Use PostgreSQL constraints and transaction-safe conflict handling.
+
+Do not rely on frontend button disabling as the correctness mechanism.
+
+---
+
+# 11. IDEMPOTENCY
+
+Implement true request idempotency.
+
+The final forwarding operation should accept an idempotency key consistent with the existing backend conventions.
+
+Expected behavior:
+
+- First valid request commits once.
+- Retry with the same key and same payload returns the existing committed outcome.
+- Retry with the same key but a different payload returns a meaningful conflict.
+- A different key must not bypass the one-batch-per-unit/season rule.
+- No duplicate City intake.
+- No duplicate audit transition.
+- No duplicate outbox forwarding event.
+
+Avoid fake idempotency implemented only with an in-memory Set.
+
+Implement persistent PostgreSQL-compatible handling.
+
+---
+
+# 12. API DESIGN
+
+Use existing backend `/api/v2` conventions.
+
+Inspect current School and City endpoints first.
+
+Do not duplicate existing functions under incompatible routes.
+
+Suggested API capabilities:
+
+## School
+
+- Get current forwarding batch.
+- Get School-selected eligible applications.
+- Get batch composition and validation summary.
+- Create or retrieve draft.
+- Update selected applications.
+- Attach common official decision.
+- Validate final forwarding readiness.
+- Confirm forwarding.
+- Retrieve completed forwarding details.
+
+## City
+
+- List forwarded School batches.
+- Retrieve a batch.
+- Inspect selected applications.
+- Download/preview common official decision.
+- Continue existing City intake and assignment.
+
+Use consistent resource naming.
+
+Follow:
+
+Route → Controller → Service → Repository → Prisma.
+
+Keep controllers thin.
+
+Use clear request/response DTOs.
+
+Validate all inputs.
+
+Return explicit domain errors for:
+
+- Unauthorized user.
+- Invalid Unit.
+- Invalid Season.
+- Invalid selected applications.
+- Missing official decision.
+- Missing School recommendation.
+- Active supplementation conflict.
+- Concurrent modification.
+- Already forwarded.
+- Forwarding window closed.
+- Duplicate submission.
+
+Use established error response conventions.
+
+---
+
+# 13. RBAC AND ABAC
+
+Authorization must be enforced by the backend.
+
+## School Officer
+
+Can manage only a batch belonging to the review unit they are authorized to handle.
+
+UDN reviewer can work with all eight configured UDN institutions through `unit-udn`.
+
+Cannot access or forward another School Review Unit's batch.
+
+## City Manager
+
+Can view properly forwarded batches and perform existing authorized intake/assignment actions.
+
+Cannot impersonate a School Officer to change a School batch.
+
+## City Officer
+
+Can inspect forwarded applications only when authorized through current assignment/scope rules.
+
+No unrestricted access to every City application.
+
+## City Committee
+
+Can inspect the relevant School decision document and recorded review results within its authorized scope.
+
+Cannot modify the School forwarding batch.
+
+## Admin
+
+Does not automatically gain School forwarding or Committee decision permissions merely from the ADMIN role.
+
+Follow canonical permissions.
+
+## Student
+
+Cannot create, edit or forward School batches.
+
+Cannot access private School decision documents unless a separately approved permission explicitly allows it.
+
+All batch and attachment queries must enforce resource-level authorization.
+
+Prevent IDOR by guessing batch IDs or file IDs.
+
+---
+
+# 14. CITY INTAKE INTEGRATION
+
+A forwarded batch must create the correct relationship with the EXISTING City intake workflow.
+
+Do not build another City intake system.
+
+Do not automatically assign a City Officer unless the existing approved business flow does so.
+
+Preserve City Manager intake and assignment authority.
+
+Each forwarded Individual application must:
+
+- Retain its original identity.
+- Retain its original Institution.
+- Retain its School recommendation.
+- Remain associated with the correct batch.
+- Be visible to authorized City users.
+- Be assigned and reviewed using existing City workflows.
+
+City users should be able to access the common School decision associated with the application through its batch.
+
+No extra UDN review stage.
+
+No ResolutionCase required.
+
+---
+
+# 15. LEGACY FORWARDING COMPATIBILITY
+
+Inspect historical forwarding paths.
+
+Identify any existing:
+
+- Per-application School forwarding endpoints.
+- Individually forwarded applications.
+- Legacy City intake records.
+- School review transitions.
+- Audit events.
+- ResolutionCase dependencies.
+
+Do not leave an old active endpoint that bypasses the one-time batch rule.
+
+Retire or safely adapt legacy forwarding mutations.
+
+Ensure both frontend Demo and Real Mode route through the appropriate canonical capabilities.
+
+Do not delete historical records.
+
+Do not synthesize official decision files for old records.
+
+For previously forwarded applications, provide a compatibility strategy that preserves history and prevents accidental duplicate forwarding.
+
+Do not rewrite historical states without an explicit migration plan.
+
+---
+
+# 16. TRANSACTIONAL AUDIT AND OUTBOX
+
+Record significant operations using existing architecture:
+
+- Batch draft creation.
+- Draft selection changes where auditing is required.
+- Decision attachment changes.
+- Validation/final confirmation.
+- Final successful forwarding.
+- Unauthorized/conflicting attempts through appropriate security logging.
+- City intake creation.
+
+A committed forwarding event should contain enough immutable references to identify:
+
+- Batch.
+- School Review Unit.
+- Season.
+- Selected application IDs or immutable batch membership.
+- Decision attachment.
+- Actor.
+- Timestamp.
+
+Avoid logging sensitive document contents.
+
+Audit must not be written as an unreliable separate operation after the business transaction.
+
+Use transactional audit/outbox patterns where established.
+
+---
+
+# 17. REAL PRODUCTION IMPLEMENTATION — NO SKELETONS
+
+This phase must create code that can run against PostgreSQL after the database is re-enabled.
+
+Do not produce only:
+
+- Interfaces.
+- DTO definitions.
+- Empty repositories.
+- Fake controllers.
+- Static JSON success responses.
+- TODOs.
+- NOT_IMPLEMENTED placeholders.
+- Test-only transaction simulations masquerading as production behavior.
+
+Implement actual Prisma repositories and route wiring.
+
+Use:
+
+- Strict TypeScript.
+- Idiomatic async/await.
+- Appropriate Promise return types.
+- Dependency injection consistent with the project.
+- Cohesive domain services.
+- Pure synchronous domain validation where appropriate.
+- Existing error handling.
+- Structured logging.
+- Proper transaction boundaries.
+
+Do not create giant files.
+
+Do not introduce a new framework or microservice.
+
+Use the current Modular Monolith architecture.
+
+---
+
+# 18. OFFLINE DATABASE DEVELOPMENT CONTRACT
+
+The system is intentionally operating offline from Supabase during this coding phase.
+
+Do not reconnect the database.
+
+Do not run migrations.
+
+Do not run live SQL or seed production data.
+
+However, offline mode must NOT excuse incomplete production code.
+
+Implement the actual Prisma persistence paths.
+
+Use test doubles only under test infrastructure.
+
+Production services must be wired to genuine persistence repositories.
+
+When DB is offline:
+
+- `/health/live` may remain healthy.
+- `/health/ready` must indicate unavailable dependencies.
+- Persistence-backed Real Mode endpoints must fail closed.
+- Do not return fake success.
+- Do not silently use Demo repositories.
+
+Provide an honest verification classification:
+
+- Source implementation completed.
+- Offline unit tests executed.
+- HTTP tests executed with test doubles.
+- PostgreSQL transaction integration NOT VERIFIED.
+- Real decision upload/storage integration NOT VERIFIED unless genuinely tested.
+
+Later DB reconnection must validate actual constraints, migrations and concurrent forwarding.
+
+---
+
+# 19. REQUIRED UNIT TESTS
+
+Implement domain tests for:
+
+1. One batch per unit/season.
+2. Eight UDN member institutions share one batch.
+3. Original Institution ID preserved.
+4. Independent School cannot join UDN batch.
+5. Another School Review Unit cannot access UDN batch.
+6. Draft modification allowed before forwarding.
+7. Empty selection rejected.
+8. Nonrecommended application rejected.
+9. Wrong-season application rejected.
+10. Collective application rejected.
+11. Missing decision attachment rejected.
+12. Invalid decision attachment rejected.
+13. Already forwarded application rejected.
+14. Forwarded batch immutable.
+15. Same request retry returns same result.
+16. Changed payload with same idempotency key rejected.
+17. Second different-key forwarding rejected.
+18. Concurrent forwarding has only one winner.
+19. City intake occurs once.
+20. No partial forwarding.
+21. Invalid user scope rejected.
+22. Batch validation reflects current application states.
+23. Active supplementation conflicts handled correctly.
+24. Legacy individually forwarded application handled safely.
+25. Audit/outbox logical transaction behavior.
+
+Use the actual production domain services in unit tests.
+
+Do not copy implementation logic into test-only functions.
+
+---
+
+# 20. HTTP AND INTEGRATION TESTS
+
+Implement HTTP tests for:
+
+- Authenticated School batch lookup.
+- Draft creation.
+- Selection update.
+- Decision attachment validation.
+- Forward validation.
+- Forward confirmation.
+- Duplicate request behavior.
+- Unauthorized School access.
+- Invalid application membership.
+- City batch visibility.
+- City decision document permission checks.
+- Offline Real Mode fail-closed behavior.
+
+Add database integration tests against actual PostgreSQL, but do not falsely report them as passed while offline.
+
+Prepare specific real-DB tests for:
+
+- Unique constraints.
+- Transaction rollback.
+- Concurrent requests.
+- Idempotency persistence.
+- City intake atomicity.
+- Audit/outbox atomicity.
+- Batch membership constraints.
+
+Do not run them against the live database until separately authorized.
+
+---
+
+# 21. DEMO MODE SUPPORT
+
+The frontend has a permanent Interactive Demo Mode.
+
+This backend phase should provide typed contracts and realistic synthetic fixtures for future integration without rewriting the frontend.
+
+Expected Demo examples:
+
+### D1 — UDN batch draft
+
+Applications from multiple UDN member institutions appear in one draft.
+
+### D2 — Institution filtering
+
+Filter DUT or DUE without changing batch identity.
+
+### D3 — Attach common decision
+
+One synthetic decision attachment applies to all selected applications.
+
+### D4 — Confirm once
+
+Batch enters FORWARDED.
+
+### D5 — Duplicate prevention
+
+A repeated forwarding action does not generate another batch.
+
+### D6 — City visibility
+
+City sees the selected applications and the common decision.
+
+### D7 — Independent School isolation
+
+A separate School Review Unit has its own independent seasonal batch.
+
+Demo state must remain separate from Real persistence.
+
+Do not implement a second batch business engine just for Demo.
+
+Prefer reusing pure domain logic with separate adapters.
+
+---
+
+# 22. DO NOT CHANGE THE GOLDEN FRONTEND
+
+SRW-1 is a BACKEND phase.
+
+Do not modify protected frontend files.
+
+Do not modify:
+
+- Student interface.
+- School reviewer screens.
+- City Officer screens.
+- Committee screens.
+- App navigation.
+- AI Companion.
+- React styling.
+- Golden Frontend manifest.
+
+Prepare typed backend/API contracts for SRW-3 frontend integration.
+
+If frontend modifications are absolutely necessary for a shared contract, report them as blockers rather than silently editing protected files.
+
+Frontend reuse and redesign belong to SRW-2 and SRW-3.
+
+---
+
+# 23. QUALITY GATES
+
+Execute actual available commands.
+
+Required:
+
+- Backend strict TypeScript.
+- Backend production build.
+- Backend ESLint.
+- Existing backend regression suite.
+- New batch forwarding domain tests.
+- New HTTP authorization tests.
+- Prisma schema validation when possible without DB connectivity.
+- Migration source review.
+- Source architecture checks.
+- No giant source files.
+- No production fake repositories.
+- Golden Frontend manifest unchanged.
+- Existing frontend build/regression if shared contracts are involved.
+
+Ensure:
+
+- `no-floating-promises`.
+- `no-misused-promises`.
+- Proper async/await.
+- No unsafe `any`.
+- No unhandled transaction errors.
+
+Do not report actual database ACID verification while offline.
+
+---
+
+# 24. REQUIRED COMPLETION REPORT
+
+Provide:
+
+## A. Preflight
+
+- SRW-0 audit status.
+- Current Git baseline.
+- Existing forwarding implementation summary.
+- Identified schema and compatibility issues.
+
+## B. Implementation
+
+- New/modified domain services.
+- Controllers/routes.
+- Actual Prisma repository methods.
+- Batch model.
+- Batch item model.
+- Decision attachment handling.
+- Authorization rules.
+- City intake integration.
+- Transaction and idempotency strategy.
+- Audit/outbox integration.
+- Legacy forwarding compatibility.
+
+## C. Exact Files
+
+List every new and modified backend file.
+
+Identify migration files separately.
+
+Confirm protected frontend files were not changed.
+
+## D. API Contract
+
+Provide exact routes, methods and request/response examples based on actual implemented code.
+
+Do not document hypothetical endpoints as completed.
+
+## E. Verification
+
+Report:
+
+- TypeScript result.
+- Build result.
+- ESLint result.
+- Domain test counts.
+- HTTP test counts.
+- Existing regression results.
+- Prisma validation.
+- Offline failure behavior.
+- PostgreSQL integration status.
+- File storage integration status.
+
+## F. Risks
+
+List unresolved blockers clearly.
+
+## G. Final Verdict
+
+PASS / PARTIAL / BLOCKED.
+
+A PASS means the production source implementation and available offline tests meet SRW-1 requirements.
+
+It does NOT mean PostgreSQL integration or actual document storage has been verified.
+
+If the production repository implementation is incomplete, report PARTIAL or BLOCKED.
+
+---
+
+# 25. HARD STOP
+
+STOP after SRW-1.
+
+Do not automatically proceed to SRW-2 or SRW-3.
+
+Do not:
+
+- Rewrite frontend review screens.
+- Build a new Student dossier renderer.
+- Build the School forwarding frontend yet.
+- Create another City workflow.
+- Remove City Manager assignments.
+- Remove supplementation.
+- Remove existing human review judgments.
+- Modify Committee decisions.
+- Implement AI changes.
+- Reconnect Supabase.
+- Execute Prisma migrations.
+- Upload real official documents.
+- Deploy to production.
+- Update Golden Frontend Manifest.
+
+## FINAL NORTH STAR
+
+**ONE SCHOOL REVIEW UNIT. ONE AWARD SEASON. ONE SELECTED LIST. ONE COMMON DECISION DOCUMENT. ONE SUCCESSFUL FORWARDING.**
+
+For UDN, the eight configured member institutions share one School forwarding batch, while every student retains their original institution.
+
+The backend must enforce this consistently through real production code, PostgreSQL-ready constraints, authorization, idempotency, transactions and audit.
+
+City receives the selected applications through the existing intake workflow.
+
+No duplicate transfers.
+
+No partial forwarding.
+
+No fictional review stages.
+
+No production fake persistence.
+
+**IMPLEMENT A REAL, SAFE AND DEPLOYABLE BACKEND BUSINESS CAPABILITY — NOT A DEMO-ONLY SIMULATION OR A COLLECTION OF SKELETON FILES.**

@@ -1,0 +1,1099 @@
+# 5TOT ĐÀ NẴNG — LEAN-UX.2
+## CROSS-ROLE UX DEDUPLICATION, EVIDENCE REVIEW INTEGRITY, STATUS CONSISTENCY & COMPACT REVIEW WORKSPACES
+
+**Priority:** P0/P1 — Customer-Reported UX and Business Consistency Corrections
+
+**Execution:** Inspect Screenshots → Source Audit → Verify Domain Contracts → Implement Targeted Fixes → Run Tests → Browser QA → Report
+
+**Authorization:** Targeted frontend implementation and necessary compatible backend fixes.
+
+**Scope:** Student Individual, School Reviewer, City Reviewer, City Collective TT01–TT04, Committee Individual/Collective, shared status projections and review components.
+
+**Hard Stop:** No deployment, push, merge, production database migration, production data modification or unrelated redesign.
+
+---
+
+# 1. PRODUCT DIRECTION
+
+The customer has provided eight new screenshots showing remaining problems following the LEAN refactor.
+
+The system still suffers from:
+
+- Repeated actions with overlapping purposes.
+- Large panels containing duplicated information.
+- Inconsistent application statuses.
+- Evidence review disconnected from final requirement conclusions.
+- Excessive badge and warning density.
+- Confusing or nonfunctional secondary tools.
+- Long expanded sections.
+- Redundant reviewer completion buttons.
+- Always-visible review history.
+- Duplicate Committee dossier-opening actions.
+
+This task is NOT a new feature development phase.
+
+It is a targeted correction pass.
+
+**The goal is fewer redundant interactions, accurate business state, clearer evidence review and significantly more compact operational screens.**
+
+Preserve the modern 5TOT design system.
+
+Do not redesign everything from scratch.
+
+---
+
+# 2. SCREENSHOT-BASED AUDIT
+
+Inspect the eight screenshots supplied by the customer.
+
+Map each screenshot to actual source components, route, role and functionality.
+
+Do not rely on visual assumptions alone when the underlying action is ambiguous.
+
+## Screenshot 1 — Collective TT01 review
+
+Problems:
+
+- Repeated criterion and assessment information.
+- Long declaration notes and review-instruction panels.
+- Repeated suitability labels.
+- An oversized review inspector.
+- Always-expanded assessment history.
+- Evidence verification and condition conclusion are insufficiently connected.
+- AI-suggested text appears in or near the human assessment notes.
+
+## Screenshot 2 — Committee Collective application list
+
+Problems:
+
+- "Không gian Hội đồng" is unclear or potentially nonfunctional.
+- Multiple actions appear to open overlapping Committee dossier views.
+- A permanently visible selection summary occupies significant width.
+- Overlapping Committee navigation and processing states.
+
+## Screenshot 3 — Student evidence status
+
+Problems:
+
+- "Cần kiểm tra" labels overlap evidence filenames or controls.
+- The same advisory warning appears in multiple places.
+- Small evidence cards are visually cluttered.
+
+## Screenshot 4 — Student dashboard
+
+Problems:
+
+- The application appears already submitted and undergoing School preliminary review.
+- Another section still describes the application as being prepared or incomplete.
+- "Tiếp tục hồ sơ" may imply unauthorized editing after submission.
+- Stage/status presentation is inconsistent.
+
+## Screenshot 5 — Student expanded academic requirement
+
+Problems:
+
+- The same requirement text appears in multiple places.
+- Declaration details are repeated.
+- Expanded rows are excessively tall.
+- The hierarchy wastes screen space.
+
+## Screenshot 6 — Student multiple research declarations
+
+Problems:
+
+- Duplicate Add actions at the top and bottom of the same list.
+- Double-plus labels may still exist.
+- Warning banners consume excessive space.
+- Evidence status badges and document actions are visually repetitive.
+- Declaration rows can be considerably more compact.
+
+## Screenshot 7 — School dossier review
+
+Problems:
+
+- Two "Hoàn tất xét sơ" actions appear in the same screen.
+- "Khung xét duyệt" has unclear value or is not working.
+- Multiple progress summaries potentially contradict each other.
+- "5/5 đã hoàn tất", "Chưa xét" and "0 Đạt" may refer to inconsistent or incorrectly projected dimensions.
+- Excessive header controls and redundant panels.
+
+## Screenshot 8 — Committee Individual list
+
+Problems:
+
+- Row-level "Xem hồ sơ" duplicates the side-panel "Xem hồ sơ & Xử lý chi tiết".
+- Committee results, selected-dossier summary and decision actions occupy too much horizontal space.
+- "Ghi nhận kết luận" may lead into overlapping decision workflows.
+- Committee sidebar destinations may represent filters of the same list rather than distinct tasks.
+
+Document actual verified findings before implementation.
+
+---
+
+# 3. P0 — EVIDENCE VERIFICATION MUST BE CONNECTED TO CONDITION CONCLUSION
+
+This is an explicit customer business requirement.
+
+The customer wants reviewers to confirm each relevant supporting evidence file before saving the positive conclusion for the associated requirement or Collective condition.
+
+Currently, reviewing evidence and saving the condition result appear disconnected.
+
+## Required workflow
+
+1. Reviewer opens the condition.
+2. Reviewer inspects its attached evidence files.
+3. Reviewer records the verification result for each required attached file.
+4. Reviewer records the overall condition conclusion.
+5. Reviewer saves one coherent authoritative condition assessment.
+
+### Crucial distinction
+
+"Đã xem tài liệu" is NOT the same as "Minh chứng phù hợp".
+
+Opening a PDF is not an approval.
+
+A meaningful evidence verification result must reflect actual human assessment, using the existing canonical evidence-review contract.
+
+## Suggested compact inline evidence UI
+
+For each file:
+
+- PDF/image icon.
+- Filename.
+- "Xem".
+- Evidence verification result or actionable status.
+
+Example:
+
+`Quyet_dinh_cong_nhan.pdf`
+
+- Xem.
+- Phù hợp.
+- Không phù hợp.
+
+Use the actual existing human evidence-assessment vocabulary and persistence semantics.
+
+Do not introduce a new database enum if existing states already represent this distinction.
+
+## Positive condition conclusion
+
+Before the reviewer can save:
+
+"Phù hợp / Đạt"
+
+verify that all evidence required for that positive condition result has been examined and appropriately confirmed.
+
+Do not allow a positive condition conclusion while required files still lack the necessary verification.
+
+## Negative or insufficient evidence
+
+Do NOT force the reviewer to falsely confirm a missing, unreadable or invalid file as suitable.
+
+Provide a legitimate path to:
+
+- Record evidence as unsuitable.
+- Record the condition as unsuitable where authorized.
+- Request supplementation using the existing workflow.
+- Explain an inability to verify a required file.
+
+Apply the actual canonical business rules.
+
+Do not accidentally block recording an appropriate negative conclusion simply because a required document is missing.
+
+## Multiple evidence files
+
+Inspect the real rules for:
+
+- Several files supporting one declaration.
+- Multiple declarations supporting one requirement.
+- Alternative qualifying forms.
+- Collective TT01–TT04.
+
+A file must not silently inherit another file's human approval.
+
+Do not require verifying unused or undeclared optional alternatives.
+
+Preserve additional voluntarily submitted evidence.
+
+## Persistence and atomicity
+
+Inspect existing endpoints and persisted review records.
+
+Avoid a frontend workflow where:
+
+1. Evidence appears approved locally.
+2. The condition result is saved independently.
+3. A network failure leaves the two records contradictory.
+
+Use supported canonical mutations and safe synchronization.
+
+Where the backend already requires separate evidence mutations, ensure the UI coordinates them correctly and reflects authoritative server state.
+
+If an atomic condition conclusion is necessary but unsupported, document the exact backend contract change and implement only a compatible authorized fix.
+
+No fake local confirmation.
+
+## Correct review boundaries
+
+Preserve separate School/City human judgments.
+
+Preserve Collective direct-to-City review.
+
+Preserve full audit history.
+
+Do not auto-approve evidence through AI.
+
+Do not auto-conclude the criterion merely because an evidence file has been verified.
+
+---
+
+# 4. P0 — APPLICATION STATUS MUST BE CONSISTENT
+
+The Student dashboard appears to show contradictory information.
+
+Example:
+
+One section:
+
+"Đang hoàn thiện hồ sơ"
+
+Another:
+
+"Đang xét sơ tuyển cấp Trường"
+
+These must not simultaneously describe the same authoritative application lifecycle state.
+
+## Investigate
+
+- Student overview status.
+- Student dossier status.
+- Submitted timestamp.
+- Submission mutation.
+- School review stage.
+- Supplementation.
+- Award season.
+- Demo fixture state.
+- Real API response.
+- Local cache/state.
+- Shared status selectors.
+
+## Target source of truth
+
+Use one canonical application lifecycle projection across relevant Student pages.
+
+If the application is a draft:
+
+"Đang hoàn thiện hồ sơ"
+
+If successfully submitted and awaiting preliminary School review:
+
+"Đã nộp hồ sơ" or the correct current stage.
+
+If School review is underway:
+
+"Đang xét sơ tuyển"
+
+If the Student has an active authorized supplement request:
+
+Show the request context clearly without falsely reverting the entire application to an unsubmitted draft.
+
+If School forwarded the application:
+
+"Đã chuyển Thành phố" where supported by actual persisted state.
+
+Use the actual approved business vocabulary.
+
+## Important
+
+Advisory evidence warnings are separate from application submission state.
+
+A submitted application may still have optional suggestions or pending evidence review.
+
+These warnings must not turn the main lifecycle status back into "Đang hoàn thiện".
+
+### Action buttons
+
+Do not show "Tiếp tục hồ sơ" as an unrestricted edit action after submission.
+
+Prefer "Xem hồ sơ" or "Xem tiến độ" for submitted dossiers.
+
+If an authorized supplement exists, provide a specific contextual "Bổ sung" action.
+
+## Season consistency
+
+Inspect references to 2025–2026 and 2026–2027.
+
+Do not assume all screenshots refer to the same selected season.
+
+But within the same application context, all visible season and lifecycle references must agree with authoritative data.
+
+---
+
+# 5. P0 — REMOVE DUPLICATE SCHOOL REVIEW COMPLETION
+
+The School dossier currently displays two primary controls for completing the same review:
+
+- "Hoàn tất xét sơ hồ sơ".
+- "Hoàn tất xét sơ".
+
+This is unacceptable.
+
+## Required change
+
+Keep exactly ONE primary authorized completion action.
+
+Preferred label:
+
+**"Hoàn tất xét sơ tuyển"**
+
+Place it at the natural completion point of the dossier.
+
+Remove other duplicate completion buttons.
+
+Do not create a floating duplicate elsewhere.
+
+## Verify canonical semantics
+
+Before allowing completion, check the actual approved rules.
+
+Manual criterion conclusions must remain authoritative.
+
+Do not assume evidence-review counts alone establish a criterion conclusion.
+
+A criterion can be:
+
+- Unreviewed.
+- Partially assessed.
+- Explicitly concluded Pass.
+- Explicitly concluded Fail.
+
+The system may have:
+
+- Five criteria conclusively reviewed.
+- Four Pass.
+- One Fail.
+
+This is a completed human review even though it does not meet all five criteria.
+
+## Completion feedback
+
+After confirmed server success:
+
+Show one clear compact status:
+
+**"Đã hoàn tất xét sơ tuyển"**
+
+Use a check icon and relevant timestamp if available.
+
+Replace or disable the original completion action according to the actual lifecycle.
+
+Do not show another large success dialog unnecessarily.
+
+Do not automatically include the Student in the official School forwarding list.
+
+School final forwarding remains a separate intentional selection-and-PDF action.
+
+## Failure
+
+If the server rejects completion, do not show the success state.
+
+Show the relevant blocking reason or missing human conclusions.
+
+---
+
+# 6. P0 — CORRECT REVIEW COUNTERS AND CONTRADICTORY BADGES
+
+Audit the School review screenshot.
+
+Visible phrases include:
+
+- "Tiến độ thẩm định: 5/5 tiêu chí".
+- "Chưa thẩm định".
+- Criterion chips marked "Chưa xét".
+- "Tiến độ xét: 5/5 tiêu chí đã hoàn tất".
+- "Kết quả sơ bộ: 0 Đạt".
+- "Chưa đủ điều kiện (0 tiêu chí Không đạt)".
+
+These phrases may be projecting different dimensions incorrectly.
+
+## Required state model
+
+Keep separate:
+
+1. Number of required declaration/evidence reviews completed.
+2. Number of criteria explicitly concluded.
+3. Number of criteria concluded Pass.
+4. Number of criteria concluded Fail.
+5. Overall authorized review completion.
+6. School forwarding state.
+
+Do not display "5/5 criteria completed" solely because a component calculated some requirements as present.
+
+Do not display "Chưa đủ điều kiện" as a confirmed negative human judgment merely because no explicit criterion conclusion exists.
+
+## Suggested compact progress
+
+"Đã kết luận 3/5 tiêu chí · Đạt 2 · Không đạt 1"
+
+Only if those values come from authoritative persisted decisions.
+
+Eliminate redundant progress sections.
+
+Provide just one meaningful dossier summary.
+
+---
+
+# 7. P1 — FIX OVERLAPPING EVIDENCE WARNING BADGES
+
+The "Cần kiểm tra" warning must not cover:
+
+- Evidence filename.
+- File icon.
+- PDF preview button.
+- Evidence status.
+- Other actions.
+
+## Required layout
+
+Use flexible row layout with proper wrapping.
+
+Make the filename readable.
+
+Allow the warning to appear in a separate aligned area or beneath the filename when space is limited.
+
+Avoid absolute positioning where it causes overlaps.
+
+## Deduplicate the warning
+
+If a file needs attention:
+
+Show one contextual warning near that file.
+
+The Student may also see an aggregate count at dossier level.
+
+Do not repeat the same warning on:
+
+- Criterion.
+- Requirement.
+- Declaration.
+- File.
+- Expanded file card.
+
+unless the repetition serves a demonstrably different navigational purpose.
+
+Do not remove actual advisory information.
+
+Make warnings actionable only where a supported action exists.
+
+---
+
+# 8. P1 — COMPACT STUDENT DOSSIER DETAILS
+
+The Student academic dossier currently contains nested structures that consume excessive vertical space.
+
+Examples:
+
+- Criterion header.
+- Requirement group header.
+- Requirement row.
+- Expanded requirement description.
+- Repeated declaration content.
+- Separate evidence management card.
+- Repeated warnings.
+
+## Target
+
+One clear presentation per genuine business concept.
+
+Suggested hierarchy:
+
+Criterion
+→ Relevant requirement/group
+→ Numbered submitted declarations
+→ Evidence
+
+Use compact rows and restrained dividers.
+
+## Avoid repeating
+
+- The same selection regulation in several locations.
+- The same achievement title in parent and child sections.
+- The same evidence count several times.
+- The same status badge at every nesting level.
+- The same file list in separate cards.
+
+## Expand behavior
+
+Default to displaying relevant submitted declarations clearly.
+
+Unused optional alternatives should not appear as mandatory failures.
+
+Keep genuine missing mandatory requirements discoverable.
+
+Retain optional detailed policy view through:
+
+"Xem quy định"
+
+Do not require reviewers or Students to open several nested accordions to read actual achievements.
+
+---
+
+# 9. P1 — KEEP ONE ADD DECLARATION BUTTON
+
+The research-achievement screenshot contains duplicate Add actions:
+
+- "+ Thêm đề tài nghiên cứu" near the list header.
+- "+ Thêm đề tài nghiên cứu" at the bottom.
+
+Remove one.
+
+Preferred:
+
+Keep the Add action in the declaration-list header.
+
+When the list is empty, a clear empty-state Add action may be used instead.
+
+Do not display both simultaneously for the same scope.
+
+Fix the earlier double-plus bug at the reusable action component level.
+
+Expected:
+
+**"+ Thêm đề tài nghiên cứu"**
+
+with exactly one plus icon.
+
+Preserve multiple achievements and numbering.
+
+---
+
+# 10. P1 — COLLECTIVE TT01–TT04 REVIEW LAYOUT
+
+The existing three-column review screen is unnecessarily dense.
+
+Left:
+
+Condition navigation.
+
+Center:
+
+Declaration and evidence.
+
+Right:
+
+Assessment inspector, notes, AI and history.
+
+## Target
+
+Make submitted information and verification the primary focus.
+
+Keep condition navigation compact.
+
+Avoid keeping all secondary tools expanded.
+
+On wide desktop, a compact condition navigator with a main detail-and-review workspace is acceptable.
+
+The reviewer should not have to inspect repeated descriptions in three different panels.
+
+## TT01 detail
+
+Show the recognition information once.
+
+Avoid duplicating:
+
+- Recognition status.
+- Decision number.
+- Issue date.
+- Reviewing officer name.
+- Generic review instructions.
+
+Separate actual Collective declaration facts from optional verification warnings.
+
+### AI
+
+AI advisory suggestions must remain optional.
+
+Do not automatically place AI-generated conclusions into a human assessment note as if the reviewer authored them.
+
+Require an explicit user action to adopt or edit any suggested note.
+
+Do not let AI record official evidence or condition approvals.
+
+### Actions
+
+Use the existing canonical condition assessment states.
+
+Do not display overlapping primary buttons or duplicate Save actions.
+
+Keep one obvious Save/Confirm action for the current assessment.
+
+---
+
+# 11. P1 — COLLAPSE ASSESSMENT HISTORY BY DEFAULT
+
+Current issue:
+
+The right review panel displays historical assessment records continuously, consuming considerable vertical space.
+
+## Target
+
+Use a collapsed section:
+
+**"Lịch sử đánh giá (N)"**
+
+Click to expand.
+
+Display:
+
+- Reviewer.
+- Date/time.
+- Previous assessment outcome.
+- Relevant historical note.
+
+The latest saved human conclusion may remain visible near the assessment controls.
+
+Do not needlessly display full history until requested.
+
+Preserve every historical record in the backend.
+
+Do not delete audit information.
+
+Do not create a second audit-history storage system.
+
+---
+
+# 12. P1 — COMMITTEE BUTTON DEDUPLICATION
+
+The Committee list contains overlapping actions.
+
+Examples:
+
+- "Tóm tắt hồ sơ".
+- "Không gian Hội đồng".
+- "Ghi nhận kết luận".
+- "Xem hồ sơ".
+- "Xem hồ sơ & Xử lý chi tiết".
+
+Audit the actual functionality of each.
+
+## Individual Committee list
+
+The customer specifically highlighted:
+
+- Row-level "Xem hồ sơ".
+- Side-panel "Xem hồ sơ & Xử lý chi tiết".
+
+These appear to open the same or overlapping dossier destination.
+
+Keep ONE primary dossier-opening action.
+
+Preferred:
+
+**"Xem hồ sơ"** in the relevant application row.
+
+Remove the redundant side-panel button.
+
+## Decision flow
+
+Place the authorized official Committee decision action within the dossier detail or another verified canonical decision surface.
+
+Do not force users to choose between different buttons that appear to make the same official decision.
+
+Keep one clear official decision entry point.
+
+Do not eliminate an independently required Committee authorization step.
+
+## Selected-dossier sidebar
+
+The selected-dossier summary should not consume excessive width when it repeats data already shown in the application row.
+
+Consider:
+
+- Compact contextual summary.
+- Collapsible side panel.
+- On-demand detail drawer.
+
+Preserve quick inspection where useful.
+
+Do not display two competing review detail surfaces.
+
+---
+
+# 13. P1 — AUDIT "KHÔNG GIAN HỘI ĐỒNG" AND "KHUNG XÉT DUYỆT"
+
+The customer reports that some named tools are difficult to understand or not functioning.
+
+Two candidates visible in the screenshots are:
+
+- "Không gian Hội đồng".
+- "Khung xét duyệt".
+
+Do not assume they are useful because they have prominent buttons.
+
+## Required investigation
+
+For each action, identify:
+
+1. Actual component.
+2. Route or callback.
+3. User-facing purpose.
+4. Backend interaction.
+5. Actual working behavior.
+6. Unique feature not available elsewhere.
+7. Whether it belongs to a deprecated UX pattern.
+8. Whether it duplicates the canonical dossier.
+
+## Decision
+
+If the control is broken and has no unique approved function:
+
+Remove it from normal navigation.
+
+If it has useful approved functionality:
+
+Fix it and integrate it into the canonical dossier experience with a clear natural Vietnamese label.
+
+If it is a legacy compatibility entry point:
+
+Retain safe deep-link compatibility while removing unnecessary prominent UI.
+
+Do not leave a visible button that performs no action.
+
+---
+
+# 14. P1 — REDUCE DASHBOARD AND HEADER CLUTTER
+
+Audit the Student, School, City and Committee headers.
+
+Remove unnecessary:
+
+- Duplicate action buttons.
+- Repeated navigation shortcuts.
+- Multiple unrelated status chips.
+- Oversized summary panels.
+- Overly verbose instructional banners.
+- Redundant stage descriptions.
+
+Keep:
+
+- Clear page title.
+- Role/season context when needed.
+- Primary operation.
+- Relevant concise status.
+
+Use one consistent design pattern for each role.
+
+Do not remove useful analytics or notifications.
+
+Prioritize information and actual tasks over decorative cards.
+
+---
+
+# 15. RESPONSIVE REQUIREMENTS
+
+Test:
+
+320, 360, 390, 430, 768, 1024, 1280, 1440, 1660 and 1920px.
+
+## Desktop
+
+Use available space efficiently.
+
+Prefer approximately 12–14px for dense secondary table content where still readable.
+
+Main information must remain legible.
+
+Do not shrink text simply to preserve redundant columns.
+
+## Collective
+
+The assessment inspector and evidence list must not overlap.
+
+Collapse secondary history and AI by default.
+
+## Committee
+
+Avoid narrow application tables caused by an unnecessarily wide persistent sidebar.
+
+## Student
+
+Expanded declaration content should wrap naturally.
+
+Evidence filenames and warning badges must not overlap.
+
+## School
+
+The primary completion action must remain visible and unambiguous.
+
+## Mobile
+
+Use stacked content with accessible controls.
+
+Avoid fixed-width multi-column review layouts.
+
+No page-level horizontal overflow or blocked actions.
+
+---
+
+# 16. DEMO AND REAL MODE
+
+## Demo
+
+Use coherent deterministic synthetic records.
+
+Ensure:
+
+- Application status consistency.
+- Evidence review results.
+- Condition conclusions.
+- Manual criterion conclusions.
+- School review completion.
+- Committee decision navigation.
+- Correctly collapsed history.
+- Working UI controls.
+
+Do not cosmetically change badges while leaving Demo domain records inconsistent.
+
+## Real
+
+Use existing authenticated API contracts.
+
+No local-only official decisions.
+
+No fake evidence confirmations.
+
+No silent Demo fallback.
+
+No fabricated notifications or application states.
+
+If an operation cannot be integrated safely because of a missing backend contract, report the exact blocker.
+
+Do not claim a production-safe PASS based on a mock test alone.
+
+---
+
+# 17. REQUIRED AUTOMATED ACCEPTANCE TESTS
+
+## Evidence verification
+
+- EV01: Each attached file has a correct human verification state.
+- EV02: Merely opening a PDF does not mark it suitable.
+- EV03: Positive condition saving is blocked when required evidence verification remains unresolved.
+- EV04: Appropriate negative conclusion can be recorded for invalid/missing evidence under the verified contract.
+- EV05: Supplementation remains available without false positive confirmation.
+- EV06: Multiple evidence files are handled independently.
+- EV07: Evidence decisions and condition conclusion remain consistent after reload.
+- EV08: API failure cannot produce fake verification success.
+- EV09: Unauthorized users cannot verify another application's evidence.
+- EV10: School and City evidence judgments remain independent.
+
+## Student UX and lifecycle
+
+- UX01: Evidence warning does not overlap filename.
+- UX02: Duplicate warnings are removed.
+- UX03: Duplicate Add action is removed.
+- UX04: Add button has exactly one plus icon.
+- UX05: Multiple declarations retain stable numbering.
+- UX06: Expanded academic requirement no longer repeats unnecessary content.
+- UX07: Submitted application does not show a contradictory draft status.
+- UX08: Active supplementation does not incorrectly reset submission state.
+- UX09: Student overview and dossier lifecycle states agree.
+- UX10: Season context is consistent.
+
+## School review
+
+- SR01: Exactly one primary "Hoàn tất xét sơ tuyển" action.
+- SR02: Completion requires the actual applicable human review conclusions.
+- SR03: Completed with Fail remains representable.
+- SR04: Completion success displays an accurate saved confirmation.
+- SR05: Failed completion does not show success.
+- SR06: Review progress and criterion result are distinct.
+- SR07: "Khung xét duyệt" is working and meaningful or safely removed.
+- SR08: No automatic School forwarding follows review completion.
+
+## Collective
+
+- CO01: TT01–TT04 remains the correct condition model.
+- CO02: TT01 evidence verification and condition conclusion are linked.
+- CO03: Assessment history is collapsed by default.
+- CO04: History opens and displays actual saved records.
+- CO05: AI output is not automatically authored as a human note.
+- CO06: Reviewer can inspect evidence and save valid conclusions without unrelated navigation.
+- CO07: No unnecessary duplicated recognition data or warnings.
+
+## Committee
+
+- CM01: Committee has one primary dossier-opening action.
+- CM02: Duplicate side-panel dossier action is removed.
+- CM03: Authorized official decision remains accessible.
+- CM04: "Không gian Hội đồng" has a verified working purpose or is removed from primary UI.
+- CM05: No fictional voting workflow is introduced.
+- CM06: Individual and Collective Committee decisions remain independent and correct.
+- CM07: Official decisions remain backend-authorized.
+- CM08: Reduced sidebar width improves dossier-list readability.
+
+## Responsive and regression
+
+- R01: Student evidence details work at 390px.
+- R02: School dossier works at 390px and 1440px.
+- R03: Collective reviewer works at 768px and 1440px.
+- R04: Committee application list works at 1024px and 1440px.
+- R05: No overlapping warnings or actions.
+- R06: No duplicated primary controls.
+- R07: No horizontal page overflow.
+- R08: Demo/Real remain isolated.
+- R09: Existing School one-time forwarding remains correct.
+- R10: Submitted snapshots and evidence versions remain intact.
+
+---
+
+# 18. MANUAL BROWSER VERIFICATION
+
+Perform actual browser tests where available.
+
+## Journey A — Collective evidence review
+
+1. Sign in as authorized City reviewer.
+2. Open a Collective TT01 application.
+3. Inspect each attached file.
+4. Record verification results.
+5. Attempt saving a positive condition while required evidence remains unchecked.
+6. Verify the correct safeguard.
+7. Complete the required evidence checks.
+8. Save the TT01 human conclusion.
+9. Refresh.
+10. Verify persistence and audit history.
+
+## Journey B — Missing/invalid evidence
+
+1. Open a condition with missing or unsuitable evidence.
+2. Verify the reviewer can record the appropriate negative outcome or request supplementation.
+3. Verify the system does not require a false positive evidence confirmation.
+
+## Journey C — Student submitted status
+
+1. Open a submitted Student application.
+2. Inspect overview.
+3. Inspect dossier detail.
+4. Verify both show compatible lifecycle states.
+5. Verify no unauthorized general edit action is available.
+
+## Journey D — School completion
+
+1. Open an authorized School dossier.
+2. Assess the relevant declarations.
+3. Explicitly conclude applicable criteria.
+4. Find one completion button.
+5. Complete preliminary review.
+6. Verify "Đã hoàn tất xét sơ tuyển".
+7. Refresh.
+8. Verify completion persisted.
+9. Verify no automatic forwarding occurred.
+
+## Journey E — Committee
+
+1. Open Committee application list.
+2. Select an application.
+3. Click the single "Xem hồ sơ" action.
+4. Verify canonical dossier details.
+5. Locate the authorized Committee decision action.
+6. Verify no duplicate dossier-opening actions.
+7. Verify nonfunctional legacy buttons have been removed or repaired.
+
+## Journey F — Visual density
+
+1. Open an expanded academic requirement with multiple achievements.
+2. Verify requirement text is not unnecessarily repeated.
+3. Verify there is only one Add action.
+4. Verify evidence filenames and status badges do not overlap.
+5. Verify important content remains readable at 1440px and 390px.
+
+---
+
+# 19. REQUIRED DELIVERABLES
+
+Create:
+
+`docs/lean/LEAN_UX_2_CORRECTION_REPORT.md`
+
+Include:
+
+- Screenshot-to-issue mapping.
+- Verified source root causes.
+- Evidence-verification contract.
+- Condition-conclusion dependency.
+- Status source-of-truth changes.
+- Redundant buttons removed.
+- Review-completion behavior.
+- Committee navigation correction.
+- Collective layout improvements.
+- Student dossier density improvements.
+- Evidence warning alignment fixes.
+- Actual test commands and results.
+- Actual before/after screenshots.
+- Exact modified files.
+- Real vs Demo verification.
+- Remaining blockers.
+- Final verdict: PASS / PARTIAL / BLOCKED.
+
+Create:
+
+`docs/lean/LEAN_UX_2_MANUAL_UAT_VI.md`
+
+Include detailed Vietnamese click-by-click testing instructions.
+
+Also update relevant review contracts, status projection documentation and acceptance truth tables if the verified evidence-verification dependency requires it.
+
+Do not overwrite historical business decisions.
+
+Record this as a new customer-confirmed refinement.
+
+---
+
+# 20. DEFINITION OF DONE
+
+This correction is complete when:
+
+- Evidence verification and condition conclusions form one coherent authorized review experience.
+- Positive condition conclusions cannot bypass required evidence checks.
+- Missing or unsuitable evidence can be handled honestly.
+- Application submission statuses are consistent.
+- Student overview and dossier do not contradict one another.
+- Redundant School completion buttons are removed.
+- Successful School completion has one clear persisted status indication.
+- Review progress is not confused with criterion Pass results.
+- Evidence warnings do not overlap filenames.
+- Duplicate Add actions are removed.
+- Expanded declaration sections are visibly more compact.
+- Collective review information is no longer excessively repeated.
+- Assessment history is collapsed by default.
+- Committee dossier-opening actions are consolidated.
+- Broken, redundant or unclear review navigation controls are removed or made useful.
+- Relevant responsive layouts are correct.
+- Authorization and audit records remain intact.
+- No new unnecessary workflow states have been introduced.
+- Actual automated and browser tests support the final verdict.
+
+## FINAL PRODUCT PRINCIPLE
+
+**ONE MEANINGFUL ACTION PER BUSINESS INTENT.**
+
+**ONE AUTHORITATIVE SOURCE OF STATUS.**
+
+**VERIFY EVIDENCE BEFORE CONFIRMING A POSITIVE CONDITION RESULT.**
+
+**DISPLAY REVIEW HISTORY ONLY WHEN REQUESTED.**
+
+**PRESERVE HUMAN AUTHORITY WITHOUT MULTIPLYING REVIEW BUTTONS.**
+
+## HARD STOP
+
+Implement and verify this correction only.
+
+Do not begin a broad architecture refactor.
+
+Do not deploy or modify production data.
+
+Do not push, merge, rebase or run production migrations.
+
+Finish with an evidence-based report and exact remaining blockers.

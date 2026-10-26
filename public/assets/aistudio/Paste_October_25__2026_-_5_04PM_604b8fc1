@@ -1,0 +1,2165 @@
+# 5TOT ĐÀ NẴNG — LEAN-6
+## COMPLETE END-TO-END UAT, SECURITY REGRESSION, REAL BACKEND INTEGRATION & PILOT READINESS VERIFICATION
+
+**Priority:** P0 — Final Quality and Operational Readiness Gate
+
+**Execution:** BASELINE AUDIT → TEST ENVIRONMENT VERIFICATION → INTEGRATION TESTS → END-TO-END ROLE JOURNEYS → SECURITY REGRESSION → RESPONSIVE QA → DEFECT CORRECTION → RE-TEST → FINAL READINESS REPORT
+
+**Implementation Authorization:** YES — Test implementation and narrowly scoped verified defect fixes
+
+**Primary Scope:** Full 5TOT Individual and Collective application lifecycle, Student/School/City/Committee/Admin integrations, Real/Demo isolation, authorization, data integrity and pilot readiness.
+
+**Out of Scope:** New product features, new award rules, architecture replacement, production deployment and actual official award decisions.
+
+**Frontend:** React + Vite + Strict TypeScript + Feature-Sliced Design
+
+**Backend:** Node.js + Express + Strict TypeScript + Prisma/PostgreSQL Modular Monolith
+
+---
+
+# 1. MISSION
+
+LEAN-1 through LEAN-5 were designed to transform 5TOT Đà Nẵng into a simple, professional and business-correct Student award management platform.
+
+The previous phases targeted:
+
+- LEAN-1: Simplified Student declaration forms and automatic declaration numbering.
+- LEAN-2: Direct inline human Pass/Fail review.
+- LEAN-3: Contextual supplementation and reassessment.
+- LEAN-4: School recommendation, intentional selection and one-time forwarding.
+- LEAN-5: City shared review, Committee experience, status consistency and responsive UX.
+
+LEAN-6 is the final integration and acceptance phase.
+
+**The objective is to prove that these changes work together across real application lifecycle transitions, not merely that individual screens look correct.**
+
+Verify the system as if conducting a complete Student 5-Good award selection season.
+
+A real Student must be able to register, declare achievements and submit.
+
+An authorized School reviewer must be able to review the actual submission, request supplementation, record recommendations and forward a consolidated official list.
+
+An authorized City reviewer must be able to independently assess forwarded applications.
+
+An authorized Committee member must be able to inspect accumulated results and record an official decision.
+
+Collective applications must follow their separate approved route directly to City.
+
+All operations must preserve:
+
+- Actual database persistence.
+- Correct user permissions.
+- Correct institution scope.
+- Accurate review results.
+- Evidence integrity.
+- Audit attribution.
+- Authorized state transitions.
+- Proper separation of official decisions.
+- No cross-role information leakage.
+- No Demo/Real contamination.
+
+The system must remain LEAN.
+
+Do not recreate previously removed redundant operations merely to make testing easier.
+
+---
+
+# 2. IMPORTANT EXECUTION PRINCIPLE
+
+**TEST WHAT EXISTS. FIX WHAT IS BROKEN. DO NOT INVENT WHAT IS MISSING.**
+
+LEAN-6 must distinguish:
+
+1. Functionality actually implemented.
+2. Functionality implemented but not integrated.
+3. Functionality verified only with mocks.
+4. Functionality verified in Demo Mode.
+5. Functionality verified against a real test backend and database.
+6. Functionality blocked by missing environment capabilities.
+7. Functionality not yet implemented.
+8. Functionality requiring business authorization.
+
+Do not claim a feature is production-ready because:
+
+- TypeScript compiles.
+- The frontend build succeeds.
+- Mock tests pass.
+- Demo buttons work.
+- The UI displays a success toast.
+- A previous implementation report says PASS.
+
+Test results must have executable evidence.
+
+---
+
+# 3. VERIFY PREVIOUS PHASES
+
+Before testing, inspect actual source and the available reports:
+
+- Corrected LEAN-0.1 documents.
+- `LEAN_0_1_REVIEW_STATE_TRUTH_TABLE.md`
+- `LEAN_1_IMPLEMENTATION_REPORT.md`
+- `LEAN_2_IMPLEMENTATION_REPORT.md`
+- `LEAN_3_IMPLEMENTATION_REPORT.md`
+- `LEAN_4_IMPLEMENTATION_REPORT.md`
+- `LEAN_5_IMPLEMENTATION_REPORT.md`
+- Existing UAT checklists.
+- Current frontend source.
+- Current backend source.
+- Prisma schema.
+- Current API routes.
+- Authentication and authorization services.
+- Evidence storage integration.
+- Actual test scripts and fixtures.
+- Existing deployment and environment configuration.
+
+Use discovered project paths.
+
+Do not invent missing report files.
+
+For each previous phase, produce:
+
+- Implementation status.
+- Source files.
+- Actual API integration.
+- Unit test coverage.
+- Integration test coverage.
+- Browser verification.
+- Unresolved defects.
+- Regression risks.
+
+### Gate 0
+
+If earlier phases contain critical missing functionality, do not mark LEAN-6 PASS.
+
+Test independently available functionality and document missing dependencies.
+
+---
+
+# 4. BUSINESS CONTRACT — NON-NEGOTIABLE
+
+The approved Individual workflow is:
+
+Student
+→ School preliminary review
+→ School recommendation
+→ School intentional application selection
+→ One consolidated School forwarding
+→ City independent review
+→ Committee official decision.
+
+There are two review levels:
+
+1. School.
+2. City.
+
+The Committee is the final decision authority.
+
+Do not create an additional generic review level.
+
+## Five Individual criteria
+
+- Đạo đức tốt.
+- Học tập tốt.
+- Thể lực tốt.
+- Tình nguyện tốt.
+- Hội nhập tốt.
+
+## Review semantics
+
+Never conflate:
+
+- Review completed.
+- Criterion passed.
+- School recommended.
+- Selected for forwarding.
+- Actually forwarded.
+- City reviewed.
+- Officially recognized.
+
+A dossier can have:
+
+- Five of five criteria reviewed.
+- Four of five criteria passed.
+- One criterion failed.
+- Review completed.
+- School not recommended.
+
+This must be representable without an inconsistent state.
+
+## Student submission
+
+Eligibility warnings and AI advice must not introduce unauthorized hard submission blockers.
+
+## AI
+
+Optional assistance only.
+
+Never official judgment.
+
+## Supplementation
+
+Scoped, authorized, historically traceable.
+
+## Collective
+
+TT01–TT04 goes directly to City.
+
+No School forwarding.
+
+---
+
+# 5. TEST ENVIRONMENT SAFETY
+
+Before performing any state-changing test:
+
+Identify the actual target environment.
+
+Possible environments:
+
+- Local development.
+- Ephemeral test database.
+- Dedicated staging database.
+- Authorized pilot environment.
+- Production.
+
+### Strict safety boundary
+
+Only perform destructive or state-changing tests on an explicitly authorized isolated test environment.
+
+Do not:
+
+- Reset a production database.
+- Truncate real Student applications.
+- Run production seed scripts.
+- Create fake official decisions in a live season.
+- Delete real evidence.
+- Trigger mass real emails.
+- Run unsafe concurrency tests against live services.
+- Alter real season configuration.
+- Run unapproved database migrations.
+
+If an isolated database is not configured, report the blocker.
+
+Do not silently point tests to an existing production connection.
+
+### Environment verification
+
+Check:
+
+- Actual API base URL.
+- PostgreSQL connection target.
+- Test database identity.
+- Prisma migration state.
+- Storage bucket/environment.
+- Email provider configuration.
+- Active season.
+- Demo/Real mode configuration.
+- CORS.
+- Authentication secrets.
+- File upload limits.
+- Timezone behavior.
+- Application logging.
+
+Never print secrets, access tokens or database credentials in reports.
+
+Do not create a new hosted database or storage bucket without authorization.
+
+---
+
+# 6. TEST DATA STRATEGY
+
+Use realistic, deterministic, synthetic Vietnamese test records.
+
+Do not use real Student personal information unless an explicitly authorized testing agreement exists.
+
+Suggested friendly synthetic identities:
+
+- Nguyễn Minh Anh — Student, DUT.
+- Trần Gia Huy — Student, DUE.
+- Lê Ngọc Hà — Student, VKU.
+- Phạm Quốc Bảo — Student, independent university.
+- Võ Thanh Trúc — Student with a failing criterion.
+- Hoàng Đức Long — Student with supplementation.
+- Nguyễn Thảo Vy — Collective representative.
+
+Generate distinct synthetic Student IDs and unique emails within an approved testing domain or non-delivering test setup.
+
+Use institution identifiers and role names from actual source configuration.
+
+Do not invent canonical role enums.
+
+### Required test accounts
+
+Provision using existing authorized test fixtures or seed commands:
+
+1. Student — UDN member institution.
+2. Student — independent university.
+3. Student — incomplete application.
+4. Student — submitted application.
+5. Student — supplementation.
+6. Collective representative.
+7. School reviewer — UDN shared Review Unit.
+8. School reviewer — independent university.
+9. City reviewer A.
+10. City reviewer B.
+11. Authorized Committee user.
+12. Admin with actual administrative permissions.
+13. Unauthorized or cross-scope test account.
+
+The number of accounts may be adapted to the existing role model.
+
+### Seed requirements
+
+- Repeatable.
+- Isolated.
+- Deterministic.
+- Recoverable.
+- No collisions with real users.
+- No duplicate official forwarding artifacts.
+- Safe reset only in the isolated test database.
+
+Do not seed actual production users.
+
+---
+
+# 7. CREATE A COMPLETE TEST SEASON
+
+Use an isolated award season that follows the existing canonical season configuration.
+
+The test season must support:
+
+- Student submission window.
+- School review.
+- School forwarding.
+- City review.
+- Supplementation.
+- Committee decision.
+- Collective submission.
+
+Do not hardcode arbitrary policy dates into production code.
+
+For deterministic tests, control time through the supported test clock, fixtures or test environment.
+
+Use correct Asia/Ho_Chi_Minh timezone semantics where relevant.
+
+### Test temporal boundaries
+
+- Before submission opens.
+- At submission opening time.
+- During submission window.
+- At submission deadline.
+- Immediately after submission deadline.
+- School forwarding deadline.
+- Supplementation deadline.
+- City review completion boundary.
+- Historical season.
+- Future season.
+
+Expected behavior must come from the actual approved configuration.
+
+Do not invent a three-day supplementation policy.
+
+---
+
+# 8. COMPLETE INDIVIDUAL STUDENT JOURNEY
+
+Execute a realistic Student application lifecycle.
+
+## Scenario ST01 — Account registration
+
+1. Open the Student registration page.
+2. Enter valid synthetic Student information.
+3. Submit registration.
+4. Verify server persistence.
+5. Verify account state.
+6. Verify the supported email verification mechanism, if applicable.
+7. Sign in through the authorized login flow.
+
+Do not assume email verification exists without source confirmation.
+
+## ST02 — Login and session
+
+- Valid credentials.
+- Invalid credentials.
+- Expired session.
+- Refresh behavior.
+- Logout.
+- Unauthorized page access.
+- Session renewal according to existing contract.
+
+## ST03 — Student profile
+
+Fill the required Student profile fields.
+
+Verify:
+
+- Student identity.
+- Student ID.
+- Original institution.
+- Class/cohort.
+- Relevant contact information.
+- Required mandatory profile information.
+
+Do not invent new required fields.
+
+## ST04 — Create Individual application
+
+Open the selected season.
+
+Create an application draft.
+
+Verify actual persisted application ownership.
+
+## ST05 — LEAN declaration entry
+
+Create declarations for all five criteria.
+
+Use:
+
+- Text-based achievement.
+- Numeric conduct score.
+- Academic GPA.
+- Physical qualification.
+- Volunteer activity.
+- Integration certificate or activity.
+
+Verify compact forms.
+
+## ST06 — Automatic numbering
+
+Create multiple declarations within one allowed requirement.
+
+Expected:
+
+1.
+2.
+3.
+
+Delete or edit an authorized declaration.
+
+Verify display numbering changes without corrupting persistent IDs.
+
+## ST07 — Evidence
+
+Upload authorized test PDFs/images.
+
+Verify:
+
+- Correct association.
+- Valid formats.
+- Size validation.
+- Preview.
+- Multiple files.
+- Replacement where allowed.
+- Upload failure.
+- Retry.
+- Persistence after reload.
+
+## ST08 — ONE_OF
+
+Declare one qualifying alternative.
+
+Leave unused alternatives empty.
+
+Verify no false mandatory error.
+
+## ST09 — Additional achievements
+
+Add optional extra achievements after satisfying a minimum requirement.
+
+Verify all additional evidence remains attached and visible.
+
+## ST10 — Submission
+
+Submit the application through the actual backend.
+
+Verify:
+
+- Successful server response.
+- Submitted lifecycle state.
+- Submitted Student snapshot.
+- Correct institution routing.
+- Correct season.
+- Correct evidence references.
+
+Advisory eligibility warnings must not become unauthorized hard blockers.
+
+## ST11 — Submission immutability
+
+After submission, verify ordinary editing is restricted.
+
+A Student must not gain full edit access merely because LEAN-1 offers a convenient editor.
+
+---
+
+# 9. SCHOOL PRELIMINARY REVIEW — FULL JOURNEY
+
+## SC01 — School intake
+
+Sign in as an authorized School reviewer.
+
+Open the correct School preliminary review list.
+
+Verify submitted applications appear only within the authorized School Review Unit.
+
+## SC02 — Submitted snapshot
+
+Open one dossier.
+
+Verify that the Student identity, original institution, declarations and evidence match the submitted snapshot.
+
+## SC03 — LEAN-2 direct review
+
+Review a declaration.
+
+Open its evidence.
+
+Click Pass or Fail at the correct canonical human judgment scope.
+
+Verify backend persistence.
+
+No unnecessary duplicate completion actions.
+
+## SC04 — Review all five criteria
+
+Assess the applicable submitted declarations.
+
+Verify:
+
+- Review progress.
+- Criterion results.
+- Requirement aggregation.
+- Human judgments.
+- Audit attribution.
+
+## SC05 — Fully reviewed, all Pass
+
+Expected:
+
+- 5/5 reviewed.
+- 5/5 passed.
+- School recommendation still requires its authorized action.
+
+## SC06 — Fully reviewed, one Fail
+
+Expected:
+
+- 5/5 reviewed.
+- 4/5 passed.
+- 1/5 failed.
+- Review can be completed.
+- No automatic recommendation.
+
+## SC07 — Partial review
+
+Assess only some required declarations.
+
+Verify genuine incomplete review state.
+
+## SC08 — ONE_OF
+
+Pass one eligible alternative.
+
+Ensure unused alternatives do not block review.
+
+## SC09 — Multiple declarations
+
+Pass one valid declaration and Fail an additional declaration where allowed.
+
+Verify the applicable requirement aggregation is correct.
+
+## SC10 — School recommendation
+
+Record:
+
+- Đề nghị.
+- Không đề nghị.
+
+through authorized canonical operations.
+
+Verify persistence and proper reason requirements, if any.
+
+---
+
+# 10. SCHOOL SUPPLEMENTATION — COMPLETE ROUND TRIP
+
+Execute the entire workflow across real test accounts.
+
+## SU01 — Request
+
+School reviewer opens a declaration.
+
+Clicks "Yêu cầu bổ sung".
+
+Verifies correct scope.
+
+Enters the reason.
+
+Submits.
+
+## SU02 — Student receives request
+
+Sign in as the same Student.
+
+Open the original dossier.
+
+Find the exact affected declaration.
+
+Read the Student-visible reason.
+
+## SU03 — Student explains and uploads
+
+Enter a short explanation.
+
+Attach corrected evidence.
+
+Submit only the permitted correction.
+
+## SU04 — Reviewer receives response
+
+Return to School reviewer.
+
+Open the returned supplement.
+
+Inspect new evidence and original evidence.
+
+## SU05 — Reassessment
+
+Record Pass or Fail.
+
+Verify:
+
+- Latest judgment.
+- Previous judgment history.
+- Evidence version history.
+- Correct review progress.
+- Correct request status.
+- Audit actor and timestamp.
+
+## SU06 — Security boundary
+
+Attempt to edit another declaration not covered by the request.
+
+Backend must reject unauthorized changes.
+
+## SU07 — Multiple requests
+
+Create requests against two different declaration scopes.
+
+Respond to one.
+
+Verify the other remains independent.
+
+## SU08 — Deadline
+
+Test according to actual configured policy.
+
+Do not introduce an invented three-day deadline.
+
+---
+
+# 11. UNIVERSITY OF DA NANG — SHARED REVIEW UNIT
+
+The eight original institutions are:
+
+- DUT.
+- DUE.
+- UED.
+- UFL.
+- UTE.
+- VKU.
+- VNUK.
+- SMP.
+
+They share:
+
+`unit-udn`
+
+## UDN01 — Routing
+
+Create synthetic Student applications from multiple member institutions.
+
+Verify all route to the same approved School Review Unit.
+
+## UDN02 — Identity preservation
+
+Verify each Student retains the original institution.
+
+## UDN03 — School scope
+
+Authorized UDN reviewer can access all eight institutions.
+
+## UDN04 — Institution filters
+
+Filter applications by member institution.
+
+Verify results and counts.
+
+## UDN05 — Consolidated recommendation
+
+Select recommended applications across different member institutions.
+
+Verify one consolidated list.
+
+## UDN06 — Official document
+
+Attach one common official School decision document.
+
+Verify correct:
+
+- Review Unit.
+- Award season.
+- Selected application list.
+- File reference.
+
+## UDN07 — Forwarding
+
+Perform one authorized consolidated forwarding operation.
+
+Verify only the selected applications enter City.
+
+## UDN08 — Uniqueness
+
+Attempt a second forwarding.
+
+Verify no second successful batch is created.
+
+## UDN09 — Independent Schools
+
+Verify independent university batches and accounts cannot interfere with UDN.
+
+---
+
+# 12. SCHOOL SELECTION AND FORWARDING
+
+Test the entire LEAN-4 workflow.
+
+## FW01 — Recommendation distinction
+
+Five passing criteria do not automatically generate School recommendation.
+
+## FW02 — Checkbox selection
+
+Select recommended applications.
+
+## FW03 — Deselection
+
+Remove one.
+
+## FW04 — Bulk selection
+
+Use intentional selection with an explicitly defined scope.
+
+## FW05 — Filter preservation
+
+Change institution or status filters.
+
+Verify existing valid selections remain correct.
+
+## FW06 — Pagination
+
+Verify selection behavior across pages according to actual persistence contract.
+
+## FW07 — Document metadata
+
+Enter actual required fields.
+
+Attach test PDF.
+
+## FW08 — Document consistency
+
+Verify the same attachment appears in:
+
+- Forwarding preparation.
+- Confirmation dialog.
+- Saved forwarding record.
+- City intake.
+
+## FW09 — Final confirmation
+
+Review unit, season, selected count and document are correct.
+
+## FW10 — Forward once
+
+Confirm forwarding.
+
+Verify server-authoritative result.
+
+## FW11 — Post-forwarding restrictions
+
+School cannot modify ordinary forwarded selection or decision document.
+
+## FW12 — City intake
+
+The selected applications appear in the City shared queue.
+
+## FW13 — No unintended application
+
+An unselected Student does not appear as part of the forwarded batch.
+
+## FW14 — Duplicate request
+
+Two rapid attempts do not create duplicate forwarding.
+
+## FW15 — Concurrency
+
+Two authorized School actors cannot create two successful batches for one unit/season.
+
+## FW16 — Partial failure
+
+Verify transaction safety using an isolated test database and controlled fault injection where supported.
+
+## FW17 — Network timeout
+
+Reconcile canonical backend state before retrying.
+
+Do not assume failure means the operation was rolled back.
+
+---
+
+# 13. CITY REVIEW — FULL JOURNEY
+
+## CT01 — Shared queue
+
+Sign in as an authorized City reviewer.
+
+Open forwarded Individual applications.
+
+No Officer assignment required.
+
+## CT02 — Correct intake
+
+Verify forwarded applications and original School documents.
+
+## CT03 — Independent review
+
+Open an Individual dossier.
+
+Inspect the original Student declarations and School outcomes.
+
+Record City judgments independently.
+
+## CT04 — Different School and City conclusions
+
+School:
+
+Pass.
+
+City:
+
+Fail.
+
+Verify both remain independently persisted.
+
+## CT05 — All Pass
+
+Review all applicable criteria.
+
+Verify accurate City eligibility summary.
+
+## CT06 — Completed with Fail
+
+Five criteria reviewed.
+
+Four Pass.
+
+One Fail.
+
+Verify review completion is not incorrectly tied to 5/5 eligibility.
+
+## CT07 — Authorized completion
+
+Invoke the real City completion action if independently required.
+
+Verify persistence.
+
+## CT08 — No automatic Committee recognition
+
+City completion must not automatically create a Committee recognition decision.
+
+## CT09 — City supplementation
+
+Request correction from the City stage.
+
+Student responds.
+
+City independently reassesses.
+
+Verify School historical records remain unchanged.
+
+## CT10 — Shared queue concurrency
+
+Two City reviewers open the same application.
+
+Test conflicting updates.
+
+Verify no silent lost updates.
+
+## CT11 — Return to list
+
+Preserve useful filters, search and navigation context.
+
+---
+
+# 14. COMMITTEE — OFFICIAL DECISION JOURNEY
+
+## CM01 — Committee access
+
+Sign in as an authorized Committee user.
+
+Open actual eligible Committee-stage applications.
+
+## CM02 — Review summary
+
+Verify:
+
+- Student identity.
+- Original institution.
+- School recommendation.
+- School review results.
+- City results.
+- Relevant supplementation history.
+- Current Committee decision status.
+
+## CM03 — Original dossier
+
+Open declarations and evidence.
+
+Verify Committee can inspect the canonical dossier.
+
+## CM04 — No Officer reassessment controls
+
+Committee must not accidentally receive City Officer Pass/Fail mutation capabilities.
+
+## CM05 — Recognition
+
+Record official recognition through the actual authorized contract.
+
+Verify server persistence.
+
+## CM06 — Non-recognition
+
+Record a supported non-recognition outcome.
+
+Verify persistence.
+
+## CM07 — Independence
+
+Verify a Committee decision does not overwrite School or City judgments.
+
+## CM08 — Permission enforcement
+
+Unauthorized users must not be able to make official decisions.
+
+## CM09 — Duplicate prevention
+
+Double-click and retry must not cause duplicate official decisions.
+
+## CM10 — Document and publication separation
+
+Do not assume official decision entry automatically issues a signed document.
+
+Do not automatically publish results.
+
+Only test publication if it is an existing authorized capability.
+
+## CM11 — Audit
+
+Verify appropriate attribution and decision history.
+
+---
+
+# 15. COLLECTIVE STUDENT 5-GOOD
+
+The Collective workflow must be tested separately.
+
+Collective representative
+→ Direct City submission
+→ City TT01–TT04 review
+→ Committee official decision.
+
+## CL01 — Create Collective draft
+
+Authorized representative creates a Collective application.
+
+## CL02 — TT01
+
+Enter required School-level recognition reference and evidence according to the active approved contract.
+
+## CL03 — TT02
+
+Enter authoritative total membership and participation data.
+
+## CL04 — TT03
+
+Verify membership denominator consistency and calculation.
+
+## CL05 — TT04
+
+Enter applicable compliance information and evidence.
+
+## CL06 — Quantitative validation
+
+Verify:
+
+- Correct threshold source.
+- Correct calculation.
+- No division by zero.
+- No duplicate member counting.
+- Proper handling of missing values.
+
+## CL07 — Submit
+
+Collective application enters City directly.
+
+No School preliminary forwarding.
+
+## CL08 — City review
+
+Authorized City reviewer reviews TT01–TT04.
+
+## CL09 — Supplementation
+
+Test supported Collective correction and reassessment.
+
+## CL10 — Committee
+
+Verify authorized Collective decision handling.
+
+## CL11 — Isolation
+
+Collective applications must not appear in Individual School forwarding.
+
+---
+
+# 16. AUTHENTICATION AND ACCOUNT SECURITY
+
+Audit and test the actual implemented authentication system.
+
+## AUTH01
+Valid registration and sign-in.
+
+## AUTH02
+Invalid credentials.
+
+## AUTH03
+Account verification, if supported.
+
+## AUTH04
+Password reset, if supported.
+
+## AUTH05
+Expired access token or session.
+
+## AUTH06
+Logout/session invalidation according to actual implementation.
+
+## AUTH07
+Protected route access without authentication.
+
+## AUTH08
+Unsupported role accessing another role's workspace.
+
+## AUTH09
+Student accessing another Student's application.
+
+## AUTH10
+Student attempting to modify submitted content outside permitted scope.
+
+## AUTH11
+School reviewer accessing another Review Unit.
+
+## AUTH12
+School reviewer calling City-only mutations.
+
+## AUTH13
+City reviewer calling Committee decision mutations.
+
+## AUTH14
+Admin without substantive Committee authority attempting recognition.
+
+## AUTH15
+Direct API request bypassing hidden frontend controls.
+
+## AUTH16
+Resource identifiers modified in requests.
+
+Verify authorization using backend responses.
+
+Do not consider a hidden button sufficient protection.
+
+Avoid recording full session tokens or credentials in test artifacts.
+
+---
+
+# 17. SECURITY REGRESSION
+
+Prioritize practical vulnerabilities affecting Student applications, files and award decisions.
+
+Test relevant risks:
+
+- Broken object-level authorization.
+- Cross-Student data access.
+- Cross-School data access.
+- Role escalation.
+- Unauthenticated mutations.
+- Invalid state transitions.
+- Unauthorized supplementation.
+- File ownership mismatch.
+- Evidence access after permission changes.
+- Improper signed-link exposure.
+- Unsafe upload types.
+- Oversized uploads.
+- Unexpected file content.
+- XSS in declaration text.
+- Unsafe HTML rendering.
+- Excel formula injection.
+- CSRF where relevant to authentication architecture.
+- CORS misconfiguration.
+- Sensitive information in browser errors.
+- Sensitive information in server logs.
+- Repeated request/idempotency weaknesses.
+- Concurrent update races.
+- Unexpected exposure of internal reviewer notes.
+
+Use safe test inputs only.
+
+Do not perform disruptive penetration testing against production.
+
+### Privacy
+
+Verify the Student cannot read:
+
+- Private Officer notes.
+- Unrelated Student records.
+- Unauthorized School records.
+- Committee-only administrative metadata.
+
+Verify any public or export endpoint exposes only authorized fields.
+
+---
+
+# 18. EVIDENCE STORAGE INTEGRATION
+
+Test actual authorized file storage behavior.
+
+Requirements:
+
+- Upload file.
+- Persist metadata.
+- Correct ownership.
+- Correct application reference.
+- Correct declaration reference.
+- Secure download/preview.
+- Multiple attachments.
+- Replacement during authorized supplementation.
+- Original version preservation.
+- Expired URL handling.
+- Deleted or unavailable object handling.
+- Upload interruption.
+- Retry behavior.
+- No falsely saved evidence.
+- No cross-user attachment access.
+
+Use the current storage provider.
+
+Do not migrate storage providers during LEAN-6.
+
+Do not introduce Google Cloud Storage, Cloudflare R2 or another provider solely for test convenience.
+
+If real storage is unavailable, report that integration separately as BLOCKED.
+
+---
+
+# 19. BUSINESS STATE INTEGRITY
+
+Use the LEAN-0.1 Review State Truth Table as the source of acceptance semantics, subject to verified actual policy.
+
+Mandatory distinctions:
+
+- Unreviewed vs reviewed.
+- Pass vs Fail.
+- Completed vs eligible.
+- Recommended vs forwarded.
+- City-reviewed vs Committee-recognized.
+- Supplement requested vs supplement returned.
+- Internal notes vs Student-visible messages.
+
+Test:
+
+### BS01
+No judgments.
+
+### BS02
+Partial judgments.
+
+### BS03
+All Pass.
+
+### BS04
+Complete review with Fail.
+
+### BS05
+ONE_OF satisfied.
+
+### BS06
+Unused alternatives.
+
+### BS07
+Multiple declarations with mixed judgments.
+
+### BS08
+ALL_REQUIRED with missing mandatory condition.
+
+### BS09
+Conclusive Fail.
+
+### BS10
+Active supplement.
+
+### BS11
+Returned supplement awaiting reassessment.
+
+### BS12
+Corrected Pass after previous Fail.
+
+### BS13
+School recommendation absent despite eligibility.
+
+### BS14
+Recommended but not forwarded.
+
+### BS15
+Forwarded but City not reviewed.
+
+### BS16
+City completed but Committee undecided.
+
+### BS17
+Committee non-recognition.
+
+### BS18
+Committee recognition.
+
+### BS19
+Historical season state.
+
+### BS20
+Invalid transition rejected by backend.
+
+Do not alter official lifecycle rules merely to make tests pass.
+
+---
+
+# 20. DASHBOARD AND REPORTING RECONCILIATION
+
+Verify all important counts across:
+
+- Student dashboard.
+- School application list.
+- School forwarding.
+- City queue.
+- City dashboard.
+- Committee list.
+- Committee reporting.
+- Admin reporting where authorized.
+- Excel exports.
+
+At minimum reconcile:
+
+- Submitted.
+- Fully reviewed.
+- Criteria passed.
+- Criteria failed.
+- Recommended.
+- Selected.
+- Forwarded.
+- City review completed.
+- Officially recognized.
+- Not recognized.
+- Collective submitted.
+- Collective completed.
+
+### Important
+
+These counts must represent distinct business facts.
+
+Do not count five criteria reviewed as five criteria passed.
+
+Do not count selected applications as forwarded before the official forwarding succeeds.
+
+Do not count City-passed applications as officially recognized.
+
+Use authoritative data sources.
+
+Document any inconsistent selector or reporting logic.
+
+---
+
+# 21. SEASON AND TIMEZONE CONSISTENCY
+
+A previous customer screenshot showed inconsistent academic seasons between the global header and forwarding page.
+
+Regression-test all season-dependent views.
+
+Verify:
+
+- Active season.
+- Selected historical season.
+- Draft application season.
+- Submitted application season.
+- School review season.
+- School forwarding season.
+- City intake season.
+- Committee season.
+- Export season.
+- Supplementation deadlines.
+
+Prevent accidental mixing of records from different seasons.
+
+Use Asia/Ho_Chi_Minh consistently in business-facing time presentation.
+
+Avoid relying on a machine's local timezone for server authorization decisions.
+
+---
+
+# 22. EMAIL AND NOTIFICATION TESTING
+
+Verify the actual supported notification mechanisms.
+
+Potential notification events:
+
+- Registration verification.
+- Application submission.
+- Supplementation request.
+- Supplementation returned.
+- Relevant status updates.
+- Final results, if supported.
+
+### Safety
+
+Use an approved email sandbox, capture transport or test-only recipients.
+
+Do not send real notifications to unrelated users.
+
+Do not assume a successfully created notification record means email delivery succeeded.
+
+Test:
+
+- Correct recipient.
+- Correct application.
+- Correct event.
+- Correct stage.
+- No private internal notes.
+- Appropriate subject and Vietnamese content.
+- No duplicate emails on unsafe retries, according to existing guarantees.
+- Clear behavior when the email provider fails.
+
+Do not add a new notification service in this phase.
+
+---
+
+# 23. RESPONSIVE FULL-SYSTEM QA
+
+Verify key workflows at:
+
+320px, 360px, 390px, 430px, 768px, 1024px, 1280px, 1440px, 1660px and 1920px.
+
+## Student
+
+- Registration.
+- Profile.
+- Declaration form.
+- Evidence upload.
+- Numbered declarations.
+- Submission.
+- Supplementation.
+
+## School
+
+- Application list.
+- Five-criterion results.
+- Inline review.
+- Selection checkboxes.
+- UDN institution filters.
+- Official document upload.
+- Forwarding confirmation.
+
+## City
+
+- Shared queue.
+- Full dossier.
+- Inline Pass/Fail.
+- Supplementation.
+- Completion.
+
+## Committee
+
+- Application list.
+- Results summary.
+- Original dossier.
+- Decision controls.
+
+## Collective
+
+- TT01–TT04 forms.
+- Evidence.
+- City review.
+
+### Visual defects to detect
+
+- Horizontal page overflow.
+- Cut-off buttons.
+- Unreadable tables.
+- Nested scrolling.
+- Floating toolbar covering content.
+- Modal escaping viewport.
+- Broken evidence preview.
+- Hidden primary action.
+- Incorrect sticky positioning.
+- Excessive empty space.
+- Overlapping badges.
+- Unexpected mobile keyboard obstruction.
+
+Do not consider CSS compilation sufficient evidence of responsive correctness.
+
+Use actual browser rendering when available.
+
+---
+
+# 24. ACCESSIBILITY REGRESSION
+
+Verify:
+
+- Keyboard navigation.
+- Semantic labels.
+- Accessible form controls.
+- Visible focus states.
+- Proper error descriptions.
+- Appropriate disabled states.
+- Screen-reader-compatible review status labels.
+- Accessible dialogs and drawers.
+- Correct focus restoration.
+- Evidence preview controls.
+- Comfortable touch targets.
+- Sufficient contrast.
+- No essential operation depending only on color.
+
+Prioritize core review and submission actions.
+
+---
+
+# 25. REAL MODE VS DEMO MODE
+
+This is a mandatory isolation gate.
+
+## Demo Mode
+
+Must use deterministic synthetic records.
+
+Verify:
+
+- Student declarations.
+- Inline review.
+- Supplementation.
+- School selection.
+- Forwarding.
+- City independent review.
+- Committee decisions.
+- Collective applications.
+- Reset behavior.
+
+## Real Mode
+
+Must use actual authenticated API operations.
+
+Verify:
+
+- No synthetic fallback.
+- No fake successful mutations.
+- No local-only official decisions.
+- No Demo account identity used in Real authorization.
+- No Demo attachment substituted for Real evidence.
+- No Demo counters substituted for Real analytics.
+
+### Negative test
+
+Make a Real API request fail.
+
+The UI must report the failure.
+
+It must not silently switch to Demo results.
+
+### Isolation test
+
+Make a Demo mutation.
+
+Verify no Real database record changes.
+
+---
+
+# 26. AUTOMATED TEST ARCHITECTURE
+
+Reuse the repository's current test tooling.
+
+Do not introduce a second competing framework without justification.
+
+Where the project already uses Vitest, Playwright, Supertest or equivalent tools, reuse the existing setup.
+
+Organize tests by responsibility:
+
+## Unit
+
+- Eligibility aggregation.
+- Status projections.
+- Declaration numbering.
+- School selection predicates.
+- Collective calculations.
+- Validation helpers.
+
+## Component
+
+- Student declaration editor.
+- Inline review controls.
+- Supplementation editor.
+- School list.
+- Forwarding dialog.
+- City queue.
+- Committee decision dialog.
+
+## API integration
+
+- Authentication.
+- Authorization.
+- Student submission.
+- Review mutations.
+- Supplementation.
+- School forwarding.
+- City review.
+- Committee decision.
+- Collective flows.
+
+## Database integration
+
+On isolated PostgreSQL only:
+
+- Persistence.
+- Referential integrity.
+- Transactions.
+- Duplicate prevention.
+- Unique forwarding constraints.
+- Concurrent updates.
+- Audit history.
+
+## Browser E2E
+
+- Student lifecycle.
+- School lifecycle.
+- Supplementation.
+- UDN forwarding.
+- City lifecycle.
+- Committee decision.
+- Collective lifecycle.
+
+Use stable selectors and deterministic fixtures.
+
+Do not introduce arbitrary sleeps where condition-based synchronization is available.
+
+---
+
+# 27. MANDATORY BC01–BC20 REGRESSION
+
+Re-execute the LEAN-0.1 acceptance contract:
+
+- BC01 — All five criteria passed.
+- BC02 — Four passed, one failed.
+- BC03 — Partially reviewed criterion.
+- BC04 — ONE_OF satisfied.
+- BC05 — ONE_OF unsatisfied.
+- BC06 — Multiple declarations.
+- BC07 — ALL_REQUIRED.
+- BC08 — Active supplementation.
+- BC09 — Returned supplementation.
+- BC10 — School recommendation.
+- BC11 — School bulk selection.
+- BC12 — UDN forwarding.
+- BC13 — Independent City Fail after School Pass.
+- BC14 — Completed City review with failures.
+- BC15 — Committee rejects an otherwise qualified application.
+- BC16 — Collective TT01–TT04.
+- BC17 — Student submission warnings.
+- BC18 — Concurrent review.
+- BC19 — Authorized reopening/correction.
+- BC20 — Dashboard metric independence.
+
+Preserve the authoritative LEAN-0.1 scenario definitions.
+
+Do not weaken assertions merely to make the suite green.
+
+---
+
+# 28. DEFECT MANAGEMENT AND TARGETED FIXES
+
+LEAN-6 may discover defects.
+
+Classify them.
+
+## P0 — Release blocker
+
+Examples:
+
+- Unauthorized official decision.
+- Cross-Student data leakage.
+- Incorrect award result.
+- Invalid School forwarding.
+- Lost evidence.
+- Corrupt submitted dossier.
+- Duplicate official forwarding.
+- Incorrect role authorization.
+- Silent loss of human review data.
+
+## P1 — Major
+
+Examples:
+
+- Core Student submission broken.
+- Supplementation cannot be completed.
+- City review not persisted.
+- Incorrect eligibility aggregation.
+- Major mobile workflow unusable.
+- Wrong season displayed during official action.
+
+## P2 — Moderate
+
+Examples:
+
+- Noncritical layout defect.
+- Misleading secondary label.
+- Minor navigation/context issue.
+- Noncritical report formatting.
+
+## P3 — Polish
+
+Examples:
+
+- Minor spacing.
+- Icon alignment.
+- Optional secondary affordance.
+
+### Fixing rules
+
+For verified P0/P1 defects:
+
+1. Reproduce.
+2. Identify root cause.
+3. Identify affected frontend/backend contract.
+4. Implement the smallest safe fix.
+5. Add regression test.
+6. Re-run affected scenarios.
+7. Document the change.
+
+Do not silently change approved eligibility thresholds or authority rules to make a failing test pass.
+
+For P2/P3 defects, fix only where safe and within reasonable phase scope.
+
+Document remaining defects.
+
+Do not expand LEAN-6 into unrelated feature development.
+
+---
+
+# 29. RELEASE READINESS GATES
+
+Use independent readiness categories.
+
+## Gate A — Functional correctness
+
+Student, School, City, Committee and Collective journeys work according to the approved contract.
+
+## Gate B — Data integrity
+
+Submitted snapshots, declarations, evidence, judgments and official decisions remain correctly linked.
+
+## Gate C — Authorization
+
+No critical cross-role or cross-unit access vulnerabilities.
+
+## Gate D — Official workflow safety
+
+School forwarding uniqueness and Committee authority are protected.
+
+## Gate E — Real integration
+
+Actual backend and PostgreSQL persistence have been verified in an authorized isolated environment.
+
+## Gate F — Storage
+
+Evidence upload, retrieval, version history and access control are verified.
+
+## Gate G — Responsive usability
+
+Core operations function on required desktop and mobile widths.
+
+## Gate H — Operational configuration
+
+Environment, season, email, storage and error handling are understood and validated.
+
+## Gate I — Test evidence
+
+Automated and manual test results are recorded and reproducible.
+
+### Verdict rules
+
+**PASS**
+
+All mandatory gates are verified, no unresolved release-blocking defects remain, and authorized test-environment integration evidence exists.
+
+**PARTIAL**
+
+Important parts are verified, but some noncritical checks or environment-dependent acceptance evidence remain incomplete.
+
+**BLOCKED**
+
+Critical lifecycle operations, authority protections, data integrity or required Real integration cannot be verified or are failing.
+
+Do not mark the entire platform production-ready when any mandatory gate remains unverified.
+
+---
+
+# 30. MANUAL UAT — VERY DETAILED VIETNAMESE CHECKLIST
+
+Create an actual manual testing document for the customer and Student Association testers.
+
+It must not be a generic QA checklist.
+
+Each test case must include:
+
+- Test ID.
+- Actor.
+- Test account.
+- Prerequisite.
+- Exact starting page.
+- Exact click-by-click actions.
+- Input data.
+- Expected UI result.
+- Expected backend result.
+- Expected audit result where applicable.
+- Actual result field.
+- PASS/FAIL/BLOCKED field.
+- Screenshot/evidence location.
+- Defect reference.
+
+Write in natural Vietnamese.
+
+### Required groups
+
+1. Đăng ký / Đăng nhập.
+2. Hồ sơ cá nhân.
+3. Kê khai năm tiêu chí.
+4. Tải minh chứng.
+5. Nộp hồ sơ.
+6. Sơ tuyển cấp Trường.
+7. Đạt / Không đạt.
+8. Giải trình / Bổ sung.
+9. Chọn hồ sơ đề nghị.
+10. Đại học Đà Nẵng.
+11. Gửi danh sách lên Thành phố.
+12. Hàng đợi Thành phố.
+13. Thẩm định độc lập.
+14. Bổ sung cấp Thành phố.
+15. Hội đồng xét chọn.
+16. Hồ sơ Tập thể.
+17. Phân quyền.
+18. Xuất Excel.
+19. Responsive.
+20. Demo/Real.
+21. Dữ liệu và trạng thái cuối mùa xét.
+
+The manual checklist must be executable by someone who did not build the software.
+
+Do not use raw code identifiers as primary tester instructions.
+
+---
+
+# 31. CROSS-ROLE TEST EVIDENCE
+
+For selected end-to-end scenarios, record the same application ID through every legitimate stage.
+
+Example trace:
+
+Student creates application.
+
+Record its test application ID.
+
+School receives that exact application.
+
+School assessment references the same application.
+
+School forwarding includes that exact application.
+
+City receives that exact application.
+
+City independently reviews it.
+
+Committee sees the same application and historical results.
+
+### Required traceability
+
+Record:
+
+- Test application reference.
+- Student identity.
+- Original institution.
+- Review Unit.
+- Season.
+- Submitted snapshot reference.
+- Relevant declaration references.
+- Evidence references.
+- School assessment references.
+- Forwarding batch reference.
+- City assessment references.
+- Committee decision reference.
+
+Redact secrets and personal information from published reports.
+
+This trace must prove that the entire system is using one canonical application rather than disconnected mock records.
+
+---
+
+# 32. REQUIRED SCREENSHOTS AND ARTIFACTS
+
+Capture actual browser screenshots where available.
+
+Recommended:
+
+1. Student declaration screen.
+2. Student multiple numbered declarations.
+3. Student submission confirmation.
+4. School application list.
+5. School inline Pass/Fail.
+6. School completed review with Fail.
+7. School supplementation request.
+8. Student supplementation response.
+9. School reassessment.
+10. UDN consolidated selection.
+11. School forwarding confirmation.
+12. Forwarded read-only view.
+13. City shared queue.
+14. City independent judgment.
+15. City completed review.
+16. Committee application summary.
+17. Committee decision.
+18. Collective TT01–TT04.
+19. Mobile Student declaration.
+20. Mobile School review.
+21. Mobile City review.
+22. Mobile Committee decision.
+
+Capture only actual implemented application rendering.
+
+Do not generate illustrative screenshots and present them as test proof.
+
+If no browser is available, document the limitation and provide the exact manual verification steps.
+
+---
+
+# 33. DOCUMENTATION DELIVERABLES
+
+Create the following under the actual project's `docs/lean/` directory.
+
+## 1. `LEAN_6_BASELINE_AND_ENVIRONMENT.md`
+
+- Source baseline.
+- Current branch/snapshot.
+- Environment identification.
+- Database safety.
+- Storage safety.
+- Email safety.
+- Prior phase status.
+- Test limitations.
+
+## 2. `LEAN_6_TEST_MATRIX.md`
+
+Comprehensive traceability matrix for LEAN-0.1, LEAN-1 through LEAN-5, and BC01–BC20.
+
+## 3. `LEAN_6_E2E_SCENARIOS.md`
+
+Detailed cross-role Student → School → City → Committee and Collective scenarios.
+
+## 4. `LEAN_6_MANUAL_UAT_VI.md`
+
+Detailed click-by-click Vietnamese manual testing guide.
+
+## 5. `LEAN_6_SECURITY_REGRESSION.md`
+
+Authorization, privacy, attachment protection and negative test results.
+
+## 6. `LEAN_6_DATA_INTEGRITY_REPORT.md`
+
+Database integrity, review state, evidence version history, forwarding uniqueness and audit consistency.
+
+## 7. `LEAN_6_RESPONSIVE_QA.md`
+
+Actual viewport tests, screenshots and unresolved layout defects.
+
+## 8. `LEAN_6_DEFECT_REGISTER.md`
+
+All identified defects, priority, reproductions, fixes, owners/status where known, and retest evidence.
+
+## 9. `LEAN_6_PILOT_READINESS.md`
+
+Formal readiness checklist with independent acceptance gates.
+
+## 10. `LEAN_6_FINAL_REPORT.md`
+
+Executive summary with verified test results, blockers and final verdict.
+
+Adapt paths to the existing repository conventions where appropriate.
+
+Do not overwrite historical audit reports.
+
+---
+
+# 34. FINAL IMPLEMENTATION REPORT FORMAT
+
+The final report must contain:
+
+1. Actual baseline and environment.
+2. Previous LEAN phase verification.
+3. Number of test cases planned.
+4. Number actually executed.
+5. Number passed.
+6. Number failed.
+7. Number blocked.
+8. Number skipped with reasons.
+9. Student journey results.
+10. School journey results.
+11. UDN routing/forwarding results.
+12. Independent School results.
+13. City journey results.
+14. Committee journey results.
+15. Collective journey results.
+16. Supplementation results.
+17. Authentication and authorization results.
+18. Evidence storage results.
+19. PostgreSQL integration results.
+20. State aggregation results.
+21. Dashboard/Excel reconciliation.
+22. Responsive results.
+23. Email/notification results.
+24. Demo/Real isolation.
+25. Defects found and fixed.
+26. Unresolved P0/P1 defects.
+27. Remaining business policy decisions.
+28. Production-readiness limitations.
+29. Actual changed source files.
+30. Exact test commands.
+31. Screenshots and test evidence.
+32. Final verdict: PASS / PARTIAL / BLOCKED.
+
+Include links to created documentation files within the repository.
+
+Use actual test evidence.
+
+Do not fabricate successful browser runs or database tests.
+
+---
+
+# 35. READINESS FOR A REAL PILOT
+
+The customer intends to use this platform in an actual Student Association award selection process.
+
+Therefore, assess not only code correctness but operational usability.
+
+Check:
+
+- Can a first-time Student understand declaration entry?
+- Can a Student submit without developer support?
+- Can a School reviewer efficiently assess a dossier?
+- Can School staff explain statuses to applicants?
+- Can the UDN shared reviewer prepare one official list?
+- Can City staff review independently without assignment management?
+- Can supplementation occur without losing original evidence?
+- Can Committee users understand accumulated outcomes?
+- Can authorized staff recover safely from network failures?
+- Are official results distinguishable from advisory calculations?
+- Are test accounts and real accounts clearly separated?
+- Is there a documented path for handling genuine operational incidents?
+- Are season settings and deadlines consistent?
+- Are private records protected?
+- Are dashboard/report counts trustworthy?
+
+Produce a practical pilot checklist.
+
+### Pilot readiness is not deployment authorization
+
+A PASS verdict means the tested version has met the documented readiness gates.
+
+It does not authorize:
+
+- Production database resets.
+- Automatic deployment.
+- Public launch.
+- Student invitation emails.
+- Opening a live award season.
+- Official Committee decisions.
+
+Those remain explicit operational decisions.
+
+---
+
+# 36. QUALITY GATES AND FINAL EXECUTION
+
+Run actual applicable commands for:
+
+Frontend:
+
+- Typecheck.
+- Production build.
+- Unit tests.
+- Component tests.
+- Browser E2E tests.
+
+Backend:
+
+- Typecheck.
+- Build.
+- Unit tests.
+- API tests.
+- Authorization tests.
+- Integration tests.
+
+Database, where isolated and authorized:
+
+- Migration state check.
+- Actual persistence tests.
+- Transaction tests.
+- Concurrency tests.
+- Referential integrity checks.
+
+Do not use a production database for destructive tests.
+
+Record every significant command and its actual result.
+
+If any tool or environment is unavailable, explicitly mark affected tests as BLOCKED or NOT EXECUTED.
+
+Do not report 100% success when some required tests were not run.
+
+---
+
+# 37. STRICT CHANGE SAFETY
+
+Preserve:
+
+- Approved LEAN-0.1 business contract.
+- LEAN-1 simplified Student declaration UX.
+- LEAN-2 inline Pass/Fail.
+- LEAN-3 contextual supplementation.
+- LEAN-4 School recommendation/forwarding.
+- LEAN-5 City/Committee harmonization.
+- Feature-Sliced Frontend architecture.
+- Existing backend architecture.
+- Golden Frontend historical baseline.
+- Prisma domain integrity.
+- Student submitted snapshots.
+- Evidence versions.
+- School/City independent human judgments.
+- UDN shared Review Unit.
+- One-time forwarding.
+- Collective direct-to-City flow.
+- Committee official authority.
+- Analytics and Excel exports.
+- Audit history.
+- Demo/Real separation.
+
+Do not:
+
+- Introduce a new workflow engine.
+- Add Officer assignments.
+- Restore ResolutionCase.
+- Change award thresholds.
+- Add arbitrary supplementation deadlines.
+- Replace real persistence with local mocks.
+- Automatically recommend applications.
+- Automatically forward.
+- Automatically recognize awards.
+- Automatically publish results.
+- Invent Committee voting functionality.
+- Introduce unrelated product features.
+- Run unauthorized migrations.
+- Modify production records.
+- Seed production.
+- Deploy automatically.
+- Push, merge or rebase without explicit authorization.
+
+Targeted defect fixes are allowed only when they preserve the approved contracts.
+
+---
+
+# 38. DEFINITION OF DONE
+
+LEAN-6 is complete only when:
+
+- Previous LEAN phases are source-verified.
+- Student can complete a real authorized end-to-end submission in the isolated test environment.
+- School can review and record human judgments correctly.
+- Supplementation works across the relevant roles.
+- School recommendation remains separate from eligibility.
+- UDN forwarding consolidates eight institutions into one Review Unit.
+- Independent Schools remain isolated.
+- One-time School forwarding is transactionally safe.
+- City receives exactly forwarded applications.
+- City judgments remain independent.
+- Complete-but-failing reviews work correctly.
+- Committee official decisions remain authorized and persisted.
+- Collective TT01–TT04 works directly through City.
+- Evidence files and versions remain secure.
+- Unauthorized cross-role mutations are denied.
+- Dashboard and export counts are correct.
+- Demo and Real are isolated.
+- Core responsive workflows are usable.
+- Automated tests have actual execution evidence.
+- Manual UAT results are recorded.
+- No unresolved P0/P1 release blockers remain.
+- All mandatory pilot-readiness gates are verified.
+
+If any mandatory condition is not verified, report PARTIAL or BLOCKED.
+
+---
+
+# FINAL PRODUCT ACCEPTANCE STANDARD
+
+A first-time Student should be able to use 5TOT without technical instruction.
+
+A School reviewer should be able to review declarations and select applications without understanding internal workflow states.
+
+A City reviewer should be able to independently assess dossiers directly from a shared queue.
+
+A Committee member should be able to inspect accumulated results and record authorized official decisions.
+
+A Collective representative should be able to submit directly to City under the separate TT01–TT04 process.
+
+Every action must be correctly persisted, permission-controlled and audit-traceable.
+
+The frontend should remain simple.
+
+The backend should remain correct.
+
+**LEAN-6 SUCCESS = A COMPLETE, SECURE, VERIFIED AND OPERATIONALLY USABLE STUDENT AWARD SELECTION SYSTEM.**
+
+## HARD STOP
+
+Complete LEAN-6 verification and narrowly scoped defect correction.
+
+Produce the required documentation and evidence.
+
+Do not deploy.
+
+Do not open an actual production award season.
+
+Do not modify live Student records.
+
+Do not automatically start another implementation phase.
+
+Finish with an evidence-based PASS / PARTIAL / BLOCKED verdict and a clear list of any remaining pilot-readiness blockers.

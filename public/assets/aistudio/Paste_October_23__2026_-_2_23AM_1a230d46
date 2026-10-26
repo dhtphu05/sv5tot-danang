@@ -1,0 +1,1281 @@
+# 5TOT ĐÀ NẴNG — UX-S5.1
+## PRODUCT LANGUAGE, BUSINESS UX SIMPLIFICATION & PRODUCTION CONTENT POLISH
+
+**Priority:** P0 — Customer UX Correction
+**Execution:** AUDIT → CONTENT DESIGN → TARGETED REFACTOR → REAL INTEGRATION → BROWSER QA → REPORT
+**Scope:** Entire 5TOT product, with immediate priority on School preliminary review and consolidated forwarding
+**Architecture:** Existing React/Vite/FSD frontend and Express/Prisma Modular Monolith backend
+
+---
+
+# 1. CRITICAL CUSTOMER FEEDBACK
+
+The 5TOT product has become visually modern, but some areas still feel like an AI-generated software prototype rather than a real Student Association administrative system.
+
+Problems include:
+
+- Excessively technical terminology.
+- Overexplained business operations.
+- Too many status badges.
+- Too many KPI cards.
+- Long warning panels.
+- Repetitive instructional text.
+- Unnecessary workflow concepts.
+- Development-oriented English terminology.
+- UI labels that describe internal system states rather than actual staff activities.
+- Synthetic Demo data that does not resemble a realistic selection cycle.
+- Inconsistent season and application context.
+
+The customer explicitly wants a system that feels natural to real School Reviewers, City Reviewers, Committee members and administrative staff.
+
+**The result must feel like a polished Vietnamese Student Association management system — NOT an AI dashboard, developer console, ERP configuration tool or workflow-engine demonstration.**
+
+Keep the visual design modern and premium.
+
+Do not return to the outdated legacy table styling.
+
+Simplify the language, information hierarchy and interaction patterns.
+
+Preserve all legitimate business functionality.
+
+---
+
+# 2. INSPECT THE PROVIDED SCREENSHOTS
+
+The customer provided two screenshots.
+
+## Screenshot A — School forwarding preparation
+
+Visible issues:
+
+- Excessively detailed global contextual breadcrumb.
+- Program, award season and category labels consume unnecessary header space.
+- Global header displays 2026–2027 while the School forwarding page displays 2025–2026.
+- School header mentions both Individual and Collective categories, despite the current direct-to-City Collective workflow.
+- Six KPI cards clutter the main task.
+- Similar concepts appear under multiple names:
+  - Draft forwarding batch.
+  - Recommended applications.
+  - Currently selected applications.
+  - Pending recommendation.
+  - Applications prepared for transfer.
+- Technical or unnatural labels.
+- Large official document section.
+- Too much vertical space before the actual selectable Student list.
+- The decision attachment filename shown does not obviously correspond to an official award recommendation document.
+
+## Screenshot B — Final forwarding confirmation
+
+Visible issues:
+
+- Long explanatory text.
+- Repetitive irreversible-action warnings.
+- Excessive orange/green panels.
+- Developer-style terminology such as `read-only`.
+- Unnatural labels such as "chuyển đợt chính thức duy nhất".
+- Many metadata boxes before the confirm action.
+- Member-institution breakdown crowds the confirmation dialog.
+- Optional notes add visual height without helping the main decision.
+- The modal could be more compact and focused.
+- The document identity should be consistent with the preparation page.
+
+Do not assume these screenshots show the same saved application state.
+
+Verify actual Demo records, selections and attachment data before identifying a state mismatch as a confirmed defect.
+
+---
+
+# 3. IMPORTANT PRODUCT DESIGN PRINCIPLE
+
+**THE USER INTERFACE MUST SPEAK THE LANGUAGE OF THE USER, NOT THE LANGUAGE OF THE IMPLEMENTATION.**
+
+Reviewers should see:
+
+- Hồ sơ sinh viên.
+- Sơ tuyển.
+- Danh sách đề nghị xét chọn.
+- Văn bản đề nghị.
+- Gửi danh sách lên Thành phố.
+- Xét duyệt.
+- Thẩm định.
+- Yêu cầu bổ sung.
+- Kết quả xét chọn.
+
+They should not be forced to understand:
+
+- Workflow state.
+- Batch lifecycle.
+- Read-only lock.
+- Internal status transitions.
+- Canonical snapshot.
+- Technical validation.
+- Resource scope.
+- AI confidence.
+- Processing engine.
+- Review orchestration.
+
+These technical concepts may still exist internally.
+
+They do not belong in normal user-facing copy unless essential to a real administrative task.
+
+---
+
+# 4. VIETNAMESE PRODUCT LANGUAGE STANDARD
+
+Create one official Vietnamese UX writing guide for 5TOT.
+
+### Tone
+
+- Professional.
+- Respectful.
+- Clear.
+- Natural.
+- Concise.
+- Suitable for Student Association staff.
+- Easy to understand without technical training.
+
+### Avoid
+
+- AI-generated marketing language.
+- Excessive enthusiasm.
+- Decorative motivational copy.
+- Complex system-oriented language.
+- Developer abbreviations.
+- English terminology where normal Vietnamese exists.
+- Repeated explanations of the same rule.
+- Excessively formal bureaucratic paragraphs.
+- Long instructional text for simple actions.
+
+### Prefer
+
+Short, actionable wording that describes what users actually do.
+
+Examples:
+
+Bad:
+"Chốt và chuyển giao chính thức đợt đề xuất"
+
+Better:
+"Gửi danh sách lên Thành phố"
+
+Bad:
+"Danh sách sẽ được đóng khóa cố định (read-only)"
+
+Better:
+"Sau khi gửi, danh sách không thể chỉnh sửa."
+
+Bad:
+"Đang chọn vào đợt"
+
+Better:
+"Đã chọn"
+
+Bad:
+"Đang lập dự thảo đợt đề xuất"
+
+Better:
+"Đang chuẩn bị danh sách"
+
+Bad:
+"Thao tác này chỉ được thực hiện một lần trong mùa xét"
+
+Better:
+"Mỗi đơn vị chỉ được gửi danh sách một lần trong năm học."
+
+Bad:
+"Đã cập nhật kết luận sơ tuyển cho sinh viên..."
+
+Better:
+"Đã lưu kết quả sơ tuyển."
+
+Keep the actual official terminology when it is prescribed by the applicable regulations.
+
+Do not arbitrarily rewrite legally significant document names.
+
+---
+
+# 5. OFFICIAL BUSINESS TERMINOLOGY
+
+Define consistent language by stage.
+
+## Student
+
+- Hồ sơ của tôi.
+- Thông tin cá nhân.
+- Kê khai thành tích.
+- Minh chứng.
+- Lưu kê khai.
+- Nộp hồ sơ.
+- Bổ sung minh chứng.
+- Kết quả xét chọn.
+
+## School
+
+- Hồ sơ sơ tuyển.
+- Xét sơ tuyển.
+- Kết quả sơ tuyển.
+- Đề nghị xét chọn.
+- Danh sách đề nghị.
+- Văn bản đề nghị.
+- Gửi danh sách lên Thành phố.
+- Danh sách đã gửi.
+
+## City Reviewer
+
+- Hồ sơ cần thẩm định.
+- Thẩm định hồ sơ.
+- Xem minh chứng.
+- Ghi nhận đánh giá.
+- Yêu cầu bổ sung.
+- Hoàn tất thẩm định.
+
+## Committee
+
+- Hồ sơ trình Hội đồng.
+- Kết quả sơ tuyển.
+- Kết quả thẩm định.
+- Xem hồ sơ.
+- Xét chọn.
+- Quyết định xét chọn.
+- Kết quả công nhận.
+
+Use the actual approved Committee state model.
+
+Do not label an application "Được công nhận" unless the corresponding official decision has been recorded.
+
+## Admin
+
+- Mùa xét chọn.
+- Bộ tiêu chí.
+- Đơn vị đào tạo.
+- Đơn vị sơ tuyển.
+- Tài khoản.
+- Phân quyền.
+- Lịch sử thao tác.
+
+Create a glossary and apply it across relevant interfaces.
+
+Avoid having four different labels for the same operation.
+
+---
+
+# 6. REDESIGN THE SCHOOL FORWARDING PAGE
+
+This is the immediate highest-priority screen.
+
+The School reviewer has one core objective:
+
+**Prepare the list of recommended Students, attach the School's official decision document, and send the complete list to the City once.**
+
+The UI should organize the task naturally.
+
+## Recommended page title
+
+"Danh sách đề nghị xét chọn cấp Thành phố"
+
+Subtitle:
+
+"Kiểm tra danh sách sinh viên và văn bản đề nghị trước khi gửi lên Hội Sinh viên Thành phố."
+
+Keep the original School Review Unit and year visible in a compact location.
+
+## Recommended information hierarchy
+
+1. Page title and unit/season context.
+2. Compact status summary.
+3. Student recommendation list.
+4. Official decision document.
+5. Final submission action.
+
+The official document can be displayed before the Student list if this better supports the current validated business operation, but the selected list and main submission action must remain easy to locate.
+
+Do not display a wall of KPI cards before the actual work.
+
+## Metrics
+
+Prefer only the most actionable figures.
+
+Examples:
+
+- Tổng hồ sơ.
+- Được đề nghị.
+- Chưa có kết luận đề nghị.
+- Không đề nghị.
+
+Show the current selected count near the selection controls.
+
+If the School review completion count is useful, show it as a compact progress summary rather than another competing large KPI.
+
+Separate:
+
+- Completed preliminary criterion review.
+- School recommendation recorded.
+- Selected for forwarding.
+- Officially forwarded.
+
+These are not interchangeable states.
+
+Do not claim a Student is recommended simply because all five criteria were reviewed.
+
+---
+
+# 7. SCHOOL FORWARDING LIST UX
+
+The Student list must be the central functional area.
+
+Provide:
+
+- Search by name/MSSV.
+- Original institution filter.
+- Relevant review status.
+- School recommendation.
+- Selection status.
+- Clear dossier opening action.
+- Selected count.
+- Appropriate safe selection controls.
+
+For the shared University of Da Nang School Review Unit:
+
+- Preserve all eight member institutions.
+- Preserve original institution on each application.
+- One consolidated forwarding list.
+- One School decision document.
+- One successful forwarding per season.
+
+Do not require reviewers to navigate between eight different forwarding batches.
+
+Avoid confusing multi-step selection language.
+
+Prefer:
+
+- "Chọn hồ sơ".
+- "Bỏ chọn".
+- "Đã chọn 6 hồ sơ".
+- "Xem hồ sơ".
+
+Only authorized recommended applications may be selected if that is the actual canonical backend eligibility rule.
+
+Do not infer additional restrictions from UI copy.
+
+Ensure filtering does not silently discard previously selected applications.
+
+---
+
+# 8. OFFICIAL DECISION DOCUMENT UX
+
+Use a straightforward section heading:
+
+"Văn bản đề nghị xét chọn"
+
+or the exact existing legally appropriate document name.
+
+Display:
+
+- Decision number, if recorded.
+- Issuance date.
+- Issuing authority/signatory where actually required.
+- Attached document.
+- Preview.
+- Replace file, if allowed.
+- Remove file, if allowed before forwarding.
+
+Avoid exposing raw internal document validation codes.
+
+Use a simple natural-language validity state such as:
+
+"Đã đính kèm tệp PDF"
+
+where the file has actually been stored.
+
+Only show:
+
+"Văn bản hợp lệ"
+
+if the system has performed the relevant approved validation.
+
+File format validation alone must not be presented as substantive confirmation that the official decision document is legally valid.
+
+Do not allow mismatched or stale document details in the confirmation screen.
+
+The confirmation must use the same canonical currently selected document reference.
+
+Demo attachments must be realistic and clearly synthetic.
+
+Do not use unrelated coursework reports as official School decision attachments.
+
+---
+
+# 9. FINAL CONFIRMATION MODAL
+
+Redesign the confirmation modal to be compact, professional and easy to understand.
+
+## Recommended title
+
+"Xác nhận gửi danh sách lên Thành phố"
+
+## Recommended summary
+
+"Bạn chuẩn bị gửi [N] hồ sơ của [School Review Unit] lên Hội Sinh viên Thành phố."
+
+Show only essential information:
+
+- School Review Unit.
+- Award season.
+- Number of selected applications.
+- Official decision reference.
+- Attached file.
+
+## One important warning
+
+"Mỗi đơn vị chỉ được gửi danh sách một lần trong năm học. Sau khi gửi, danh sách và văn bản sẽ không thể chỉnh sửa."
+
+Preserve the actual canonical one-time forwarding rule.
+
+## Actions
+
+Secondary:
+
+"Quay lại kiểm tra"
+
+Primary:
+
+"Gửi [N] hồ sơ"
+
+Do not use:
+
+- Technical terms such as `read-only`.
+- Multiple repeated warnings.
+- Huge legalistic paragraphs.
+- Multiple redundant success labels.
+- Decorative AI-style headings.
+
+### Detailed breakdown
+
+If institution breakdown is operationally useful:
+
+Use a compact expandable:
+
+"Xem phân bổ theo trường"
+
+Do not require all details to occupy permanent space in the modal.
+
+### Optional note
+
+Keep an optional forwarding note only if this is genuinely supported and valuable in the existing backend workflow.
+
+Use a concise label such as:
+
+"Ghi chú gửi kèm (không bắt buộc)"
+
+Do not invent mandatory explanation fields.
+
+---
+
+# 10. PRESERVE IRREVERSIBLE OPERATION SAFETY
+
+This redesign must not weaken the actual forwarding operation.
+
+Preserve:
+
+- Correct permissions.
+- Correct selected application IDs.
+- One attached common School decision.
+- Exact School Review Unit.
+- Exact award season.
+- Transaction-safe forwarding.
+- One-successful-forwarding uniqueness.
+- Idempotency and retry safety.
+- Proper post-forwarding lock.
+- Authentic server response.
+- Audit attribution.
+
+Never submit automatically when opening the confirmation modal.
+
+Never claim success before backend confirmation.
+
+If the network times out after submission, do not tell the reviewer to blindly retry a potentially completed one-time operation.
+
+Use the existing canonical idempotency/status-check behavior.
+
+Simpler text must never mean weaker business correctness.
+
+---
+
+# 11. CROSS-APPLICATION CONTENT AUDIT
+
+Audit all user-visible text across the existing frontend.
+
+Include:
+
+## Student
+
+- Registration and login.
+- Personal information.
+- Dossier preparation.
+- Criteria.
+- Declarations.
+- Evidence upload.
+- Submission.
+- Supplementation.
+- Results.
+- Notifications.
+
+## School
+
+- Dashboard.
+- Application list.
+- Preliminary review.
+- Review progress.
+- Student profile snapshot.
+- Requirement/evidence assessment.
+- Recommendation decisions.
+- Consolidated forwarding list.
+- Official decision attachment.
+- Final forwarding confirmation.
+- Forwarding history.
+
+## City
+
+- Shared review queue.
+- Application detail.
+- Criterion navigation.
+- Evidence review.
+- Human judgments.
+- Supplementation.
+- Review completion.
+- Statistics.
+
+## Committee
+
+- Application lists.
+- School/City results.
+- Official decision interfaces.
+- Final results.
+- Statistics and exports.
+
+## Administration
+
+- Seasons.
+- Criteria.
+- Institutions.
+- School Review Units.
+- User accounts.
+- Permissions.
+- Audit records.
+- Configuration warnings.
+
+## Shared UI
+
+- Navigation.
+- Breadcrumbs.
+- Buttons.
+- Status badges.
+- Tooltips.
+- Toasts.
+- Dialogs.
+- Empty states.
+- Loading states.
+- Error messages.
+- Success messages.
+- File names and metadata.
+- Table headings.
+- Filter labels.
+- Excel export labels.
+- AI entry points.
+
+---
+
+# 12. CONTENT REDUNDANCY AUDIT
+
+Identify locations where the UI repeats information unnecessarily.
+
+Examples:
+
+- Student name in several large headings.
+- Institution repeated across breadcrumbs, sidebar, cards and text blocks.
+- Multiple status badges describing the same state.
+- Multiple confirmation warnings for the same action.
+- Large explanations of obvious button behavior.
+- Excessive instruction boxes above straightforward forms.
+- Several cards displaying closely related counts.
+
+Simplify the hierarchy while keeping meaningful information accessible.
+
+Prefer:
+
+- One clear page title.
+- One concise explanatory sentence when needed.
+- One obvious primary action.
+- Compact secondary metadata.
+- Expandable supplementary information where useful.
+
+Do not blindly remove content.
+
+Classify each element as:
+
+- Essential for the task.
+- Necessary for safety or compliance.
+- Helpful secondary context.
+- Redundant.
+- Technical/debug-only.
+
+Remove, rewrite or relocate accordingly.
+
+---
+
+# 13. GLOBAL CONTEXT CONSISTENCY
+
+Audit season, award program, institution and application-type context.
+
+A concrete visible defect exists in the supplied School screenshot:
+
+Global header:
+
+2026–2027
+
+School forwarding content:
+
+2025–2026
+
+Investigate and fix the source-of-truth discrepancy.
+
+Do not hardcode either year as the solution.
+
+Use the correct canonical selected season and application/batch season, clearly distinguishing them only where a legitimate historical context is intentionally open.
+
+Verify:
+
+- Current season.
+- Historical season.
+- Page breadcrumbs.
+- Application list filters.
+- School forwarding batch.
+- Attachment metadata.
+- Confirmation dialog.
+- City intake.
+- Dashboard.
+- Exports.
+
+Do not silently combine applications from multiple seasons.
+
+Do not display Collective TT01–TT04 as an active School forwarding category.
+
+The City and Committee may legitimately display both Individual and Collective categories in their own authorized contexts.
+
+---
+
+# 14. REALISTIC PRODUCTION CONTENT
+
+Review all Demo text and fixture content.
+
+Current fixtures sometimes feel synthetic or unrelated to the administrative purpose.
+
+Create realistic but entirely fictional examples.
+
+Use plausible:
+
+- Vietnamese Student names.
+- Institution names from the configured institution directory.
+- Academic years.
+- MSSV formats.
+- Official decision document labels.
+- Review status text.
+- Evidence descriptions.
+- Supplementation requests.
+- Reviewer comments.
+- Committee result descriptions.
+
+Never use actual private personal data merely to make Demo screenshots realistic.
+
+Do not invent real governmental approvals, signatories or historical decisions.
+
+If fake official document numbers or names are used in Demo, keep them clearly identified as simulated examples.
+
+Preserve deterministic Demo reset.
+
+Ensure the same synthetic record has consistent:
+
+- Application identity.
+- School Review Unit.
+- Season.
+- Selected status.
+- Attached decision.
+- Review progress.
+- Confirmation summary.
+- City receipt.
+
+Do not generate unrelated fixtures separately for each screen.
+
+---
+
+# 15. REMOVE DEVELOPMENT-ORIENTED UI COPY
+
+Audit UI strings that expose implementation details.
+
+Examples of material to keep out of normal operational content:
+
+- Backend V2.
+- Prisma.
+- API.
+- Snapshot.
+- Canonical state.
+- Workflow engine.
+- Read-only.
+- Mock data.
+- Fixture.
+- Seed.
+- Enum.
+- Validation pipeline.
+- Technical identifiers.
+- Internal audit processing descriptions.
+
+These terms may appear in developer documentation or authorized technical diagnostics, but not ordinary Student/Officer screens.
+
+Preserve a clearly labeled Demo Mode indicator in demonstration sessions.
+
+Do not remove necessary separation between Demo and Real Mode.
+
+Do not use the Demo switcher as a large persistent overlay covering operational buttons.
+
+---
+
+# 16. AI PRESENTATION
+
+AI should be an optional assistant, not the visual or linguistic identity of the whole product.
+
+Do not use AI-styled instructional copy on normal form, navigation, forwarding or Committee screens.
+
+Keep AI-specific language limited to actual optional AI features.
+
+Examples of appropriate labels:
+
+- "AI hỗ trợ".
+- "Gợi ý từ AI".
+- "Xem phân tích".
+- "Đối chiếu minh chứng".
+
+Do not treat AI preliminary conclusions as official status.
+
+Do not decorate ordinary review states with AI icons.
+
+Do not create new AI interactions during this phase.
+
+---
+
+# 17. NOTIFICATIONS, ERRORS AND CONFIRMATIONS
+
+Rewrite system messages around what the user needs to know.
+
+## Success
+
+Good:
+
+"Đã lưu kết quả sơ tuyển."
+
+"Đã cập nhật danh sách đề nghị."
+
+"Đã gửi danh sách lên Thành phố."
+
+Only show after confirmed success.
+
+## Validation
+
+Good:
+
+"Vui lòng đính kèm văn bản đề nghị trước khi gửi."
+
+"Bạn chưa chọn hồ sơ nào."
+
+"Vui lòng nhập số hiệu quyết định."
+
+Only display if consistent with actual applicable form rules.
+
+## Permission
+
+Good:
+
+"Bạn không có quyền thực hiện thao tác này."
+
+Where appropriate, identify the permitted next step without leaking restricted information.
+
+## Backend failure
+
+Good:
+
+"Chưa thể lưu thay đổi. Vui lòng thử lại."
+
+For irreversible operations with uncertain commit state, provide a safe status-check path rather than encouraging blind retry.
+
+Do not show raw stack traces.
+
+Do not expose internal enum names to normal users.
+
+Do not imply a Student failed eligibility rules merely because submitted evidence has not yet been assessed.
+
+---
+
+# 18. RESPONSIVE PRODUCT CONTENT
+
+The customer has experienced multiple responsive defects.
+
+Content length and UI structure are closely related.
+
+Verify:
+
+- Long Vietnamese program titles.
+- Long institution names.
+- Long official decision document names.
+- Long buttons.
+- Long Student names.
+- Truncated labels.
+- Dialog height.
+- Mobile confirmation controls.
+- Notes fields.
+- Filter controls.
+- Sidebars.
+- Sticky action areas.
+- Toast placement.
+- Demo switcher.
+- Evidence file lists.
+
+Test:
+
+320, 360, 390, 430, 768, 1024, 1280, 1440, 1660 and 1920px.
+
+Prefer concise text and responsive composition.
+
+Do not solve layout issues merely by shortening all business content beyond recognition.
+
+Do not hide primary actions.
+
+No page-level horizontal overflow.
+
+No modal that requires awkward nested scrolling to reach Confirm.
+
+---
+
+# 19. PRESERVE THE ACTUAL BUSINESS MODEL
+
+Preserve all customer-approved behavior.
+
+## Individual
+
+Student → School preliminary review → One School consolidated forwarding → City shared review → Committee final decision.
+
+## University of Da Nang
+
+Eight original member institutions.
+
+One shared School Review Unit.
+
+One common decision attachment.
+
+One successful forwarding per season.
+
+## City
+
+No mandatory Officer assignment.
+
+No workload allocation.
+
+No ResolutionCase.
+
+## Committee
+
+Actual authorized human final decisions.
+
+No fictional formal meetings or voting.
+
+## Collective
+
+TT01–TT04.
+
+Direct City workflow.
+
+## Student
+
+Five criteria and original declaration/evidence semantics.
+
+No new hard eligibility blocking merely due to AI warnings.
+
+Do not change backend domain rules while rewriting frontend labels.
+
+---
+
+# 20. PRODUCTION DATA INTEGRITY
+
+UI copy is never a substitute for correct domain state.
+
+Verify that displayed:
+
+- Review counts.
+- Recommended counts.
+- Selected counts.
+- Forwarded counts.
+- Pending assessments.
+- Criterion outcomes.
+- Official recognition results.
+- Institution names.
+- Academic years.
+- Official document references.
+
+all derive from appropriate actual records.
+
+Distinguish:
+
+- School review completion.
+- School recommendation.
+- Selection for forwarding.
+- Actual forwarding.
+- City review.
+- Committee decision.
+
+Never mix the concepts merely to simplify the interface.
+
+If backend state cannot support a proposed UI label, retain correct wording and report the contract gap.
+
+---
+
+# 21. IMPLEMENTATION METHOD
+
+## Stage A — Source and Content Audit
+
+Inspect actual rendered UI and source strings.
+
+Deliver:
+
+- UI content inventory.
+- Terminology inconsistencies.
+- Technical/developer-language findings.
+- Overexplained UI findings.
+- Repeated status findings.
+- Real data/context inconsistencies.
+- Actual affected components.
+
+## Stage B — Product Language Specification
+
+Create:
+
+`docs/ux/5TOT_PRODUCT_LANGUAGE_GUIDE.md`
+
+Include:
+
+- User-role terminology.
+- Approved business glossary.
+- Preferred button labels.
+- Common statuses.
+- Warning principles.
+- Confirmation principles.
+- Vietnamese writing examples.
+- Terms to avoid.
+- Source-of-truth rules.
+
+## Stage C — Before/After Copy Matrix
+
+Create:
+
+`docs/ux/5TOT_CONTENT_REWRITE_MATRIX.md`
+
+Each entry must contain:
+
+- Screen/route.
+- Component or source file.
+- Existing text.
+- Proposed text.
+- Reason.
+- Role applicability.
+- Business-state dependency.
+- Implementation status.
+
+Do not silently rewrite legally mandated terminology.
+
+## Stage D — School Forwarding Simplification
+
+First implement and verify:
+
+- Cleaner page heading.
+- Reduced redundant KPI presentation.
+- Clearer list actions.
+- Natural official document section.
+- Compact confirmation modal.
+- Correct season context.
+- Correct document identity.
+- Correct irreversible-action copy.
+- Better responsive behavior.
+
+This is the highest-priority implementation.
+
+## Stage E — Cross-Role Content Polish
+
+Apply the approved vocabulary and concise writing principles to:
+
+- Student.
+- School.
+- City.
+- Committee.
+- Admin.
+- Shared UI.
+
+Prefer source changes that improve multiple screens via existing shared components.
+
+Do not rebuild unrelated interfaces.
+
+## Stage F — Regression and Visual QA
+
+Verify:
+
+- Functional controls.
+- Data bindings.
+- Authorization.
+- Responsive layouts.
+- Correct states.
+- Demo/Real behavior.
+- Actual browser rendering.
+
+---
+
+# 22. CRITICAL ACCEPTANCE TESTS
+
+### C01 — Season consistency
+
+School heading, global program context, list, attached document and confirmation reference the correct selected season.
+
+### C02 — Correct application scope
+
+Collective TT01–TT04 does not appear as a School forwarding activity.
+
+### C03 — Clear School task
+
+A reviewer can immediately identify how to select applications, attach the decision document and send the list.
+
+### C04 — Accurate counts
+
+Selected, recommended and reviewed numbers remain distinct and correct.
+
+### C05 — Natural labels
+
+No normal School forwarding control exposes `read-only`, workflow-engine terminology or internal lifecycle labels.
+
+### C06 — Compact confirmation
+
+The final modal presents essential details and one clear warning.
+
+### C07 — Correct document
+
+Confirmation displays the exact currently attached official document.
+
+### C08 — One-time forwarding
+
+The underlying canonical forwarding safety remains enforced.
+
+### C09 — School and City semantics
+
+School recommendation is not mislabeled as an official City or Committee decision.
+
+### C10 — Committee authority
+
+Administrative configuration does not grant official Committee decision permission.
+
+### C11 — Student copy
+
+Student fields and errors use clear Vietnamese appropriate for Students.
+
+### C12 — Supplementation
+
+Supplementation copy describes the exact required correction without unnecessary technical explanation.
+
+### C13 — Demo coherence
+
+Demo documents and statuses are realistic, synthetic and internally consistent.
+
+### C14 — Real Mode
+
+No Demo data or fake persistence is shown as real.
+
+### C15 — Responsive
+
+Dialogs, list filters, labels and actions work across all target widths.
+
+### C16 — Screen consistency
+
+Navigation labels, page titles, badges and action buttons use the same approved glossary.
+
+### C17 — No lost functionality
+
+All legitimate existing review, evidence, forwarding and decision controls remain functional.
+
+### C18 — No AI clutter
+
+Normal business screens do not display unnecessary AI-oriented language or styling.
+
+### C19 — Errors
+
+Real API failures produce understandable, non-misleading messages.
+
+### C20 — Usability
+
+An experienced reviewer can complete the common workflow without reading lengthy instructions or interpreting technical system terminology.
+
+---
+
+# 23. VISUAL REVIEW REQUIREMENTS
+
+Use actual browser rendering where available.
+
+Capture before/after screenshots of:
+
+1. School forwarding preparation — desktop.
+2. School forwarding confirmation — desktop.
+3. School forwarding confirmation — mobile.
+4. School review dossier.
+5. City review dossier.
+6. Committee application detail.
+7. Student application.
+8. School dashboard.
+9. City dashboard.
+10. Admin overview.
+
+For each screenshot, inspect:
+
+- Visual hierarchy.
+- Action clarity.
+- Terminology.
+- Redundant content.
+- Excessive badges.
+- Text wrapping.
+- Alignment.
+- Overall professional appearance.
+
+Do not generate mock screenshots and report them as actual application captures.
+
+---
+
+# 24. TECHNICAL QUALITY GATES
+
+Execute actual available:
+
+- Frontend TypeScript.
+- Production build.
+- Relevant unit/component tests.
+- Navigation tests.
+- UI state tests.
+- School forwarding regression.
+- City review regression.
+- Committee decision regression.
+- Student dossier regression.
+- Demo/Real isolation.
+- Responsive browser tests.
+
+If backend source is changed to correct a verified data contract defect:
+
+- Backend typecheck.
+- Backend build.
+- Relevant authorization tests.
+- API contract tests.
+
+Do not claim actual PostgreSQL or private object-storage verification unless those integrations were tested against an authorized environment.
+
+---
+
+# 25. SOURCE PROTECTION
+
+Preserve:
+
+- Golden Frontend historical manifest.
+- Current recoverable source checkpoints.
+- FSD architecture.
+- Shared Student dossier.
+- SRW-6 submission snapshots.
+- UX-S2 Review Workspace.
+- UX-S3 reporting.
+- UX-S4 administration.
+- School one-time forwarding.
+- City shared review.
+- Committee official decisions.
+
+No broad rewrite.
+
+No new workflow engine.
+
+No live database migrations.
+
+No production seeding.
+
+No deployment.
+
+No automatic push or merge.
+
+---
+
+# 26. REQUIRED DELIVERABLES
+
+Provide:
+
+1. Screenshot-based initial UX findings.
+2. Verified source-level content inventory.
+3. Product language guide in Vietnamese.
+4. Before/after content rewrite matrix.
+5. School forwarding redesign.
+6. Compact confirmation redesign.
+7. Global season/context consistency findings.
+8. Cross-role terminology consistency.
+9. Demo content realism improvements.
+10. Responsive results.
+11. Functional regression results.
+12. Exact changed files.
+13. Real API verification status.
+14. Outstanding defects.
+15. PASS / PARTIAL / BLOCKED verdict.
+
+Separate:
+
+- Content polished.
+- UX implemented.
+- Demo verified.
+- Real API verified.
+- Database behavior verified.
+
+Do not claim completion without evidence.
+
+---
+
+# 27. HARD STOP
+
+Stop after targeted Product Language and Business UX improvements.
+
+Do not:
+
+- Add new award programs.
+- Rebuild the frontend.
+- Replace the current design system.
+- Add artificial reviewer assignment.
+- Restore ResolutionCase.
+- Introduce new Committee procedures.
+- Change the UDN forwarding invariant.
+- Change official business authority.
+- Build additional AI features.
+- Hide broken behavior behind polished text.
+- Invent production data.
+- Deploy.
+
+## FINAL PRODUCT NORTH STAR
+
+The system should feel like an official, approachable, professional Vietnamese Student Association application — not an AI-generated prototype or technical administration console.
+
+Every page must answer three simple questions:
+
+**Tôi đang xem gì?**
+
+**Tôi cần làm gì?**
+
+**Sau khi thực hiện, kết quả sẽ như thế nào?**
+
+Users must understand those answers immediately.
+
+Keep the beautiful modern design.
+
+Keep all real business capabilities.
+
+Remove unnecessary technical language, redundant visual structures and AI-style overexplanation.
+
+**SUCCESS = A CLEAN, NATURAL, PREMIUM AND BUSINESS-CORRECT 5TOT EXPERIENCE THAT REAL SCHOOL AND CITY REVIEWERS CAN USE WITHOUT LEARNING DEVELOPER TERMINOLOGY.**

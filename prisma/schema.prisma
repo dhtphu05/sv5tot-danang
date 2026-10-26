@@ -1,0 +1,1111 @@
+// ============================================================================
+// 5TOT ĐÀ NẴNG — AUTHORITATIVE BACKEND V2 PRISMA SCHEMA (BE0-R2)
+// Cơ quan quản lý: Thành Đoàn Đà Nẵng
+// Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
+// Database: PostgreSQL 16+
+//
+// Canonical Collective Invariants (BE0-R2 Verified):
+// - TT01: Prerequisite School-level Collective SV5T recognition + evidence (NOT a School approval workflow stage).
+// - TT02: 100% movement participation (participatingMembers === totalMembers).
+// - TT03: >= 20% School-level Individual SV5T recognition (recognizedMembers * 100 >= totalMembers * 20).
+// - TT04: Explicit no-violation confirmation + evidence + human review.
+// - Shared Denominator: TT02 and TT03 share the exact same authoritative `totalMembers` (> 0 on submission).
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ----------------------------------------------------------------------------
+// 1. ENUMS (CANONICAL DOMAIN & WORKFLOW VOCABULARY)
+// ----------------------------------------------------------------------------
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  LOCKED
+  PENDING_VERIFICATION
+}
+
+enum SystemRoleCode {
+  STUDENT
+  COLLECTIVE_PREPARER
+  SCHOOL_OFFICER
+  CITY_OFFICER
+  CITY_MANAGER
+  CITY_COMMITTEE
+  ADMIN
+}
+
+enum InstitutionGroup {
+  UD_MEMBER_UNIVERSITY
+  AFFILIATED_UNIVERSITY
+  COLLEGE_JUNIOR_COLLEGE
+  CITY_YOUTH_UNION_UNIT
+}
+
+enum CollectiveType {
+  CHI_HOI               // Chi hội
+  LIEN_CHI_HOI          // Liên chi hội
+  CHI_DOAN              // Chi đoàn (dành cho cơ sở không có Hội SV)
+  LIEN_CHI_DOAN         // Liên chi đoàn
+  CLUB_TEAM_GROUP       // Câu lạc bộ, Đội, Nhóm
+}
+
+enum ApplicationTrack {
+  INDIVIDUAL
+  COLLECTIVE
+}
+
+enum IndividualReviewStage {
+  STUDENT_DRAFT
+  SCHOOL_PRELIMINARY
+  CITY_REVIEW
+  COMMITTEE_FINALIZATION
+  COMPLETED
+}
+
+enum SchoolPreliminaryStatus {
+  NOT_SUBMITTED
+  PENDING_SCHOOL_REVIEW
+  SCHOOL_IN_REVIEW
+  SCHOOL_SUPPLEMENT_REQUESTED
+  SCHOOL_SUPPLEMENT_RESUBMITTED
+  ELIGIBLE_FOR_CITY
+  NOT_ELIGIBLE_AT_SCHOOL
+  FORWARDED_TO_CITY
+}
+
+enum IndividualCityWorkflowStatus {
+  NOT_AT_CITY
+  CITY_UNASSIGNED
+  CITY_ASSIGNED
+  CITY_IN_REVIEW
+  CITY_SUPPLEMENT_REQUESTED
+  CITY_SUPPLEMENT_RESUBMITTED
+  CITY_REVIEW_COMPLETED
+  COMMITTEE_PENDING
+  FINALIZED_RECOGNIZED
+  FINALIZED_NOT_RECOGNIZED
+  PUBLISHED
+}
+
+enum CollectiveWorkflowStatus {
+  DRAFT
+  CITY_UNASSIGNED
+  CITY_ASSIGNED
+  CITY_IN_REVIEW
+  CITY_SUPPLEMENT_REQUESTED
+  CITY_SUPPLEMENT_RETURNED
+  CITY_REVIEW_COMPLETED
+  COMMITTEE_PENDING
+  FINALIZED_RECOGNIZED
+  FINALIZED_NOT_RECOGNIZED
+  PUBLISHED
+}
+
+enum CriterionSelfStatus {
+  INCOMPLETE
+  DECLARED
+  READY
+}
+
+enum ReviewJudgmentStatus {
+  NOT_REVIEWED
+  REVIEWING
+  SUITABLE
+  NEEDS_SUPPLEMENT
+  UNSUITABLE
+  NEEDS_CONSIDERATION
+}
+
+enum SchoolRecognitionPrerequisiteStatus {
+  RECOGNIZED
+  NOT_RECOGNIZED
+  CLARIFYING
+}
+
+enum ViolationConfirmationStatus {
+  NO_VIOLATIONS
+  HAS_VIOLATIONS
+  NEEDS_CLARIFICATION
+}
+
+enum SupplementScopeType {
+  CRITERION_OR_REQUIREMENT
+  DECLARATION_ITEM
+  EVIDENCE_ATTACHMENT
+  MEMBER_ROSTER
+}
+
+enum SupplementLifecycleStatus {
+  OPEN
+  RESUBMITTED
+  RESOLVED_SATISFIED
+  RESOLVED_UNSATISFIED
+  CANCELLED
+}
+
+enum CommitteeOutcome {
+  RECOGNIZED
+  NOT_RECOGNIZED
+}
+
+enum ForwardingBatchStatus {
+  DRAFT
+  FORWARDED
+}
+
+enum DecisionBatchStatus {
+  DRAFT
+  PUBLISHED
+  SUPERSEDED
+}
+
+enum EvidenceScanStatus {
+  PENDING_UPLOAD
+  PENDING_SCAN
+  CLEAN
+  QUARANTINED
+  SCAN_FAILED
+}
+
+enum DataOrigin {
+  MANUAL
+  IMPORTED
+  HUMAN_CONFIRMED
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+  ARCHIVED
+}
+
+enum OutboxProcessStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+// ----------------------------------------------------------------------------
+// 2. IDENTITY, SESSIONS, RBAC & ORGANIZATIONAL HIERARCHY
+// ----------------------------------------------------------------------------
+
+model Institution {
+  id               String           @id @default(cuid())
+  code             String           @unique
+  officialName     String
+  shortName        String
+  group            InstitutionGroup
+  hasStudentAssoc  Boolean          @default(true)
+  isActive         Boolean          @default(true)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  schoolUnits      SchoolReviewUnit[]
+  faculties        FacultyDepartment[]
+  users            User[]
+  collectives      CollectiveUnit[]
+  individualApps   IndividualApplication[]
+  collectiveApps   CollectiveApplication[]
+
+  @@index([group, isActive])
+}
+
+model SchoolReviewUnit {
+  id               String      @id
+  institutionId    String
+  code             String      @unique
+  officialName     String
+  shortName        String
+  unitType         String      // HSV_TRUONG | DOAN_TRUONG | BAN_THU_KY
+  isActive         Boolean     @default(true)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  institution      Institution @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+  faculties        FacultyDepartment[]
+  collectiveUnits  CollectiveUnit[]
+  individualApps   IndividualApplication[]
+  collectiveApps   CollectiveApplication[]
+  roleAssignments  UserRoleAssignment[]
+  forwardingBatches SchoolForwardingBatch[]
+
+  @@index([institutionId, isActive])
+}
+
+model FacultyDepartment {
+  id                 String           @id @default(cuid())
+  institutionId      String
+  schoolReviewUnitId String
+  code               String
+  name               String
+  isActive           Boolean          @default(true)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  institution        Institution      @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+  schoolReviewUnit   SchoolReviewUnit @relation(fields: [schoolReviewUnitId], references: [id], onDelete: Restrict)
+  classes            AcademicClass[]
+  collectiveUnits    CollectiveUnit[]
+
+  @@unique([institutionId, code])
+  @@index([schoolReviewUnitId, isActive])
+}
+
+model AcademicClass {
+  id                  String            @id @default(cuid())
+  facultyDepartmentId String
+  code                String
+  name                String
+  cohortYear          String
+  isActive            Boolean           @default(true)
+
+  facultyDepartment   FacultyDepartment @relation(fields: [facultyDepartmentId], references: [id], onDelete: Restrict)
+
+  @@unique([facultyDepartmentId, code])
+}
+
+model User {
+  id                String        @id @default(cuid())
+  email             String        @unique
+  passwordHash      String?       // Argon2id hash (nullable for SSO-provisioned accounts)
+  ssoSubjectId      String?       @unique
+  fullName          String
+  studentCode       String?       @unique
+  phone             String?
+  status            AccountStatus @default(ACTIVE)
+  institutionId     String?
+  facultyDepartmentId String?
+  academicClassId   String?
+  profile           Json?         // SRW-6: 13-field student profile
+  lastLoginAt       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  institution       Institution?                      @relation(fields: [institutionId], references: [id], onDelete: SetNull)
+  sessions          AuthSession[]
+  roleAssignments   UserRoleAssignment[]
+  collectiveGrants  CollectivePreparerAuthorization[]
+  individualApps    IndividualApplication[]           @relation("StudentApplicant")
+  preparedCollectives CollectiveApplication[]         @relation("CollectivePreparer")
+  notifications     Notification[]
+
+  @@index([institutionId, status])
+  @@index([studentCode])
+}
+
+model UserRoleAssignment {
+  id                 String            @id @default(cuid())
+  userId             String
+  roleCode           SystemRoleCode
+  schoolReviewUnitId String?           // Mandatory when roleCode == SCHOOL_OFFICER
+  isActive           Boolean           @default(true)
+  grantedByUserId    String?
+  grantedAt          DateTime          @default(now())
+  revokedAt          DateTime?
+  revokeReason       String?
+
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schoolReviewUnit   SchoolReviewUnit? @relation(fields: [schoolReviewUnitId], references: [id], onDelete: Restrict)
+
+  @@index([userId, isActive])
+  @@index([roleCode, schoolReviewUnitId, isActive])
+}
+
+model AuthSession {
+  id               String    @id @default(cuid())
+  userId           String
+  tokenFamilyId    String
+  refreshTokenHash String    @unique
+  userAgent        String?
+  ipAddress        String?
+  expiresAt        DateTime
+  lastUsedAt       DateTime  @default(now())
+  revokedAt        DateTime?
+  revokeReason     String?
+  createdAt        DateTime  @default(now())
+
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@index([tokenFamilyId])
+}
+
+// ----------------------------------------------------------------------------
+// 3. ACADEMIC SEASON & VERSIONED CRITERIA CATALOG
+// ----------------------------------------------------------------------------
+
+model AwardSeason {
+  id                        String   @id @default(cuid())
+  code                      String   @unique // e.g., "2025-2026"
+  name                      String
+  isActive                  Boolean  @default(false)
+  individualSubmissionStart DateTime
+  individualSubmissionEnd   DateTime
+  schoolForwardingDeadline  DateTime
+  collectiveSubmissionStart DateTime
+  collectiveSubmissionEnd   DateTime
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  criterionGroups           CriterionGroupDefinition[]
+  preparerGrants            CollectivePreparerAuthorization[]
+  individualApplications    IndividualApplication[]
+  collectiveApplications    CollectiveApplication[]
+  decisionBatches           RecognitionDecisionBatch[]
+  finalResults              ApplicationFinalResult[]
+  schoolForwardingBatches   SchoolForwardingBatch[]
+
+  @@index([isActive, code])
+}
+
+model CriterionGroupDefinition {
+  id           String           @id @default(cuid())
+  seasonId     String
+  track        ApplicationTrack
+  code         String           // "ETHICS" | "ACADEMIC" | "PHYSICAL" | "VOLUNTEER" | "INTEGRATION" | "TT01".."TT04"
+  title        String
+  shortTitle   String
+  displayOrder Int
+  isMandatory  Boolean          @default(true)
+  // Versioned rule parameters (e.g. Individual GPA/IELTS thresholds; Collective TT02 = 100%, TT03 >= 20%)
+  ruleConfig   Json
+
+  season       AwardSeason      @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  requirements RequirementDefinition[]
+
+  @@unique([seasonId, track, code])
+  @@index([seasonId, track, displayOrder])
+}
+
+model RequirementDefinition {
+  id               String                   @id @default(cuid())
+  criterionGroupId String
+  code             String                   // e.g., "ethics-score", "academic-gpa", "tt01", "tt02", "tt03", "tt04"
+  groupBranchCode  String?                  // e.g., "GROUP_A", "GROUP_B" for Integration
+  title            String
+  description      String
+  displayOrder     Int                      @default(1)
+  isMandatory      Boolean                  @default(false)
+  requiresEvidence Boolean                  @default(true)
+  inputSchema      Json
+
+  criterionGroup   CriterionGroupDefinition @relation(fields: [criterionGroupId], references: [id], onDelete: Cascade)
+
+  @@unique([criterionGroupId, code])
+}
+
+// ----------------------------------------------------------------------------
+// 4. INDIVIDUAL APPLICATION DOMAIN (STUDENT -> SCHOOL -> CITY -> COMMITTEE -> FINAL RESULT)
+// ----------------------------------------------------------------------------
+
+model IndividualApplication {
+  id                        String                       @id @default(cuid())
+  applicationCode           String                       @unique // e.g., "HS-2026-0001"
+  seasonId                  String
+  applicantUserId           String
+  institutionId             String
+  schoolReviewUnitId        String
+  facultyName               String
+  className                 String
+  academicYear              String
+  studentCodeSnapshot       String
+  fullNameSnapshot          String
+  applicantProfileSnapshot  Json?                        // SRW-6: Immutable submission snapshot of 13 personal fields
+
+  // Quantitative header summary fields (normalized for filtering/sorting/reporting)
+  gpaScale4                 Decimal?                     @db.Decimal(4, 2)
+  gpaScale10                Decimal?                     @db.Decimal(4, 2)
+  conductScore              Int?
+  declaredCriteriaCount     Int                          @default(0)
+  totalEvidenceCount        Int                          @default(0)
+
+  // Two-tier canonical state machine (School Preliminary -> City Review -> Committee -> FinalResult)
+  currentReviewStage        IndividualReviewStage        @default(STUDENT_DRAFT)
+  schoolPreliminaryStatus   SchoolPreliminaryStatus      @default(NOT_SUBMITTED)
+  cityWorkflowStatus        IndividualCityWorkflowStatus @default(NOT_AT_CITY)
+
+  // School stage tracking
+  submittedToSchoolAt       DateTime?
+  schoolReviewedByUserId    String?
+  schoolReviewedAt          DateTime?
+  schoolRecommendationNote  String?
+  schoolForwardedAt         DateTime?
+  schoolForwardedByUserId   String?
+  forwardingBatchId         String?
+
+  // City stage assignment & review tracking
+  assignedCityOfficerId     String?
+  previousCityOfficerId     String?
+  assignedAt                DateTime?
+  cityReviewStartedAt       DateTime?
+  cityReviewCompletedAt     DateTime?
+  cityOfficerOverallStatus  ReviewJudgmentStatus         @default(NOT_REVIEWED)
+  cityOfficerSummaryNote    String?
+
+  // Open supplement counter for fast queue filtering
+  openSupplementCount       Int                          @default(0)
+
+  // Optimistic concurrency lock
+  version                   Int                          @default(1)
+  createdAt                 DateTime                     @default(now())
+  updatedAt                 DateTime                     @updatedAt
+
+  season                    AwardSeason                  @relation(fields: [seasonId], references: [id], onDelete: Restrict)
+  applicant                 User                         @relation("StudentApplicant", fields: [applicantUserId], references: [id], onDelete: Restrict)
+  institution               Institution                  @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+  schoolReviewUnit          SchoolReviewUnit             @relation(fields: [schoolReviewUnitId], references: [id], onDelete: Restrict)
+  forwardingBatch           SchoolForwardingBatch?       @relation(fields: [forwardingBatchId], references: [id], onDelete: SetNull)
+
+  criterionSubmissions      IndividualCriterionSubmission[]
+  declarations              IndividualDeclarationItem[]
+  schoolJudgments           SchoolCriterionReviewJudgment[]
+  cityJudgments             CityCriterionReviewJudgment[]
+  assignments               OfficerAssignmentHistory[]
+  supplementRequests        SupplementRequest[]
+  committeeDecisions        CommitteeDecisionRecord[]
+  finalResult               ApplicationFinalResult?
+
+  @@unique([seasonId, applicantUserId])
+  // School Review Queue & Forwarding Queue composite index
+  @@index([seasonId, schoolReviewUnitId, schoolPreliminaryStatus, submittedToSchoolAt(sort: Desc)])
+  // City Manager Intake & Queue composite index
+  @@index([seasonId, currentReviewStage, cityWorkflowStatus, schoolForwardedAt(sort: Desc)])
+  // City Officer Assigned Workspace composite index
+  @@index([assignedCityOfficerId, cityWorkflowStatus, assignedAt(sort: Desc)])
+  // Institution / Admin filtering index
+  @@index([seasonId, institutionId, currentReviewStage])
+}
+
+model IndividualCriterionSubmission {
+  id                      String                @id @default(cuid())
+  individualApplicationId String
+  criterionCode           String                // "ETHICS" | "ACADEMIC" | "PHYSICAL" | "VOLUNTEER" | "INTEGRATION"
+  selfStatus              CriterionSelfStatus   @default(INCOMPLETE)
+  declarationCount        Int                   @default(0)
+  evidenceCount           Int                   @default(0)
+  applicantSummaryNote    String?
+  updatedAt               DateTime              @default(now()) @updatedAt
+
+  application             IndividualApplication @relation(fields: [individualApplicationId], references: [id], onDelete: Cascade)
+  declarations            IndividualDeclarationItem[]
+
+  @@unique([individualApplicationId, criterionCode])
+}
+
+model IndividualDeclarationItem {
+  id                      String                        @id @default(cuid())
+  individualApplicationId String
+  criterionSubmissionId   String
+  criterionCode           String
+  requirementCode         String                        // e.g. "ethics-score", "academic-gpa", "integration-lang"
+  title                   String
+  activityDateOrPeriod    String?
+  issuingAuthority        String?
+  certificateOrRefCode    String?
+  numericValue            Decimal?                      @db.Decimal(8, 2)
+  // Validated via RequirementDefinition.inputSchema for requirement-specific attributes
+  structuredAttributes    Json
+  applicantNote           String?
+  selfStatus              CriterionSelfStatus           @default(DECLARED)
+  createdAt               DateTime                      @default(now())
+  updatedAt               DateTime                      @updatedAt
+
+  application             IndividualApplication         @relation(fields: [individualApplicationId], references: [id], onDelete: Cascade)
+  criterionSubmission     IndividualCriterionSubmission @relation(fields: [criterionSubmissionId], references: [id], onDelete: Cascade)
+  evidenceLinks           ApplicationEvidenceLink[]
+
+  @@index([individualApplicationId, criterionCode, requirementCode])
+  @@index([criterionSubmissionId])
+}
+
+model SchoolCriterionReviewJudgment {
+  id                      String                @id @default(cuid())
+  individualApplicationId String
+  criterionCode           String                // "ETHICS" | "ACADEMIC" | "PHYSICAL" | "VOLUNTEER" | "INTEGRATION"
+  judgmentStatus          ReviewJudgmentStatus  @default(NOT_REVIEWED)
+  reviewerUserId          String
+  reviewerNameSnapshot    String
+  reviewerNote            String?
+  reviewedAt              DateTime              @default(now())
+  revisionNumber          Int                   @default(1)
+
+  application             IndividualApplication @relation(fields: [individualApplicationId], references: [id], onDelete: Cascade)
+
+  @@unique([individualApplicationId, criterionCode])
+  @@index([reviewerUserId, reviewedAt(sort: Desc)])
+}
+
+model CityCriterionReviewJudgment {
+  id                      String                @id @default(cuid())
+  individualApplicationId String
+  criterionCode           String                // "ETHICS" | "ACADEMIC" | "PHYSICAL" | "VOLUNTEER" | "INTEGRATION"
+  judgmentStatus          ReviewJudgmentStatus  @default(NOT_REVIEWED)
+  reviewerUserId          String
+  reviewerNameSnapshot    String
+  reviewerNote            String?
+  flaggedEvidenceLinkIds  String[]
+  reviewedAt              DateTime              @default(now())
+  revisionNumber          Int                   @default(1)
+
+  application             IndividualApplication @relation(fields: [individualApplicationId], references: [id], onDelete: Cascade)
+
+  @@unique([individualApplicationId, criterionCode])
+  @@index([reviewerUserId, reviewedAt(sort: Desc)])
+}
+
+// ----------------------------------------------------------------------------
+// 5. COLLECTIVE APPLICATION DOMAIN (DIRECT TO CITY — NO SCHOOL REVIEW STAGE)
+// ----------------------------------------------------------------------------
+
+model CollectiveUnit {
+  id                  String             @id
+  code                String             @unique
+  officialName        String
+  collectiveType      CollectiveType
+  institutionId       String
+  schoolReviewUnitId  String
+  facultyDepartmentId String?
+  facultyOrParentName String
+  isActive            Boolean            @default(true)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  institution         Institution        @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+  schoolReviewUnit    SchoolReviewUnit   @relation(fields: [schoolReviewUnitId], references: [id], onDelete: Restrict)
+  facultyDepartment   FacultyDepartment? @relation(fields: [facultyDepartmentId], references: [id], onDelete: SetNull)
+  preparerGrants      CollectivePreparerAuthorization[]
+  applications        CollectiveApplication[]
+
+  @@index([institutionId, schoolReviewUnitId, isActive])
+}
+
+model CollectivePreparerAuthorization {
+  id               String         @id @default(cuid())
+  collectiveUnitId String
+  userId           String
+  seasonId         String
+  positionTitle    String
+  contactPhone     String?
+  isActive         Boolean        @default(true)
+  authorizedById   String?
+  authorizedAt     DateTime       @default(now())
+  revokedAt        DateTime?
+  revokeReason     String?
+
+  collectiveUnit   CollectiveUnit @relation(fields: [collectiveUnitId], references: [id], onDelete: Restrict)
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  season           AwardSeason    @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  @@unique([collectiveUnitId, userId, seasonId])
+  @@index([userId, seasonId, isActive])
+}
+
+model CollectiveApplication {
+  id                          String                   @id @default(cuid())
+  applicationCode             String                   @unique // e.g., "TT-2026-0001"
+  seasonId                    String
+  collectiveUnitId            String
+  institutionId               String
+  schoolReviewUnitId          String                   // Organizational affiliation metadata ONLY (no School review stage)
+  preparerUserId              String
+  collectiveNameSnapshot      String
+  collectiveTypeSnapshot      CollectiveType
+  academicYear                String
+
+  // Direct-to-City canonical workflow state machine
+  workflowStatus              CollectiveWorkflowStatus @default(DRAFT)
+
+  // Shared Authoritative Membership Denominator & Canonical TT01–TT04 Metrics
+  // Invariant 1 (Shared Denominator): TT02 and TT03 use the exact same `totalMembers` (> 0 when submitted).
+  // Invariant 2 (TT02 = 100%): `tt02MeetsThreshold` is true iff `totalMembers > 0 && participatingMembers === totalMembers`.
+  // Invariant 3 (TT03 >= 20%): `tt03MeetsThreshold` is true iff `totalMembers > 0 && recognizedMembers * 100 >= totalMembers * 20`.
+  // Note: Threshold booleans are advisory decision-support flags computed deterministically by the server;
+  //       they never block submission or auto-decide recognition without human review.
+  totalMembers                Int                      @default(0)
+  participatingMembers        Int                      @default(0)
+  recognizedMembers           Int                      @default(0)
+  rosterRowCount              Int                      @default(0)
+  tt01IsSchoolRecognized      Boolean                  @default(false)
+  tt02MeetsThreshold          Boolean                  @default(false)
+  tt03MeetsThreshold          Boolean                  @default(false)
+  tt04ViolationStatus         ViolationConfirmationStatus @default(NEEDS_CLARIFICATION)
+  totalEvidenceCount          Int                      @default(0)
+
+  // City Manager assignment & City Officer review tracking
+  submittedToCityAt           DateTime?
+  assignedCityOfficerId       String?
+  previousCityOfficerId       String?
+  assignedAt                  DateTime?
+  assignmentNote              String?
+  cityReviewStartedAt         DateTime?
+  cityReviewCompletedAt       DateTime?
+  officerOverallJudgment      ReviewJudgmentStatus     @default(NOT_REVIEWED)
+  officerSummaryNote          String?
+
+  // Open supplement counter
+  openSupplementCount         Int                      @default(0)
+
+  // Optimistic concurrency lock
+  version                     Int                      @default(1)
+  createdAt                   DateTime                 @default(now())
+  updatedAt                   DateTime                 @updatedAt
+
+  season                      AwardSeason              @relation(fields: [seasonId], references: [id], onDelete: Restrict)
+  collectiveUnit              CollectiveUnit           @relation(fields: [collectiveUnitId], references: [id], onDelete: Restrict)
+  institution                 Institution              @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+  schoolReviewUnit            SchoolReviewUnit         @relation(fields: [schoolReviewUnitId], references: [id], onDelete: Restrict)
+  preparer                    User                     @relation("CollectivePreparer", fields: [preparerUserId], references: [id], onDelete: Restrict)
+
+  requirements                CollectiveRequirementRecord[]
+  memberRoster                CollectiveMemberRosterEntry[]
+  cityRequirementJudgments    CollectiveCityRequirementJudgment[]
+  assignments                 OfficerAssignmentHistory[]
+  supplementRequests          SupplementRequest[]
+  committeeDecisions          CommitteeDecisionRecord[]
+  finalResult                 ApplicationFinalResult?
+
+  @@unique([seasonId, collectiveUnitId])
+  // City Manager Intake & Collective Queue composite index
+  @@index([seasonId, workflowStatus, submittedToCityAt(sort: Desc)])
+  // City Officer Assigned Collective Queue composite index
+  @@index([assignedCityOfficerId, workflowStatus, assignedAt(sort: Desc)])
+  // Preparer lookup index
+  @@index([preparerUserId, seasonId])
+  // Institution / Organizational unit analytics index
+  @@index([seasonId, institutionId, workflowStatus])
+}
+
+model CollectiveRequirementRecord {
+  id                          String                              @id @default(cuid())
+  collectiveApplicationId     String
+  requirementCode             String                              // "TT01" | "TT02" | "TT03" | "TT04"
+  selfStatus                  CriterionSelfStatus                 @default(INCOMPLETE)
+
+  // Normalized TT01 fields (School-level Collective SV5T recognition prerequisite)
+  tt01RecognitionStatus       SchoolRecognitionPrerequisiteStatus?
+  tt01RecognizedCollectiveName String?
+  tt01RecognizedAcademicYear  String?
+  tt01IssuingUnitName         String?
+  tt01DecisionNumber          String?
+  tt01DecisionDate            DateTime?
+
+  // Normalized TT02 fields (100% movement participation; denominator lives on CollectiveApplication.totalMembers)
+  tt02CensusDate              DateTime?
+
+  // Normalized TT03 fields (>= 20% School-level Individual SV5T; denominator lives on CollectiveApplication.totalMembers)
+  tt03RecognizedAcademicYear  String?
+  tt03IssuingInstitutionName  String?
+  tt03RecognitionSource       String?
+
+  // Normalized TT04 fields (No legal/disciplinary violations)
+  tt04ViolationStatus         ViolationConfirmationStatus?
+  tt04NoViolationsConfirmed   Boolean?
+  tt04ConfirmingUnitName      String?
+  tt04ConfirmationDate        DateTime?
+  tt04ConfirmationDocNumber   String?
+  tt04ScopeYear               String?
+
+  applicantNotes              String?
+  evidenceCount               Int                                 @default(0)
+  updatedAt                   DateTime                            @default(now()) @updatedAt
+
+  application                 CollectiveApplication               @relation(fields: [collectiveApplicationId], references: [id], onDelete: Cascade)
+  evidenceLinks               ApplicationEvidenceLink[]
+
+  @@unique([collectiveApplicationId, requirementCode])
+}
+
+model CollectiveMemberRosterEntry {
+  id                          String                @id @default(cuid())
+  collectiveApplicationId     String
+  studentCode                 String
+  fullName                    String
+  className                   String?
+  roleInCollective            String?
+  isParticipatingMovement     Boolean               @default(false)
+  isSchoolSv5tRecognized      Boolean               @default(false)
+  recognitionDecisionNumber   String?
+  recognitionAcademicYear     String?
+  dataOrigin                  DataOrigin            @default(MANUAL)
+  notes                       String?
+  createdAt                   DateTime              @default(now())
+  updatedAt                   DateTime              @updatedAt
+
+  application                 CollectiveApplication @relation(fields: [collectiveApplicationId], references: [id], onDelete: Cascade)
+
+  @@unique([collectiveApplicationId, studentCode])
+  @@index([collectiveApplicationId, isParticipatingMovement, isSchoolSv5tRecognized])
+}
+
+model CollectiveCityRequirementJudgment {
+  id                      String                @id @default(cuid())
+  collectiveApplicationId String
+  requirementCode         String                // "TT01" | "TT02" | "TT03" | "TT04"
+  judgmentStatus          ReviewJudgmentStatus  @default(NOT_REVIEWED)
+  reviewerUserId          String
+  reviewerNameSnapshot    String
+  reviewerNote            String?
+  reviewedAt              DateTime              @default(now())
+  revisionNumber          Int                   @default(1)
+
+  application             CollectiveApplication @relation(fields: [collectiveApplicationId], references: [id], onDelete: Cascade)
+  historyEntries          CollectiveCityRequirementJudgmentHistory[]
+
+  @@unique([collectiveApplicationId, requirementCode])
+  @@index([reviewerUserId, reviewedAt(sort: Desc)])
+}
+
+model CollectiveCityRequirementJudgmentHistory {
+  id                  String                            @id @default(cuid())
+  judgmentId          String
+  judgmentStatus      ReviewJudgmentStatus
+  reviewerUserId      String
+  reviewerNameSnapshot String
+  reviewerNote        String?
+  recordedAt          DateTime                          @default(now())
+
+  judgment            CollectiveCityRequirementJudgment @relation(fields: [judgmentId], references: [id], onDelete: Cascade)
+
+  @@index([judgmentId, recordedAt(sort: Desc)])
+}
+
+// ----------------------------------------------------------------------------
+// 6. SHARED WORKFLOW: ASSIGNMENTS, SUPPLEMENTS, COMMITTEE, FINAL RESULT & EVIDENCE
+// ----------------------------------------------------------------------------
+
+model OfficerAssignmentHistory {
+  id                      String                 @id @default(cuid())
+  track                   ApplicationTrack
+  individualApplicationId String?
+  collectiveApplicationId String?
+  assignedOfficerUserId   String
+  assignedOfficerName     String
+  previousOfficerUserId   String?
+  previousOfficerName     String?
+  assignedByManagerUserId String
+  assignedByManagerName   String
+  isReassignment          Boolean                @default(false)
+  assignmentNote          String?
+  reassignmentReason      String?
+  assignedAt              DateTime               @default(now())
+
+  individualApplication   IndividualApplication? @relation(fields: [individualApplicationId], references: [id], onDelete: Cascade)
+  collectiveApplication   CollectiveApplication? @relation(fields: [collectiveApplicationId], references: [id], onDelete: Cascade)
+
+  @@index([individualApplicationId, assignedAt(sort: Desc)])
+  @@index([collectiveApplicationId, assignedAt(sort: Desc)])
+  @@index([assignedOfficerUserId, assignedAt(sort: Desc)])
+}
+
+model SupplementRequest {
+  id                      String                    @id @default(cuid())
+  track                   ApplicationTrack
+  stage                   String                    // "SCHOOL" (Individual only) | "CITY" (Individual or Collective)
+  individualApplicationId String?
+  collectiveApplicationId String?
+  criterionOrReqCode      String                    // e.g. "ETHICS".."INTEGRATION" or "TT01".."TT04"
+  scopeType               SupplementScopeType       @default(CRITERION_OR_REQUIREMENT)
+  targetDeclarationId     String?
+  targetEvidenceLinkId    String?
+  requestReason           String
+  requiredAction          String?
+  deadlineAt              DateTime?
+  status                  SupplementLifecycleStatus @default(OPEN)
+  requestedByUserId       String
+  requestedByNameSnapshot String
+  requestedByRole         SystemRoleCode
+  requestedAt             DateTime                  @default(now())
+  resolvedByUserId        String?
+  resolvedAt              DateTime?
+  resolutionNote          String?
+
+  individualApplication   IndividualApplication?    @relation(fields: [individualApplicationId], references: [id], onDelete: Cascade)
+  collectiveApplication   CollectiveApplication?    @relation(fields: [collectiveApplicationId], references: [id], onDelete: Cascade)
+  responses               SupplementResponse[]
+
+  @@index([individualApplicationId, status, requestedAt(sort: Desc)])
+  @@index([collectiveApplicationId, status, requestedAt(sort: Desc)])
+  @@index([track, stage, status, deadlineAt])
+}
+
+model SupplementResponse {
+  id                    String            @id @default(cuid())
+  supplementRequestId   String
+  responderUserId       String
+  responderNameSnapshot String
+  explanationNote       String
+  attachedEvidenceIds   String[]
+  respondedAt           DateTime          @default(now())
+
+  supplementRequest     SupplementRequest @relation(fields: [supplementRequestId], references: [id], onDelete: Cascade)
+
+  @@index([supplementRequestId, respondedAt(sort: Desc)])
+}
+
+model CommitteeDecisionRecord {
+  id                      String                 @id @default(cuid())
+  track                   ApplicationTrack
+  individualApplicationId String?
+  collectiveApplicationId String?
+  outcome                 CommitteeOutcome
+  decisionNote            String?
+  decidedByUserId         String
+  decidedByNameSnapshot   String
+  decidedAt               DateTime               @default(now())
+  isCurrentActive         Boolean                @default(true)
+  reopenedAt              DateTime?
+  reopenedByUserId        String?
+  reopenReason            String?
+
+  individualApplication   IndividualApplication? @relation(fields: [individualApplicationId], references: [id], onDelete: Cascade)
+  collectiveApplication   CollectiveApplication? @relation(fields: [collectiveApplicationId], references: [id], onDelete: Cascade)
+
+  @@index([individualApplicationId, isCurrentActive, decidedAt(sort: Desc)])
+  @@index([collectiveApplicationId, isCurrentActive, decidedAt(sort: Desc)])
+}
+
+model SchoolForwardingBatch {
+  id                    String                @id @default(cuid())
+  seasonId              String
+  schoolReviewUnitId    String
+  status                ForwardingBatchStatus @default(DRAFT)
+  decisionNumber        String?               // e.g. "182/QĐ-ĐHĐN"
+  decisionTitle         String?
+  decisionDate          DateTime?
+  signedByName          String?
+  signedByTitle         String?
+  decisionFileId        String?
+  decisionFileName      String?
+  decisionFileSize      Int?
+  decisionFileUrl       String?
+  forwardingNote        String?
+  submittedByUserId     String?
+  submittedAt           DateTime?
+  applicationCount      Int                   @default(0)
+  selectedApplicationIds Json                 // JSON array of forwarded application IDs
+  idempotencyKey        String?
+  payloadHash           String?
+  version               Int                   @default(1)
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  season                AwardSeason           @relation(fields: [seasonId], references: [id], onDelete: Restrict)
+  schoolReviewUnit      SchoolReviewUnit      @relation(fields: [schoolReviewUnitId], references: [id], onDelete: Restrict)
+  forwardedApplications IndividualApplication[]
+
+  @@unique([schoolReviewUnitId, seasonId])
+  @@index([schoolReviewUnitId, status])
+  @@index([seasonId, status])
+  @@index([idempotencyKey])
+}
+
+model RecognitionDecisionBatch {
+  id             String                   @id @default(cuid())
+  seasonId       String
+  track          ApplicationTrack
+  decisionNumber String                   @unique // e.g., "145-QĐ/HSV"
+  decisionTitle  String
+  decisionDate   DateTime
+  signedByName   String
+  signedByTitle  String
+  status         DecisionBatchStatus      @default(PUBLISHED)
+  publishedById  String
+  publishedAt    DateTime                 @default(now())
+
+  season         AwardSeason              @relation(fields: [seasonId], references: [id], onDelete: Restrict)
+  finalResults   ApplicationFinalResult[]
+
+  @@index([seasonId, track, status])
+}
+
+model ApplicationFinalResult {
+  id                      String                    @id @default(cuid())
+  seasonId                String
+  track                   ApplicationTrack
+  individualApplicationId String?                   @unique
+  collectiveApplicationId String?                   @unique
+  outcome                 CommitteeOutcome
+  isPublished             Boolean                   @default(false)
+  decisionBatchId         String?
+  decisionNumberSnapshot  String?
+  decisionDateSnapshot    DateTime?
+  certificateSerialNumber String?                   @unique
+  finalizedByUserId       String
+  finalizedAt             DateTime                  @default(now())
+  publishedByUserId       String?
+  publishedAt             DateTime?
+  summaryNote             String?
+
+  season                  AwardSeason               @relation(fields: [seasonId], references: [id], onDelete: Restrict)
+  individualApplication   IndividualApplication?    @relation(fields: [individualApplicationId], references: [id], onDelete: Cascade)
+  collectiveApplication   CollectiveApplication?    @relation(fields: [collectiveApplicationId], references: [id], onDelete: Cascade)
+  decisionBatch           RecognitionDecisionBatch? @relation(fields: [decisionBatchId], references: [id], onDelete: Restrict)
+
+  @@index([seasonId, track, isPublished, outcome])
+  @@index([decisionBatchId])
+}
+
+model EvidenceObject {
+  id                String                @id @default(cuid())
+  ownerUserId       String
+  track             ApplicationTrack
+  individualAppId   String?
+  collectiveAppId   String?
+  currentVersionNo  Int                   @default(1)
+  originalFileName  String
+  mimeType          String
+  extension         String
+  sizeBytes         BigInt
+  sha256Checksum    String
+  bucketName        String
+  objectKey         String                @unique
+  scanStatus        EvidenceScanStatus    @default(PENDING_UPLOAD)
+  isFinalized       Boolean               @default(false)
+  uploadedAt        DateTime              @default(now())
+  finalizedAt       DateTime?
+  deletedAt         DateTime?
+
+  versions          EvidenceObjectVersion[]
+  links             ApplicationEvidenceLink[]
+
+  @@index([ownerUserId, isFinalized, uploadedAt(sort: Desc)])
+  @@index([ownerUserId, deletedAt, uploadedAt(sort: Desc)])
+  @@index([individualAppId, isFinalized])
+  @@index([collectiveAppId, isFinalized])
+  @@index([scanStatus, uploadedAt])
+}
+
+model EvidenceObjectVersion {
+  id               String             @id @default(cuid())
+  evidenceObjectId String
+  versionNumber    Int
+  originalFileName String
+  mimeType         String
+  sizeBytes        BigInt
+  sha256Checksum   String
+  bucketName       String
+  objectKey        String             @unique
+  scanStatus       EvidenceScanStatus @default(CLEAN)
+  uploadedByUserId String
+  uploadedAt       DateTime           @default(now())
+  changeReason     String?
+
+  evidenceObject   EvidenceObject     @relation(fields: [evidenceObjectId], references: [id], onDelete: Cascade)
+
+  @@unique([evidenceObjectId, versionNumber])
+}
+
+model ApplicationEvidenceLink {
+  id                          String                       @id @default(cuid())
+  evidenceObjectId            String
+  individualDeclarationItemId String?
+  collectiveRequirementId     String?
+  linkedByUserId              String
+  linkedAt                    DateTime                     @default(now())
+  unlinkedAt                  DateTime?
+
+  evidenceObject              EvidenceObject               @relation(fields: [evidenceObjectId], references: [id], onDelete: Restrict)
+  individualDeclarationItem   IndividualDeclarationItem?   @relation(fields: [individualDeclarationItemId], references: [id], onDelete: Cascade)
+  collectiveRequirement       CollectiveRequirementRecord? @relation(fields: [collectiveRequirementId], references: [id], onDelete: Cascade)
+  reviewJudgments             EvidenceReviewJudgment[]
+
+  @@index([evidenceObjectId])
+  @@index([individualDeclarationItemId, unlinkedAt, linkedAt(sort: Desc)])
+  @@index([collectiveRequirementId, unlinkedAt, linkedAt(sort: Desc)])
+}
+
+model EvidenceReviewJudgment {
+  id                      String                  @id @default(cuid())
+  evidenceLinkId          String
+  stage                   String                  // "SCHOOL" | "CITY"
+  judgmentStatus          ReviewJudgmentStatus    @default(NOT_REVIEWED)
+  reviewerUserId          String
+  reviewerNameSnapshot    String
+  reviewerNote            String?
+  reviewedAt              DateTime                @default(now())
+
+  evidenceLink            ApplicationEvidenceLink @relation(fields: [evidenceLinkId], references: [id], onDelete: Cascade)
+
+  @@unique([evidenceLinkId, stage])
+  @@index([reviewerUserId, reviewedAt(sort: Desc)])
+}
+
+// ----------------------------------------------------------------------------
+// 7. NOTIFICATIONS, TRANSACTIONAL OUTBOX & APPEND-ONLY AUDIT LOG
+// ----------------------------------------------------------------------------
+
+model Notification {
+  id              String              @id @default(cuid())
+  recipientUserId String
+  channel         NotificationChannel @default(IN_APP)
+  category        String              // "SUPPLEMENT_REQUESTED" | "ASSIGNED" | "RESULT_PUBLISHED" | etc.
+  title           String
+  body            String
+  track           ApplicationTrack?
+  applicationId   String?
+  actionUrl       String?
+  status          NotificationStatus  @default(UNREAD)
+  createdAt       DateTime            @default(now())
+  readAt          DateTime?
+
+  recipient       User                @relation(fields: [recipientUserId], references: [id], onDelete: Cascade)
+
+  @@index([recipientUserId, status, createdAt(sort: Desc)])
+}
+
+model TransactionalOutboxEvent {
+  id            String              @id @default(cuid())
+  aggregateType String
+  aggregateId   String
+  eventType     String
+  payload       Json
+  status        OutboxProcessStatus @default(PENDING)
+  attemptCount  Int                 @default(0)
+  nextAttemptAt DateTime            @default(now())
+  lastError     String?
+  createdAt     DateTime            @default(now())
+  processedAt   DateTime?
+
+  @@index([status, nextAttemptAt])
+}
+
+model AuditLogEvent {
+  id              String            @id @default(cuid())
+  occurredAt      DateTime          @default(now())
+  requestId       String
+  idempotencyKey  String?
+  actorUserId     String?
+  actorEmail      String?
+  actorRole       String
+  actorUnitId     String?
+  ipAddress       String?
+  userAgent       String?
+  track           ApplicationTrack?
+  applicationId   String?
+  entityType      String
+  entityId        String
+  actionCode      String
+  previousState   Json?
+  nextState       Json?
+  metadata        Json?
+
+  @@index([applicationId, occurredAt(sort: Desc)])
+  @@index([actorUserId, occurredAt(sort: Desc)])
+  @@index([track, actionCode, occurredAt(sort: Desc)])
+  @@index([idempotencyKey])
+}

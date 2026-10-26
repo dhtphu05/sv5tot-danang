@@ -1,0 +1,1569 @@
+# 5TOT ĐÀ NẴNG — LEAN-3
+## PRODUCTION INLINE SUPPLEMENTATION, STUDENT EXPLANATION & CONTEXTUAL REASSESSMENT
+
+**Priority:** P0 — Core Business Workflow Simplification  
+**Execution:** VERIFY BASELINE → AUDIT CURRENT SUPPLEMENTATION → IMPLEMENT → BACKEND CONTRACT INTEGRATION → TEST → RESPONSIVE QA → REPORT  
+**Implementation Authorization:** YES — Targeted Production Implementation  
+**Scope:** School and City supplementation, Student explanation, scoped evidence correction, reviewer reassessment  
+**Out of Scope:** LEAN-4 through LEAN-6
+
+**Frontend:** React + Vite + Strict TypeScript + Feature-Sliced Design  
+**Backend:** Existing Node.js + Express + Prisma/PostgreSQL Modular Monolith
+
+---
+
+# 1. MISSION
+
+LEAN-3 must simplify the complete supplementation experience for the 5TOT Đà Nẵng application.
+
+The customer has repeatedly emphasized that requesting clarification and additional evidence is a simple administrative interaction.
+
+The current implementation may force reviewers to navigate through:
+
+- Supplementation management screens.
+- Complex multi-field modals.
+- Criterion selectors.
+- Requirement selectors.
+- Declaration selectors.
+- Multiple permission checkboxes.
+- Deadline inputs.
+- Technical workflow statuses.
+- Separate review reopening actions.
+- Additional reviewer completion steps.
+
+This is excessive for the normal operation of requesting one missing or unclear document.
+
+The customer has provided the Central Youth Union's 2026 Young Teacher Award submission guide as a useful UX reference.
+
+That system illustrates a simple approach:
+
+1. Reviewer identifies insufficient information.
+2. Applicant sees the reason.
+3. Applicant provides an explanation or additional evidence.
+4. Reviewer checks the updated material.
+5. Reviewer records the next assessment.
+
+**LEAN-3 must implement this model within the existing approved 5TOT workflow.**
+
+Do not copy award-specific deadlines or limits from the reference system.
+
+Do not create new workflows beyond the actual needs of 5TOT.
+
+---
+
+# 2. PRODUCT NORTH STAR
+
+**SUPPLEMENTATION IS A CONTEXTUAL CORRECTION TO AN EXISTING DOSSIER, NOT A NEW CASE-MANAGEMENT PROCESS.**
+
+A reviewer should think:
+
+"This declaration needs a clearer document. I will ask the Student to supplement it."
+
+A Student should think:
+
+"This achievement needs additional evidence. I can explain and attach it here."
+
+They should not need to understand:
+
+- Workflow transition codes.
+- Resolution cases.
+- Review-task orchestration.
+- Reopening pipelines.
+- Scope identifiers.
+- Evidence version identifiers.
+- Internal stage transitions.
+
+The backend may maintain these mechanisms where necessary for correctness.
+
+The interface should make them almost invisible.
+
+---
+
+# 3. VERIFY LEAN-0.1, LEAN-1 AND LEAN-2
+
+Before implementing, inspect the actual source and available implementation reports.
+
+Read:
+
+- Corrected LEAN-0.1 Review Contract.
+- Corrected Review State Truth Table.
+- Corrected LEAN Implementation Plan.
+- LEAN-1 Implementation Report, if present.
+- LEAN-2 Implementation Report, if present.
+- Existing supplementation API contracts.
+- Existing Student declaration editor.
+- Existing shared dossier renderer.
+- Existing reviewer inline Pass/Fail controls.
+- Existing evidence upload/versioning service.
+- Existing role authorization middleware.
+- Existing Demo/Real adapters.
+
+Do not assume LEAN-1 or LEAN-2 was successfully implemented solely because previous prompts requested them.
+
+Verify actual implementation.
+
+### Dependency handling
+
+If LEAN-2 is complete:
+
+Reuse its canonical inline review components.
+
+If LEAN-2 is partially complete:
+
+Implement independent supplementation work safely, document integration blockers and do not duplicate the review engine.
+
+If the current backend supplementation contract does not support an intended UX operation:
+
+Identify the exact missing capability before changing the contract.
+
+Do not invent unsupported APIs.
+
+Do not claim Real Mode PASS when critical functionality is unavailable.
+
+---
+
+# 4. CUSTOMER-APPROVED BUSINESS MODEL
+
+Individual application:
+
+Student → School preliminary review → School recommendation and one-time forwarding → City independent review → Committee official decision.
+
+### School supplementation
+
+The School reviewer may request a correction while holding authorized preliminary review authority.
+
+The Student responds within the original application.
+
+The School reviewer checks the response and reassesses the relevant declarations.
+
+### City supplementation
+
+The authorized City reviewer may request a correction during City review.
+
+The Student responds within the same original application, through the allowed City supplementation scope.
+
+The City reviewer checks and reassesses.
+
+The School's previous judgments remain historical records and must not be silently overwritten.
+
+### Committee
+
+The Committee receives the accumulated dossier and results for official decision-making.
+
+Do not introduce a Committee supplementation workflow unless it is already explicitly supported and approved.
+
+### Collective
+
+Collective TT01–TT04 applications go directly to City.
+
+Preserve the existing Collective supplementation workflow.
+
+Where practical, share presentation components but not inappropriate Individual criterion logic.
+
+---
+
+# 5. START WITH ACTUAL SOURCE AUDIT
+
+Inspect the full existing supplementation flow.
+
+Locate:
+
+- Reviewer request creation.
+- Request target selection.
+- Allowed correction actions.
+- Deadline configuration.
+- Request status persistence.
+- Student request inbox.
+- Student dossier editing permissions.
+- Student explanation fields.
+- Evidence upload.
+- Evidence replacement.
+- Student resubmission.
+- Reviewer returned-supplement queue.
+- Review reopening.
+- Review record persistence.
+- Existing notifications.
+- Audit logs.
+- Existing conflict handling.
+- Evidence viewer and version history.
+
+Previously reported source files include:
+
+- `SupplementRequestFormModal.tsx`
+- `OfficerReviewWorkspace.tsx`
+- `InlineRowReviewControls.tsx`
+- `useOfficerReviewMutations.ts`
+
+Treat these as discovery hints.
+
+Inspect the real current project tree and API contracts.
+
+Produce a concise before/after supplementation flow analysis.
+
+Do not start rewriting backend behavior based solely on a UX assumption.
+
+---
+
+# 6. NEW REVIEWER EXPERIENCE — REQUEST SUPPLEMENTATION AT THE DECLARATION
+
+The reviewer is already reading a declaration.
+
+Example:
+
+**Điểm rèn luyện cả năm**
+
+Student declaration:
+
+"93/100 điểm"
+
+Evidence:
+
+"Bảng điểm rèn luyện.pdf"
+
+Available primary review controls:
+
+- Đạt.
+- Không đạt.
+
+Secondary action:
+
+**Yêu cầu bổ sung**
+
+### Desired interaction
+
+1. Reviewer opens the relevant declaration.
+2. Reviewer identifies missing or unclear evidence.
+3. Reviewer clicks "Yêu cầu bổ sung" directly at that declaration.
+4. A small contextual editor opens with the correct target already selected.
+5. Reviewer enters the reason and necessary instructions.
+6. Reviewer confirms sending.
+
+Do not require selecting the same criterion, requirement and declaration again.
+
+The system already knows where the action originated.
+
+---
+
+# 7. CONTEXTUAL REQUEST EDITOR
+
+Use a compact contextual interaction.
+
+Recommended patterns:
+
+- Inline expandable section on wide layouts.
+- Side drawer where simultaneous evidence viewing is useful.
+- Responsive full-width sheet/dialog on narrow screens.
+
+Choose based on available content width.
+
+Do not make a permanently visible large panel.
+
+## Suggested content
+
+### Header
+
+"Yêu cầu bổ sung"
+
+### Context
+
+"Điểm rèn luyện cả năm"
+
+"Tiêu chí Đạo đức tốt"
+
+### Main field
+
+**Nội dung cần bổ sung**
+
+Example:
+
+"Minh chứng chưa thể hiện đầy đủ kết quả rèn luyện cả năm học. Vui lòng bổ sung bảng điểm có xác nhận."
+
+### Correctable content
+
+Show only supported actions:
+
+- Bổ sung minh chứng.
+- Thay thế minh chứng.
+- Bổ sung thông tin kê khai.
+- Giải trình nội dung.
+
+Do not automatically expose every correction permission.
+
+Choose safe, context-appropriate defaults only where the existing authorized policy supports them.
+
+### Deadline
+
+Display or collect the deadline only according to actual approved policy and existing API requirements.
+
+### Actions
+
+- Hủy.
+- Gửi yêu cầu.
+
+Avoid long technical explanations.
+
+Avoid repeated warning banners.
+
+---
+
+# 8. ABSOLUTELY NO INVENTED SUPPLEMENTATION DEADLINE
+
+Previous LEAN-0 documentation incorrectly proposed a default of three working days.
+
+LEAN-0.1 identified this as an open policy decision.
+
+Therefore:
+
+**DO NOT impose a universal 3-day supplementation limit.**
+
+The deadline must come from one of:
+
+1. Approved award-season configuration.
+2. Existing authorized domain rules.
+3. Explicit authorized reviewer input, if allowed by the current contract.
+4. Another verified approved policy source.
+
+If the backend requires a deadline but no authorized policy or input is available:
+
+- Report the contract/policy blocker.
+- Do not silently invent a deadline.
+- Complete other safe work.
+- Do not claim the unsupported submission path is production-ready.
+
+Do not impose a one-response-only limit from the Central Young Teacher Award reference.
+
+---
+
+# 9. EXACT SUPPLEMENTATION SCOPE
+
+This is a critical security and data integrity requirement.
+
+A supplementation request must target the correct existing entity.
+
+Possible canonical scopes include:
+
+- Criterion.
+- Requirement.
+- Declaration.
+- Evidence attachment.
+
+Use the actual scope model supported by the backend.
+
+### Preferred interaction
+
+The entry point at a declaration automatically preselects the narrowest appropriate canonical scope.
+
+But do not force declaration-level scoping if the backend only supports a different legitimate scope.
+
+### Example
+
+The request concerns:
+
+"Điểm rèn luyện cả năm"
+
+The Student may correct only the allowed content related to this requirement/declaration.
+
+The Student must NOT gain permission to edit:
+
+- Academic GPA.
+- Volunteer activities.
+- Integration certificates.
+- Other unrelated declarations.
+- Submitted personal profile snapshot.
+- Other Students' dossiers.
+
+The backend must enforce this independently of UI disabled controls.
+
+Never rely only on hidden Edit buttons.
+
+---
+
+# 10. STUDENT EXPERIENCE — SUPPLEMENT WITHIN THE SAME DOSSIER
+
+The Student should not have to navigate to a separate complicated case-management screen.
+
+When a request exists:
+
+The Student opens:
+
+**Hồ sơ của tôi**
+
+The affected criterion and declaration should be easy to find.
+
+Example:
+
+**1. Điểm rèn luyện cả năm**
+
+Status:
+
+"Cần bổ sung"
+
+Reason:
+
+"Vui lòng bổ sung bảng điểm có xác nhận của Nhà trường."
+
+Action:
+
+**Bổ sung**
+
+Clicking the action should open the correction UI in that exact declaration.
+
+### Preserve context
+
+Show:
+
+- Original declaration.
+- Original evidence.
+- Reviewer message.
+- Allowed correction actions.
+- Relevant deadline, if applicable.
+- Student explanation area.
+- Additional evidence upload.
+
+The Student must not need to re-enter the entire dossier.
+
+---
+
+# 11. STUDENT EXPLANATION
+
+Support a concise Student-visible explanation field where the existing backend contract permits it.
+
+Suggested label:
+
+**Nội dung giải trình**
+
+Example:
+
+"Em đã bổ sung bảng điểm rèn luyện có xác nhận của Phòng Công tác sinh viên."
+
+The explanation can accompany newly uploaded evidence.
+
+Do not require lengthy formal justification for every simple file replacement unless approved business rules require it.
+
+If the request only requires a clearer image or PDF, the Student should be able to respond with minimal interaction.
+
+Keep the explanation distinct from staff internal notes.
+
+Never expose private staff notes to the Student.
+
+---
+
+# 12. EVIDENCE ADDITION AND REPLACEMENT
+
+Support the actual existing authorized correction semantics.
+
+Potential permitted operations:
+
+- Add new evidence.
+- Replace an evidence file.
+- Correct declaration content.
+- Supply an explanation.
+- Combine explanation and evidence.
+
+Do not give access to unsupported operations.
+
+## Version integrity
+
+The original submitted evidence must remain historically traceable.
+
+If a file is replaced during supplementation:
+
+- Keep the original reference/history according to canonical backend rules.
+- Store the new file/version safely.
+- Associate the update with the exact request.
+- Record the Student actor and timestamp.
+- Allow authorized reviewers to inspect the relevant earlier version.
+
+Do not overwrite the original file in a way that destroys auditability.
+
+Do not mutate the immutable original Student submission snapshot.
+
+Supplementation must be represented using the existing authorized versioning, amendment or overlay contract.
+
+---
+
+# 13. SUBMITTING THE SUPPLEMENT
+
+The Student should have one clear action:
+
+**Gửi bổ sung**
+
+### Required behavior
+
+1. Student completes the allowed correction.
+2. Student clicks "Gửi bổ sung".
+3. Frontend validates only necessary requirements.
+4. Backend verifies request ownership, permissions, scope and deadline.
+5. Backend persists the response.
+6. Response is associated with the existing application.
+7. Reviewer-facing status updates correctly.
+8. UI shows success only after confirmed server persistence.
+
+### Do not
+
+- Create a second application.
+- Submit the entire original application again.
+- Modify unrelated declarations.
+- Automatically approve new evidence.
+- Automatically mark the criterion Pass.
+- Automatically conclude the review.
+- Automatically move the application to another stage.
+
+### Error handling
+
+On failure:
+
+- Show a natural Vietnamese explanation.
+- Preserve unsent Student input where safely possible.
+- Do not display a false submitted state.
+- Provide a safe retry path.
+
+If a response might already have been committed when the network failed, reconcile with the server before retrying an unsafe mutation.
+
+---
+
+# 14. RETURNED SUPPLEMENT — REVIEWER UX
+
+When a Student submits the requested correction, the application should return to the correct authorized review context.
+
+### School-requested supplement
+
+The School reviewer sees the returned content in the School review queue or dossier.
+
+### City-requested supplement
+
+The City reviewer sees the returned content in the City shared queue or dossier.
+
+Do not route City supplementation to School for mandatory new approval unless the approved canonical workflow explicitly requires it.
+
+### Suggested label
+
+"Đã bổ sung — Chờ xét lại"
+
+Provide an immediate contextual action:
+
+"Xem nội dung bổ sung"
+
+Do not require reviewers to navigate through a separate supplementation workflow screen merely to open the updated evidence.
+
+---
+
+# 15. COMPARE OLD AND NEW EVIDENCE
+
+The reviewer should easily see what has changed.
+
+Example:
+
+**Trước khi bổ sung**
+
+"Bảng điểm rèn luyện.pdf"
+
+**Sinh viên đã bổ sung**
+
+"Bảng điểm rèn luyện có xác nhận.pdf"
+
+**Giải trình**
+
+"Đã bổ sung bản có xác nhận của Nhà trường."
+
+Use the existing evidence viewer and version metadata.
+
+Do not build a complex visual PDF-diff engine unless already supported and genuinely useful.
+
+A simple, clear before/after file list may be sufficient.
+
+For images, an optional side-by-side comparison is useful on desktop.
+
+For PDFs, provide direct preview of both versions when authorized.
+
+On mobile, use a sequential view rather than squeezing two PDF panes into a narrow screen.
+
+---
+
+# 16. DIRECT REASSESSMENT
+
+After reviewing the returned evidence, the reviewer should be able to use the LEAN-2 inline controls.
+
+**Đạt** / **Không đạt**
+
+The reviewer must not have to complete multiple extra steps merely because the declaration was previously supplemented.
+
+### Example
+
+1. Reviewer sees "Đã bổ sung".
+2. Reviewer opens the new evidence.
+3. Reviewer checks the correction.
+4. Reviewer clicks "Đạt".
+5. System persists the new human judgment.
+6. Derived criterion progress and eligibility recalculate.
+7. Review history remains available.
+
+If the evidence remains insufficient:
+
+The reviewer may record "Không đạt", request further clarification if permitted, or use another existing authorized disposition.
+
+Do not automatically enforce a new supplementation round limit.
+
+Do not allow an endless request cycle if the existing approved policy explicitly restricts it.
+
+---
+
+# 17. PRESERVE PREVIOUS HUMAN JUDGMENTS
+
+Supplementation must not silently destroy earlier assessments.
+
+Example:
+
+Initial School review:
+
+"Không đạt — Minh chứng thiếu xác nhận."
+
+Student submits corrected evidence.
+
+New School review:
+
+"Đạt — Đã bổ sung xác nhận hợp lệ."
+
+The system should preserve the prior judgment and the reason in its authorized audit/history model.
+
+The latest applicable judgment determines the current review presentation.
+
+Historical judgments remain traceable.
+
+Do not overwrite the School's historical judgment with a City result.
+
+Do not overwrite the original Student evidence with an untraceable new file.
+
+---
+
+# 18. MULTIPLE SUPPLEMENT REQUESTS
+
+A dossier may contain more than one issue.
+
+Example:
+
+- Ethics: Conduct evidence missing confirmation.
+- Academic: Transcript unreadable.
+- Volunteer: Participation evidence incomplete.
+
+The interface should not require three separate complicated case-management journeys.
+
+## Target UX
+
+Present outstanding requests within the original dossier, next to the affected declarations.
+
+Provide a compact summary:
+
+"Bạn có 3 nội dung cần bổ sung."
+
+Clicking a summary item should navigate to the actual affected section.
+
+### Request creation
+
+Where existing backend contracts support grouping multiple targets in one request, use that capability.
+
+Where each request must remain separate for authorization or persistence, preserve that contract but simplify the frontend interaction.
+
+Do not invent batch supplementation APIs.
+
+### Student submission
+
+If the backend supports responding to several requested items in one safe submission, make that easy.
+
+Otherwise provide clear per-request submission status without requiring navigation away from the dossier.
+
+Do not accidentally submit corrections for unrelated scopes.
+
+---
+
+# 19. NOTIFICATIONS WITHOUT WORKFLOW CLUTTER
+
+The Student must be able to discover that additional evidence is required.
+
+Use the existing notification capability where available.
+
+Possible UI:
+
+- A compact notification in the Student dashboard.
+- A visible count of outstanding corrections.
+- A status indicator on the affected dossier.
+- A link directly to the exact declaration.
+
+### Suggested notification
+
+"Hồ sơ của bạn có nội dung cần bổ sung."
+
+Secondary:
+
+"Xem yêu cầu"
+
+Avoid long messages exposing technical workflow metadata.
+
+Do not assume email delivery exists merely because a notification component exists.
+
+If email notifications are currently supported, preserve and test them.
+
+If not, do not fabricate success.
+
+Do not add an unrelated new notification platform in LEAN-3.
+
+---
+
+# 20. SIMPLE USER-FACING STATUS MODEL
+
+Do not add more user-facing status badges.
+
+Use contextual, meaningful labels:
+
+| Situation | Suggested label |
+|---|---|
+| Reviewer requested correction | Cần bổ sung |
+| Student has submitted response | Đã bổ sung — Chờ xét lại |
+| Reviewer accepted corrected declaration | Đạt |
+| Reviewer rejected corrected declaration | Không đạt |
+
+These are user-facing projections.
+
+They are not authorization to delete or rewrite backend enums.
+
+### Important
+
+Review progress remains separate from eligibility.
+
+A supplementation request is not an automatic failing judgment.
+
+A returned supplement is not automatically a passing judgment.
+
+Do not convert "Đã bổ sung" into "Đạt".
+
+Do not count a pending correction as a completed positive review.
+
+Maintain LEAN-0.1 Review State Truth Table semantics.
+
+---
+
+# 21. SCHOOL/CITY AUTHORITY BOUNDARIES
+
+This is mandatory.
+
+## School
+
+May request supplementation only when permitted for the relevant School Review Unit, stage and application.
+
+## City
+
+May request supplementation only when permitted for City review.
+
+City uses the authorized shared queue.
+
+No mandatory individual assignment.
+
+## Student
+
+May view and respond only to authorized requests concerning their own application.
+
+## Committee
+
+May view authorized history and evidence, but does not inherit School/City supplementation mutation rights.
+
+## Admin
+
+General administrative access must not automatically grant substantive review authority.
+
+### Critical negative tests
+
+- School reviewer requests correction for another School Review Unit.
+- Student accesses another Student's supplement request.
+- School reviewer edits a City-issued request.
+- City reviewer overwrites a School judgment.
+- Reviewer changes a forwarded School dossier outside allowed supplementation rules.
+- Student edits unrelated submitted data during supplementation.
+
+All must be denied when unauthorized.
+
+---
+
+# 22. POST-FORWARDING SAFETY
+
+The School forwarding rule remains:
+
+**One successful forwarding per School Review Unit and award season.**
+
+After forwarding:
+
+The School cannot silently modify the forwarded selection, document or original assessments through ordinary review controls.
+
+If City requests supplementation, the Student can perform the explicitly authorized corrective actions according to the canonical contract.
+
+That does not mean the School batch reopens automatically.
+
+Do not create a new School forwarding batch after City supplementation.
+
+Do not create a second official School decision attachment without an approved workflow.
+
+Do not modify the forwarded batch membership merely because a Student uploads additional evidence.
+
+---
+
+# 23. CORRECT DEADLINE BEHAVIOR
+
+Audit actual deadline fields and comparison semantics.
+
+Test:
+
+- Request without deadline only if authorized.
+- Explicit configured deadline.
+- Before deadline.
+- Exactly at deadline.
+- After deadline.
+- Deadline changed through an authorized existing mechanism.
+- Backend time versus frontend time.
+- Timezone handling, including Asia/Ho_Chi_Minh.
+- Season close behavior.
+- Reviewer access after expiration.
+- Student response after expiration.
+
+Do not infer permission solely from frontend-local time.
+
+Server-side rules are authoritative.
+
+Do not invent a three-day default.
+
+Do not silently extend expired requests.
+
+If the deadline policy remains unresolved, mark the applicable behavior as blocked and do not impose new restrictions.
+
+---
+
+# 24. INTERNAL NOTES VS STUDENT MESSAGES
+
+These are separate information classes.
+
+## Student-visible message
+
+The reason and instructions submitted through the authorized supplement request.
+
+## Internal reviewer note
+
+Private commentary for authorized staff.
+
+Do not reuse one field for both purposes unless the actual contract explicitly guarantees correct visibility separation.
+
+### Tests
+
+- Student receives the correct request message.
+- Student does not receive staff-only notes.
+- City sees only the authorized information.
+- Committee access follows existing role rules.
+- Notification payloads do not accidentally expose private notes.
+- Exports do not leak internal notes into Student-facing documents.
+
+---
+
+# 25. DEMO MODE
+
+Demo must demonstrate the real supplementation interaction.
+
+Create or update deterministic scenarios:
+
+### Demo A — School request
+
+School reviewer requests clearer conduct evidence.
+
+Student responds.
+
+School reviewer reassesses.
+
+### Demo B — City request
+
+City reviewer requests an additional certificate.
+
+Student responds.
+
+City reviewer independently reassesses.
+
+### Demo C — Multiple requests
+
+Student has more than one requested correction.
+
+Correct requests appear at their respective declarations.
+
+### Demo D — Failed reassessment
+
+Student supplements but evidence is still insufficient.
+
+Reviewer records Fail without losing the history.
+
+### Demo E — No unauthorized editing
+
+Student cannot edit unrelated submitted declarations.
+
+### Demo F — Historical evidence
+
+Original and corrected files remain distinguishable.
+
+Demo actions must update coherent synthetic state.
+
+Do not use static buttons that pretend to save.
+
+Preserve deterministic Demo reset.
+
+---
+
+# 26. REAL MODE INTEGRATION
+
+Use actual existing backend endpoints.
+
+Inspect and verify:
+
+- Create supplementation request.
+- Retrieve outstanding requests.
+- Retrieve scoped permissions.
+- Upload/replace evidence.
+- Submit Student response.
+- Retrieve returned supplement.
+- Reassess related declaration.
+- Read supplementation history.
+
+Do not invent endpoints from presumed naming conventions.
+
+If backend contracts require an update:
+
+- Keep the change narrowly scoped.
+- Respect modular monolith boundaries.
+- Maintain API compatibility.
+- Reuse existing authorization services.
+- Add targeted backend tests.
+- Preserve idempotency/concurrency semantics.
+- Avoid unauthorized schema changes.
+
+No fake Real Mode persistence.
+
+No Demo fallback.
+
+No hidden local-only state presented as saved.
+
+No production database access without explicit authorization.
+
+---
+
+# 27. FILE STORAGE & EVIDENCE SECURITY
+
+Preserve the existing storage architecture.
+
+Do not independently introduce a new storage service.
+
+Verify:
+
+- Authorized file upload.
+- File size and content-type validation.
+- PDF/image format support.
+- File association with the correct application.
+- Request-scoped editing permissions.
+- Secure preview access.
+- Protected object URLs or signed links where applicable.
+- Historical evidence versions.
+- Failed upload cleanup.
+- Safe retries.
+- No cross-user or cross-unit file access.
+
+A returned supplement must not point to a file belonging to another Student or another application.
+
+If storage is unavailable in the test environment, mark Real evidence verification as BLOCKED.
+
+Do not claim end-to-end PASS using only mocked attachments.
+
+---
+
+# 28. RESPONSIVE UX — FIRST-CLASS REQUIREMENT
+
+Test:
+
+320px, 360px, 390px, 430px, 768px, 1024px, 1280px, 1440px, 1660px and 1920px.
+
+## Desktop
+
+Reviewer must be able to inspect the declaration and write the supplement request without excessive navigation.
+
+Choose a compact contextual drawer or inline editor.
+
+## Laptop
+
+Do not squeeze the dossier into an unreadable narrow column.
+
+Do not create a permanently reserved empty inspector area.
+
+## Tablet
+
+Adapt the editor intelligently.
+
+Evidence preview remains accessible.
+
+## Mobile
+
+Prefer a full-width readable editor or accessible sheet.
+
+Do not force a 40%-width side drawer.
+
+The Student should see:
+
+- Reason.
+- Allowed correction.
+- Evidence picker.
+- Explanation field.
+- Submit action.
+
+without horizontal scrolling.
+
+No nested modal chains.
+
+No keyboard-obstructed buttons.
+
+No floating AI/Demo controls covering primary actions.
+
+Keep primary touch targets comfortably sized.
+
+---
+
+# 29. ACCESSIBILITY AND NATURAL VIETNAMESE CONTENT
+
+Use:
+
+- Yêu cầu bổ sung.
+- Nội dung cần bổ sung.
+- Giải trình.
+- Bổ sung minh chứng.
+- Gửi bổ sung.
+- Đã bổ sung.
+- Chờ xét lại.
+- Xem minh chứng trước đó.
+- Xem minh chứng mới.
+
+Avoid:
+
+- ResolutionCase.
+- Reopen pipeline.
+- Supplement scope key.
+- Workflow handoff.
+- Evidence version mutation.
+- Canonical return.
+- Case orchestration.
+
+Use clear labels.
+
+Provide accessible keyboard navigation.
+
+Return focus to the originating declaration after closing the request editor.
+
+Maintain correct tab order.
+
+Announce meaningful status changes.
+
+Avoid repeated warning banners.
+
+---
+
+# 30. REQUIRED AUTOMATED TEST MATRIX
+
+Implement and execute relevant tests.
+
+## S01 — Contextual request
+
+Reviewer clicks supplementation at a declaration and the correct target is preselected.
+
+## S02 — Scope integrity
+
+Request targets the correct application, criterion, requirement and declaration according to the canonical contract.
+
+## S03 — No repeated selection
+
+Reviewer does not need to reselect the same scope unnecessarily.
+
+## S04 — Request reason
+
+Student-visible reason persists correctly.
+
+## S05 — Internal note privacy
+
+Private reviewer notes are not exposed to the Student.
+
+## S06 — Deadline policy
+
+No unapproved three-day deadline is introduced.
+
+## S07 — Request authorization
+
+Only the authorized review stage can issue the request.
+
+## S08 — Student notification
+
+Student can discover the outstanding request through supported UI.
+
+## S09 — Inline Student correction
+
+Student opens the correct declaration.
+
+## S10 — Restricted editing
+
+Student cannot change unrelated submitted content.
+
+## S11 — Explanation
+
+Student can submit explanation text according to supported rules.
+
+## S12 — Evidence addition
+
+New evidence attaches to the correct target.
+
+## S13 — Evidence replacement
+
+Prior evidence version/history remains available.
+
+## S14 — Submit response
+
+Response persists through the actual backend.
+
+## S15 — Duplicate submission
+
+Repeated unsafe submissions do not create inconsistent records.
+
+## S16 — Returned status
+
+Correct reviewer stage sees the returned supplement.
+
+## S17 — School reassessment
+
+School reviewer records a new authorized judgment.
+
+## S18 — City reassessment
+
+City reviewer records an independent authorized judgment.
+
+## S19 — No auto-pass
+
+Returning evidence does not automatically mark the declaration Pass.
+
+## S20 — Completed-but-failed
+
+Review can be complete while the criterion remains Fail.
+
+## S21 — Multiple supplement requests
+
+Different requested scopes do not overwrite each other.
+
+## S22 — Cross-stage isolation
+
+City supplementation does not alter the School forwarding batch.
+
+## S23 — Historical judgment
+
+Earlier human judgments remain traceable.
+
+## S24 — Concurrent modification
+
+Conflicting updates cannot silently overwrite newer data.
+
+## S25 — Expired request
+
+Backend enforces only actual approved deadline rules.
+
+## S26 — Unauthorized Student
+
+Another Student cannot access the request or files.
+
+## S27 — Unauthorized School
+
+School staff cannot modify requests outside their Review Unit.
+
+## S28 — Committee boundary
+
+Committee does not gain Officer supplementation rights.
+
+## S29 — Demo isolation
+
+Demo corrections never enter Real Mode.
+
+## S30 — Real persistence
+
+When an authorized backend test environment exists, correction survives a fresh authenticated fetch.
+
+## S31 — File upload failure
+
+UI does not falsely claim successful submission.
+
+## S32 — Reviewer failure
+
+Failed reassessment does not falsely show a saved judgment.
+
+## S33 — Responsive Student
+
+Correction works at 390px.
+
+## S34 — Responsive Reviewer
+
+Request and reassessment work at 390px and 1440px.
+
+## S35 — ONE_OF / ALL_REQUIRED
+
+Supplementation does not corrupt requirement aggregation.
+
+## S36 — Collective regression
+
+TT01–TT04 correction workflow remains valid.
+
+## S37 — Original snapshot
+
+Submitted Student personal information and original evidence remain historically protected.
+
+## S38 — Notifications
+
+A request does not falsely report email delivery when no email was actually sent.
+
+## S39 — Repeat request rules
+
+Additional requests follow existing approved policy; no arbitrary one-time restriction is introduced.
+
+## S40 — Audit
+
+Request, response and reassessment preserve actor, stage and timestamps.
+
+---
+
+# 31. REQUIRED MANUAL BROWSER UAT
+
+Perform real browser interaction where available.
+
+## Scenario A — School request
+
+1. Sign in as School Reviewer.
+2. Open an authorized Individual application.
+3. Locate the conduct score declaration.
+4. Open the attached evidence.
+5. Click "Yêu cầu bổ sung".
+6. Verify the correct declaration context.
+7. Enter a reason.
+8. Submit.
+9. Verify the request appears at the same declaration.
+10. Verify the Student can access the request.
+
+## Scenario B — Student response
+
+1. Sign in as the relevant Student.
+2. Open "Hồ sơ của tôi".
+3. Find the outstanding correction indicator.
+4. Open the affected criterion.
+5. Read the reason.
+6. Enter an explanation.
+7. Attach corrected evidence.
+8. Submit.
+9. Verify the displayed response state.
+10. Verify unrelated declarations remain unchanged.
+
+## Scenario C — School reassessment
+
+1. Return to the School Reviewer.
+2. Open the returned supplement.
+3. Compare old and new evidence.
+4. Record Pass or Fail.
+5. Verify the latest judgment.
+6. Verify previous history remains.
+7. Verify derived criterion result is correct.
+
+## Scenario D — City supplementation
+
+1. Open an authorized City-forwarded application.
+2. Request supplementation.
+3. Sign in as the Student.
+4. Submit the correction.
+5. Return to City Reviewer.
+6. Reassess.
+7. Verify School history is unchanged.
+8. Verify forwarding batch is unchanged.
+
+## Scenario E — Multiple requests
+
+1. Create outstanding corrections for two different requirements.
+2. Verify both are discoverable.
+3. Respond to one.
+4. Verify the other remains outstanding.
+5. Verify no accidental cross-scope update.
+
+## Scenario F — Mobile
+
+1. Open Student dossier at 390px.
+2. Read request details.
+3. Attach evidence.
+4. Enter explanation.
+5. Submit.
+6. Verify no horizontal overflow or hidden buttons.
+
+## Scenario G — Security
+
+1. Attempt access from another Student account.
+2. Attempt cross-unit access by School Reviewer.
+3. Attempt mutation from unauthorized Committee role.
+4. Verify appropriate denial without exposing private data.
+
+---
+
+# 32. BEFORE/AFTER UX MEASUREMENT
+
+Compare actual observed tasks:
+
+- Creating one supplementation request.
+- Finding the Student-visible correction.
+- Uploading a replacement file.
+- Submitting the explanation.
+- Reviewer finding the returned evidence.
+- Reassessing the corrected declaration.
+
+Record:
+
+- Click count.
+- Navigation transitions.
+- Modal/dialog count.
+- Required manual field selection.
+- Number of Save/Submit actions.
+- Responsive defects.
+- User-facing statuses.
+
+Do not claim a specific percentage improvement without measurement.
+
+Do not confuse lower click count with removal of mandatory safety controls.
+
+---
+
+# 33. VISUAL QA DELIVERABLES
+
+Capture actual screenshots where browser tooling permits.
+
+At minimum:
+
+1. School reviewer — request at declaration.
+2. Contextual supplement editor — desktop.
+3. Student — request shown inside original dossier.
+4. Student — corrected evidence editor.
+5. Student — mobile 390px.
+6. Reviewer — old/new evidence.
+7. Reviewer — returned supplement.
+8. Reviewer — reassessment Pass.
+9. Reviewer — reassessment Fail.
+10. City reviewer — independent supplementation.
+11. Multiple outstanding requests.
+12. Tablet 768px and laptop 1024px.
+
+Evaluate:
+
+- Information hierarchy.
+- Natural language.
+- Context preservation.
+- Action discoverability.
+- Status clarity.
+- Evidence readability.
+- Responsive layout.
+- Touch usability.
+- Modal/drawer dimensions.
+- Keyboard access.
+
+Do not submit mockup images as proof of actual implemented browser QA.
+
+---
+
+# 34. QUALITY GATES
+
+Frontend:
+
+- TypeScript typecheck.
+- Production build.
+- Component tests.
+- Supplementation UI tests.
+- Student editor permission tests.
+- Review state projection tests.
+- Role-based rendering tests.
+- Demo/Real isolation tests.
+- Responsive browser QA.
+
+Backend, if modified:
+
+- TypeScript typecheck.
+- Production build.
+- Request creation tests.
+- Student response tests.
+- Scope authorization tests.
+- Deadline tests.
+- Evidence versioning tests.
+- Concurrency/idempotency tests.
+- Audit tests.
+
+Run actual available commands.
+
+Record commands and outcomes.
+
+Do not claim production database verification based on mocks.
+
+---
+
+# 35. SOURCE SAFETY
+
+Preserve:
+
+- Historical Golden Frontend manifest.
+- Existing Feature-Sliced architecture.
+- Express/Prisma Modular Monolith.
+- LEAN-1 Student declaration behavior.
+- LEAN-2 inline assessment behavior.
+- Student submission snapshot.
+- Original evidence history.
+- Existing approved supplementation semantics.
+- School/City independent judgments.
+- School one-time forwarding.
+- UDN shared Review Unit.
+- City shared queue.
+- Committee authority.
+- Collective direct-to-City flow.
+- Analytics and Excel.
+- Audit history.
+- Optional AI advisory features.
+
+Do not:
+
+- Create ResolutionCase.
+- Add an assignment system.
+- Introduce a new workflow engine.
+- Create a second Student dossier.
+- Rewrite Student declaration logic unnecessarily.
+- Create arbitrary deadlines.
+- Limit supplementation to one round without policy.
+- Auto-approve returned evidence.
+- Auto-conclude official reviews.
+- Auto-recommend School applications.
+- Auto-forward applications.
+- Auto-recognize awards.
+- Deploy.
+- Run live migrations.
+- Seed production data.
+- Push or merge automatically.
+
+Only implement the changes required for LEAN-3.
+
+---
+
+# 36. REQUIRED IMPLEMENTATION REPORT
+
+Create:
+
+`docs/lean/LEAN_3_IMPLEMENTATION_REPORT.md`
+
+Include:
+
+1. Current source baseline.
+2. LEAN-0.1 contract verification.
+3. LEAN-1/LEAN-2 integration status.
+4. Existing supplementation flow.
+5. Verified backend supplementation contract.
+6. Root causes of current UX complexity.
+7. New contextual reviewer request UX.
+8. Student correction experience.
+9. Supported explanation and evidence actions.
+10. Exact request scope and authorization.
+11. Deadline behavior and open policy points.
+12. Evidence versioning.
+13. Student submission snapshot protection.
+14. Reassessment semantics.
+15. School/City independence.
+16. Notification behavior.
+17. Multiple-request handling.
+18. Demo/Real implementation status.
+19. Actual browser screenshots.
+20. Actual tests executed.
+21. Exact files changed.
+22. Known issues and blockers.
+23. LEAN-4 dependencies.
+24. Final verdict: PASS / PARTIAL / BLOCKED.
+
+Also create:
+
+`docs/lean/LEAN_3_MANUAL_UAT.md`
+
+Write the UAT checklist in Vietnamese.
+
+Include detailed click-by-click instructions for:
+
+- School Reviewer.
+- Student.
+- City Reviewer.
+- Different Student.
+- Unauthorized School Reviewer.
+- Committee read-only actor.
+- Mobile tester.
+
+---
+
+# 37. DEFINITION OF DONE
+
+LEAN-3 is complete only when:
+
+- A reviewer can request supplementation directly from the relevant declaration or supported canonical review scope.
+- The system automatically carries the correct context into the request editor.
+- The reviewer does not have to reselect unnecessary fields.
+- The Student sees the request inside the original dossier.
+- The Student can provide explanation and permitted evidence.
+- Unrelated submitted content remains protected.
+- Historical evidence and judgment records remain traceable.
+- The Student can submit the correction through actual supported backend operations.
+- The correct School or City reviewer receives the returned supplement.
+- Reassessment uses the LEAN-2 direct human Pass/Fail interaction.
+- New evidence is not automatically approved.
+- Derived criterion results remain accurate.
+- No unapproved supplementation deadline is introduced.
+- No new ResolutionCase or assignment process is created.
+- Demo and Real Mode remain isolated.
+- Mobile and desktop layouts are usable.
+- Authorization and audit tests pass.
+- Any unavailable Real Mode integration is explicitly marked unverified or blocked.
+
+Do not report full PASS based only on a visually attractive Demo UI.
+
+---
+
+# FINAL PRODUCT STANDARD
+
+5TOT supplementation should feel like a simple conversation attached to the relevant achievement.
+
+**REVIEWER:**
+"This evidence is insufficient. Please provide a clearer document."
+
+**STUDENT:**
+"I have uploaded the corrected document and added my explanation."
+
+**REVIEWER:**
+"I have checked the new document. This declaration is Pass/Fail."
+
+That is the entire user-facing process.
+
+The system internally preserves:
+
+- Authorization.
+- Original evidence.
+- Supplement request history.
+- Student responses.
+- Independent review stages.
+- Human judgment records.
+- Audit trails.
+- Concurrency safety.
+
+The interface does not require users to manage these implementation details.
+
+**LEAN-3 SUCCESS = REQUEST IN CONTEXT → CORRECT IN CONTEXT → REASSESS IN CONTEXT.**
+
+## HARD STOP
+
+Implement, test, document and report LEAN-3 only.
+
+Do NOT begin LEAN-4 School Recommendation & One-Time Forwarding automatically.
+
+Do NOT begin LEAN-5 City/Committee UX redesign.
+
+Do NOT begin LEAN-6 full UAT or deployment.
+
+Stop after the LEAN-3 implementation report and verification evidence.

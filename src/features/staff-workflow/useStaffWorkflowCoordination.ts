@@ -1,0 +1,888 @@
+/**
+ * 5TOT Đà Nẵng — Staff, Officer, School & Committee Workflow Coordination Hook (FSD Features Layer)
+ * Manages cross-role state and actions for City Officer, School Officer, City Manager, and City Committee.
+ */
+
+import React, { useState, useMemo, useCallback } from 'react';
+import {
+  StaffApplicationRecord,
+  StaffNotificationItem,
+  StaffRole,
+  StaffRouteId,
+  StaffUser,
+} from '../../staff/types';
+import {
+  CITY_REVIEW_OFFICERS,
+  INITIAL_STAFF_APPLICATIONS,
+  INITIAL_STAFF_NOTIFICATIONS,
+  STAFF_DEMO_USERS,
+} from '../../staff/fixtures/staffDataset';
+import {
+  ApplicationReviewWorkspaceState,
+  OfficerDemoScenarioId,
+} from '../../staff/reviewTypes';
+import {
+  buildFallbackBundleForStaffRecord,
+  buildOfficerScenarioBundle,
+} from '../../staff/fixtures/officerReviewFixtures';
+import {
+  SCHOOL_DEMO_SCENARIOS,
+  SchoolDemoScenarioId,
+  buildWorkspaceForSchoolScenario,
+  buildStudentApplicationForSchoolScenario,
+} from '../../staff/fixtures/schoolReviewFixtures';
+import {
+  CommitteeCaseDetail,
+  CommitteeDecisionOutcome,
+  CommitteeDemoScenarioId,
+} from '../../staff/committeeTypes';
+import {
+  COMMITTEE_DEMO_SCENARIO_MAP,
+  DEFAULT_COMMITTEE_SCENARIO_ID,
+  buildCommitteeScenarioBundle,
+} from '../../staff/fixtures/committeeFixtures';
+import { SchoolForwardingRecommendation } from '../../staff/schoolReviewTypes';
+import {
+  getAllCollectiveApplications,
+  publishCollectiveResult,
+  assignCityOfficer,
+} from '../../staff/collectiveStore';
+import {
+  PrototypeScenarioId,
+  savePersistedDemoSession,
+  loadPersistedOfficerWorkspaces,
+  savePersistedOfficerWorkspaces,
+  loadPersistedOfficerStudentApps,
+  savePersistedOfficerStudentApps,
+} from '../../demo/prototypeDemoMode';
+import { StudentApplicationData } from '../../demo/fixtures/studentApplication';
+import { HomeDevScenarioId } from '../../demo/fixtures/homeScenarios';
+import { ApplicationSubmissionState } from '../../components/submission/submissionTypes';
+import type { OfficerReviewWorkspace } from '../../staff/components/review/OfficerReviewWorkspace';
+import {
+  applyResolveCommitteeFlag,
+  applyAddCommitteeNote,
+  applyRecordCommitteeDecision,
+  applyFinalizeCommitteeResultSet,
+  applyPublishCommitteeResults,
+  applyRecordSchoolRecommendation,
+  applyForwardSchoolApplicationsToCity,
+} from '../../entities/committee/committeeWorkflowMutators';
+
+const HERO_STAFF_APP_ID = 'APP-2026-DN-102220123';
+
+export interface StaffWorkflowCoordinationOptions {
+  initialStaffRole?: StaffRole;
+  initialStaffUser?: StaffUser | null;
+  initialStaffRouteId: StaffRouteId;
+  initialOfficerScenarioId: OfficerDemoScenarioId;
+  initialCommitteeScenarioId?: CommitteeDemoScenarioId;
+  initialSchoolScenarioId?: SchoolDemoScenarioId;
+  updateBrowserUrl: (path: string) => void;
+  setViewMode: (
+    mode:
+      | 'public'
+      | 'demo_launcher'
+      | 'student_app'
+      | 'staff_app'
+      | 'collective_portal'
+      | 'collective_login'
+  ) => void;
+  setIsDemoActive: (active: boolean) => void;
+  incrementScenarioResetKey: () => void;
+  applyPrototypeScenario: (
+    nextScenarioId: PrototypeScenarioId,
+    options?: { navigateToDefaultScreen?: boolean; preserveUrl?: boolean }
+  ) => void;
+  setPrototypeScenarioId: (id: PrototypeScenarioId) => void;
+  setHomeScenario: (id: HomeDevScenarioId) => void;
+  setAppSubmissionState: (state: ApplicationSubmissionState) => void;
+}
+
+export function useStaffWorkflowCoordination({
+  initialStaffRole,
+  initialStaffUser,
+  initialStaffRouteId,
+  initialOfficerScenarioId,
+  initialCommitteeScenarioId,
+  initialSchoolScenarioId,
+  updateBrowserUrl,
+  setViewMode,
+  setIsDemoActive,
+  incrementScenarioResetKey,
+  applyPrototypeScenario,
+  setPrototypeScenarioId,
+  setHomeScenario,
+  setAppSubmissionState,
+}: StaffWorkflowCoordinationOptions) {
+  const [staffUser, setStaffUser] = useState<StaffUser>(
+    () =>
+      initialStaffUser ||
+      STAFF_DEMO_USERS[initialStaffRole || 'CITY_OFFICER']
+  );
+  const [staffRouteId, setStaffRouteId] =
+    useState<StaffRouteId>(initialStaffRouteId);
+  const [activeOfficerScenarioId, setActiveOfficerScenarioId] =
+    useState<OfficerDemoScenarioId>(initialOfficerScenarioId);
+  const [activeCommitteeScenarioId, setActiveCommitteeScenarioId] =
+    useState<CommitteeDemoScenarioId>(
+      initialCommitteeScenarioId || DEFAULT_COMMITTEE_SCENARIO_ID
+    );
+  const [activeSchoolScenarioId, setActiveSchoolScenarioId] =
+    useState<SchoolDemoScenarioId>(
+      initialSchoolScenarioId || 'B_school_under_review'
+    );
+  const [selectedStaffAppId, setSelectedStaffAppId] =
+    useState<string>(HERO_STAFF_APP_ID);
+
+  const initialHeroOfficerBundle = useMemo(
+    () => buildOfficerScenarioBundle(initialOfficerScenarioId),
+    [initialOfficerScenarioId]
+  );
+
+  const initialCommitteeBundle = useMemo(
+    () =>
+      buildCommitteeScenarioBundle(
+        initialCommitteeScenarioId || DEFAULT_COMMITTEE_SCENARIO_ID,
+        INITIAL_STAFF_APPLICATIONS
+      ),
+    [initialCommitteeScenarioId]
+  );
+
+  const [staffApplications, setStaffApplications] = useState<
+    StaffApplicationRecord[]
+  >(() => {
+    if (initialStaffRole === 'CITY_COMMITTEE') {
+      return initialCommitteeBundle.updatedApplications;
+    }
+    const cloned = JSON.parse(
+      JSON.stringify(INITIAL_STAFF_APPLICATIONS)
+    ) as StaffApplicationRecord[];
+    return cloned.map((app) =>
+      app.applicationId === HERO_STAFF_APP_ID
+        ? {
+            ...app,
+            workflowStatus: initialHeroOfficerBundle.staffWorkflowStatus,
+            assignment: app.assignment
+              ? {
+                  ...app.assignment,
+                  status: initialHeroOfficerBundle.assignmentStatus,
+                }
+              : app.assignment,
+            latestOperationalNote:
+              initialHeroOfficerBundle.latestOperationalNote,
+          }
+        : app
+    );
+  });
+
+  const [committeeCasesMap, setCommitteeCasesMap] = useState<
+    Record<string, CommitteeCaseDetail>
+  >(() => initialCommitteeBundle.committeeCasesMap);
+
+  const [staffNotifications, setStaffNotifications] = useState<
+    StaffNotificationItem[]
+  >(() => JSON.parse(JSON.stringify(INITIAL_STAFF_NOTIFICATIONS)));
+
+  const [officerStudentAppMap, setOfficerStudentAppMap] = useState<
+    Record<string, StudentApplicationData>
+  >(() => {
+    const persisted =
+      loadPersistedOfficerStudentApps<Record<string, StudentApplicationData>>();
+    return {
+      ...initialCommitteeBundle.studentApplicationsMap,
+      [HERO_STAFF_APP_ID]: initialHeroOfficerBundle.studentApp,
+      ...(persisted || {}),
+    };
+  });
+
+  const [officerWorkspaceMap, setOfficerWorkspaceMap] = useState<
+    Record<string, ApplicationReviewWorkspaceState>
+  >(() => {
+    const persisted =
+      loadPersistedOfficerWorkspaces<
+        Record<string, ApplicationReviewWorkspaceState>
+      >();
+    return {
+      [HERO_STAFF_APP_ID]: initialHeroOfficerBundle.workspaceState,
+      ...(persisted || {}),
+    };
+  });
+
+  const handleApplyOfficerScenario = useCallback(
+    (
+      officerScenarioId: OfficerDemoScenarioId,
+      options?: { openRoute?: StaffRouteId; preserveUrl?: boolean }
+    ) => {
+      const bundle = buildOfficerScenarioBundle(officerScenarioId);
+      setActiveOfficerScenarioId(officerScenarioId);
+      setStaffUser(STAFF_DEMO_USERS.CITY_OFFICER);
+      setSelectedStaffAppId(HERO_STAFF_APP_ID);
+
+      setOfficerStudentAppMap((prev) => ({
+        ...prev,
+        [HERO_STAFF_APP_ID]: bundle.studentApp,
+      }));
+      setOfficerWorkspaceMap((prev) => ({
+        ...prev,
+        [HERO_STAFF_APP_ID]: bundle.workspaceState,
+      }));
+
+      setStaffApplications((prev) =>
+        prev.map((app) => {
+          if (app.applicationId !== HERO_STAFF_APP_ID) return app;
+          const activeSupp = bundle.workspaceState.supplementRequests.find(
+            (r) => r.staffStatus === 'waiting_student'
+          );
+          const returnedSupp = bundle.workspaceState.supplementRequests.find(
+            (r) => r.staffStatus === 'student_returned'
+          );
+          return {
+            ...app,
+            workflowStatus: bundle.staffWorkflowStatus,
+            assignment: {
+              applicationId: app.applicationId,
+              officerId: 'staff-off-nam',
+              officerName: 'Trần Hoàng Nam',
+              assignedAt: '13/10/2026 · 08:45',
+              assignedBy: 'Nguyễn Thu Hà',
+              status: bundle.assignmentStatus,
+            },
+            latestOperationalNote: bundle.latestOperationalNote,
+            reviewedCriteriaCount: Object.values(
+              bundle.workspaceState.criterionCompletedMap
+            ).filter(Boolean).length,
+            supplementSummary: activeSupp
+              ? {
+                  requestCount:
+                    bundle.workspaceState.supplementRequests.length || 1,
+                  activeStatus: 'waiting_student',
+                  latestRequest: {
+                    ...activeSupp,
+                    staffStatus: 'waiting_student',
+                  },
+                }
+              : returnedSupp
+              ? {
+                  requestCount:
+                    bundle.workspaceState.supplementRequests.length || 1,
+                  activeStatus: 'student_returned',
+                  latestRequest: {
+                    ...returnedSupp,
+                    staffStatus: 'student_returned',
+                  },
+                }
+              : {
+                  requestCount: bundle.workspaceState.supplementRequests.length,
+                  activeStatus: null,
+                },
+          };
+        })
+      );
+
+      const targetRoute = options?.openRoute || 'application_review';
+      setStaffRouteId(targetRoute);
+      setViewMode('staff_app');
+      setIsDemoActive(true);
+      incrementScenarioResetKey();
+
+      savePersistedDemoSession({
+        viewMode: 'staff_app',
+        isDemoActive: true,
+      });
+
+      if (!options?.preserveUrl) {
+        updateBrowserUrl(
+          targetRoute === 'application_review'
+            ? `/staff/applications/${HERO_STAFF_APP_ID}`
+            : '/staff/applications'
+        );
+      }
+
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+    },
+    [updateBrowserUrl, setViewMode, setIsDemoActive, incrementScenarioResetKey]
+  );
+
+  const handleApplySchoolScenario = useCallback(
+    (
+      schoolScenarioId: SchoolDemoScenarioId,
+      options?: { openRoute?: StaffRouteId }
+    ) => {
+      setActiveSchoolScenarioId(schoolScenarioId);
+      setStaffUser(STAFF_DEMO_USERS.SCHOOL_OFFICER);
+      setSelectedStaffAppId(HERO_STAFF_APP_ID);
+
+      const scenarioCfg = SCHOOL_DEMO_SCENARIOS.find(
+        (s) => s.id === schoolScenarioId
+      );
+      const schoolStatus = scenarioCfg?.schoolStatus || 'under_review';
+
+      const schoolWorkspace = buildWorkspaceForSchoolScenario(
+        schoolScenarioId,
+        HERO_STAFF_APP_ID
+      );
+      const schoolStudentApp =
+        buildStudentApplicationForSchoolScenario(schoolScenarioId);
+
+      setOfficerWorkspaceMap((prev) => ({
+        ...prev,
+        [HERO_STAFF_APP_ID]: schoolWorkspace,
+      }));
+
+      setOfficerStudentAppMap((prev) => ({
+        ...prev,
+        [HERO_STAFF_APP_ID]: schoolStudentApp,
+      }));
+
+      setStaffApplications((prev) =>
+        prev.map((app) => {
+          if (app.applicationId === HERO_STAFF_APP_ID) {
+            return {
+              ...app,
+              currentReviewStage:
+                schoolStatus === 'forwarded_to_city' ? 'CITY' : 'SCHOOL',
+              schoolPreliminaryStatus: schoolStatus,
+              latestOperationalNote:
+                scenarioCfg?.description || app.latestOperationalNote,
+              schoolReviewSummary: {
+                ...(app.schoolReviewSummary || {
+                  schoolReviewUnitId: 'unit-udn',
+                  schoolReviewUnitName: 'Đại học Đà Nẵng',
+                  isForwardedToCity: false,
+                  reviewedCriteriaCount: 2,
+                  totalCriteriaCount: 5,
+                }),
+                status: schoolStatus,
+                isForwardedToCity: schoolStatus === 'forwarded_to_city',
+              },
+            };
+          }
+          return app;
+        })
+      );
+
+      const targetRoute: StaffRouteId =
+        options?.openRoute ||
+        (schoolScenarioId === 'A_school_pending_intake' ||
+        schoolScenarioId === 'B_school_under_review' ||
+        schoolScenarioId === 'C_school_multiple_declarations' ||
+        schoolScenarioId === 'D_school_supplement_requested' ||
+        schoolScenarioId === 'E_school_supplement_returned' ||
+        schoolScenarioId === 'F_school_needs_consideration' ||
+        schoolScenarioId === 'G_school_ready_to_complete' ||
+        schoolScenarioId === 'H_school_completed' ||
+        schoolScenarioId === 'I_school_forwarded_history'
+          ? 'application_review'
+          : 'school_applications');
+
+      setStaffRouteId(targetRoute);
+      setViewMode('staff_app');
+      setIsDemoActive(true);
+      incrementScenarioResetKey();
+
+      savePersistedDemoSession({
+        viewMode: 'staff_app',
+        isDemoActive: true,
+      });
+
+      updateBrowserUrl(
+        targetRoute === 'application_review'
+          ? `/staff/applications/${HERO_STAFF_APP_ID}`
+          : targetRoute === 'school_overview'
+          ? '/staff/school'
+          : `/staff/school/${targetRoute.replace('school_', '')}`
+      );
+
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+    },
+    [updateBrowserUrl, setViewMode, setIsDemoActive, incrementScenarioResetKey]
+  );
+
+  const handleOpenSchoolQueue = useCallback(() => {
+    setStaffUser(STAFF_DEMO_USERS.SCHOOL_OFFICER);
+    setStaffRouteId('school_overview');
+    setViewMode('staff_app');
+    setIsDemoActive(true);
+    savePersistedDemoSession({
+      viewMode: 'staff_app',
+      isDemoActive: true,
+    });
+    updateBrowserUrl('/staff/school');
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [updateBrowserUrl, setViewMode, setIsDemoActive]);
+
+  const handleOpenOfficerQueue = useCallback(() => {
+    setStaffUser(STAFF_DEMO_USERS.CITY_OFFICER);
+    setStaffRouteId('applications');
+    setViewMode('staff_app');
+    setIsDemoActive(true);
+    savePersistedDemoSession({
+      viewMode: 'staff_app',
+      isDemoActive: true,
+    });
+    updateBrowserUrl('/staff/applications');
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [updateBrowserUrl, setViewMode, setIsDemoActive]);
+
+  const handleOpenStaffApplicationReview = useCallback(
+    (applicationId: string) => {
+      setSelectedStaffAppId(applicationId);
+      const record = staffApplications.find(
+        (a) => a.applicationId === applicationId
+      );
+      if (record && !officerWorkspaceMap[applicationId]) {
+        const fallback = buildFallbackBundleForStaffRecord(record);
+        if (staffUser.primaryRole === 'SCHOOL_OFFICER') {
+          fallback.workspaceState.reviewStage = 'SCHOOL';
+          fallback.workspaceState.reviewUnitId =
+            staffUser.schoolReviewUnitId || 'unit-udn';
+        }
+        setOfficerStudentAppMap((prev) => ({
+          ...prev,
+          [applicationId]: fallback.studentApp,
+        }));
+        setOfficerWorkspaceMap((prev) => ({
+          ...prev,
+          [applicationId]: fallback.workspaceState,
+        }));
+      }
+      setStaffRouteId('application_review');
+      updateBrowserUrl(`/staff/applications/${applicationId}`);
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+    },
+    [staffApplications, officerWorkspaceMap, staffUser, updateBrowserUrl]
+  );
+
+  const handleMutateOfficerWorkspace = useCallback<
+    React.ComponentProps<typeof OfficerReviewWorkspace>['onMutateWorkspaceState']
+  >(
+    (updater) => {
+      const appId = selectedStaffAppId;
+      const currentWorkspace =
+        officerWorkspaceMap[appId] || initialHeroOfficerBundle.workspaceState;
+      const currentStudentApp =
+        officerStudentAppMap[appId] || initialHeroOfficerBundle.studentApp;
+
+      const result = updater(currentWorkspace, currentStudentApp);
+
+      setOfficerWorkspaceMap((prev) => {
+        const next = {
+          ...prev,
+          [appId]: result.nextWorkspace,
+        };
+        savePersistedOfficerWorkspaces(next);
+        return next;
+      });
+
+      if (result.nextStudentApp) {
+        setOfficerStudentAppMap((prev) => {
+          const next = {
+            ...prev,
+            [appId]: result.nextStudentApp!,
+          };
+          savePersistedOfficerStudentApps(next);
+          return next;
+        });
+      }
+
+      setStaffApplications((prev) =>
+        prev.map((app) => {
+          if (app.applicationId !== appId) return app;
+          const completedCount = Object.values(
+            result.nextWorkspace.criterionCompletedMap
+          ).filter(Boolean).length;
+          const waitingSupp = result.nextWorkspace.supplementRequests.find(
+            (r) => r.staffStatus === 'waiting_student'
+          );
+          return {
+            ...app,
+            workflowStatus: result.nextStaffStatus || app.workflowStatus,
+            schoolPreliminaryStatus:
+              result.nextSchoolPreliminaryStatus ||
+              (staffUser.primaryRole === 'SCHOOL_OFFICER'
+                ? result.nextStaffStatus === 'review_completed'
+                  ? 'preliminary_completed'
+                  : result.nextStaffStatus === 'supplement_requested'
+                  ? 'supplement_requested'
+                  : app.schoolPreliminaryStatus
+                : app.schoolPreliminaryStatus),
+            assignment: app.assignment
+              ? {
+                  ...app.assignment,
+                  status:
+                    result.nextAssignmentStatus || app.assignment.status,
+                }
+              : app.assignment,
+            latestOperationalNote:
+              result.nextOperationalNote || app.latestOperationalNote,
+            reviewedCriteriaCount: completedCount,
+            schoolReviewSummary: app.schoolReviewSummary
+              ? {
+                  ...app.schoolReviewSummary,
+                  status:
+                    result.nextSchoolPreliminaryStatus ||
+                    app.schoolReviewSummary.status,
+                  reviewedCriteriaCount: completedCount,
+                }
+              : app.schoolReviewSummary,
+            supplementSummary: waitingSupp
+              ? {
+                  requestCount:
+                    result.nextWorkspace.supplementRequests.length || 1,
+                  activeStatus: 'waiting_student',
+                  latestRequest: {
+                    ...waitingSupp,
+                    staffStatus: 'waiting_student',
+                  },
+                }
+              : app.supplementSummary,
+          };
+        })
+      );
+
+      if (appId === HERO_STAFF_APP_ID) {
+        const hasWaitingSupp = result.nextWorkspace.supplementRequests.some(
+          (r) => r.staffStatus === 'waiting_student'
+        );
+        if (
+          result.nextStaffStatus === 'supplement_requested' ||
+          hasWaitingSupp
+        ) {
+          setPrototypeScenarioId('supplement_required');
+          setHomeScenario('state_h_supplement_active');
+          setAppSubmissionState('supplement_required');
+        } else if (result.nextStaffStatus === 'review_completed') {
+          setPrototypeScenarioId('waiting_final');
+          setHomeScenario('state_j_waiting_final');
+          setAppSubmissionState('all_reviewed');
+        }
+      }
+    },
+    [
+      selectedStaffAppId,
+      officerWorkspaceMap,
+      officerStudentAppMap,
+      initialHeroOfficerBundle,
+      staffUser.primaryRole,
+      setPrototypeScenarioId,
+      setHomeScenario,
+      setAppSubmissionState,
+    ]
+  );
+
+  const handleAssignOfficerInStaff = useCallback(
+    (applicationId: string, officerId: string) => {
+      const officer = CITY_REVIEW_OFFICERS.find((o) => o.id === officerId);
+      if (!officer) return;
+
+      if (applicationId.startsWith('COL-')) {
+        const result = assignCityOfficer(
+          applicationId,
+          officer.id,
+          officer.fullName,
+          {
+            name: staffUser.fullName,
+            role: staffUser.roleLabel,
+          }
+        );
+
+        if (result.success) {
+          setStaffNotifications((prev) => [
+            {
+              id: `notif-col-asg-${Date.now()}`,
+              categoryLabel: 'Phân công hồ sơ tập thể',
+              title: result.isReassignment
+                ? 'Điều chỉnh phân công hồ sơ Tập thể'
+                : 'Được phân công thẩm định hồ sơ Tập thể',
+              summary: `${staffUser.fullName} đã phân công hồ sơ ${
+                result.application?.collectiveName || applicationId
+              } cho đồng chí.`,
+              timestamp: 'Vừa xong',
+              isUnread: true,
+              tone: 'brand',
+              targetRoute: 'applications',
+              targetApplicationId: applicationId,
+              targetRoles: ['CITY_OFFICER'],
+            },
+            ...prev,
+          ]);
+        }
+        return;
+      }
+
+      setStaffApplications((prev) =>
+        prev.map((app) =>
+          app.applicationId === applicationId
+            ? {
+                ...app,
+                workflowStatus:
+                  app.workflowStatus === 'unassigned'
+                    ? 'assigned_not_started'
+                    : app.workflowStatus,
+                assignment: {
+                  applicationId: app.applicationId,
+                  officerId: officer.id,
+                  officerName: officer.fullName,
+                  assignedAt: 'Vừa xong',
+                  assignedBy: staffUser.fullName,
+                  status: 'not_started',
+                },
+                latestOperationalNote: `Đã phân công cho ${officer.fullName}`,
+              }
+            : app
+        )
+      );
+    },
+    [staffUser.fullName, staffUser.roleLabel]
+  );
+
+  const handleApplyCommitteeScenario = useCallback(
+    (
+      committeeScenarioId: CommitteeDemoScenarioId,
+      options?: { openRoute?: StaffRouteId; preserveUrl?: boolean }
+    ) => {
+      const bundle = buildCommitteeScenarioBundle(
+        committeeScenarioId,
+        INITIAL_STAFF_APPLICATIONS
+      );
+      setActiveCommitteeScenarioId(committeeScenarioId);
+      setStaffUser(STAFF_DEMO_USERS.CITY_COMMITTEE);
+      setSelectedStaffAppId(HERO_STAFF_APP_ID);
+      setStaffApplications(bundle.updatedApplications);
+      setCommitteeCasesMap(bundle.committeeCasesMap);
+      setOfficerStudentAppMap((prev) => ({
+        ...prev,
+        ...bundle.studentApplicationsMap,
+      }));
+
+      if (committeeScenarioId === 'committee_published') {
+        applyPrototypeScenario('final_recognized', {
+          navigateToDefaultScreen: false,
+          preserveUrl: true,
+        });
+      } else {
+        applyPrototypeScenario('waiting_final', {
+          navigateToDefaultScreen: false,
+          preserveUrl: true,
+        });
+      }
+
+      const config =
+        COMMITTEE_DEMO_SCENARIO_MAP[committeeScenarioId] ||
+        COMMITTEE_DEMO_SCENARIO_MAP[DEFAULT_COMMITTEE_SCENARIO_ID];
+      const targetRoute = options?.openRoute || config.defaultRoute;
+
+      setStaffRouteId(targetRoute);
+      setViewMode('staff_app');
+      setIsDemoActive(true);
+      incrementScenarioResetKey();
+
+      savePersistedDemoSession({
+        viewMode: 'staff_app',
+        isDemoActive: true,
+      });
+
+      if (!options?.preserveUrl) {
+        updateBrowserUrl(
+          targetRoute === 'overview' ? '/staff' : `/staff/${targetRoute}`
+        );
+      }
+
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+    },
+    [
+      applyPrototypeScenario,
+      updateBrowserUrl,
+      setViewMode,
+      setIsDemoActive,
+      incrementScenarioResetKey,
+    ]
+  );
+
+  const handleResolveCommitteeFlag = useCallback(
+    (applicationId: string, flagId: string, resolutionNote: string) => {
+      const { nextCases, nextApps } = applyResolveCommitteeFlag(
+        committeeCasesMap,
+        staffApplications,
+        applicationId,
+        flagId,
+        resolutionNote,
+        staffUser
+      );
+      setCommitteeCasesMap(nextCases);
+      setStaffApplications(nextApps);
+    },
+    [committeeCasesMap, staffApplications, staffUser]
+  );
+
+  const handleAddCommitteeNote = useCallback(
+    (applicationId: string, noteContent: string) => {
+      setCommitteeCasesMap((prev) =>
+        applyAddCommitteeNote(prev, applicationId, noteContent, staffUser)
+      );
+    },
+    [staffUser]
+  );
+
+  const handleRecordCommitteeDecision = useCallback(
+    (
+      applicationId: string,
+      outcome: CommitteeDecisionOutcome,
+      internalNote: string
+    ) => {
+      const { nextCases, nextApps } = applyRecordCommitteeDecision(
+        committeeCasesMap,
+        staffApplications,
+        applicationId,
+        outcome,
+        internalNote,
+        staffUser
+      );
+      setCommitteeCasesMap(nextCases);
+      setStaffApplications(nextApps);
+
+      if (applicationId === HERO_STAFF_APP_ID) {
+        applyPrototypeScenario('waiting_final', {
+          navigateToDefaultScreen: false,
+          preserveUrl: true,
+        });
+      }
+    },
+    [committeeCasesMap, staffApplications, staffUser, applyPrototypeScenario]
+  );
+
+  const handleFinalizeResultSet = useCallback(() => {
+    setCommitteeCasesMap((prev) =>
+      applyFinalizeCommitteeResultSet(prev, staffUser)
+    );
+  }, [staffUser]);
+
+  const handlePublishResults = useCallback(() => {
+    const heroOutcome =
+      committeeCasesMap[HERO_STAFF_APP_ID]?.decision?.outcome || 'recognized';
+    const { nextCases, nextApps } = applyPublishCommitteeResults(
+      committeeCasesMap,
+      staffApplications,
+      staffUser
+    );
+    setCommitteeCasesMap(nextCases);
+    setStaffApplications(nextApps);
+
+    const allCol = getAllCollectiveApplications();
+    allCol.forEach((app) => {
+      publishCollectiveResult(app.id, '86/QĐ-HSV-TP', {
+        name: staffUser.fullName,
+        role: staffUser.roleLabel,
+      });
+    });
+
+    applyPrototypeScenario(
+      heroOutcome === 'recognized'
+        ? 'final_recognized'
+        : 'final_not_recognized',
+      {
+        navigateToDefaultScreen: false,
+        preserveUrl: true,
+      }
+    );
+  }, [
+    committeeCasesMap,
+    staffApplications,
+    staffUser,
+    applyPrototypeScenario,
+  ]);
+
+  const handleRecordRecommendation = useCallback(
+    (
+      applicationId: string,
+      recommendation: SchoolForwardingRecommendation,
+      notes?: string,
+      reason?: string
+    ) => {
+      setStaffApplications((prev) =>
+        applyRecordSchoolRecommendation(
+          prev,
+          applicationId,
+          recommendation,
+          staffUser,
+          notes,
+          reason
+        )
+      );
+    },
+    [staffUser]
+  );
+
+  const handleForwardToCity = useCallback(
+    (applicationIds: string[], forwardingNote?: string) => {
+      setStaffApplications((prev) => {
+        const { nextApps, createdNotification } =
+          applyForwardSchoolApplicationsToCity(
+            prev,
+            applicationIds,
+            staffUser,
+            forwardingNote
+          );
+        setStaffNotifications((prevNotifs) => [
+          createdNotification,
+          ...prevNotifs,
+        ]);
+        return nextApps;
+      });
+
+      if (applicationIds.includes(HERO_STAFF_APP_ID)) {
+        setAppSubmissionState('under_review');
+      }
+    },
+    [staffUser, setAppSubmissionState]
+  );
+
+  return {
+    staffUser,
+    setStaffUser,
+    staffRouteId,
+    setStaffRouteId,
+    activeOfficerScenarioId,
+    activeCommitteeScenarioId,
+    activeSchoolScenarioId,
+    selectedStaffAppId,
+    initialHeroOfficerBundle,
+    staffApplications,
+    setStaffApplications,
+    committeeCasesMap,
+    staffNotifications,
+    setStaffNotifications,
+    officerStudentAppMap,
+    setOfficerStudentAppMap,
+    officerWorkspaceMap,
+    setOfficerWorkspaceMap,
+    handleApplyOfficerScenario,
+    handleApplySchoolScenario,
+    handleOpenSchoolQueue,
+    handleOpenOfficerQueue,
+    handleOpenStaffApplicationReview,
+    handleMutateOfficerWorkspace,
+    handleAssignOfficerInStaff,
+    handleApplyCommitteeScenario,
+    handleResolveCommitteeFlag,
+    handleAddCommitteeNote,
+    handleRecordCommitteeDecision,
+    handleFinalizeResultSet,
+    handlePublishResults,
+    handleRecordRecommendation,
+    handleForwardToCity,
+  };
+}

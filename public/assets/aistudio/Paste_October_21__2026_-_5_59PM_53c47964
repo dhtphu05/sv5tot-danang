@@ -1,0 +1,1238 @@
+# 5TOT ĐÀ NẴNG — SRW-3
+## SCHOOL BATCH FORWARDING UI — ONE CONSOLIDATED LIST, ONE DECISION DOCUMENT, ONE FINAL SUBMISSION
+
+**Priority:** P0 — Customer-Validated Business Workflow
+**Phase:** SRW-3 — Frontend Implementation and Integration
+**Task:** AUDIT → IMPLEMENT → INTEGRATE → HARDEN → VERIFY
+**Frontend:** React + Vite + Strict TypeScript + Feature-Sliced Design
+**Backend:** Existing Node.js + Express + Prisma Backend V2
+**Baseline:** Current implementation after SRW-2
+**Database:** Keep OFFLINE unless separately authorized
+
+## 1. MISSION
+
+Implement a clean, professional and highly usable School-level batch forwarding experience.
+
+The customer has explicitly approved this process:
+
+1. School Officers review Individual Student applications.
+2. The School determines which applications to recommend.
+3. The School prepares a consolidated list.
+4. The School attaches one official decision document.
+5. The School reviews the final list.
+6. The School confirms forwarding.
+7. The entire list is forwarded to City once.
+8. The forwarded list and decision become read-only.
+
+For the University of Da Nang, the eight configured member institutions share ONE forwarding batch for the entire award season.
+
+**ONE REVIEW UNIT + ONE SEASON = ONE CONSOLIDATED LIST + ONE DECISION + ONE SUCCESSFUL FORWARDING.**
+
+This must be implemented in the EXISTING School workspace, not in a separate application.
+
+The experience must be simple enough for experienced School Officers to use without training.
+
+---
+
+## 2. FIRST VERIFY THE CURRENT IMPLEMENTATION
+
+Before making changes, inspect:
+
+- SRW-0 workflow audit and approved contracts.
+- SRW-1 School batch backend implementation.
+- SRW-2 shared Student dossier UI.
+- Existing School application list.
+- Existing School recommendation actions.
+- Current navigation and sidebar.
+- Existing upload components.
+- Current file preview components.
+- Existing modal/dialog system.
+- Current application-status labels.
+- Demo Store.
+- Real Backend adapters.
+- Backend `/api/v2` contracts.
+- Historical Golden Frontend baseline.
+- Current frontend source checkpoint.
+
+Determine which backend operations actually exist.
+
+Do not invent API endpoints or treat proposed SRW-1 routes as implemented without inspecting source.
+
+### Gate
+
+If SRW-1 backend contracts exist and are complete, integrate them.
+
+If SRW-1 is incomplete:
+
+- Do not fabricate Real Mode forwarding.
+- Report missing API capabilities.
+- Implement only safely supported frontend and Demo Mode behavior.
+- Mark Real Mode integration BLOCKED or PARTIAL.
+- Do not declare SRW-3 fully complete.
+
+If SRW-2 shared dossier implementation is incomplete, avoid creating a second dossier interface. Report the dependency and use existing safe components where possible.
+
+---
+
+## 3. STRICT UDN BUSINESS RULE
+
+The University of Da Nang includes eight configured member institutions:
+
+- DUT.
+- DUE.
+- UED.
+- UFL.
+- UTE.
+- VKU.
+- VNUK.
+- SMP.
+
+All eight share:
+
+`schoolReviewUnitId = unit-udn`
+
+There is one shared School reviewer account.
+
+The original institution of each Student must remain unchanged.
+
+### Batch scope
+
+The batch belongs to the School Review Unit, NOT to the individual member institution.
+
+The UDN reviewer can filter the application list by member institution.
+
+However, filtering to DUT or DUE must never create a separate forwarding batch.
+
+The underlying batch always covers the same UDN review unit and season.
+
+### Expected result
+
+One UDN list containing selected applications from any of the eight member institutions.
+
+One common official decision document.
+
+One final submission.
+
+After successful submission, the UDN reviewer cannot normally forward additional applications for that season.
+
+Independent non-UDN School Review Units have their own separate seasonal batches.
+
+Do not create eight member-school reviewer accounts or eight UDN forwarding batches.
+
+---
+
+## 4. INFORMATION ARCHITECTURE
+
+Reuse the existing School workspace.
+
+Add one clear entry point:
+
+**"Danh sách đề nghị Thành phố"**
+
+or:
+
+**"Chốt danh sách chuyển Thành phố"**
+
+Use the label that best fits the existing School navigation.
+
+Do not add several redundant sidebar entries.
+
+### Recommended layout
+
+School Application List
+→ School Review
+→ Recommended Applications
+→ Consolidated Forwarding List
+→ Common Decision Attachment
+→ Final Confirmation
+→ Forwarded Summary.
+
+Keep this as a natural workflow inside the current School section.
+
+Avoid building a new five-step wizard when a simple list, document section and confirmation are sufficient.
+
+---
+
+## 5. SCHOOL APPLICATION LIST
+
+The existing School application list must make it easy to identify:
+
+- Applications awaiting preliminary review.
+- Applications currently under review.
+- Applications needing supplementation.
+- Reviewed applications.
+- Applications recommended for City.
+- Applications not recommended.
+- Applications already included in a forwarded batch.
+
+Use actual canonical statuses.
+
+Do not invent new official state labels merely for visual design.
+
+### Primary operations
+
+- Search applications.
+- Filter by review state.
+- Filter by original member institution.
+- Open dossier.
+- View School recommendation.
+- Prepare selected list where authorized.
+
+### Important
+
+Do not reintroduce an individual:
+
+**"Chuyển hồ sơ lên Thành phố"**
+
+button on each application.
+
+Individual review only determines the School assessment and recommendation.
+
+Actual forwarding is performed through the consolidated batch screen.
+
+---
+
+## 6. THE CONSOLIDATED FORWARDING SCREEN
+
+Suggested Vietnamese title:
+
+**"Danh sách đề nghị xét chọn cấp Thành phố"**
+
+Subtitle:
+
+"Kiểm tra danh sách hồ sơ và đính kèm quyết định trước khi chuyển."
+
+### Header
+
+Display:
+
+- School Review Unit.
+- Award season.
+- Batch status.
+- Last updated timestamp where available.
+- Forwarding information after completion.
+
+For UDN, display:
+
+"Đại học Đà Nẵng"
+
+and optionally:
+
+"Bao gồm 8 trường thành viên."
+
+### Summary metrics
+
+Display a compact set of real counters:
+
+- Total applications within School scope.
+- Applications reviewed.
+- Applications recommended.
+- Applications not recommended.
+- Applications requiring remaining action.
+- Applications currently selected for forwarding.
+
+The UI must not confuse the number of reviewed applications with the number of applications selected for forwarding.
+
+Do not hardcode dashboard totals independently of source data.
+
+### Main selected list
+
+Provide a readable table on desktop and cards on mobile.
+
+Show:
+
+- Student name.
+- Student identifier where appropriate.
+- Original institution.
+- Application status.
+- School recommendation.
+- Selection state.
+
+Keep the table uncluttered.
+
+---
+
+## 7. RECOMMENDATION VS BATCH SELECTION
+
+Preserve the difference between:
+
+1. A School's recorded recommendation for an application.
+2. Whether that application belongs to the pending consolidated forwarding list.
+3. Whether the consolidated list has actually been forwarded.
+
+Do not use one boolean to represent all three concepts.
+
+### Expected behavior
+
+Applications eligible for inclusion should derive from genuine completed School preliminary review records.
+
+The School reviewer may prepare the exact batch membership according to SRW-1 rules.
+
+A draft selection does not automatically forward the application.
+
+A user should clearly understand:
+
+**"Đã đưa vào danh sách đề nghị"**
+
+is not equivalent to:
+
+**"Đã chuyển Thành phố."**
+
+Use precise Vietnamese language.
+
+Avoid overloaded "Đạt" labels when they could refer to a preliminary criterion judgment, School recommendation or official recognition.
+
+---
+
+## 8. SELECTED LIST MANAGEMENT
+
+If the SRW-1 backend contract allows editing a draft batch:
+
+Support:
+
+- Select eligible applications.
+- Remove eligible applications from draft selection.
+- Review selected list.
+- Search.
+- Filter by member institution.
+- View selected count.
+- Navigate to a selected application.
+
+The current selected set must remain consistent when changing filters.
+
+### Important example
+
+A UDN reviewer selects:
+
+- DUT applications.
+- DUE applications.
+- VKU applications.
+
+Switching the institution filter must NOT clear the selected applications from other members.
+
+Do not use only the visible filtered table rows as the final batch payload.
+
+The actual selected application IDs must come from the canonical batch draft state.
+
+### Unsaved edits
+
+Provide clear Save or automatic draft persistence behavior consistent with the actual SRW-1 API.
+
+Do not claim a selection was durably saved unless the backend confirmed it in Real Mode.
+
+---
+
+## 9. PRE-FORWARDING VALIDATION
+
+Before enabling the final confirmation, display a clear validation summary.
+
+Check:
+
+- Correct School Review Unit.
+- Correct award season.
+- Nonempty selected list.
+- Every selected application belongs to the School Review Unit.
+- Every selected application is eligible for forwarding.
+- Required School recommendations exist.
+- Relevant School review work is complete.
+- No conflicting active supplementation.
+- No application already forwarded elsewhere.
+- One valid official decision document is attached.
+- Current forwarding window is valid.
+- Batch has not already been forwarded.
+- No unresolved critical list-wide validation issues.
+
+Use the actual SRW-1 validation endpoint or equivalent canonical implementation.
+
+Do not duplicate backend eligibility rules in an inconsistent frontend-only implementation.
+
+Client checks are UX aids.
+
+The server remains authoritative.
+
+### Error presentation
+
+Show actionable messages:
+
+"Hồ sơ này chưa hoàn tất sơ duyệt."
+
+"Quyết định chưa được đính kèm."
+
+"Danh sách đã được chuyển Thành phố."
+
+"Không thể chuyển vì có hồ sơ không thuộc đơn vị xét."
+
+Avoid displaying raw HTTP or Prisma errors to staff.
+
+---
+
+## 10. COMMON DECISION DOCUMENT UPLOAD
+
+Create one dedicated section:
+
+**"Quyết định đề nghị xét chọn"**
+
+For UDN, this is the SINGLE common decision document covering the entire consolidated selected list.
+
+### UX
+
+Provide:
+
+- Upload/dropzone.
+- Selected file name.
+- File size.
+- Upload/validation status.
+- Preview when supported.
+- Replace before final forwarding.
+- Remove before final forwarding.
+- Error and retry handling.
+
+Display allowed file types and size limits from actual system configuration.
+
+Do not invent limits.
+
+Prefer PDF if the approved upload policy supports it.
+
+### Important technical rules
+
+In Real Mode:
+
+- Use actual secure Backend V2 file upload/storage endpoints.
+- Upload actual file bytes, not only a file name.
+- Only show upload success after the server confirms storage.
+- Preserve the validated attachment reference.
+- Support authorized preview/download.
+- Do not use public unrestricted document URLs.
+- Do not claim a local browser File object is a durably stored decision document.
+
+In Demo Mode:
+
+- Use a clearly synthetic decision attachment.
+- Support realistic local demonstration interactions.
+- Do not upload synthetic files to the actual production database.
+- Clearly distinguish simulated upload success from real persistence.
+
+### After forwarding
+
+The official document becomes read-only.
+
+Do not show Replace/Delete controls.
+
+---
+
+## 11. FINAL CONFIRMATION EXPERIENCE
+
+This is the most important UX interaction.
+
+Use a single, clear confirmation dialog.
+
+Do not stack multiple modals.
+
+### Suggested dialog title
+
+**"Xác nhận chuyển danh sách lên Thành phố"**
+
+### Contents
+
+Display:
+
+- School Review Unit.
+- Award season.
+- Actual selected application count.
+- Institution breakdown.
+- Attached decision file.
+- Any relevant validation warnings.
+
+Suggested confirmation copy:
+
+"Bạn sắp chuyển danh sách gồm [count] hồ sơ lên cấp Thành phố. Danh sách và quyết định đính kèm sẽ được khóa sau khi chuyển thành công."
+
+Show:
+
+"Thao tác này chỉ được thực hiện một lần trong mùa xét."
+
+### Buttons
+
+Secondary:
+
+**"Quay lại kiểm tra"**
+
+Primary:
+
+**"Xác nhận chuyển Thành phố"**
+
+Do not use vague buttons like "OK" or "Hoàn tất" without the operation's meaning.
+
+### Request handling
+
+While forwarding:
+
+- Prevent accidental repeated UI submission.
+- Show a meaningful pending state.
+- Keep user context.
+- Do not navigate away before confirmation.
+- Do not show success prematurely.
+
+Use actual server idempotency behavior.
+
+Frontend disabling alone is not sufficient.
+
+If a network failure occurs after server commit, query canonical batch status before presenting a retry.
+
+Do not create a second batch just because the client did not receive the first response.
+
+---
+
+## 12. SUCCESSFUL FORWARDING STATE
+
+After the backend confirms a successful forwarding, replace the editable draft UI with a read-only completed view.
+
+Suggested title:
+
+**"Đã chuyển danh sách lên Thành phố"**
+
+Display:
+
+- Actual forwarding timestamp.
+- Submitted-by account.
+- Batch reference.
+- Exact selected application count.
+- Institution breakdown.
+- Official decision document.
+- Forwarded application list.
+- City intake status if actually recorded.
+
+Allow authorized users to:
+
+- Open a forwarded application.
+- View the final list.
+- Preview/download the decision.
+- Inspect forwarding history.
+
+Do not present a second Forward button.
+
+Do not allow editing of the submitted membership or decision.
+
+Do not invent City acceptance or assignment if those operations have not occurred.
+
+---
+
+## 13. DUPLICATE AND CONCURRENCY HANDLING
+
+The UI must handle:
+
+- Double-click.
+- Network timeout.
+- Repeated browser request.
+- Page refresh.
+- Multiple tabs.
+- Two simultaneous sessions of the shared UDN account.
+- Another reviewer session forwarding first.
+- Batch version conflict.
+- Already-forwarded responses.
+
+### Correct UX
+
+If already forwarded:
+
+Show the canonical forwarded batch.
+
+Do not treat an idempotent retry as a second successful submission.
+
+If current draft is outdated:
+
+Show a clear conflict message and refresh from the server.
+
+Do not silently overwrite another session's changes.
+
+If the user cannot determine whether a forwarding succeeded:
+
+Read batch status before suggesting another attempt.
+
+Do not fabricate success or failure.
+
+---
+
+## 14. CITY INTAKE VISIBILITY
+
+Provide minimal integration with the EXISTING authorized City intake interface.
+
+When a School batch has been forwarded, the City Manager should be able to inspect:
+
+- Forwarding School Review Unit.
+- Season.
+- Batch.
+- Selected applications.
+- Common decision document.
+- Actual forwarding time.
+
+Preserve existing City assignment flow.
+
+Do not build an additional City intake system.
+
+City Officers may access the decision through the forwarded application or batch only when authorized.
+
+The Committee may access the same decision under existing permissions.
+
+Do not implement SRW-4 City/Committee redesign in this phase.
+
+Only integrate the necessary read-only batch visibility.
+
+---
+
+## 15. KEEP THE NEW SHARED DOSSIER UI
+
+SRW-2 established the goal of reusing the Student dossier presentation for staff.
+
+Preserve that direction.
+
+A School Officer should be able to:
+
+Open the selected application
+→ Inspect its familiar Student dossier
+→ View the School recommendation
+→ Return to the selected list.
+
+Preserve filters, pagination and selection context.
+
+Do not create another dossier renderer for batch preparation.
+
+Do not place large forwarding controls inside each criterion or evidence card.
+
+The batch screen is the single location for final forwarding.
+
+---
+
+## 16. NO UNNECESSARY WORKFLOW COMPLEXITY
+
+The customer specifically requested a simpler product.
+
+Avoid introducing:
+
+- Multi-stage batch approval workflows.
+- Separate UDN approval level.
+- Eight different member-institution submissions.
+- ResolutionCase.
+- Escalation.
+- Formal meeting procedures.
+- Artificial officer questioning.
+- New Committee voting system.
+- Complex forwarding wizard.
+- Redundant confirmation screens.
+
+The workflow should feel like:
+
+**Review applications → Prepare list → Attach decision → Confirm once.**
+
+Keep the information hierarchy clear.
+
+---
+
+## 17. DEMO MODE — FULLY INTERACTIVE
+
+The 5TOT frontend permanently supports Interactive Demo Mode.
+
+Implement deterministic demo scenarios:
+
+### S3-01 — One UDN batch
+
+One batch belongs to `unit-udn` for the selected season.
+
+### S3-02 — Multiple member institutions
+
+The selected list contains valid applications from several of the eight UDN member institutions.
+
+Original institution labels remain accurate.
+
+### S3-03 — Institution filter
+
+Changing the institution filter does not change the underlying batch identity or clear other selected applications.
+
+### S3-04 — Selection
+
+Add and remove eligible applications from the draft according to approved rules.
+
+### S3-05 — Missing decision
+
+Final forwarding is unavailable until a valid synthetic decision is attached.
+
+### S3-06 — Decision preview
+
+The synthetic decision attachment can be inspected.
+
+Do not render an empty or broken file preview.
+
+### S3-07 — Final confirmation
+
+Show correct selected count, institution breakdown and decision attachment.
+
+### S3-08 — Forward once
+
+Confirming forwards the single demo batch.
+
+### S3-09 — Duplicate prevention
+
+Trying to forward again shows the canonical completed state.
+
+### S3-10 — Refresh/revisit
+
+Returning to the School workspace shows the forwarded state.
+
+### S3-11 — City intake
+
+City Manager can see the forwarded batch in Demo.
+
+### S3-12 — Other School isolation
+
+Another School Review Unit cannot modify the UDN batch.
+
+### S3-13 — Empty selection
+
+An empty selected list cannot be forwarded.
+
+### S3-14 — Invalid application
+
+An out-of-scope or incomplete application is rejected by validation.
+
+### S3-15 — Demo reset
+
+Reset restores initial batch draft state predictably.
+
+Do not introduce a separate duplicate batch business engine for Demo.
+
+Reuse canonical pure validation rules wherever practical.
+
+---
+
+## 18. REAL MODE — NO FAKE SUCCESS
+
+Real Mode must use the actual backend contracts.
+
+No simulated successful forwarding.
+
+No synthetic decision attachment.
+
+No fake City intake.
+
+No silent Demo fallback.
+
+If the backend is offline:
+
+- Show a truthful unavailable state.
+- Preserve accessible read-only UI where real data is already available.
+- Do not pretend changes have been stored.
+- Do not queue an invisible forwarding action that cannot be confirmed.
+
+If an expected SRW-1 API is absent or incomplete, record that as an integration blocker.
+
+Do not create a second frontend-only production forwarding mechanism.
+
+---
+
+## 19. RESPONSVIE UX — ZERO BREAKAGE
+
+The frontend previously experienced width problems in Staff and Committee tables.
+
+Responsive reliability is mandatory.
+
+Verify:
+
+- 320px.
+- 360px.
+- 390px.
+- 430px.
+- 768px.
+- 1024px.
+- 1280px.
+- 1440px.
+- 1660px.
+- 1920px.
+
+### Desktop
+
+Use available main content width.
+
+Provide:
+
+- Compact summary metrics.
+- Readable selected list.
+- Institution filter.
+- Common decision section.
+- Clearly located final action.
+
+Avoid excessive blank space.
+
+Do not force content into a narrow max-width container when the workspace can accommodate a wider table.
+
+### Tablet
+
+Use adaptive list/table layout.
+
+Do not compress long university names into tiny columns.
+
+Ensure attachment controls and final action remain readable.
+
+### Mobile
+
+Use stacked application cards when a table would become unreadable.
+
+Display:
+
+- Student.
+- Institution.
+- Recommendation.
+- Selection state.
+- Relevant action.
+
+Place the decision attachment section beneath the list.
+
+Use a full-width final confirmation dialog or safe mobile sheet.
+
+Respect safe areas.
+
+Do not hide primary actions beneath sticky navigation.
+
+### Mandatory fixes
+
+No:
+
+- Horizontal page overflow.
+- Clipped selected-list controls.
+- Overlapping buttons.
+- Crushed table columns.
+- Hidden file-upload actions.
+- Inaccessible modal Close button.
+- Scroll traps.
+- Overlapping AI Companion.
+- Overlapping Demo persona selector.
+- Broken evidence viewer.
+
+Use correct responsive CSS architecture.
+
+Do not conceal defects using global overflow-x hidden.
+
+---
+
+## 20. MODAL, DRAWER AND UPLOAD RELIABILITY
+
+Test:
+
+- Open confirmation dialog.
+- Close with X.
+- Close with Cancel.
+- Escape when safe.
+- Correct focus restoration.
+- Proper modal focus trap.
+- No duplicate backdrops.
+- No ghost overlays.
+- No invisible click-blocking layers.
+- No accidental loss of selected applications.
+- No accidental loss of uploaded decision.
+- Retry failed upload.
+- Remove draft attachment.
+- Replace draft attachment.
+- Preview decision.
+- Close preview.
+- Return to previous state.
+
+The final confirmation should not close and report success before the backend confirms the operation.
+
+If the user dismisses the dialog, no forwarding should occur.
+
+---
+
+## 21. ACCESSIBILITY AND CLARITY
+
+Use clear Vietnamese business terminology.
+
+Recommended labels:
+
+- "Danh sách đề nghị".
+- "Đã sơ duyệt".
+- "Được đề nghị".
+- "Cần xử lý".
+- "Quyết định đính kèm".
+- "Kiểm tra danh sách".
+- "Chốt và chuyển Thành phố".
+- "Đã chuyển Thành phố".
+
+Avoid confusing:
+
+- Official recognition.
+- School recommendation.
+- Criterion assessment.
+- Batch selection.
+- Final forwarding.
+
+Use accessible labels and focus states.
+
+No relying solely on color.
+
+Keep touch controls comfortably sized.
+
+Avoid forcing experienced officers through introductory tours.
+
+---
+
+## 22. SECURITY AND AUTHORIZATION
+
+Frontend permission checks improve UX, but backend authorization remains authoritative.
+
+School Officer:
+
+- Own School Review Unit only.
+- Authorized to prepare its unit's draft.
+- UDN shared reviewer handles `unit-udn`.
+- Cannot modify another School's batch.
+
+City Manager:
+
+- Read authorized incoming batch data.
+- Continue existing intake and assignment.
+
+City Officer:
+
+- Read forwarded application information within assignment scope.
+
+Committee:
+
+- Read authorized School decision and application information.
+- No School batch mutation.
+
+Student:
+
+- No School forwarding permissions.
+- No unauthorized access to private decision documents.
+
+Admin:
+
+- Do not assume Admin can perform School forwarding.
+
+Do not leak batch information through guessed IDs or attachment URLs.
+
+---
+
+## 23. KEEP INDIVIDUAL AND COLLECTIVE SEPARATE
+
+School forwarding batches include Individual Student applications only.
+
+Individual applications use the five official criteria.
+
+Collective applications:
+
+- Use TT01–TT04.
+- Submit directly to City.
+- Do not enter School preliminary forwarding batches.
+
+Do not introduce a Collective School batch.
+
+Do not modify existing Collective business rules.
+
+Preserve the existing Committee Collective UI.
+
+---
+
+## 24. AI BEHAVIOR
+
+AI is not the main focus of SRW-3.
+
+Preserve existing AI capabilities but keep them restrained.
+
+Do not:
+
+- Automatically open AI Companion.
+- Add AI suggestions to every selected list row.
+- Allow AI to select recommended applications automatically.
+- Allow AI to forward the batch.
+- Allow AI to replace the official decision file.
+- Use AI preliminary eligibility as a substitute for School's actual recommendation.
+
+AI may provide a read-only summary of the selected list when requested.
+
+It cannot modify batch membership or submit the list autonomously.
+
+---
+
+## 25. GOLDEN FRONTEND AND SOURCE PROTECTION
+
+Preserve the historical 348-file Golden Frontend reference and the current SRW-2 checkpoint.
+
+Before editing:
+
+- Record the actual Git/source baseline.
+- Inspect current working tree.
+- Create a recoverable checkpoint.
+- Identify intended files.
+
+Do not:
+
+- Rewrite App.tsx.
+- Rebuild the frontend.
+- Change unrelated Student components.
+- Replace the existing sidebar.
+- Introduce a second batch architecture.
+- Modify unrelated AI features.
+- Rewrite original Golden Manifest checksums automatically.
+
+After editing:
+
+- List all intentional changes.
+- Verify unrelated files remain unchanged.
+- Run existing regression tests.
+- Preserve both original and current recovery checkpoints.
+
+---
+
+## 26. IMPLEMENTATION CHECKPOINTS
+
+### SRW-3A — Contract Integration
+
+Inspect actual SRW-1 routes, DTOs and batch state.
+
+Implement typed frontend adapters.
+
+Acceptance:
+
+- Correct API capability mapping.
+- No invented Real Mode success.
+- Demo/Real isolation.
+- No duplicate forwarding adapter.
+
+### SRW-3B — School List and Selection
+
+Implement the clean selected-list screen.
+
+Acceptance:
+
+- Correct filtering.
+- Correct counts.
+- Correct membership.
+- Original institution preserved.
+- Shared UDN batch identity.
+
+### SRW-3C — Decision Attachment
+
+Implement common document upload/preview.
+
+Acceptance:
+
+- One primary decision attachment.
+- Appropriate validation.
+- Demo works.
+- Real uses actual secure storage contract.
+
+### SRW-3D — Final Confirmation and Locking
+
+Implement the final confirmation and post-forwarding state.
+
+Acceptance:
+
+- One successful forwarding.
+- Proper conflicts.
+- No duplicate City intake.
+- Locked completed batch.
+
+### SRW-3E — City Visibility and Full UX Hardening
+
+Integrate minimal authorized City batch visibility.
+
+Run responsive, interaction and regression checks.
+
+Acceptance:
+
+- Full Demo journey works.
+- No layout defects.
+- No broken Student/School/City workflows.
+
+Do not report the entire phase PASS if any checkpoint remains incomplete.
+
+---
+
+## 27. TESTING
+
+Implement tests for:
+
+### Business UI
+
+- Correct UDN batch identity.
+- Eight institution mapping.
+- Institution filtering.
+- Selection retention across filters.
+- Accurate count aggregation.
+- Eligible application selection.
+- Missing decision validation.
+- Valid decision attachment.
+- Final confirmation.
+- Forwarded read-only state.
+- Duplicate forwarding handling.
+- Concurrent update conflict.
+- City intake visibility.
+- Independent School isolation.
+- Collective exclusion.
+
+### Interaction
+
+- Search.
+- Filter.
+- Open application.
+- Return to list.
+- Upload.
+- Remove.
+- Replace.
+- Preview.
+- Confirm.
+- Cancel.
+- Retry.
+- Reload.
+- Demo reset.
+
+### Security
+
+- School scope.
+- Cross-unit access.
+- Staff role boundaries.
+- Private document access.
+- No Student mutation permissions.
+- No fake Admin forwarding authority.
+
+### Responsive
+
+Verify actual browser interactions at every specified viewport.
+
+Capture screenshots at 390px, 768px, 1440px and 1660px.
+
+Also inspect 320px and 1920px.
+
+### Regression
+
+Run:
+
+- Frontend strict TypeScript.
+- Production build.
+- Existing frontend tests.
+- Shared dossier tests.
+- School review tests.
+- City intake tests.
+- Collective workflow tests.
+- Demo/Real separation tests.
+- FSD architecture audit.
+- Circular dependency checks.
+- Source-size audit.
+- Golden Frontend intentional-diff audit.
+
+If browser testing is unavailable, report NOT VERIFIED.
+
+Do not claim responsive PASS based only on build success.
+
+---
+
+## 28. REQUIRED DELIVERY REPORT
+
+Provide:
+
+A. Actual SRW-1 API integration status.
+
+B. Actual SRW-2 shared dossier status.
+
+C. School forwarding UX before/after.
+
+D. Selected-list implementation.
+
+E. UDN institution filtering and batch identity.
+
+F. Decision document upload and preview.
+
+G. Final forwarding confirmation.
+
+H. Post-forwarding read-only state.
+
+I. Duplicate forwarding behavior.
+
+J. City intake visibility.
+
+K. Demo scenario results S3-01 to S3-15.
+
+L. Real Mode limitations and integration blockers.
+
+M. Popup/overlay interaction verification.
+
+N. Responsive verification per viewport.
+
+O. Screenshots or explicit NOT VERIFIED status.
+
+P. Exact new and modified files.
+
+Q. Golden Frontend preservation.
+
+R. TypeScript, build and test results.
+
+S. Remaining defects.
+
+T. Final verdict: PASS / PARTIAL / BLOCKED.
+
+Clearly distinguish:
+
+- UI implemented.
+- Demo tested.
+- Real API wired.
+- Actual database tested.
+- Actual private storage tested.
+
+Do not claim real forwarding is operational if the database remains offline.
+
+---
+
+## 29. HARD STOP
+
+STOP after SRW-3.
+
+Do not automatically proceed to SRW-4.
+
+Do not:
+
+- Rewrite School review business rules.
+- Restore individual School forwarding.
+- Create separate UDN member batches.
+- Create a second batch backend.
+- Change City Officer assignment workflow.
+- Implement ResolutionCase processing.
+- Modify Committee final decisions.
+- Implement new AI functionality.
+- Reconnect Supabase.
+- Execute database migrations.
+- Deploy to production.
+- Automatically update Golden Manifest.
+
+## FINAL NORTH STAR
+
+The School Officer opens the existing School workspace.
+
+Reviews the familiar Student dossiers.
+
+Sees a clear consolidated list of recommended applications.
+
+For UDN, the list combines applications from its eight distinct member institutions.
+
+The Officer attaches ONE common official decision document.
+
+The Officer verifies the exact selected list.
+
+The Officer clicks:
+
+**"Chốt và chuyển Thành phố"**
+
+The backend confirms ONE successful forwarding operation.
+
+The system displays a clean, immutable forwarded summary.
+
+City can inspect the submitted applications and official decision.
+
+No duplicate forwarding.
+
+No unnecessary extra stages.
+
+No confusing UI.
+
+No fictional success states.
+
+**SUCCESS = A SIMPLE, CUSTOMER-VALIDATED SCHOOL FORWARDING EXPERIENCE WITH ONE LIST, ONE DECISION AND ONE FINAL SUBMISSION, BUILT ON REAL BACKEND CONTRACTS AND VERIFIED RESPONSIVE UI.**

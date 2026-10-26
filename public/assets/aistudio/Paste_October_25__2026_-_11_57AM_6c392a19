@@ -1,0 +1,1539 @@
+# 5TOT ĐÀ NẴNG — LEAN-2
+## PRODUCTION DIRECT INLINE HUMAN REVIEW & SIMPLIFIED DOSSIER ASSESSMENT
+
+**Priority:** P0 — Core Review Experience Refactor  
+**Execution:** VERIFY BASELINE → SOURCE AUDIT → IMPLEMENT → INTEGRATE → TEST → RESPONSIVE QA → REPORT  
+**Implementation Authorization:** YES — Targeted production code changes  
+**Scope:** School and City Individual Application Review, shared dossier presentation, human assessment state projection and eligibility aggregation  
+**Out of Scope:** LEAN-3 through LEAN-6
+
+**Frontend:** React + Vite + Strict TypeScript + Feature-Sliced Design  
+**Backend:** Existing Node.js + Express + Prisma/PostgreSQL Modular Monolith
+
+---
+
+# 1. MISSION
+
+LEAN-1 focused on simplifying Student declarations.
+
+LEAN-2 must now make reviewing those declarations equally straightforward.
+
+The customer has repeatedly compared the current 5TOT interface against the Central Youth Union's online award selection systems.
+
+Although the current 5TOT interface looks modern, its operational UX has become unnecessarily complicated.
+
+Current problems include:
+
+- Excessive intermediate review statuses.
+- Too many separate review actions.
+- Criterion-by-criterion navigation.
+- Large floating review toolbars.
+- Separate evidence approval controls.
+- Redundant review completion buttons.
+- Confusing review progress.
+- Excessive nested cards.
+- Poor utilization of desktop screen space.
+- Review actions far away from the declaration being assessed.
+- Too many overlapping panels.
+- Responsive layout problems.
+- AI-style technical wording.
+
+The customer wants a LEAN review workflow.
+
+**A reviewer opens the dossier, reads the Student declaration, inspects supporting evidence, clicks Đạt or Không đạt, and continues to the next declaration.**
+
+No unnecessary wizard.
+
+No forced navigation.
+
+No artificial review steps.
+
+No multiple confirmations for the same assessment.
+
+Preserve a professional, premium and responsive interface.
+
+**LEAN-2 MUST IMPLEMENT THIS EXPERIENCE IN ACTUAL PRODUCTION SOURCE CODE.**
+
+Do not stop after writing another UX audit.
+
+---
+
+# 2. MANDATORY BASELINE VERIFICATION
+
+Before implementation, inspect the actual current source.
+
+Read:
+
+- Corrected LEAN-0.1 business contract.
+- LEAN-0.1 Review State Truth Table.
+- Corrected LEAN Implementation Plan.
+- Actual LEAN-1 implementation report, if available.
+- Current Student declaration components.
+- Current shared dossier renderer.
+- Current School review components.
+- Current City review components.
+- Current backend assessment APIs.
+- Current state selectors and eligibility aggregation.
+- Current Demo and Real adapters.
+
+Do not assume LEAN-1 was successfully implemented merely because LEAN-1 was previously requested.
+
+Confirm which parts actually exist in the current workspace.
+
+If LEAN-1 is incomplete:
+
+- Identify affected dependencies.
+- Continue independent safe LEAN-2 work.
+- Do not create a duplicate declaration model.
+- Do not claim end-to-end integration success.
+- Report exact blockers.
+
+Previously reported files include:
+
+- `src/staff/reviewTypes.ts`
+- `src/staff/reviewSelectors.ts`
+- `src/staff/components/review/OfficerReviewWorkspace.tsx`
+- `src/staff/components/review/InlineRowReviewControls.tsx`
+- `src/staff/components/review/CriterionReviewPanel.tsx`
+- `src/staff/components/review/useOfficerReviewMutations.ts`
+
+These are discovery hints only.
+
+Inspect the actual repository before modifying anything.
+
+Record the current recoverable source baseline.
+
+---
+
+# 3. NON-NEGOTIABLE BUSINESS CONTRACT
+
+The following are five independent dimensions:
+
+1. Human review completion.
+2. Criterion eligibility result.
+3. School recommendation.
+4. City assessment and authorized completion.
+5. Committee official recognition.
+
+Never merge these dimensions into one misleading status.
+
+## Example
+
+A dossier has:
+
+- Đạo đức tốt: Đạt.
+- Học tập tốt: Đạt.
+- Thể lực tốt: Không đạt.
+- Tình nguyện tốt: Đạt.
+- Hội nhập tốt: Đạt.
+
+Correct display:
+
+**Đã xét: 5/5 tiêu chí**
+
+**Đạt: 4/5 tiêu chí**
+
+**Không đạt: 1/5 tiêu chí**
+
+**Kết quả đánh giá: Chưa đáp ứng đủ 5 tiêu chí**
+
+This dossier can be fully reviewed even though it does not meet all five criteria.
+
+Do not leave it permanently "Đang xét".
+
+Do not automatically create a School "Không đề nghị" decision.
+
+Do not automatically create a City official completion decision.
+
+Do not automatically create a Committee decision.
+
+Human decision authority must remain intact.
+
+---
+
+# 4. PRIMARY UX — ONE CONTINUOUS DOSSIER
+
+The default review workspace must display the complete submitted Individual Student dossier.
+
+## Section A — Compact Student profile
+
+At the top:
+
+- Student name.
+- Student ID.
+- Original institution.
+- Class/cohort where relevant.
+- Award season.
+- Actual application lifecycle status.
+- Compact review progress.
+
+Preserve the immutable submitted personal profile snapshot.
+
+Do not show multiple nested personal-information cards.
+
+Do not replace the original institution with the shared UDN Review Unit.
+
+## Section B — Five criteria
+
+Display the five criteria in one continuous vertically scrollable document:
+
+1. Đạo đức tốt.
+2. Học tập tốt.
+3. Thể lực tốt.
+4. Tình nguyện tốt.
+5. Hội nhập tốt.
+
+The reviewer should be able to read the entire dossier normally by scrolling.
+
+Do not force only one active criterion to be visible.
+
+Do not automatically zoom into each criterion.
+
+Do not switch to a separate detailed workspace merely to view a declaration.
+
+Allow optional direct navigation to a criterion through compact anchors where genuinely useful.
+
+Normal scrolling remains the primary reading behavior.
+
+---
+
+# 5. MODERN INLINE REVIEW TABLE
+
+The desktop layout should be inspired by the operational simplicity of Central-level award systems.
+
+Use a clear review table or equivalent accessible row-based layout.
+
+Recommended columns:
+
+| Nội dung / Tiêu chuẩn | Kê khai của sinh viên | Minh chứng | Đánh giá |
+|---|---|---|---|
+| Requirement | Student declaration | Evidence preview | Pass / Fail |
+
+The implementation should use modern styling, not copy the old system's outdated appearance.
+
+## Content hierarchy
+
+Criterion heading.
+
+Requirement or qualifying form.
+
+Numbered declaration rows.
+
+Evidence associated with each declaration.
+
+Direct assessment controls.
+
+Criterion result summary.
+
+Avoid repeating the same criterion title in multiple permanent navigation regions.
+
+Avoid showing a large badge for every minor system status.
+
+Use restrained typography, spacing and borders.
+
+---
+
+# 6. DIRECT PASS / FAIL — ONE PRIMARY ACTION PER DECLARATION
+
+At the correct canonical human assessment scope, show:
+
+**Đạt** / **Không đạt**
+
+An unreviewed row should make the available choices immediately obvious.
+
+A reviewed row should clearly show the selected result.
+
+Example:
+
+Unreviewed:
+
+`Đạt | Không đạt`
+
+Passed:
+
+`✓ Đạt | Không đạt`
+
+Failed:
+
+`Đạt | ✕ Không đạt`
+
+These are conceptual states, not required literal markup.
+
+## Required behavior
+
+When the reviewer clicks "Đạt":
+
+1. Issue the actual authorized assessment mutation.
+2. Show a subtle pending state.
+3. Wait for backend confirmation.
+4. Update the persisted human judgment.
+5. Recalculate appropriate derived statuses.
+6. Keep scroll position and reading context.
+
+Do not require another "Save assessment" or "Complete row" button when the actual canonical API already supports direct persistence.
+
+When the reviewer clicks "Không đạt":
+
+1. Record the actual human Fail judgment.
+2. Support the existing reason/comment contract.
+3. Ask for a reason only if required by the approved business rule.
+4. Avoid unnecessary full-screen dialogs.
+5. Save through the real backend.
+6. Update derived results.
+
+A compact inline reason editor is preferred when needed.
+
+Do not create a new mandatory explanation rule without authorization.
+
+## Editing a judgment
+
+If authorized:
+
+- Allow changing Pass to Fail.
+- Allow changing Fail to Pass.
+- Recalculate derived status.
+- Preserve audit attribution.
+- Respect concurrent modifications.
+- Respect lifecycle locks.
+
+Do not silently overwrite a newer review record.
+
+---
+
+# 7. REMOVE REDUNDANT REVIEW CONTROLS
+
+Audit the actual behavior of:
+
+- Evidence Pass / Fail.
+- Declaration Pass / Fail.
+- Requirement completion.
+- Criterion completion.
+- Whole-review completion.
+
+These actions must not automatically be considered duplicates merely because they look similar.
+
+Determine whether each represents:
+
+- Independent human judgment.
+- Derived eligibility data.
+- Audit metadata.
+- Technical synchronization.
+- A genuine authorized workflow transition.
+
+## Simplification rule
+
+If a control only duplicates an already persisted human decision, remove it from the ordinary reviewer flow.
+
+If a control is required for genuine authorization or attestation, preserve it but present it at the proper context with clear Vietnamese wording.
+
+## Target
+
+A reviewer must not have to:
+
+1. Mark evidence suitable.
+2. Mark the declaration suitable.
+3. Complete the declaration.
+4. Complete the requirement.
+5. Complete the criterion.
+
+when these are merely redundant representations of one assessment.
+
+Do not delete historical persisted review records.
+
+Do not rewrite Prisma schema just to hide a redundant UI button.
+
+If backend compatibility requires syncing a derived field, implement or reuse a well-defined transaction-safe contract.
+
+Do not scatter ad hoc client-side synchronization calls that can partially succeed and leave inconsistent states.
+
+---
+
+# 8. EVIDENCE VIEWING
+
+Evidence should be directly accessible from the declaration being reviewed.
+
+Example:
+
+**1. Tham gia Chiến dịch Mùa hè xanh năm 2026**
+
+Evidence:
+
+- Giấy xác nhận tham gia.pdf.
+- Hình ảnh hoạt động.jpg.
+
+Actions:
+
+- Xem PDF.
+- Xem ảnh.
+- Đạt.
+- Không đạt.
+
+## Required experience
+
+A reviewer can open the evidence without navigating away from the application.
+
+Use the existing secure PDF/image viewer.
+
+Preserve:
+
+- Zoom.
+- Pan where supported.
+- Rotation where supported.
+- Multi-file navigation.
+- File metadata.
+- Access authorization.
+- File version history.
+
+Evidence preview must not trigger an official approval automatically.
+
+Simply viewing evidence is not the same as assessing it.
+
+Avoid permanent oversized preview panes that unnecessarily shrink the dossier.
+
+Use an accessible preview overlay or space-efficient side-by-side view when appropriate.
+
+On desktop, allow rapid evidence comparison while retaining the relevant declaration context.
+
+On mobile, use a readable fullscreen viewer if necessary.
+
+Return the reviewer to the same row after closing the preview.
+
+---
+
+# 9. CORRECT REVIEW GRANULARITY
+
+This is a mandatory technical audit and implementation requirement.
+
+The existing backend may store assessments at multiple levels:
+
+- Evidence.
+- Declaration.
+- Requirement.
+- Criterion.
+- Officer review.
+
+Do not invent a new simplified boolean model.
+
+The desired frontend action must map to the actual authoritative persisted judgment.
+
+## If declaration-level judgments are canonical
+
+Use inline Pass/Fail for each declaration.
+
+## If requirement-level judgments are canonical
+
+Place the primary Pass/Fail control at the requirement level while showing its linked declarations beneath it.
+
+## If both are genuinely required
+
+Determine whether the same user action can safely capture both without losing independent business meaning.
+
+## If criterion-level attestation is required
+
+Keep a compact explicit action if verified necessary.
+
+Do not blindly delete the action because it adds a click.
+
+### Deliverable
+
+Document the exact data contract:
+
+- Human judgment identity.
+- Mutation endpoint.
+- Actor/stage.
+- Review scope.
+- Persisted status.
+- Derived summary source.
+- Correction behavior.
+- Conflict behavior.
+
+The reviewer UI must never display a fake Pass/Fail state disconnected from actual persisted records.
+
+---
+
+# 10. DERIVED REVIEW PROGRESS AND CRITERION ELIGIBILITY
+
+Implement or correct the existing derived review selectors according to LEAN-0.1.
+
+For each criterion, compute separately:
+
+## A. Review completeness
+
+Can the reviewer determine the outcome from the relevant human judgments and approved rules?
+
+## B. Eligibility result
+
+Does the criterion actually meet the requirements?
+
+## C. Outstanding supplementation
+
+Is an authorized correction request pending?
+
+These dimensions are not interchangeable.
+
+## Required displayed states
+
+For review progress:
+
+- Chưa xét.
+- Đang xét.
+- Đã xét.
+
+For eligibility result:
+
+- Chưa xác định.
+- Đạt.
+- Không đạt.
+
+Supplementation can be shown as contextual:
+
+- Cần bổ sung.
+- Đã bổ sung — Chờ xét lại.
+
+Do not display all statuses simultaneously if a compact primary representation will suffice.
+
+### Correct failure handling
+
+A completed criterion may be Fail.
+
+A complete review may have 4/5 passing criteria.
+
+No automatic Pass.
+
+No automatic School recommendation.
+
+No automatic City official attestation.
+
+No automatic Committee recognition.
+
+---
+
+# 11. ALL_REQUIRED / AT_LEAST_N / ONE_OF
+
+Correct eligibility aggregation is a primary acceptance gate.
+
+## ALL_REQUIRED
+
+Every mandatory child requirement must be satisfied.
+
+However, whether a child requirement is satisfied must follow its own actual rule.
+
+If a child requirement permits multiple declarations and needs one qualifying achievement:
+
+- Declaration A: Pass.
+- Declaration B: Fail.
+
+The child requirement may still Pass because A satisfies it.
+
+Do not fail the entire group merely because an additional declaration failed.
+
+## AT_LEAST_N
+
+Count the correct approved qualification unit:
+
+- Distinct requirements.
+- Distinct accepted alternatives.
+- Valid achievements.
+
+Use whichever counting model the actual regulation and canonical criteria define.
+
+Do not double-count multiple declarations under one requirement when the rule requires distinct conditions.
+
+## ONE_OF
+
+One qualifying alternative may be sufficient.
+
+If the Student submits only one qualifying alternative, do not demand assessments on unused alternatives.
+
+## Multiple voluntary declarations
+
+Preserve all additional declarations.
+
+Do not mark them automatically Pass.
+
+Do not delete or suppress evidence.
+
+Distinguish minimum condition satisfaction from unresolved judgments on additional submitted items, according to the verified business completion contract.
+
+## Conclusive Fail
+
+Do not treat lack of a Pass as automatically equivalent to a confirmed Fail.
+
+A requirement becomes conclusively failed only where the approved rules and available human judgments justify that result.
+
+Write targeted unit tests for:
+
+- Unreviewed.
+- Partial review.
+- Complete Pass.
+- Complete Fail.
+- One accepted declaration among failures.
+- Optional alternatives not submitted.
+- Multiple submissions under one form.
+- Pending supplement.
+- Supplement returned.
+- Corrected human judgment.
+
+---
+
+# 12. LEAN CRITERION HEADERS
+
+Each criterion should show a clear compact summary.
+
+Example:
+
+**3. Thể lực tốt**
+
+Secondary:
+
+"Đã xét 2/2 nội dung"
+
+Result:
+
+"Đạt"
+
+If the result is not determined:
+
+"Đang xét"
+
+If all applicable assessments are complete but the criterion fails:
+
+"Không đạt"
+
+Avoid large decorative result cards.
+
+Avoid green success banners for every subrequirement.
+
+Avoid oversized progress visualizations.
+
+Use simple status text and restrained color cues.
+
+A reviewer should understand the criterion result in one glance.
+
+---
+
+# 13. LEAN DOSSIER SUMMARY
+
+At the top of the review screen, show only essential metrics.
+
+Example:
+
+**Đã xét: 3/5 tiêu chí**
+
+**Đạt: 2 tiêu chí**
+
+**Không đạt: 1 tiêu chí**
+
+Only show these values where they accurately reflect persisted human review records and the correct applicable criteria.
+
+Do not use 5 or 6 separate KPI cards.
+
+Prefer one compact summary row.
+
+If the School recommendation already exists, show it separately.
+
+If the City has completed its review, show the actual authorized stage result.
+
+Do not use AI advice to populate official review counters.
+
+---
+
+# 14. REMOVE FORCED CRITERION NAVIGATION
+
+Inspect all current navigation layers:
+
+- Top criterion tabs.
+- Left criterion sidebar.
+- Active criterion selection state.
+- Previous/Next review buttons.
+- Sticky review toolbar.
+- Inspector panel.
+- Automatic focus and scrolling.
+
+Remove unnecessary duplication.
+
+## Target interaction
+
+The reviewer scrolls naturally through the complete dossier.
+
+They may click a compact criterion anchor to jump to a section.
+
+They do not need to select the criterion separately before assessing a declaration.
+
+### Critical bug to eliminate
+
+A floating toolbar must never indicate:
+
+"Tiêu chí 3 — Thể lực tốt"
+
+while the visible review controls belong to a different criterion.
+
+Prefer removing the complex active-criterion toolbar.
+
+Do not maintain multiple competing active-criterion state stores.
+
+Do not jump the page to another criterion after saving Pass/Fail.
+
+Do not force the next criterion to open automatically.
+
+---
+
+# 15. SIMPLIFY THE INSPECTOR AND AI UI
+
+The current workspace may contain:
+
+- Dossier.
+- Review inspector.
+- Notes.
+- History.
+- AI Copilot.
+- Criteria sidebar.
+- Floating action controls.
+
+The customer does not want to see a multi-panel workflow console.
+
+## Primary content
+
+Student dossier and direct review controls.
+
+## Secondary content
+
+- Review history.
+- Internal notes.
+- AI suggestions.
+- Additional metadata.
+
+Make secondary content available on demand rather than permanently consuming space.
+
+### AI
+
+AI remains optional.
+
+It may:
+
+- Summarize submitted content.
+- Suggest possible evidence mismatches.
+- Provide advisory analysis.
+
+It must NOT:
+
+- Click Pass/Fail.
+- Mark evidence officially accepted.
+- Conclude a review.
+- Forward an application.
+- Approve an award.
+
+Do not show AI advisory badges as if they were human judgments.
+
+---
+
+# 16. INTERNAL NOTES
+
+Internal notes may be useful but must not dominate the review workspace.
+
+Use a compact optional:
+
+"Ghi chú nội bộ"
+
+action associated with the correct review scope.
+
+Keep internal notes separate from Student-visible supplementation messages.
+
+Preserve:
+
+- Permissions.
+- Existing persistence.
+- Attribution.
+- History.
+- Data privacy.
+
+Do not automatically send internal notes to Students.
+
+No new generic case-management interface.
+
+---
+
+# 17. SUPPLEMENTATION ENTRY POINT
+
+LEAN-3 will comprehensively refactor the supplementation workflow.
+
+LEAN-2 should only ensure that the relevant reviewer entry point is correctly positioned.
+
+At a declaration or applicable requirement, provide:
+
+"Yêu cầu bổ sung"
+
+as a secondary action.
+
+It must preselect the current canonical scope where supported.
+
+Preserve the existing request submission logic.
+
+Do not rebuild the full supplementation system during LEAN-2.
+
+Do not automatically issue supplementation when a reviewer clicks "Không đạt".
+
+Do not invent a default supplementation deadline.
+
+---
+
+# 18. SCHOOL REVIEW EXPERIENCE
+
+Apply LEAN-2 to the actual School preliminary review interface.
+
+The School reviewer should:
+
+1. Open an application.
+2. Read the Student dossier.
+3. Inspect submitted evidence.
+4. Assess the applicable declarations.
+5. See automatically derived criterion progress and outcomes.
+6. Record the actual School recommendation through the existing authorized action when ready.
+
+The School recommendation must remain separate from criterion Pass/Fail.
+
+Do not begin the LEAN-4 recommendation list and forwarding redesign.
+
+Preserve:
+
+- Original institution.
+- School Review Unit scope.
+- UDN shared review access.
+- Supplementation.
+- Post-forwarding access restrictions.
+- School human judgment history.
+
+---
+
+# 19. CITY REVIEW EXPERIENCE
+
+Apply the same shared dossier and inline review controls to City review.
+
+The City reviewer should:
+
+1. Open an application from the shared City queue.
+2. See the original submitted dossier.
+3. See the School preliminary result.
+4. Independently assess the relevant declarations.
+5. Inspect evidence and supplementation versions.
+6. See accurate City review progress.
+7. Complete the actual authorized City review when permitted.
+
+## Critical independence rule
+
+A School Pass is not automatically a City Pass.
+
+A School Fail is not automatically a City Fail.
+
+City judgments must be independent.
+
+Do not overwrite School historical assessments.
+
+Do not reuse one shared mutable judgment record for both stages.
+
+## Shared City queue
+
+No mandatory individual Officer assignment.
+
+No new ResolutionCase.
+
+Authorized reviewers may access and review applications within their legitimate scope.
+
+Preserve concurrency protection.
+
+---
+
+# 20. COMMITTEE AND STUDENT READ-ONLY SAFETY
+
+The shared dossier renderer is used across multiple roles.
+
+When refactoring:
+
+## Student
+
+Displays submitted declarations and evidence.
+
+Must not see staff-only Pass/Fail controls.
+
+Must not see private staff notes.
+
+## Committee
+
+Displays the dossier and actual review outcomes.
+
+Must not accidentally receive School or City Officer assessment controls.
+
+Committee official recognition remains separate.
+
+## Submitted snapshot
+
+Preserve original Student-submitted personal information and declaration content.
+
+Do not mutate Student source records when an Officer records Pass/Fail.
+
+Do not alter original evidence files.
+
+Human reviews are recorded in the appropriate assessment layer.
+
+---
+
+# 21. COLLECTIVE REGRESSION
+
+LEAN-2 primarily targets Individual applications.
+
+Do not force the five Individual criteria into Collective TT01–TT04.
+
+Preserve:
+
+- Collective direct-to-City intake.
+- Collective criterion definitions.
+- Collective human review controls.
+- Collective supplementation.
+- Committee decisions.
+
+If reusable UI improvements can safely benefit Collective without changing its domain logic, document and apply only narrowly scoped shared presentation changes.
+
+Full Collective harmonization belongs to the later roadmap.
+
+---
+
+# 22. RESPONSIVE — NON-NEGOTIABLE
+
+Responsive behavior must be designed around the actual available content width.
+
+Test:
+
+320, 360, 390, 430, 768, 1024, 1280, 1440, 1660 and 1920 pixels.
+
+## Large desktop
+
+Use most of the available review content width.
+
+Preferred:
+
+- Requirement/declaration details.
+- Supporting evidence.
+- Pass/Fail controls.
+
+Sidebars must not steal excessive horizontal space.
+
+No phantom unused columns.
+
+## Laptop
+
+Maintain readable declaration values.
+
+Reduce secondary metadata.
+
+Avoid squeezed review buttons.
+
+## Tablet
+
+Transition intelligently to fewer columns or row-based presentation.
+
+Keep evidence and review actions visible together.
+
+## Mobile
+
+Render each declaration as a compact vertically arranged review block.
+
+Example:
+
+**1. Chiến dịch Mùa hè xanh**
+
+Tham gia từ ngày ... đến ngày ...
+
+Minh chứng: Xem PDF
+
+**Đánh giá: [Đạt] [Không đạt]**
+
+Do not render a four-column table that requires scrolling sideways to find Pass/Fail.
+
+No nested scrolling panels for the ordinary dossier.
+
+No sticky toolbar covering the bottom action.
+
+No floating AI or Demo control blocking important buttons.
+
+## Accessibility
+
+- Proper button labels.
+- Visible keyboard focus.
+- Keyboard operability.
+- Adequate contrast.
+- Comfortable touch targets.
+- Screen-reader-friendly status updates.
+- Accessible evidence viewer.
+- Clear disabled and pending-save states.
+
+---
+
+# 23. NATURAL VIETNAMESE UX WRITING
+
+Use straightforward Vietnamese administrative language.
+
+Prefer:
+
+- Hồ sơ sinh viên.
+- Nội dung kê khai.
+- Minh chứng.
+- Xem minh chứng.
+- Chưa xét.
+- Đạt.
+- Không đạt.
+- Đã xét.
+- Yêu cầu bổ sung.
+- Ghi chú nội bộ.
+- Kết quả sơ tuyển.
+- Kết quả thẩm định.
+
+Avoid:
+
+- Canonical.
+- Assessment engine.
+- Review scope key.
+- Read-only lifecycle.
+- Workflow pipeline.
+- ResolutionCase.
+- AI confidence.
+- Processing orchestrator.
+- Technical enum names.
+
+Do not overexplain simple actions.
+
+Do not fill the workspace with instructional paragraphs.
+
+The review interface should feel like a normal Student Association administrative system.
+
+---
+
+# 24. ACTUAL BACKEND INTEGRATION
+
+All human judgments must use real supported persistence operations.
+
+Inspect the current assessment APIs.
+
+Do not invent endpoints.
+
+Do not simulate persistence inside React state for Real Mode.
+
+## Pass/Fail mutation
+
+Must preserve:
+
+- Application ID.
+- Canonical review scope.
+- Correct School or City stage.
+- Authorized reviewer identity.
+- Actual persisted result.
+- Comment/reason as applicable.
+- Audit record.
+- Version/concurrency semantics.
+
+## Response handling
+
+- Loading: show local pending state.
+- Success: reflect confirmed saved judgment.
+- Failure: show a clear error and restore correct persisted state.
+- Conflict: refresh/reconcile according to the actual API contract.
+- Timeout: do not assume success.
+
+## Aggregation
+
+Derive summary counts and eligibility outcomes from authoritative records.
+
+If selectors are client-side, ensure they use the correct source and are not merely Demo-specific.
+
+When a server-owned business result exists, do not display a contradictory client-invented official result.
+
+If backend support is insufficient for the desired behavior, implement only a narrowly justified compatible backend fix with tests.
+
+Do not modify Prisma schema without separate authorization.
+
+Do not access live production data.
+
+---
+
+# 25. DEMO MODE AND REAL MODE
+
+## Demo
+
+Demonstrate:
+
+- Inline Pass/Fail.
+- Correct review counters.
+- Passing requirements.
+- Failing requirements.
+- ONE_OF.
+- Multiple declarations.
+- Optional unused forms.
+- School/City independent judgments.
+- Reassessment.
+- Accurate review history.
+
+Use coherent deterministic synthetic records.
+
+Changes must update actual Demo assessment state, not just button appearance.
+
+## Real
+
+Use authenticated production-oriented backend APIs.
+
+No silent fallback to Demo.
+
+No fake success.
+
+No fake official human judgment.
+
+No local-only approval state.
+
+Do not claim Real database verification if PostgreSQL was not tested in an authorized environment.
+
+---
+
+# 26. REQUIRED TEST MATRIX
+
+Implement and execute relevant automated tests.
+
+## IR01 — Full dossier
+
+All five Individual criteria are visible in one scrollable dossier.
+
+## IR02 — Inline actions
+
+Pass/Fail controls appear at the correct canonical review scope.
+
+## IR03 — Pass persistence
+
+Click Pass and verify actual saved judgment.
+
+## IR04 — Fail persistence
+
+Click Fail and verify actual saved judgment.
+
+## IR05 — Correct judgment
+
+Changing Pass to Fail updates the correct review record.
+
+## IR06 — No duplicate decision
+
+One human judgment does not require redundant confirmations.
+
+## IR07 — Evidence preview
+
+Evidence opens and closes without losing review context.
+
+## IR08 — No scroll jumps
+
+Saving an assessment does not unexpectedly move the reviewer.
+
+## IR09 — Five criteria
+
+All five sections and their applicable declarations are accessible.
+
+## IR10 — Review complete, all pass
+
+5/5 reviewed and 5/5 meeting requirements are shown correctly.
+
+## IR11 — Review complete, one fail
+
+5/5 reviewed but only 4/5 passed is representable.
+
+## IR12 — Partial review
+
+Review progress and eligibility remain distinct.
+
+## IR13 — ONE_OF
+
+One qualifying option satisfies the group according to approved rules.
+
+## IR14 — Unused alternatives
+
+Unused optional alternatives do not become mandatory outstanding work.
+
+## IR15 — Multiple declarations
+
+An accepted qualifying declaration can satisfy a requirement even if another optional declaration fails, where the rule permits.
+
+## IR16 — ALL_REQUIRED
+
+Every mandatory child requirement must meet its actual rule.
+
+## IR17 — Conclusive Fail
+
+The system records a confirmed failing criterion rather than treating every missing Pass as Fail.
+
+## IR18 — Pending supplement
+
+Pending supplementation does not produce a false Pass or completion.
+
+## IR19 — Supplement return
+
+Returned evidence is not automatically treated as approved.
+
+## IR20 — School and City independence
+
+City judgments do not overwrite School judgments.
+
+## IR21 — School recommendation
+
+A computed 5/5 result does not create an automatic recommendation.
+
+## IR22 — City completion
+
+Computed eligibility does not bypass a required City human attestation.
+
+## IR23 — Committee separation
+
+No Officer row action creates Committee recognition.
+
+## IR24 — Immutable dossier
+
+Staff assessments do not modify Student-submitted declarations.
+
+## IR25 — Authorization
+
+School Reviewers cannot assess unauthorized School Review Units.
+
+## IR26 — City authorization
+
+Only authorized City roles can assess City applications.
+
+## IR27 — Concurrent updates
+
+The system does not silently overwrite a newer conflicting assessment.
+
+## IR28 — Backend failure
+
+Failed saves do not appear successfully persisted.
+
+## IR29 — Demo isolation
+
+Demo judgments never affect Real Mode.
+
+## IR30 — Collective regression
+
+Collective TT01–TT04 remains functional.
+
+## IR31 — Responsive mobile
+
+Reviewing works at 390px without horizontal page overflow.
+
+## IR32 — Responsive desktop
+
+Reviewing works at 1440px with efficient content width.
+
+## IR33 — Keyboard
+
+Assessment controls are keyboard accessible.
+
+## IR34 — Human attribution
+
+Audit records preserve the correct reviewer and stage.
+
+## IR35 — Status consistency
+
+Dashboard/list and dossier counts use consistent legitimate definitions.
+
+---
+
+# 27. MANUAL BROWSER UAT
+
+Perform actual browser testing where possible.
+
+### Scenario A — School review, all Pass
+
+1. Sign in as School reviewer.
+2. Open the School review list.
+3. Open an Individual application.
+4. Verify the Student snapshot.
+5. Review all five criteria by scrolling.
+6. Open evidence.
+7. Mark applicable declarations Pass.
+8. Verify criterion summaries.
+9. Verify review progress.
+10. Verify no unnecessary completion button remains.
+
+### Scenario B — School review with Fail
+
+1. Open an application.
+2. Mark one applicable declaration Fail.
+3. Complete the remaining required assessments.
+4. Verify the criterion Fail outcome.
+5. Verify the review can still reach completion when all necessary assessments are resolved.
+6. Verify no automatic School recommendation is created.
+
+### Scenario C — Alternative requirement
+
+1. Open a dossier with one selected qualifying option.
+2. Review that option.
+3. Verify unused alternatives do not block completion.
+4. Verify additional declarations remain visible.
+
+### Scenario D — City independent review
+
+1. Sign in as City reviewer.
+2. Open the shared City queue.
+3. Open an authorized forwarded application.
+4. Verify School outcomes are visible as history.
+5. Record an independent City judgment.
+6. Verify School judgments remain unchanged.
+
+### Scenario E — Mobile
+
+1. Open the reviewer at 390px.
+2. Open a dossier.
+3. View evidence.
+4. Record Pass/Fail.
+5. Scroll through all five criteria.
+6. Verify no clipped actions or overlapping panels.
+
+### Scenario F — API error
+
+1. Simulate an API failure.
+2. Attempt an assessment.
+3. Verify no false saved state.
+4. Restore connectivity.
+5. Retry safely.
+6. Verify correct persisted result.
+
+---
+
+# 28. BEFORE / AFTER UX VERIFICATION
+
+Measure actual observed interaction complexity.
+
+Compare:
+
+- Opening a dossier.
+- Finding a declaration.
+- Viewing evidence.
+- Recording Pass.
+- Recording Fail.
+- Moving to another criterion.
+- Returning to application list.
+- Accessing internal notes.
+
+Report:
+
+- Required clicks.
+- Required navigation changes.
+- Modal count.
+- Forced workflow transitions.
+- Persistent toolbars.
+- Visible primary actions.
+- Responsive issues.
+
+Distinguish measured results from proposed targets.
+
+Do not fabricate a 71% improvement.
+
+Do not claim an observed reduction without actually running comparable scenarios.
+
+---
+
+# 29. VISUAL QA DELIVERABLES
+
+Capture real application screenshots if a browser is available.
+
+At minimum:
+
+1. School reviewer — full dossier, desktop.
+2. School reviewer — inline Pass/Fail, desktop.
+3. School reviewer — review completed with one Fail.
+4. City reviewer — independent review.
+5. ONE_OF with unused alternatives.
+6. Multiple declarations and evidence.
+7. Evidence preview.
+8. 1024px layout.
+9. 768px layout.
+10. 390px mobile layout.
+
+Check:
+
+- Information hierarchy.
+- Visual clarity.
+- Button placement.
+- Row density.
+- Text wrapping.
+- Status semantics.
+- Available content width.
+- Sticky elements.
+- Mobile touch usability.
+- Navigation consistency.
+
+Do not use generated mockups as evidence of actual implementation QA.
+
+---
+
+# 30. QUALITY GATES
+
+Run actual available verification:
+
+Frontend:
+
+- TypeScript typecheck.
+- Production build.
+- Review component tests.
+- Review selector tests.
+- Eligibility aggregation tests.
+- Role visibility tests.
+- Responsive/browser tests.
+
+Backend, if affected:
+
+- TypeScript typecheck.
+- Backend build.
+- Review authorization tests.
+- Assessment mutation tests.
+- Concurrency tests.
+- Audit attribution tests.
+
+Record:
+
+- Exact commands.
+- Number of passing tests.
+- Number of failed tests.
+- Any skipped tests.
+- Environment limitations.
+- Actual integration coverage.
+
+Do not claim production database verification based only on mocked tests.
+
+---
+
+# 31. CHANGE SAFETY
+
+Preserve:
+
+- Golden Frontend historical manifest.
+- Existing project architecture.
+- LEAN-1 Student declarations.
+- Submitted Student profile snapshots.
+- Shared dossier architecture.
+- School and City separate assessments.
+- Supplementation data and history.
+- UDN shared Review Unit.
+- School one-time forwarding.
+- Committee official decisions.
+- Collective direct City submission.
+- Analytics and exports.
+- Optional AI advisory features.
+
+Do not:
+
+- Rebuild the frontend.
+- Introduce a new review workflow engine.
+- Replace the backend architecture.
+- Introduce new reviewer assignments.
+- Restore ResolutionCase.
+- Change official eligibility thresholds.
+- Auto-approve applications.
+- Auto-recommend applications.
+- Auto-forward batches.
+- Auto-record City completion.
+- Auto-recognize awards.
+- Create database migrations without authorization.
+- Deploy.
+- Push or merge automatically.
+
+Only change the source required to implement and verify LEAN-2.
+
+---
+
+# 32. REQUIRED DELIVERABLES
+
+Create:
+
+`docs/lean/LEAN_2_IMPLEMENTATION_REPORT.md`
+
+The report must cover:
+
+1. Initial source baseline.
+2. LEAN-0.1 contract verification.
+3. LEAN-1 integration readiness.
+4. Previous review UX complexity.
+5. Actual canonical human assessment scope.
+6. New inline review component design.
+7. Removed or relocated redundant controls.
+8. Direct Pass/Fail persistence.
+9. Criterion eligibility aggregation.
+10. Review completion separation.
+11. ALL_REQUIRED and AT_LEAST_N handling.
+12. School review behavior.
+13. City independent review behavior.
+14. Supplementation entry-point preservation.
+15. Evidence preview behavior.
+16. Responsive screenshots.
+17. Browser interaction findings.
+18. Backend/API contract compatibility.
+19. Demo vs Real verification.
+20. Actual tests executed.
+21. Exact changed source files.
+22. Known issues and blockers.
+23. LEAN-3 dependencies.
+24. Final verdict: PASS / PARTIAL / BLOCKED.
+
+Also create:
+
+`docs/lean/LEAN_2_MANUAL_UAT.md`
+
+Write this in Vietnamese.
+
+Provide click-by-click test instructions for School and City Reviewers, including happy paths, failing criteria, supplementary alternatives, mobile review, concurrency and API errors.
+
+---
+
+# 33. DEFINITION OF DONE
+
+LEAN-2 is complete only when:
+
+- A reviewer sees the five criteria as one clear continuous dossier.
+- The Student's declarations are readable without excessive navigation.
+- Evidence is accessible beside the declaration.
+- Pass/Fail actions are direct and contextual.
+- Human judgments persist through actual backend contracts in Real Mode, where authorized testing is available.
+- Review progress is separate from eligibility.
+- Fully reviewed failing applications are correctly representable.
+- ONE_OF and ALL_REQUIRED work correctly.
+- Redundant review controls are removed only after verifying their domain semantics.
+- School and City judgments remain independent.
+- School recommendations and Committee decisions are not automatically triggered.
+- Student-submitted content stays protected.
+- Desktop and mobile layouts are usable.
+- Relevant tests pass.
+- Any unavailable Real Mode verification is transparently reported.
+
+Do not mark LEAN-2 fully PASS solely because the Demo UI looks correct.
+
+---
+
+# FINAL PRODUCT STANDARD
+
+The 5TOT reviewer workspace should feel like an ordinary, professional Vietnamese Student Association dossier review application.
+
+The reviewer does not need to understand backend states.
+
+They should not have to operate a complicated assessment engine.
+
+The common interaction must be:
+
+**READ → VIEW EVIDENCE → CLICK ĐẠT / KHÔNG ĐẠT → CONTINUE.**
+
+The system calculates progress and eligibility correctly in the background.
+
+The system preserves all human authority, audit history, permissions and regulatory requirements.
+
+**SIMPLE FOR USERS. CORRECT AND SAFE UNDERNEATH.**
+
+## HARD STOP
+
+Implement and verify LEAN-2 only.
+
+Do not begin LEAN-3 supplementation refactor automatically.
+
+Do not begin LEAN-4 forwarding redesign.
+
+Do not introduce new product features unrelated to the customer-approved review simplification.
+
+Stop after implementation, tests, screenshots, documentation and final report.

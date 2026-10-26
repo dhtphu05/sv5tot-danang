@@ -1,0 +1,14 @@
+node_modules/
+build/
+dist/
+dist-server/
+coverage/
+backups/
+.aistudio/
+.vite/
+.data/
+*.tsbuildinfo
+.DS_Store
+*.log
+.env*
+!.env.example

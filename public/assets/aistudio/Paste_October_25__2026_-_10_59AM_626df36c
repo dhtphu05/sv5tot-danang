@@ -1,0 +1,1193 @@
+# 5TOT ĐÀ NẴNG — LEAN-0.1
+## BUSINESS CONTRACT CORRECTION, ELIGIBILITY LOGIC VALIDATION & IMPLEMENTATION ROADMAP REALIGNMENT
+
+**Priority:** P0 — Mandatory Corrective Phase Before Implementation  
+**Execution Mode:** SOURCE VERIFICATION → DOCUMENT CORRECTION → BUSINESS CONTRACT VALIDATION → IMPLEMENTATION PLAN REALIGNMENT  
+**Scope:** Correct the existing LEAN-0 documentation and implementation blueprint  
+**Implementation Permission:** AUDIT AND DOCUMENTATION ONLY  
+**Frontend:** React + Vite + Strict TypeScript + Feature-Sliced Design  
+**Backend:** Node.js + Express + Strict TypeScript + Prisma/PostgreSQL Modular Monolith
+
+---
+
+# 1. MISSION
+
+LEAN-0 has produced nine useful audit and planning documents.
+
+However, review of those documents identified important inconsistencies with the customer-approved LEAN product direction and potential errors in business-state aggregation.
+
+**Do not begin LEAN-1 implementation until these inconsistencies are resolved.**
+
+LEAN-0.1 must:
+
+1. Preserve useful findings from LEAN-0.
+2. Correct potentially unsafe business assumptions.
+3. Separate review completion from eligibility results.
+4. Validate ONE_OF / ALL_OF aggregation semantics.
+5. Preserve legitimate human decision authority.
+6. Remove invented policy defaults.
+7. Restore the original LEAN-1 through LEAN-6 roadmap.
+8. Reclassify unsupported performance claims.
+9. Produce a consistent, implementation-ready business and UX contract.
+
+This is NOT a request to rebuild the architecture.
+
+This is NOT authorization to modify production runtime code.
+
+---
+
+# 2. INPUT DOCUMENTS
+
+Read all nine existing LEAN-0 documents:
+
+1. `LEAN_0_CURRENT_STATE_AUDIT.md`
+2. `LEAN_0_BUSINESS_STATE_MATRIX.md`
+3. `LEAN_0_ACTION_AND_CLICK_AUDIT.md`
+4. `LEAN_0_DECLARATION_FORM_MATRIX.md`
+5. `LEAN_0_REVIEW_CONTRACT.md`
+6. `LEAN_0_BEFORE_AFTER_FLOWS.md`
+7. `LEAN_0_FEATURE_PRESERVATION.md`
+8. `LEAN_0_IMPLEMENTATION_PLAN.md`
+9. `LEAN_0_DECISION_LOG.md`
+
+Use their actual project paths.
+
+Inspect the current frontend and backend source where available.
+
+Do not rely exclusively on the LEAN-0 agent's claims about code behavior.
+
+For each material finding, distinguish:
+
+- VERIFIED IN SOURCE.
+- SUPPORTED BY APPROVED BUSINESS REQUIREMENTS.
+- PROPOSED DESIGN.
+- REQUIRES BUSINESS CONFIRMATION.
+- UNVERIFIED.
+
+Preserve the existing documents and their useful findings.
+
+Correct them in place, with a traceable correction log.
+
+Do not silently erase the original rationale.
+
+---
+
+# 3. CRITICAL CORRECTION — REVIEWED DOES NOT MEAN PASSED
+
+The most important defect is the current LEAN-0 tendency to treat review completion and passing eligibility as equivalent.
+
+These are different concepts.
+
+## A. Review completion
+
+Indicates that the applicable required human assessments have been completed sufficiently to record the review outcome.
+
+## B. Criterion result
+
+Indicates whether the criterion meets the applicable award requirements based on the authoritative human assessments.
+
+## C. School recommendation
+
+Indicates whether the School officially recommends the application for City consideration.
+
+## D. City review outcome
+
+Indicates the City reviewer's authorized assessment.
+
+## E. Committee official decision
+
+Indicates whether the application is officially recognized.
+
+These concepts must remain independent.
+
+### Mandatory example
+
+An Individual application has:
+
+- Ethics: PASS.
+- Academic: PASS.
+- Physical: FAIL.
+- Volunteer: PASS.
+- Integration: PASS.
+
+Correct results:
+
+- Reviewed criteria: 5/5.
+- Criteria meeting requirements: 4/5.
+- Criteria not meeting requirements: 1/5.
+- Human review completeness: COMPLETE, assuming every applicable required assessment is resolved.
+- Overall eligibility: NOT MEETING ALL FIVE.
+- School recommendation: separate authorized decision.
+- Committee recognition: NOT AUTOMATICALLY DECIDED.
+
+The application MUST NOT remain indefinitely "Đang xét" merely because one criterion has failed.
+
+Likewise, an application with 5/5 criteria meeting requirements must NOT automatically be recommended, forwarded or officially recognized.
+
+Correct every LEAN-0 document that currently conflates these dimensions.
+
+---
+
+# 4. REVIEW COMPLETION TRUTH TABLE
+
+Produce a source-backed truth table covering at least:
+
+| Scenario | Review completion | Criterion result |
+|---|---|---|
+| No human judgments | Not reviewed | Undetermined |
+| Some required judgments unresolved | In progress | Undetermined unless conclusively resolved by approved rules |
+| All relevant requirements evaluated and passed | Complete | Pass |
+| All relevant requirements resolved, one mandatory requirement failed | Complete | Fail |
+| Optional alternative not selected | Does not create outstanding review work | Not automatically Fail |
+| Sufficient alternatives passed | Complete if no other required work remains | Pass |
+| Some alternatives failed, others unresolved | Depends on whether the requirement can be conclusively resolved | Undetermined or Fail only when justified |
+| All valid alternatives assessed as failing | Complete | Fail |
+| Active supplementation request | Supplementation pending | Preserve last judgment and pending state according to the canonical contract |
+| Supplement returned but not reassessed | Pending reassessment | Do not silently treat as newly passed |
+| Previously passed judgment edited to Fail | Recalculate | Recalculate safely |
+
+Do not blindly hardcode this table without checking actual domain rules.
+
+Specify the evidence required to consider a criterion conclusively failed.
+
+Where a requirement is already satisfied by one qualifying alternative, unselected optional alternatives must not be counted as outstanding work.
+
+Where extra submitted declarations remain unresolved, verify whether they are mandatory to review before declaring the entire criterion complete.
+
+Do not invent a requirement to reject irrelevant alternatives.
+
+---
+
+# 5. CRITICAL CORRECTION — ALL_REQUIRED AGGREGATION
+
+The current `LEAN_0_REVIEW_CONTRACT.md` contains a potentially incorrect rule:
+
+"If any declaration is unsuitable, the group becomes Fail."
+
+This can be wrong when a requirement permits multiple alternative declarations.
+
+Example:
+
+A requirement allows several submitted achievements.
+
+The Student submits:
+
+- Declaration A: PASS.
+- Declaration B: FAIL.
+
+If the applicable requirement only needs ONE qualifying declaration, the requirement may still be satisfied by Declaration A.
+
+Do not fail the entire requirement merely because Declaration B failed.
+
+### Correct evaluation hierarchy
+
+Evaluate:
+
+1. The applicable criterion.
+2. Requirement groups.
+3. Individual requirements.
+4. Allowed declaration alternatives.
+5. Recorded human judgments.
+6. Applicable thresholds.
+7. Unresolved supplementation.
+
+Distinguish:
+
+- A single failing declaration.
+- A requirement failing.
+- A group failing.
+- A criterion failing.
+
+These are not equivalent.
+
+For `ALL_REQUIRED`, every required child requirement must be satisfied.
+
+But satisfaction of each child must be evaluated according to its actual declaration rules.
+
+For `AT_LEAST_N`, count qualifying requirements or alternatives according to the policy-defined counting unit.
+
+Do not assume every declaration counts as a separate qualifying requirement.
+
+Avoid double-counting several declarations under one requirement when the policy requires distinct conditions.
+
+Provide examples and unit-test specifications.
+
+---
+
+# 6. CRITICAL CORRECTION — AT_LEAST_N / ONE_OF
+
+The customer explicitly wants:
+
+**When one approved alternative is sufficient, do not require review of unused alternatives.**
+
+Example:
+
+Physical criterion:
+
+- Option A: Student Health recognition.
+- Option B: Eligible sports achievement.
+
+If Option A is satisfactorily reviewed and the rule is ONE_OF:
+
+- The group can meet the condition.
+- Option B does not need to be declared.
+- An undeclared Option B is not Fail.
+- The interface should not show a misleading incomplete warning.
+
+### Preserve voluntary additional declarations
+
+The Student may submit more than one alternative or multiple achievements under the same allowed form.
+
+Do not prohibit additional submissions merely because the minimum is satisfied.
+
+Preserve all submitted declarations and their evidence.
+
+Do not infer that an optional declaration is invalid just because it was not necessary to satisfy the threshold.
+
+### UI wording
+
+Prefer:
+
+- "Chưa kê khai" only where meaningfully informational.
+- "Phương án khác" for alternatives.
+- Neutral presentation for unused optional forms.
+
+Avoid showing:
+
+- Red failure badges.
+- Mandatory assessment counters.
+- Blocking review warnings.
+
+for undeclared, nonmandatory alternatives.
+
+Do not persist artificial negative judgments against undeclared alternatives.
+
+---
+
+# 7. CRITICAL CORRECTION — NO AUTOMATIC OFFICIAL WORKFLOW DECISIONS
+
+LEAN-0 proposes automatic status changes when all five criteria meet the requirements.
+
+This must be carefully separated into two categories.
+
+## Allowed derived updates
+
+The system may automatically derive:
+
+- Human-reviewed criteria count.
+- Criteria meeting requirements count.
+- Criteria failing requirements count.
+- Criterion evaluation result.
+- Review progress.
+- Whether all required assessment work is resolved.
+- Preliminary eligibility indication.
+
+Only where canonical business rules make those values determinable.
+
+## Not automatically authorized
+
+The system must NOT automatically:
+
+- Submit an application on behalf of a Student.
+- Record a School recommendation.
+- Select every eligible application for forwarding.
+- Forward a School batch to City.
+- Record the City reviewer's official completion/attestation if it represents a separate authorized action.
+- Make a Committee decision.
+- Issue an official decision document.
+- Publish recognition results.
+
+Do not turn "5/5 criteria passed" into an official human recommendation or recognition.
+
+### School
+
+A dossier with five passing criteria can be marked:
+
+"Đủ điều kiện theo kết quả sơ tuyển"
+
+where supported.
+
+But School recommendation and batch selection must remain appropriate authorized actions.
+
+A School may need to record "Đề nghị" or "Không đề nghị" separately.
+
+Do not remove that authority without an approved contract.
+
+### City
+
+The City independently reviews received applications.
+
+Automatically deriving five criterion outcomes is acceptable.
+
+But inspect whether the final City review completion is a required separate human attestation.
+
+If it is, preserve it.
+
+Do not automatically send an application to Committee merely because five criteria pass.
+
+### Committee
+
+Only authorized Committee actions may record official recognition.
+
+No automatic official approval.
+
+---
+
+# 8. DIRECT INLINE REVIEW — KEEP THE CUSTOMER UX GOAL
+
+The customer wants a very simple reviewer interaction:
+
+**Read declaration → View evidence → Click Đạt / Không đạt.**
+
+This remains the desired frontend direction.
+
+However, the LEAN-0 contract currently assumes that all evidence-level and criterion-level actions can be safely collapsed into a single mutation.
+
+That requires verification.
+
+Audit the actual persistence model:
+
+- Evidence review record.
+- Declaration review record.
+- Requirement review record.
+- Criterion result.
+- Officer review completion.
+
+For each level determine:
+
+- Whether it is a human decision.
+- Whether it is a derived value.
+- Whether it is required for audit.
+- Whether it can be updated from another canonical record.
+- Whether it represents an independent authorized judgment.
+
+### Target
+
+One primary visible Pass/Fail action at the most appropriate canonical human judgment scope.
+
+Do not force:
+
+- Evidence Pass.
+- Declaration Pass.
+- Requirement Complete.
+- Criterion Complete.
+
+as four separate interactions when the domain does not require them.
+
+### Safety
+
+Do not delete historical evidence judgments or schema fields.
+
+Do not fabricate evidence approvals based on a declaration Pass unless the domain semantics explicitly allow that.
+
+Preserve existing records for audit and compatibility.
+
+If the simplified UI requires a backend mutation contract change, document that exact dependency.
+
+---
+
+# 9. SUPPLEMENTATION — REMOVE INVENTED DEFAULTS
+
+The existing LEAN-0 implementation plan suggests:
+
+"Default supplementation deadline = 3 working days."
+
+The decision log simultaneously identifies this as an open policy question.
+
+Therefore, it must NOT be treated as an approved rule.
+
+### Correct design
+
+A supplementation deadline must come from:
+
+- Existing approved season configuration.
+- Existing canonical business rules.
+- An authorized explicitly entered deadline.
+- A documented approved policy.
+
+If none exists, mark deadline behavior as an OPEN DECISION.
+
+Do not silently enforce an invented three-day cutoff.
+
+### Desired UX
+
+Reviewer:
+
+1. Clicks "Yêu cầu bổ sung" at the relevant declaration.
+2. Sees the correct scope already selected.
+3. Enters a concise reason.
+4. Submits the request.
+
+Student:
+
+1. Opens the same dossier.
+2. Reads the exact request.
+3. Provides explanation and/or permitted evidence.
+4. Submits the supplement.
+
+Reviewer:
+
+1. Inspects updated evidence.
+2. Reassesses the relevant declaration.
+3. Continues normal review.
+
+Preserve:
+
+- Original declaration.
+- Old evidence versions.
+- Supplement request scope.
+- Requesting authority.
+- Timestamp.
+- Student response.
+- Internal notes vs Student-visible reason.
+- Stage-specific authorization.
+
+Do not import the one-explanation limit from the Central Young Teacher award reference.
+
+---
+
+# 10. SCHOOL SELECTION MUST REMAIN INTENTIONAL
+
+The existing LEAN-0 roadmap proposes:
+
+"Automatically collect every preliminarily eligible application into the forwarding batch."
+
+This is too aggressive as a mandatory business behavior.
+
+The customer-approved model is:
+
+**School reviews → Records recommendation → Selects applications → Attaches one official decision → Sends one batch.**
+
+### Allowed UX improvements
+
+- Select all currently eligible and recommended applications.
+- Checkbox selection.
+- Bulk select.
+- Bulk deselect.
+- Institution filters.
+- Selected count.
+- Clear recommendation indicators.
+- One consolidated document attachment.
+
+### Not allowed
+
+- Automatically selecting all 5/5 applications without reviewer awareness.
+- Treating 5/5 as an official School recommendation.
+- Sending applications without authorized confirmation.
+- Including applications not selected in the official School decision.
+- Creating multiple UDN forwarding batches for the same season.
+
+The selection must match the signed School decision list.
+
+When a user chooses a bulk-selection action, show the resulting selection for verification before the one-time forwarding confirmation.
+
+---
+
+# 11. COMMITTEE AND PUBLICATION ARE SEPARATE OPERATIONS
+
+LEAN-0 proposes a one-click publication mechanism and additional official-document workflows.
+
+These may require separate approved contracts.
+
+Do not assume they are already implemented or approved.
+
+Distinguish:
+
+1. Committee records an authorized result.
+2. Appropriate official decision documents are recorded, if supported and required.
+3. Results are finalized according to existing domain rules.
+4. Publication occurs only through an authorized supported process.
+
+A public lookup portal is not automatically within scope merely because the system supports Committee decisions.
+
+Do not automatically publish results when a Committee decision is recorded.
+
+Do not invent ranking rules for "Sinh viên 5 tốt tiêu biểu" or official honors.
+
+If these capabilities already exist, inventory their actual API contracts and preserve valid behavior.
+
+If they do not, place them in a separate future proposal.
+
+---
+
+# 12. CORRECT THE LEAN-1 THROUGH LEAN-6 ROADMAP
+
+This is mandatory.
+
+The current `LEAN_0_IMPLEMENTATION_PLAN.md` changed the phase definitions compared with the original customer-approved roadmap.
+
+Restore the correct order.
+
+## LEAN-1 — STUDENT DECLARATION SIMPLIFICATION
+
+Scope:
+
+- Short declaration forms.
+- "Nội dung kê khai".
+- Dynamic structured fields only where required.
+- Direct evidence attachment.
+- Automatic numbering.
+- Multiple declarations.
+- ONE_OF/ALL_OF-aware presentation.
+- Existing Student data integrity.
+
+Do not begin by rewriting the Officer review engine.
+
+Acceptance:
+
+A Student can enter a simple achievement and attach evidence with minimal necessary fields.
+
+## LEAN-2 — DIRECT INLINE HUMAN REVIEW
+
+Scope:
+
+- Continuous dossier.
+- Direct Pass/Fail at the correct canonical scope.
+- Evidence beside declarations.
+- Accurate criterion aggregation.
+- Independent reviewed/pass/fail dimensions.
+- Removal of redundant manual completion controls only after verification.
+- No excessive sticky toolbar.
+
+Acceptance:
+
+The reviewer can assess a declaration directly and see the correct persisted result and derived progress.
+
+## LEAN-3 — INLINE SUPPLEMENTATION
+
+Scope:
+
+- Contextual "Yêu cầu bổ sung".
+- Student-visible reasons.
+- Exact target declaration/requirement.
+- Student explanation.
+- Evidence supplementation.
+- Reassessment.
+- Version history.
+
+Acceptance:
+
+Reviewer and Student handle the supplement within the same dossier without unnecessary workflow screens.
+
+## LEAN-4 — SCHOOL RECOMMENDATION & ONE-TIME FORWARDING
+
+Scope:
+
+- Review-result table.
+- Five-criterion summary.
+- Manual recommendation.
+- Checkbox selection.
+- Bulk-select convenience.
+- UDN shared Review Unit.
+- One common official decision document.
+- One successful forwarding per unit/season.
+
+Acceptance:
+
+The School forwards exactly its intended, authorized selected applications with the correct decision attachment.
+
+## LEAN-5 — CITY, COMMITTEE, STATUS & RESPONSIVE CONSISTENCY
+
+Scope:
+
+- Shared City review queue.
+- Correct City review completion.
+- Committee official decision UX.
+- Simplified visible statuses.
+- Natural Vietnamese business terminology.
+- Responsive School/City/Committee interfaces.
+- Collective TT01–TT04 regression and necessary lean UI improvements.
+
+Acceptance:
+
+City and Committee workflows remain human-controlled, easy to operate and visually coherent across devices.
+
+## LEAN-6 — END-TO-END UAT & SECURITY REGRESSION
+
+Scope:
+
+- Student submission.
+- Student profile snapshot.
+- School review.
+- Supplementation.
+- UDN forwarding.
+- Independent School forwarding.
+- City shared review.
+- Committee decisions.
+- Collective applications.
+- Analytics and Excel.
+- Authorization.
+- Concurrency.
+- Real vs Demo isolation.
+- Responsive QA.
+- Detailed click-by-click manual UAT.
+
+Acceptance:
+
+Realistic end-to-end scenarios pass based on actual execution evidence.
+
+### Dependency planning
+
+Explain which tasks can run in parallel safely.
+
+In particular:
+
+- LEAN-1 frontend form UX may proceed independently from some LEAN-2 visual analysis.
+- Changes to shared declaration contracts must be coordinated.
+- LEAN-2 assessment aggregation should be settled before LEAN-4 relies on its progress and recommendation data.
+- LEAN-3 must preserve canonical supplementation history.
+- LEAN-5 should reuse already-corrected shared dossier components.
+- LEAN-6 is the final integration gate.
+
+No overlapping concurrent editing of the same critical source files without explicit coordination.
+
+---
+
+# 13. CORRECT UNVERIFIED UX METRICS
+
+The LEAN-0 documents claim:
+
+- Average click reduction: 71.3%.
+- Standard review: 42 clicks → 11 clicks.
+- Student form completion: 22 minutes → 7.5 minutes.
+- 100% feature preservation.
+- Complete zero-regression readiness.
+
+These are not automatically verified facts.
+
+### Required correction
+
+For every quantitative claim:
+
+Identify:
+
+1. Actual measurement method.
+2. Sample size.
+3. Test scenario.
+4. Recorded interaction path.
+5. Whether the current values were measured or estimated.
+6. Whether the proposed values are targets or actual tested results.
+7. Whether real users participated.
+8. Whether the result was reproduced in a browser.
+
+Classify as:
+
+- MEASURED.
+- SOURCE-DERIVED ESTIMATE.
+- TARGET.
+- UNVERIFIED.
+
+Remove unsupported statements implying actual user performance testing.
+
+For example:
+
+"Target: reduce redundant review interactions."
+
+is acceptable.
+
+"Verified 71.3% time improvement."
+
+is not acceptable without real evidence.
+
+Never report 100% feature preservation before implementing and running regression tests.
+
+---
+
+# 14. VALIDATE ELIGIBILITY THRESHOLDS
+
+The declaration matrix lists thresholds such as:
+
+- Conduct score.
+- Academic GPA.
+- Volunteer participation duration.
+- Foreign language certification scores.
+- Collective TT02 and TT03 percentages.
+
+Do not change these values based on generic award assumptions.
+
+Compare the actual configured criteria against the approved regulation applicable to the selected season.
+
+Use the project's uploaded regulation documents where accessible.
+
+If conflicting versions exist:
+
+- Identify the source document.
+- Identify the applicable season.
+- Record the discrepancy.
+- Do not silently choose a different threshold.
+- Do not loosen or tighten requirements to simplify the UI.
+
+Do not treat Demo fixture definitions alone as authoritative legal policy.
+
+The goal of LEAN is fewer unnecessary inputs, not fewer eligibility requirements.
+
+---
+
+# 15. CORRECT THE DECISION LOG
+
+Audit every entry in:
+
+`LEAN_0_DECISION_LOG.md`
+
+The current document marks some agent-generated proposals as:
+
+"ĐÃ PHÊ DUYỆT"
+
+Do not treat a design proposal as formally customer-approved merely because LEAN-0 generated it.
+
+Use explicit categories:
+
+- CUSTOMER-CONFIRMED.
+- SUPPORTED BY APPROVED PROJECT WORKFLOW.
+- VERIFIED EXISTING TECHNICAL CONTRACT.
+- PROPOSED.
+- REQUIRES BUSINESS SIGN-OFF.
+- SUPERSEDED.
+
+Keep confirmed customer requirements, including:
+
+- Two-level School/City assessment.
+- Committee official authority.
+- UDN shared Review Unit.
+- City shared queue without assignment.
+- Collective direct-to-City processing.
+- One-time School forwarding.
+- Lean Student declarations.
+- Direct reviewer Pass/Fail UX.
+- Inline supplementation.
+
+### Not automatically approved
+
+- Automatic School recommendation.
+- Automatic forwarding.
+- Automatic City attestation.
+- Automatic Committee recognition.
+- Automatic public publication.
+- Fixed 3-day supplementation deadline.
+- Automatic special-honor ranking.
+- Removal of any independently required human decision.
+- Blanket prohibition on future schema changes.
+
+For this correction phase, do not change database schema.
+
+Future schema changes, if demonstrably necessary, require separately scoped authorization.
+
+Do not turn a temporary implementation safety restriction into a permanent policy decision.
+
+---
+
+# 16. KEEP BACKEND STATE AND UI STATUS SEPARATE
+
+The system may need many internal states for:
+
+- Persistence.
+- Audit.
+- Concurrency.
+- Stage authorization.
+- Evidence versions.
+- Supplementation.
+- Forwarding uniqueness.
+- Historical compatibility.
+
+The user-facing interface should expose only meaningful distinctions.
+
+Build a state projection table:
+
+**Canonical backend state → business meaning → frontend label → permitted actions.**
+
+Do not merge:
+
+- Review progress.
+- Eligibility result.
+- Recommendation.
+- Forwarding.
+- City review attestation.
+- Committee decision.
+
+into one ambiguous status.
+
+### Example
+
+A School application could simultaneously have:
+
+- Human review: COMPLETE.
+- Eligibility: 4/5 criteria passed.
+- Recommendation: NOT RECOMMENDED.
+- Forwarding: NOT FORWARDED.
+
+That is a legitimate combination, not a data inconsistency.
+
+The UI can show a compact primary status plus relevant secondary information without introducing new database enums.
+
+---
+
+# 17. PRESERVE ORIGINAL 5TOT WORKFLOW
+
+## Individual
+
+Student
+→ School preliminary review
+→ School recommendation and selection
+→ One consolidated School forwarding
+→ City independent assessment
+→ Committee official decision.
+
+## UDN
+
+Eight original institutions:
+
+- DUT.
+- DUE.
+- UED.
+- UFL.
+- UTE.
+- VKU.
+- VNUK.
+- SMP.
+
+One shared Review Unit:
+
+`unit-udn`
+
+One common official School decision document.
+
+One successful forwarding batch per season.
+
+## Independent Schools
+
+Own review scopes and forwarding batches.
+
+## City
+
+Authorized shared queue.
+
+No mandatory individual assignment.
+
+No active ResolutionCase workflow.
+
+## Committee
+
+Human official decisions.
+
+No fictional voting, meetings or hearings.
+
+## Collective
+
+TT01–TT04.
+
+Direct-to-City processing.
+
+No Individual School forwarding.
+
+## AI
+
+Optional advisory only.
+
+Never records official human judgments.
+
+---
+
+# 18. REQUIRED DOCUMENT CORRECTIONS
+
+Revise the nine existing LEAN-0 documents.
+
+## A. Current State Audit
+
+Correct unsupported claims and distinguish source verification from inference.
+
+## B. Business State Matrix
+
+Separate:
+
+- Review completion.
+- Criterion result.
+- Stage workflow status.
+- Recommendation.
+- Forwarding.
+- Committee result.
+
+## C. Action & Click Audit
+
+Replace unsupported measured-performance language with verified measurements or declared targets.
+
+## D. Declaration Form Matrix
+
+Preserve the customer-approved LEAN-1 scope.
+
+Revalidate fields and criteria thresholds.
+
+Correct unverified completion-time assumptions.
+
+## E. Review Contract
+
+Correct:
+
+- Pass vs complete.
+- ALL_REQUIRED.
+- AT_LEAST_N.
+- Human judgment granularity.
+- Safe derived outcomes.
+- Official decision boundaries.
+
+## F. Before/After Flows
+
+Update all relevant Mermaid diagrams.
+
+Remove automatic forwarding/recognition assumptions.
+
+Show completed-but-failed review paths.
+
+## G. Feature Preservation
+
+Replace premature "100% preserved" assertions with a planned preservation checklist and future test gates.
+
+## H. Implementation Plan
+
+Restore exactly the LEAN-1 through LEAN-6 roadmap defined above.
+
+Provide dependencies and detailed acceptance criteria.
+
+## I. Decision Log
+
+Correct approval labels and open policy items.
+
+Do not add invented signatures or approval dates.
+
+---
+
+# 19. ADD TWO CORRECTIVE DOCUMENTS
+
+In addition to updating the original nine documents, create:
+
+## `docs/lean/LEAN_0_1_CORRECTION_REPORT.md`
+
+Include:
+
+- Original finding.
+- Why it is incorrect or unsupported.
+- Corrected interpretation.
+- Source evidence.
+- Impacted documents.
+- Business risk.
+- Resolution status.
+
+## `docs/lean/LEAN_0_1_REVIEW_STATE_TRUTH_TABLE.md`
+
+Include:
+
+- Row-level human judgment states.
+- Requirement aggregation.
+- ALL_REQUIRED behavior.
+- AT_LEAST_N behavior.
+- Criterion completion.
+- Criterion Pass/Fail/Undetermined.
+- School recommendation.
+- City independent review.
+- Committee official decision.
+- Supplementation.
+- Edge cases.
+- Proposed automated test scenarios.
+
+Use the project's actual documentation conventions where appropriate.
+
+---
+
+# 20. REQUIRED ACCEPTANCE SCENARIOS
+
+Document at least these scenarios for later implementation tests.
+
+### BC01 — All five criteria passed
+
+Review complete and five criteria passed.
+
+No automatic School recommendation or official award.
+
+### BC02 — Four passed, one failed
+
+Review complete when all applicable required assessments are resolved.
+
+Four criteria passed, one failed.
+
+No permanent "In progress" state merely because of failure.
+
+### BC03 — One criterion partially reviewed
+
+Progress correctly shows incomplete human assessment work.
+
+### BC04 — ONE_OF satisfied
+
+One qualifying option passes.
+
+Unused optional alternatives do not block completion.
+
+### BC05 — ONE_OF unsatisfied
+
+All qualifying options conclusively fail or otherwise cannot satisfy the rule under the verified contract.
+
+The group can be marked failed without endless pending status.
+
+### BC06 — Multiple declarations
+
+One valid declaration may satisfy a requirement even if another declaration under the same rule fails.
+
+### BC07 — ALL_REQUIRED
+
+All mandatory child requirements must be satisfied for a positive group result.
+
+### BC08 — Active supplementation
+
+Correct requesting authority and pending state.
+
+No false Pass.
+
+### BC09 — Supplement returned
+
+Previous evidence preserved.
+
+New evidence requires appropriate reassessment.
+
+### BC10 — School recommendation
+
+Separate recorded human business decision from eligibility indicators.
+
+### BC11 — School bulk selection
+
+Selection remains under authorized reviewer control.
+
+### BC12 — UDN forwarding
+
+One shared unit, eight institutions, one official decision attachment and one successful batch.
+
+### BC13 — City independently fails a School-passed declaration
+
+City result remains independent.
+
+School historical judgment is not overwritten.
+
+### BC14 — City review completed with failures
+
+Review outcome remains representable without assuming all criteria passed.
+
+### BC15 — Committee rejects otherwise qualified application
+
+Official result remains independent.
+
+### BC16 — Collective
+
+TT01–TT04 calculations and direct City flow remain correct.
+
+### BC17 — Student submission
+
+Advisory eligibility warnings do not silently introduce unauthorized hard submission blockers.
+
+### BC18 — Concurrent human review
+
+Changing a judgment must not silently overwrite newer server-side state.
+
+### BC19 — Reopen or correction
+
+Only valid authorized lifecycle transitions are permitted.
+
+### BC20 — Dashboard
+
+Reviewed criteria count, passing criteria count, recommendations and recognized results are independent metrics.
+
+---
+
+# 21. QUALITY CONTROL FOR THE CORRECTION PHASE
+
+Because LEAN-0.1 is documentation-only:
+
+- No production runtime implementation.
+- No Prisma migration.
+- No live database connection.
+- No deployment.
+- No automatic push or merge.
+
+You may inspect source files and use read-only commands to verify actual contracts.
+
+Do not claim executable tests passed unless they were actually run.
+
+Validate Mermaid syntax where tools are available.
+
+Check that corrected documents do not contradict one another.
+
+Ensure the implementation plan uses consistent phase numbering everywhere.
+
+Report source paths accurately.
+
+Do not invent code line references.
+
+---
+
+# 22. REQUIRED FINAL REPORT
+
+Provide:
+
+1. Current Git baseline.
+2. All nine documents reviewed.
+3. Critical business inconsistencies found.
+4. Corrections to review completion and eligibility aggregation.
+5. Corrected ALL_REQUIRED / AT_LEAST_N rules.
+6. Official decision authority safeguards.
+7. Corrected supplementation deadline assumptions.
+8. Corrected School selection behavior.
+9. Committee/publication scope correction.
+10. Corrected LEAN-1 through LEAN-6 roadmap.
+11. Unverified UX metrics reclassification.
+12. Criteria regulation verification status.
+13. Decision Log approval corrections.
+14. Eleven final documentation files.
+15. Source files inspected.
+16. Remaining open policy decisions.
+17. Confirmation that production runtime code was not modified.
+18. Final verdict: PASS / PARTIAL / BLOCKED.
+
+### PASS conditions
+
+LEAN-0.1 can be marked PASS only when:
+
+- No business contract incorrectly equates reviewed with passed.
+- Failed-but-completed reviews are representable.
+- Optional alternatives are handled correctly.
+- No automatic human recommendation/official decision is invented.
+- All nine original documents agree.
+- The correct phase roadmap is restored.
+- Unsupported metrics are explicitly identified.
+- All open policy items remain open.
+- Source verification gaps are honestly documented.
+- No unauthorized runtime code changes occurred.
+
+---
+
+# FINAL PRODUCT CONTRACT
+
+**LEAN 5TOT REDUCES HUMAN INTERACTION COMPLEXITY, NOT BUSINESS CORRECTNESS.**
+
+A Student enters the required declaration and evidence with minimal effort.
+
+A reviewer records human Pass/Fail judgments directly beside the submitted declaration.
+
+The system derives requirement and criterion results only where the approved rules permit.
+
+A completed review may produce Pass or Fail.
+
+A passed criterion is not an official School recommendation.
+
+A School recommendation is not a forwarded batch.
+
+A forwarded batch is not a City review conclusion.
+
+A City review conclusion is not a Committee official recognition decision.
+
+All official actions remain human-controlled and properly authorized.
+
+**DO NOT BEGIN LEAN-1 UNTIL THIS BUSINESS CONTRACT AND IMPLEMENTATION ROADMAP ARE CONSISTENT AND VERIFIED.**
+
+## HARD STOP
+
+Complete the documentation corrections.
+
+Do not implement the LEAN refactor yet.
+
+Stop after producing the corrected documents and LEAN-0.1 report.

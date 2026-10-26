@@ -1,0 +1,64 @@
+name: 5TOT Đà Nẵng — Backend V2 CI & Golden Baseline Protection
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  golden-baseline-protection:
+    name: Golden Frontend Non-Regression & Manifest Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 22 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Root Dependencies
+        run: npm ci
+
+      - name: Verify Golden Frontend Byte-for-Byte Integrity
+        run: npm run manifest:verify
+
+      - name: Run Frontend FSD Architecture Audit
+        run: npm run audit:architecture
+
+      - name: Run Frontend Source Size & Modularity Audit
+        run: npm run audit:source-size
+
+      - name: Validate Frontend TypeScript
+        run: npm run lint
+
+      - name: Build Frontend Application
+        run: npm run build
+
+      - name: Run Frontend Regression Tests
+        run: npm test
+
+  backend-v2-verification:
+    name: Backend V2 Foundation Verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 22 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate Backend TypeScript & Compilation
+        run: npx tsc --project backend/tsconfig.json
+
+      - name: Run Backend Unit Tests
+        run: npx tsx --test backend/tests/unit/**/*.test.ts
+
+      - name: Run Backend HTTP & Security Tests
+        run: npx tsx --test backend/tests/http/**/*.test.ts
+
+      - name: Run Database Connectivity Integration Tests
+        run: npx tsx --test backend/tests/integration/**/*.test.ts

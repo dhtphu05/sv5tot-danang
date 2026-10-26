@@ -1,0 +1,1331 @@
+# 5TOT ĐÀ NẴNG — SRW-4
+## SIMPLIFIED CITY OFFICER & COMMITTEE REVIEW WORKFLOW
+### Remove Unnecessary Resolution Cases, Reuse Student Dossier UI, Preserve Real Human Review Operations
+
+**Priority:** P0 — Customer-Validated Workflow Refactor
+**Phase:** SRW-4 — City Officer & Committee Simplification
+**Task:** AUDIT → REFACTOR → INTEGRATE → TEST → VERIFY
+**Frontend:** Existing React + Vite + Strict TypeScript + FSD
+**Backend:** Existing Node.js + Express + Prisma Backend V2
+**Database Mode:** Offline unless separately authorized
+**Baseline:** Current project after SRW-1, SRW-2 and SRW-3
+
+---
+
+# 1. CRITICAL CUSTOMER FEEDBACK
+
+Following a real customer demonstration, the customer requested a much simpler review experience.
+
+The current Officer and Committee interfaces include unnecessary workflow complexity:
+
+- Separate Resolution Hub.
+- Ambiguous-case processing.
+- Escalation actions.
+- Dedicated resolution queues.
+- Unnecessary intermediate review screens.
+- Overly complicated application status presentations.
+- Duplicate dossier layouts.
+- Excessive AI assistance panels.
+- Fictional Committee questioning or meeting workflows.
+
+These features make routine review slower and harder to understand.
+
+The customer confirmed that review is conducted internally by authorized staff accounts.
+
+There is no need for a separate ambiguous-case adjudication subsystem or formal case-hearing process.
+
+## NEW APPROVED PRODUCT DIRECTION
+
+**The reviewer opens a Student dossier, checks the evidence, records an authorized assessment, and continues.**
+
+**The Committee reviews recorded information and makes an authorized official decision.**
+
+That's the core workflow.
+
+Preserve real business functionality while simplifying the interaction model.
+
+Do not remove security, audit, supplementation, assignment or legitimate review judgments.
+
+---
+
+# 2. IMPORTANT — LATEST BUSINESS DECISIONS OVERRIDE OLD PLANS
+
+Older project documents may describe Resolution Hub, escalation, separate Committee case decisions or previous multilevel forwarding schemes.
+
+Those are historical requirements and must not override the latest customer-validated workflow.
+
+The current approved system has:
+
+### Individual Student 5-Good
+
+Student
+→ School preliminary review
+→ School consolidated list with official decision
+→ One-time forwarding
+→ City intake
+→ City Manager assignment
+→ City Officer assessment
+→ City Committee official decision.
+
+### UDN
+
+Eight configured institutions share one School Review Unit:
+
+`unit-udn`
+
+One School forwarding batch per award season.
+
+One common decision attachment.
+
+Preserve each Student's original institution.
+
+### Collective Student 5-Good
+
+Collective application
+→ Direct City processing
+→ Authorized City review
+→ Committee final decision.
+
+Collective uses TT01–TT04.
+
+No School preliminary review in the system.
+
+Do not redesign these approved flows.
+
+---
+
+# 3. MANDATORY SOURCE AND PHASE PREFLIGHT
+
+Before modifying code, inspect the actual current source.
+
+Verify:
+
+- SRW-0 workflow contract.
+- SRW-1 School forwarding backend.
+- SRW-2 shared Student dossier component implementation.
+- SRW-3 School batch forwarding interface.
+- Existing City Manager assignment.
+- Existing City Officer work queues.
+- Existing Committee application list.
+- Existing Committee decisions.
+- Existing review task domain.
+- Existing supplementation domain.
+- Existing ResolutionCase services.
+- Existing City intake endpoints.
+- Existing human judgment data.
+- Existing audit/history.
+- Existing AI UI integrations.
+- Existing Demo/Real adapters.
+
+Do not assume previous phases are complete merely because prompts were issued.
+
+## Required source audit
+
+Classify existing capabilities as:
+
+1. Functional and required.
+2. Functional but unnecessarily complicated.
+3. Redundant UI.
+4. Legacy workflow dependency.
+5. Historical data dependency.
+6. Broken or incomplete functionality.
+7. Demo-only functionality.
+8. Real backend-connected functionality.
+
+Identify the exact routes, components, services, repositories and states affected.
+
+Create a recoverable current source checkpoint.
+
+If a critical dependency cannot be resolved safely, report BLOCKED rather than improvising a replacement workflow.
+
+Otherwise proceed with the targeted refactor.
+
+---
+
+# 4. TARGET UX — CITY OFFICER
+
+The City Officer should have one straightforward review experience.
+
+## Primary navigation
+
+Keep:
+
+- Assigned applications or review tasks.
+- Application detail.
+- Existing review actions.
+- Actual supplementation.
+- Relevant review history.
+
+Remove redundant navigation.
+
+The Officer should not need to switch between:
+
+- A separate application detail.
+- A separate criterion inspection UI.
+- Resolution Hub.
+- Another ambiguous-case workspace.
+- Multiple duplicated review summaries.
+
+## Desired experience
+
+1. Open the assigned application.
+2. Inspect the canonical Student dossier.
+3. Select a criterion.
+4. Inspect Student declarations.
+5. Open the linked evidence.
+6. Record the authorized human assessment.
+7. Add a comment if necessary.
+8. Request supplementation if needed.
+9. Continue to the next assigned review item.
+
+Use the shared Student dossier UI from SRW-2.
+
+Do not create a second Officer-specific dossier renderer.
+
+The Student's submitted content remains read-only.
+
+---
+
+# 5. SIMPLIFIED CITY OFFICER WORKSPACE
+
+Redesign the existing review workspace for clarity.
+
+## Recommended layout
+
+### A. Compact application header
+
+Display:
+
+- Student name.
+- Original institution.
+- Award season.
+- Current application status.
+- Assigned review scope.
+- Actual review progress.
+
+Avoid filling the header with numerous administrative badges.
+
+### B. Main content
+
+Use the original Student dossier presentation:
+
+- Five criteria.
+- Requirement groups.
+- Declarations.
+- Evidence.
+- Applicable regulations.
+
+Preserve the original Student layout and source relationships.
+
+### C. Reviewer action area
+
+Provide one compact, accessible section for authorized judgments.
+
+Depending on the current domain contract, actions may include:
+
+- Đạt yêu cầu.
+- Không đạt yêu cầu.
+- Yêu cầu bổ sung.
+- Lưu nhận xét.
+- Hoàn tất phần xét duyệt.
+
+Use accurate wording and distinctions based on actual criterion/task/evidence-level semantics.
+
+Do not collapse granular canonical judgments into an invalid one-click application-level PASS/FAIL action.
+
+Do not invent new backend statuses merely for visual simplicity.
+
+### D. Existing processing history
+
+Use an expandable, read-only history section.
+
+Do not make the history timeline compete visually with the dossier.
+
+## Design principle
+
+**The dossier is the main interface. The review tools are supporting controls.**
+
+---
+
+# 6. REMOVE RESOLUTION CASE WORKFLOW
+
+The customer explicitly rejected unnecessary ambiguous-case handling.
+
+Retire the active review dependency on:
+
+- Resolution Hub.
+- ResolutionCase creation.
+- Escalate to Resolution.
+- Ambiguous-case queue.
+- ResolutionCase classification.
+- Separate Committee resolution decision.
+- Special resolution status requirements for normal review completion.
+- AI automatic escalation suggestions that create a case.
+
+## Important distinction
+
+Removing ResolutionCase does NOT mean that all evidence must be clearly valid or invalid.
+
+A reviewer may still encounter:
+
+- Insufficient evidence.
+- Missing information.
+- Conflicting dates.
+- Incomplete academic records.
+- Inconsistent volunteer participation.
+- Unclear declaration details.
+
+These conditions remain valid review observations.
+
+They must be handled using the existing normal workflow:
+
+- Record reviewer observations.
+- Request scoped supplementation when appropriate.
+- Keep the review pending when there is not enough information to complete it.
+- Record an authorized negative assessment when supported by actual verified facts and applicable rules.
+
+Do not automatically reject an application merely because an old ResolutionCase is no longer available.
+
+Do not automatically mark unresolved evidence as accepted.
+
+Do not create a replacement "special case" subsystem under a different name.
+
+---
+
+# 7. BACKEND WORKFLOW DECOUPLING
+
+Audit actual code dependencies on:
+
+- ResolutionCase entity.
+- ResolutionCase status.
+- Escalation API.
+- Resolution decision endpoints.
+- Application readiness aggregation.
+- ReviewTask completion.
+- Committee finalization.
+- AI review recommendations.
+- Notifications.
+- Audit events.
+- Legacy dashboard counters.
+
+The new normal processing path must NOT require ResolutionCase creation.
+
+## Critical requirements
+
+Preserve:
+
+- Human review decisions.
+- ReviewTask assignment.
+- Officer specialization where actually used.
+- Scoped supplementation.
+- Application lifecycle.
+- Committee final decision.
+- Audit logs.
+- Idempotency.
+- Authorization.
+- Concurrency protection.
+
+Where normal finalization is incorrectly blocked by ResolutionCase status, replace that dependency with validation based on the actual required human review outcomes.
+
+Do not blindly remove all finalization validation.
+
+Do not permit final decisions while mandatory canonical human review steps remain incomplete.
+
+Do not change historical official results.
+
+## Legacy data compatibility
+
+If historical ResolutionCase records exist:
+
+- Preserve them.
+- Preserve related audit entries.
+- Do not delete tables automatically.
+- Do not silently mark records resolved.
+- Do not rewrite historical judgments.
+- Do not manufacture Committee decisions.
+
+Determine whether existing unresolved legacy cases require read-only history access or an explicit administrative handling plan.
+
+Document the approach.
+
+Do not execute a destructive database migration in this phase.
+
+---
+
+# 8. KEEP CITY MANAGER ASSIGNMENT
+
+Simplification must not remove real reviewer assignment.
+
+The City Manager remains responsible for authorized:
+
+- Incoming application oversight.
+- Assignment.
+- Reassignment when supported.
+- Workload monitoring.
+- Review progress visibility.
+
+Keep the existing task-based or application-based assignment architecture as implemented.
+
+Do not invent a new assignment mechanism unnecessarily.
+
+## City Manager interface
+
+Prioritize:
+
+- Applications awaiting assignment.
+- Assigned applications.
+- Unfinished review work.
+- Workload by officer.
+- Applications requiring supplementation.
+- Completed reviews.
+
+Keep summaries concise.
+
+Avoid displaying a large collection of administrative widgets with overlapping meanings.
+
+A reviewer may see only assigned tasks/applications according to current server authorization.
+
+City Manager authority must not automatically include Officer or Committee decision authority.
+
+---
+
+# 9. TARGET UX — CITY COMMITTEE
+
+The City Committee interface must focus on official consideration and decisions.
+
+## Desired workflow
+
+1. Open the authorized Committee application list.
+2. Select an application.
+3. View the same canonical Student dossier.
+4. Inspect School preliminary recommendation.
+5. Inspect actual City Officer assessments.
+6. Inspect evidence where needed.
+7. View current processing status.
+8. Record the authorized Committee decision.
+9. Continue to another application.
+
+No ResolutionCase detour.
+
+No formal hearing.
+
+No questioning workflow.
+
+No fictional meeting session.
+
+No invented voting or quorum mechanism.
+
+Do not create new Committee decision types without the approved domain contract.
+
+---
+
+# 10. COMMITTEE APPLICATION DETAIL — SIMPLIFIED DESIGN
+
+Use the shared Student dossier from SRW-2.
+
+## Section 1 — Application overview
+
+Show:
+
+- Student name.
+- Original institution.
+- Award season.
+- Actual workflow status.
+- Relevant School/City processing context.
+
+## Section 2 — Actual review results
+
+Provide a concise summary of the five criteria.
+
+Distinguish:
+
+- School preliminary review.
+- City Officer review.
+- AI preliminary advisory assessment, if shown.
+
+Never merge these into one ambiguous "Đạt" status.
+
+A missing human judgment must remain missing.
+
+## Section 3 — Original dossier
+
+Reuse the same five-criterion presentation as Student and Officer views.
+
+Provide direct access to declarations and evidence.
+
+## Section 4 — Official decision
+
+Show the existing authorized Committee decision controls in one clear location.
+
+Do not scatter final decision buttons across multiple cards and dialogs.
+
+Do not allow an AI preliminary verdict to submit a final decision.
+
+## Section 5 — History and documents
+
+Use a compact collapsible section for:
+
+- School forwarding batch.
+- School common decision attachment.
+- City assessment history.
+- Supplementation history.
+- Existing audit events.
+
+Show only actual recorded events.
+
+Do not fabricate deliberations, meeting minutes or additional approvals.
+
+---
+
+# 11. SCHOOL DECISION DOCUMENT VISIBILITY
+
+SRW-1/SRW-3 introduced consolidated School forwarding batches.
+
+City reviewers must be able to access the relevant official School decision document according to authorization.
+
+For UDN:
+
+- One shared School Review Unit.
+- One forwarded list.
+- One common decision document.
+- Eight distinct original member institutions.
+
+In City application detail:
+
+Display a contextual reference such as:
+
+"Quyết định đề nghị xét chọn — Đại học Đà Nẵng"
+
+Provide an authorized view/download action.
+
+Do not attach eight separate decision documents to the eight UDN institutions.
+
+Do not duplicate file storage.
+
+Use the actual forwarded batch reference.
+
+If the batch or decision is missing, display the actual state rather than manufacturing a document.
+
+---
+
+# 12. REVIEW STATUS PRESENTATION
+
+The current UI may expose many internal status names.
+
+Reduce visual complexity without corrupting backend states.
+
+Use human-friendly Vietnamese labels.
+
+Examples of display concepts:
+
+- Chờ phân công.
+- Đang xét duyệt.
+- Chờ bổ sung.
+- Chờ Hội đồng.
+- Đã có kết quả.
+
+Only map states that actually exist in the canonical lifecycle.
+
+## Important
+
+Do not merge distinct business states when that would hide an actionable difference.
+
+Do not call a School recommendation an official recognition decision.
+
+Do not show AI preliminary PASS as a completed human assessment.
+
+Do not call an application officially rejected based on missing evidence alone.
+
+Keep internal state mappings typed and testable.
+
+The goal is fewer confusing visual labels, not weaker workflow correctness.
+
+---
+
+# 13. REVIEW CONTROLS — EXPERT-FIRST
+
+The users are experienced Student Association reviewers.
+
+They do not need to be instructed through an elaborate review wizard.
+
+## Required behavior
+
+- Direct access to evidence.
+- Short review actions.
+- Contextual comments.
+- Minimal unnecessary confirmation dialogs.
+- Clear success/error feedback.
+- Autosave only where the existing contract supports it.
+- No loss of unsaved reviewer input.
+- Easy return to the review queue.
+- Preserve current filters and page.
+
+Prefer one obvious primary next action.
+
+Do not automatically advance to another application before a successful server confirmation.
+
+Do not create redundant "Review Summary → Confirmation → Final Review → Complete" sequences unless the actual domain requires them.
+
+Keep destructive or official decision confirmation where appropriate.
+
+---
+
+# 14. COMMITTEE LIST SIMPLIFICATION
+
+Audit the existing City Committee list.
+
+Remove unnecessary columns, buttons and status indicators.
+
+Preserve all important information.
+
+For Individual applications, prioritize:
+
+- Student.
+- Institution.
+- School recommendation.
+- City review status.
+- Committee status.
+- Open application action.
+
+For Collective applications, preserve TT01–TT04 information.
+
+Do not combine Collective and Individual eligibility logic.
+
+## Responsive layout
+
+Desktop:
+
+Use available content width.
+
+Ensure table columns remain readable.
+
+Tablet:
+
+Use compact tables or grouped cards when necessary.
+
+Mobile:
+
+Use stacked application cards.
+
+Do not force five or more columns into a narrow screen.
+
+Preserve:
+
+- Search.
+- Filters.
+- Pagination.
+- Open application.
+- Relevant official actions.
+
+Do not remove essential controls just to achieve a visually minimal layout.
+
+---
+
+# 15. COLLECTIVE APPLICATIONS
+
+Preserve the approved Collective workflow.
+
+Collective applications:
+
+- Use TT01–TT04.
+- Submit directly to City.
+- Do not go through the School batch forwarding process.
+- Are reviewed by authorized City accounts.
+- Receive official Committee decisions under the existing workflow.
+
+Do not introduce School preliminary results for Collective applications.
+
+Do not display the Individual five-criterion dossier for Collective applications.
+
+Simplify Collective presentation only where necessary, without changing business semantics.
+
+---
+
+# 16. AI INTEGRATION — QUIET AND USEFUL
+
+Keep existing AI preliminary review capabilities.
+
+But remove AI entry points that make the interface cluttered.
+
+Default state:
+
+- AI remains collapsed.
+- No automatic report popup.
+- No automatic Guided Review.
+- No flashing indicators.
+- No repetitive explanations.
+- No automatic ResolutionCase recommendation.
+
+Preferred entry:
+
+"AI hỗ trợ thẩm định"
+
+On request, AI can:
+
+- Provide a preliminary verdict.
+- Explain material findings.
+- Link directly to evidence.
+- Highlight missing or contradictory information.
+- Suggest an editable review note.
+- Summarize School and City assessments.
+- Summarize authorized Committee workload.
+
+AI may report:
+
+- Meets.
+- Not Meets.
+- Insufficient Evidence.
+
+These remain advisory.
+
+AI cannot:
+
+- Record official Officer judgments.
+- Create supplementation requests autonomously.
+- Change assignments.
+- Forward School batches.
+- Record Committee final decisions.
+- Publish results.
+
+Do not create a second AI subsystem in SRW-4.
+
+Adapt existing integrations only.
+
+---
+
+# 17. REAL MODE DATA INTEGRITY
+
+The simplified UI must use actual data.
+
+Do not fabricate:
+
+- School review completion.
+- City review completion.
+- Staff assignment.
+- Committee decision.
+- Final recognition.
+- Supplement responses.
+- Official decision attachments.
+
+If actual data is missing, display an accurate missing or pending state.
+
+Inspect current Real Mode adapters.
+
+Preserve authenticated resource scope.
+
+Do not silently fall back to Demo fixtures.
+
+When backend/database is offline, fail honestly.
+
+No fake production persistence.
+
+Do not reconnect PostgreSQL unless separately authorized.
+
+---
+
+# 18. AUTHORIZATION
+
+Preserve backend RBAC and resource-level ABAC.
+
+## School Officer
+
+May review applications in the authorized School Review Unit.
+
+Cannot make City Officer or Committee decisions.
+
+## City Manager
+
+May perform authorized intake and assignment.
+
+No Officer judgment or Committee final decision by default.
+
+## City Officer
+
+May review assigned work according to actual task/application scope.
+
+Cannot perform Committee final decisions.
+
+Cannot modify School forwarding batches.
+
+## City Committee
+
+May inspect authorized applications and record official decisions.
+
+Cannot impersonate an Officer or modify the original Student dossier.
+
+## Admin
+
+Administration authority does not automatically grant Officer or Committee judgment permissions.
+
+## Student
+
+Can access only authorized Student data and supplement windows.
+
+Cannot modify human reviewer records.
+
+### Required security tests
+
+- Cross-workspace isolation.
+- Cross-unit denial.
+- Assignment scope.
+- Committee-only finalization.
+- School/City role separation.
+- Evidence access protection.
+- Decision attachment authorization.
+- No IDOR through application/task/batch IDs.
+
+Do not rely only on hidden buttons.
+
+---
+
+# 19. DEMO MODE — REALISTIC OPERATIONAL FLOW
+
+Update the existing deterministic Demo.
+
+Create a clear end-to-end scenario.
+
+## D01 — School forwards list
+
+A completed School batch is available in City intake.
+
+## D02 — UDN common decision
+
+City can open the common UDN decision document.
+
+Original member institutions remain distinct.
+
+## D03 — City assignment
+
+City Manager assigns review work using the existing mechanism.
+
+## D04 — Officer opens dossier
+
+Officer sees the reused Student dossier presentation.
+
+## D05 — Officer records assessment
+
+An authorized criterion/task judgment works.
+
+## D06 — Evidence inspection
+
+Officer opens the exact relevant evidence.
+
+## D07 — Supplement request
+
+Officer requests a scoped supplement through normal workflow.
+
+## D08 — Student responds
+
+Student uploads the permitted supplement.
+
+## D09 — Officer reassesses
+
+Officer reviews updated evidence and continues.
+
+## D10 — No ResolutionCase
+
+No separate ResolutionCase is created or required.
+
+## D11 — Committee views assessments
+
+Committee sees actual recorded School and City results.
+
+## D12 — Committee official decision
+
+Authorized Committee decision works independently of AI.
+
+## D13 — AI on demand
+
+AI report opens only when requested.
+
+No unsolicited popup.
+
+## D14 — Collective direct City
+
+Collective applications remain separate and functional.
+
+## D15 — Demo reset
+
+The Demo resets to a deterministic initial state.
+
+### Demo consistency
+
+All statuses and counters must reflect the same canonical synthetic records.
+
+Do not hardcode inconsistent summaries.
+
+Do not simulate successful official actions with decorative toasts while leaving the underlying Demo state unchanged.
+
+---
+
+# 20. LEGACY RESOLUTION FEATURE RETIREMENT
+
+Produce an exact retirement inventory.
+
+For every Resolution-related feature, identify:
+
+- Frontend route.
+- Navigation entry.
+- Component.
+- API endpoint.
+- Controller/service.
+- Prisma model.
+- Business-state dependency.
+- Audit dependency.
+- Test dependency.
+- Historical data usage.
+
+Classify each as:
+
+- Remove from active UI.
+- Replace with normal review action.
+- Keep internally for historical compatibility.
+- Read-only historical access.
+- Requires future migration.
+- Safe to retire after verification.
+
+Do not delete all code merely because the UI no longer exposes the feature.
+
+But do not leave active user workflows that continue generating ResolutionCases.
+
+Do not leave dead navigation links.
+
+Do not leave normal review completion dependent on a removed resolution endpoint.
+
+If a dependency cannot be eliminated safely, report the exact blocker.
+
+---
+
+# 21. IMPLEMENTATION CHECKPOINTS
+
+## SRW-4A — Source and Dependency Audit
+
+Deliver:
+
+- City Officer inventory.
+- Committee inventory.
+- Resolution dependency graph.
+- Human review state matrix.
+- Current versus target navigation.
+- Source checkpoint.
+
+Acceptance:
+
+No unresolved critical workflow contradictions.
+
+## SRW-4B — City Officer UX Simplification
+
+Implement:
+
+- Shared Student dossier integration.
+- Compact review controls.
+- Correct evidence navigation.
+- Normal supplementation.
+- Removed ResolutionCase UI dependencies.
+
+Acceptance:
+
+Officer can complete normal assigned review without entering a Resolution Hub.
+
+## SRW-4C — Committee UX Simplification
+
+Implement:
+
+- Clean application list.
+- Shared dossier detail.
+- School/City result summary.
+- Common School decision attachment visibility.
+- Existing official Committee actions.
+
+Acceptance:
+
+Committee can consider and decide applications without fictional case-processing or meeting workflows.
+
+## SRW-4D — Backend Workflow Cleanup
+
+Implement targeted real backend changes necessary to eliminate ResolutionCase requirements from the normal workflow.
+
+Acceptance:
+
+- No new ResolutionCase creation.
+- Normal review remains valid.
+- Completion/finalization uses legitimate required human judgments.
+- No unintended status bypass.
+- Audit preserved.
+- Historical data preserved.
+
+## SRW-4E — Integration and UI Hardening
+
+Verify:
+
+- School → City.
+- Assignment.
+- Officer review.
+- Supplement.
+- Committee decision.
+- Collective regression.
+- Responsive layout.
+- Demo/Real isolation.
+- Authorization.
+
+Acceptance:
+
+End-to-end Demo works and Real Mode integration claims accurately reflect tested infrastructure.
+
+---
+
+# 22. RESPONSIVE REQUIREMENTS
+
+Test at:
+
+320, 360, 390, 430, 768, 1024, 1280, 1440, 1660 and 1920px.
+
+### City Officer
+
+Verify:
+
+- Shared dossier readability.
+- Criterion navigation.
+- Reviewer action panel.
+- Evidence viewer.
+- Supplement dialog.
+- Queue navigation.
+- AI Companion position.
+
+### Committee
+
+Verify:
+
+- Application list.
+- Individual dossier.
+- Collective application.
+- School decision preview.
+- Assessment summary.
+- Official decision controls.
+
+### No tolerance for
+
+- Crushed table columns.
+- Large unused right-side space.
+- Hidden review buttons.
+- Horizontal page overflow.
+- Overlapping modals.
+- AI Companion covering human decisions.
+- Demo selector covering action buttons.
+- Scroll traps.
+- Broken focus restoration.
+- Unusable mobile dialogs.
+
+Fix root layout constraints.
+
+Do not hide issues with global overflow-x: hidden.
+
+Verify using actual rendered browser interaction whenever supported.
+
+---
+
+# 23. AUTOMATED TESTS
+
+Add and update tests for:
+
+### Officer review
+
+- Assigned work visibility.
+- Criterion/evidence judgments.
+- Normal review completion.
+- Supplement request.
+- Supplement response.
+- Reviewer reassessment.
+- No ResolutionCase requirement.
+
+### Committee
+
+- Authorized application visibility.
+- Correct School results.
+- Correct City results.
+- Missing assessments handled honestly.
+- Common School decision access.
+- Official decision action.
+- Unauthorized decision rejected.
+- No invented meeting workflow.
+
+### Backend
+
+- No active ResolutionCase creation.
+- ReviewTask completion remains valid.
+- Incomplete mandatory reviews are not incorrectly finalized.
+- Existing supplementation works.
+- Existing assignment works.
+- Audit correctness.
+- Historical data compatibility.
+- Cross-role authorization.
+- Cross-workspace isolation.
+
+### Frontend
+
+- Shared dossier reuse.
+- Correct review controls.
+- Navigation.
+- Queue filter preservation.
+- Evidence preview.
+- Modals.
+- Responsive.
+- AI optional behavior.
+- Student interface regression.
+- Collective interface regression.
+
+### Integration
+
+- SRW-1 School batch compatibility.
+- SRW-3 forwarding visibility.
+- City intake.
+- City assignment.
+- Officer review.
+- Committee finalization.
+
+Use real source tests.
+
+Do not add tests that merely assert static fixture text.
+
+---
+
+# 24. QUALITY GATES
+
+Run all available relevant checks:
+
+- Frontend TypeScript.
+- Frontend production build.
+- Frontend regression tests.
+- Backend TypeScript.
+- Backend production build.
+- Backend ESLint.
+- Backend unit tests.
+- Backend HTTP tests.
+- Architecture boundary checks.
+- FSD import checks.
+- Legacy Resolution dependency checks.
+- Authorization tests.
+- Demo scenario tests.
+- Actual browser responsive checks.
+- Golden Frontend intentional diff.
+
+If PostgreSQL remains offline:
+
+Do not claim real database integration PASS.
+
+If file storage is unavailable:
+
+Do not claim actual common decision preview/download PASS in Real Mode.
+
+If browser testing is unavailable:
+
+Report NOT VERIFIED.
+
+Do not invent test counts, screenshots or passing results.
+
+---
+
+# 25. GOLDEN FRONTEND SAFETY
+
+The existing frontend is a large working Golden Frontend with intentional changes from earlier AI phases.
+
+Preserve:
+
+- Historical Golden Manifest.
+- Current source checkpoint.
+- Student dossier interactions.
+- School reviewer workflows.
+- School batch forwarding UI.
+- City Manager assignment.
+- Existing official decision controls.
+- Collective TT01–TT04 functionality.
+
+Do not:
+
+- Regenerate the frontend.
+- Replace the application shell.
+- Rewrite global routing.
+- Introduce a parallel staff application.
+- Silently modify unrelated Student screens.
+- Destroy historical review data.
+- Reset the database.
+- Reconnect Supabase.
+- Deploy.
+- Rewrite original Golden Manifest hashes.
+
+Document all intentional changes.
+
+---
+
+# 26. REQUIRED BEFORE / AFTER EXPERIENCE
+
+Provide a concrete comparison of the actual implemented behavior.
+
+## Before
+
+Officer:
+
+- Opens a separate review workspace.
+- Navigates between multiple specialized panels.
+- May encounter ambiguous-case escalation.
+- May need a Resolution Hub.
+
+Committee:
+
+- Opens application summaries.
+- May navigate into a ResolutionCase.
+- Encounters multiple processing screens.
+- Sees excessive status and AI UI complexity.
+
+## After
+
+Officer:
+
+- Opens assigned review.
+- Sees original Student dossier.
+- Checks evidence.
+- Records human assessment.
+- Requests supplementation if necessary.
+- Continues normal review.
+
+Committee:
+
+- Opens an application.
+- Sees original Student dossier.
+- Reads actual School and City results.
+- Checks evidence if necessary.
+- Makes authorized official decision.
+
+No unnecessary detours.
+
+No fictional meeting workflows.
+
+No duplicate dossier interfaces.
+
+---
+
+# 27. REQUIRED DELIVERY REPORT
+
+Provide:
+
+### A. Preflight
+- Source baseline.
+- SRW-1/2/3 dependency status.
+- Current workflow audit.
+
+### B. Removed Complexity
+- Resolution Hub UI retired.
+- Escalation entry points removed.
+- Redundant navigation removed.
+- Legacy backend dependency changes.
+- Historical compatibility strategy.
+
+### C. City Officer
+- Shared dossier integration.
+- Review controls.
+- Supplementation.
+- Review completion.
+- Queue navigation.
+
+### D. Committee
+- Simplified list.
+- Shared dossier.
+- School/City summary.
+- Decision document.
+- Official decision controls.
+
+### E. Backend
+- Actual code changes.
+- State transition changes.
+- API contract changes.
+- Authorization.
+- Audit.
+- Legacy data handling.
+
+### F. AI
+- Retained functionality.
+- Removed intrusive elements.
+- No autonomous official actions.
+
+### G. Verification
+- Demo scenarios D01–D15.
+- Frontend tests.
+- Backend tests.
+- Browser tests.
+- Responsive screenshots.
+- Security tests.
+- Regression results.
+
+### H. Exact Files
+- Created.
+- Modified.
+- Retired.
+- Left unchanged.
+
+### I. Known Limitations
+- Offline database.
+- Missing external storage integration.
+- Outstanding Real Mode dependencies.
+- Unverified browser interactions.
+
+### J. Final Verdict
+PASS / PARTIAL / BLOCKED.
+
+Do not declare PASS solely because the UI looks simpler.
+
+All legitimate human review functionality must still work.
+
+---
+
+# 28. HARD STOP
+
+STOP after SRW-4 implementation and verification.
+
+Do not automatically begin SRW-5.
+
+Do not:
+
+- Create a new review level.
+- Restore Resolution Hub.
+- Create a replacement ambiguous-case portal.
+- Invent Committee meetings.
+- Add formal voting.
+- Remove City assignment.
+- Remove scoped supplementation.
+- Remove audit history.
+- Remove official Committee decisions.
+- Convert AI preliminary verdicts into human judgments.
+- Change School one-time forwarding rules.
+- Create eight UDN forwarding batches.
+- Rewrite the entire Golden Frontend.
+- Reconnect the database.
+- Run destructive migrations.
+- Deploy to production.
+
+## FINAL NORTH STAR
+
+**SIMPLIFY THE INTERFACE, NOT THE BUSINESS INTEGRITY.**
+
+The Student prepares and submits a dossier.
+
+The School reviews and forwards a consolidated selected list with an official decision.
+
+City Manager assigns review work.
+
+City Officers inspect the same familiar Student dossier, assess evidence and request supplementation when needed.
+
+The Committee inspects actual recorded results and performs authorized final decisions.
+
+AI quietly supports analysis.
+
+No unnecessary Resolution Hub.
+
+No artificial ambiguous-case workflow.
+
+No duplicated dossier interfaces.
+
+No fictional internal meetings.
+
+No unauthorized automated decisions.
+
+**SUCCESS = A FAST, FAMILIAR, CALM AND PRODUCTION-ORIENTED CITY/COMMITTEE REVIEW EXPERIENCE THAT EXPERIENCED OFFICERS CAN USE IMMEDIATELY.**

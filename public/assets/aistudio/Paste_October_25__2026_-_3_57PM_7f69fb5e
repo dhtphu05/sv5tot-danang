@@ -1,0 +1,2135 @@
+# 5TOT ĐÀ NẴNG — LEAN-5
+## PRODUCTION LEAN CITY REVIEW, COMMITTEE DECISION UX, BUSINESS STATUS SIMPLIFICATION & SYSTEM-WIDE RESPONSIVE HARMONIZATION
+
+**Priority:** P0 — Final Product UX Integration Before End-to-End UAT
+
+**Execution:** VERIFY CURRENT BASELINE → SOURCE AUDIT → TARGETED IMPLEMENTATION → CROSS-ROLE INTEGRATION → FUNCTIONAL REGRESSION → RESPONSIVE BROWSER QA → REPORT
+
+**Implementation Authorization:** YES — Targeted Production Source Changes
+
+**Primary Scope:**
+- City Individual review experience.
+- City shared review queue.
+- Committee application management and official decision UX.
+- City Collective TT01–TT04 presentation consistency.
+- User-facing business status simplification.
+- Vietnamese administrative terminology.
+- Cross-role dossier consistency.
+- Responsive layouts.
+- Operational dashboard/list consistency.
+
+**Out of Scope:**
+- LEAN-6 full end-to-end pilot UAT.
+- New award programs.
+- New official decision procedures.
+- New case-management features.
+- New public publication workflows.
+- Unrelated administration redesign.
+- Production deployment.
+
+**Frontend:** React + Vite + Strict TypeScript + Feature-Sliced Design  
+**Backend:** Existing Node.js + Express + Prisma/PostgreSQL Modular Monolith
+
+---
+
+# 1. MISSION
+
+The customer has approved a LEAN transformation of the 5TOT Đà Nẵng product.
+
+Previous phases targeted:
+
+- LEAN-1: Student declaration simplification.
+- LEAN-2: Direct inline human Pass/Fail review.
+- LEAN-3: Contextual supplementation and reassessment.
+- LEAN-4: School recommendation, application selection and one-time forwarding.
+
+LEAN-5 must now deliver a unified, simple and professional operational experience for City Reviewers and Committee members.
+
+The customer has repeatedly identified a product-level concern:
+
+**The existing system looks modern, but normal administrative operations feel more complicated than necessary.**
+
+Some screens resemble a workflow engine, AI administration console or developer-oriented product.
+
+This is not the intended user experience.
+
+The system should feel like a real Vietnamese Student Association award selection platform.
+
+## Intended operational experience
+
+CITY REVIEWER:
+
+Open shared review list → Open dossier → Review declarations and evidence → Record Pass/Fail → Complete the authorized City review.
+
+COMMITTEE:
+
+Open application list → Inspect School and City results → View original dossier if needed → Record an authorized official decision.
+
+The product must not require users to manage artificial processing states.
+
+Maintain all genuine domain rules, authorization boundaries and audit history.
+
+**LEAN-5 MUST IMPLEMENT ACTUAL SOURCE CODE CHANGES. DO NOT STOP AFTER PRODUCING AN AUDIT REPORT.**
+
+---
+
+# 2. BASELINE & DEPENDENCY VERIFICATION
+
+Before modifying production source, inspect:
+
+- Current frontend tree.
+- Current backend tree.
+- Corrected LEAN-0.1 Review Contract.
+- Corrected Review State Truth Table.
+- Corrected LEAN Implementation Plan.
+- LEAN-1 implementation report.
+- LEAN-2 implementation report.
+- LEAN-3 implementation report.
+- LEAN-4 implementation report.
+- Existing City review contracts.
+- Existing Committee decision contracts.
+- Existing Collective review contracts.
+- Existing dashboard/reporting contracts.
+
+Do not assume phases are complete merely because they were requested.
+
+Verify actual implementation.
+
+For each predecessor phase, report:
+
+- Implemented.
+- Partially implemented.
+- Missing.
+- Demo verified.
+- Real API verified.
+- Database integration verified.
+- Remaining dependencies.
+
+If an earlier phase is incomplete, implement independent safe LEAN-5 changes and report blockers.
+
+Do not silently recreate missing earlier functionality under a new architecture.
+
+Record the recoverable source baseline.
+
+Preserve existing Golden Frontend historical manifest.
+
+---
+
+# 3. NON-NEGOTIABLE APPROVED BUSINESS MODEL
+
+The 5TOT Individual workflow is:
+
+Student
+→ School preliminary review
+→ School recommendation
+→ School consolidated forwarding
+→ City independent review
+→ Committee official recognition decision.
+
+## Two review levels
+
+Only two actual reviewing levels exist:
+
+1. School.
+2. City.
+
+The Committee is the final official decision authority, not an additional generic Officer review layer.
+
+Do not introduce an intermediate University review stage.
+
+## City shared queue
+
+Authorized City Reviewers work from a shared review queue.
+
+No mandatory per-Officer assignment.
+
+No workload distribution workflow.
+
+No ResolutionCase.
+
+No artificial case escalation system.
+
+## University of Da Nang
+
+Eight original institutions remain distinct:
+
+- DUT.
+- DUE.
+- UED.
+- UFL.
+- UTE.
+- VKU.
+- VNUK.
+- SMP.
+
+They share one School Review Unit:
+
+`unit-udn`
+
+Preserve one consolidated School forwarding operation per season.
+
+## Collective Student 5-Good
+
+Collective applications use TT01–TT04 and go directly to City.
+
+They do not pass through the Individual School forwarding workflow.
+
+## Official human authority
+
+Do not automatically:
+
+- Record School recommendations.
+- Forward School applications.
+- Complete official City attestations when separate human action is required.
+- Record Committee recognition.
+- Issue official decisions.
+- Publish results.
+
+Computed eligibility is not an official human decision.
+
+---
+
+# 4. START WITH THE ACTUAL CITY & COMMITTEE AUDIT
+
+Locate and inspect the existing implementation.
+
+Previously reported source paths include:
+
+- `src/staff/components/review/OfficerReviewWorkspace.tsx`
+- `src/staff/components/review/InlineRowReviewControls.tsx`
+- `src/staff/components/review/CriterionReviewPanel.tsx`
+- `src/staff/components/committee/CommitteeViews.tsx`
+- `src/staff/components/committee/CommitteeApplicationWorkspace.tsx`
+- `src/staff/components/committee/DecisionDialog.tsx`
+- `src/staff/components/review/CollectiveOfficerReviewWorkspace.tsx`
+- `src/staff/reviewSelectors.ts`
+- `src/staff/schoolSelectors.ts`
+- `src/staff/reviewTypes.ts`
+
+These are discovery hints only.
+
+Inspect the actual project paths.
+
+Audit:
+
+1. City navigation.
+2. City application lists.
+3. City shared queue filtering.
+4. City dossier review.
+5. School judgment visibility.
+6. City independent judgments.
+7. City review completion.
+8. Supplementation.
+9. Committee navigation.
+10. Committee application lists.
+11. Committee application detail.
+12. Committee decisions.
+13. Collective application review.
+14. Human review status projection.
+15. Dashboards.
+16. Excel export summaries.
+17. User-facing terminology.
+18. Responsive layouts.
+19. Demo/Real adapters.
+20. Authorization and audit history.
+
+Identify redundant interactions and excessive technical UI.
+
+Produce an actual source-backed improvement matrix.
+
+---
+
+# 5. LEAN CITY REVIEW — MAIN WORKSPACE
+
+The City reviewer should not need to manage a complicated workflow system.
+
+The City workspace should prioritize:
+
+**Danh sách hồ sơ cần thẩm định**
+
+Recommended visible information:
+
+- Student name.
+- Student ID.
+- Original institution.
+- School Review Unit.
+- School recommendation.
+- Five criteria status.
+- City review progress.
+- Current City result.
+- Open dossier action.
+
+Use actual application and review records.
+
+Do not use AI-generated status as official review data.
+
+## Preferred City navigation
+
+Keep navigation simple.
+
+Suggested conceptual structure:
+
+- Hồ sơ cá nhân.
+- Hồ sơ tập thể.
+- Kết quả thẩm định.
+- Thống kê, báo cáo.
+
+Only use navigation items supported by actual implemented functionality.
+
+Avoid unnecessary pages such as:
+
+- Assigned to me.
+- Workload allocation.
+- Review task assignment.
+- Resolution Hub.
+- Escalation queue.
+- Workflow management.
+- Processing pipelines.
+
+If internal legacy routes remain necessary for compatibility, remove them from normal active user navigation only after verifying that no legitimate workflow depends on them.
+
+Do not delete backend endpoints without a source-backed deprecation plan.
+
+---
+
+# 6. SHARED CITY REVIEW QUEUE
+
+All authorized City Reviewers should be able to access eligible forwarded Individual applications through the shared queue.
+
+## Required behavior
+
+- No personal assignment required.
+- Correct role authorization.
+- Correct season.
+- Correct School forwarding state.
+- Correct original institution.
+- Correct City review status.
+- Correct Student application identity.
+
+The queue must not require an Officer to claim a dossier merely to begin assessment.
+
+### Useful filters
+
+- Academic year / award season.
+- Original institution.
+- School Review Unit.
+- School recommendation.
+- City review progress.
+- City review outcome.
+- Supplementation status.
+- Application type.
+
+Do not make every filter permanently visible.
+
+Use a compact filter bar and optional additional filters.
+
+### Search
+
+Support searching by:
+
+- Student name.
+- Student ID.
+- Supported application identifier.
+
+Preserve relevant filter state when opening a dossier and returning to the list.
+
+---
+
+# 7. CITY APPLICATION TABLE DESIGN
+
+On desktop, City application management should center on a readable table.
+
+Recommended columns:
+
+| Field | Description |
+|---|---|
+| Sinh viên | Name and Student ID |
+| Trường | Original institution |
+| Sơ tuyển | Actual School recommendation |
+| Tiêu chí | Five-criterion City review summary |
+| Thẩm định | Actual City progress/result |
+| Bổ sung | Contextual indicator only if needed |
+| Thao tác | Open dossier |
+
+Avoid showing many separate badges for:
+
+- Internal review lifecycle.
+- Evidence status.
+- Requirement status.
+- AI result.
+- Processing state.
+- Reviewer state.
+- Assignment state.
+
+Use one meaningful primary status per row, supported by concise secondary information.
+
+### Status examples
+
+"Chờ thẩm định"
+
+"Đang thẩm định"
+
+"Đã thẩm định"
+
+"Cần bổ sung"
+
+These are UI labels, not instructions to create new database enums.
+
+### Five-criterion summary
+
+Where useful, show:
+
+- Đạo đức.
+- Học tập.
+- Thể lực.
+- Tình nguyện.
+- Hội nhập.
+
+Use compact clear indicators.
+
+Do not mark a criterion as passed simply because it has been reviewed.
+
+Keep:
+
+**Đã xét 5/5**
+
+separate from:
+
+**Đạt 4/5**
+
+---
+
+# 8. CITY DOSSIER — REUSE LEAN-2
+
+City review must reuse the LEAN-2 continuous Student dossier architecture.
+
+Do not build a second City-only renderer.
+
+The reviewer should see:
+
+1. One compact submitted Student profile.
+2. Original institution and season.
+3. Five criterion sections.
+4. Numbered Student declarations.
+5. Supporting evidence.
+6. Direct City Pass/Fail controls.
+7. Derived criterion progress.
+8. Relevant School results as secondary context.
+
+Normal interaction:
+
+**Read declaration → View evidence → Click Đạt/Không đạt → Continue.**
+
+Do not introduce:
+
+- A City-specific review wizard.
+- Giant sticky controls.
+- Duplicate criterion navigation.
+- Previous/Next as mandatory workflow.
+- A permanent Inspector that reduces the dossier to a narrow column.
+- Multiple mandatory saves for one logical judgment.
+
+Preserve actual canonical assessment scope and backend persistence.
+
+---
+
+# 9. SCHOOL RESULTS VS CITY RESULTS
+
+The City must see the School's previous assessment without treating it as the City's current judgment.
+
+## Required separation
+
+School judgment:
+
+Historical School assessment.
+
+City judgment:
+
+Independent City assessment.
+
+### Example
+
+School:
+
+"Đạo đức tốt — Đạt"
+
+City:
+
+"Đạo đức tốt — Không đạt"
+
+This must be a valid state.
+
+The interface should clearly identify the review level associated with each result.
+
+### Recommended presentation
+
+Primary content:
+
+Current City review and evidence.
+
+Secondary context:
+
+"Kết quả sơ tuyển cấp Trường"
+
+Allow the reviewer to inspect School outcomes without cluttering each declaration row with excessive duplicate status badges.
+
+Do not overwrite School judgments.
+
+Do not automatically copy School Pass/Fail outcomes into City judgment records.
+
+Historical decisions must remain audit-traceable.
+
+---
+
+# 10. CITY REVIEW COMPLETION
+
+This requires source verification.
+
+Review completion and criterion eligibility are different dimensions.
+
+### Example
+
+- Five criteria reviewed.
+- Four criteria passed.
+- One criterion failed.
+
+The City review may be fully assessed, but its eligibility result remains negative.
+
+Do not leave completed-but-failing dossiers permanently stuck in "Đang xét".
+
+### Explicit completion
+
+Inspect whether the backend has a legitimate authorized City review completion operation.
+
+If completion is a separate human attestation, retain it.
+
+Simplify its UI:
+
+"Hoàn tất thẩm định"
+
+Place it at the end of the appropriate dossier context.
+
+Do not require duplicate completion at every criterion if those steps are merely derived.
+
+### Safety
+
+Do not auto-attest City completion based solely on five passing criteria.
+
+Do not auto-forward to Committee based solely on computed eligibility.
+
+Use the actual domain contract.
+
+On API failure:
+
+- Show an accurate error.
+- Do not claim completion.
+- Preserve reviewer context.
+- Handle concurrent changes safely.
+
+---
+
+# 11. CITY SUPPLEMENTATION
+
+Reuse LEAN-3 contextual supplementation.
+
+At the relevant declaration:
+
+"Yêu cầu bổ sung"
+
+The City reviewer should be able to:
+
+1. Open the relevant declaration.
+2. Request correction.
+3. Enter a Student-visible reason.
+4. Submit the request.
+5. See the request status.
+6. Inspect the returned supplement.
+7. Reassess directly.
+
+Do not create a separate City case-management workflow.
+
+Do not reintroduce ResolutionCase.
+
+Do not route City supplementation through mandatory School reapproval unless explicitly supported by the canonical contract.
+
+Preserve:
+
+- Request stage.
+- Student scope.
+- Original evidence.
+- Corrected evidence.
+- Human judgment history.
+- Audit records.
+- Applicable deadlines.
+
+Do not invent a three-day default.
+
+---
+
+# 12. LEAN COMMITTEE — PRODUCT PHILOSOPHY
+
+The Committee interface should be even simpler than the Officer review interface.
+
+Committee members should not be forced to repeat School or City assessment operations.
+
+The Committee needs to know:
+
+- Who is being considered?
+- Which award and season?
+- What did the School recommend?
+- What did the City conclude?
+- What evidence supports the application?
+- What official result should be recorded?
+
+The main interaction is:
+
+**OPEN → INSPECT RESULTS → RECORD OFFICIAL DECISION.**
+
+Do not turn the Committee into another row-level review workspace.
+
+Do not add unnecessary voting or hearing functionality.
+
+---
+
+# 13. COMMITTEE APPLICATION LIST
+
+Design a professional, readable Committee application list.
+
+Recommended title:
+
+**Danh sách hồ sơ xét chọn**
+
+Relevant information:
+
+- Applicant name.
+- Original institution.
+- Award season.
+- Application type.
+- School recommendation for Individual applications.
+- City review result.
+- Current Committee decision.
+- Dossier opening action.
+
+Useful filters:
+
+- Individual / Collective.
+- Award season.
+- Institution.
+- City result.
+- Committee result.
+
+### Prioritize decisions
+
+An authorized Committee user should immediately identify which applications need a decision.
+
+Use clear statuses such as:
+
+"Chờ quyết định"
+
+"Được công nhận"
+
+"Không được công nhận"
+
+Only display an official outcome after the actual authorized backend decision has been recorded.
+
+Do not show "Được công nhận" based on eligibility calculations.
+
+---
+
+# 14. COMMITTEE DOSSIER EXPERIENCE
+
+When opening an Individual application, the Committee should see:
+
+## A. Identity
+
+Compact submitted Student profile.
+
+## B. Overall review summary
+
+- School recommendation.
+- School review summary.
+- City assessment summary.
+- Important supplementation information where relevant.
+- Actual five-criterion outcomes.
+
+## C. Original dossier
+
+The same submitted Student declarations and evidence used by School and City.
+
+## D. Official decision
+
+Authorized Committee decision controls.
+
+### Visual hierarchy
+
+Results first.
+
+Details available immediately below or through a clear "Xem hồ sơ" section.
+
+Do not force Committee members to scroll through every declaration before finding the decision area.
+
+Do not hide the original dossier.
+
+Do not duplicate the dossier implementation.
+
+The Committee should be able to inspect the complete evidence when necessary.
+
+---
+
+# 15. COMMITTEE DECISION UX
+
+Use the existing canonical Committee decision API.
+
+Do not invent new decision statuses.
+
+The Committee's authorized decision may include:
+
+- Recognition.
+- Non-recognition.
+- Existing supported reason or notes.
+- Actual required document references.
+
+Use the real persisted decision model.
+
+### Suggested UI
+
+**Kết quả xét chọn**
+
+Select:
+
+- Công nhận.
+- Không công nhận.
+
+Show supporting fields only where required by the actual authorized contract.
+
+Provide a clear confirmation for irreversible official operations.
+
+### Critical
+
+A Committee decision is materially different from a routine Officer row assessment.
+
+Do not treat official recognition as a casual automatically saved toggle unless the approved lifecycle and safety model support that interaction.
+
+Preserve:
+
+- Official authority.
+- Authorization.
+- Decision audit.
+- Concurrency control.
+- Existing lifecycle restrictions.
+- Reopening rules where explicitly supported.
+
+Do not add invented voting functionality.
+
+Do not require a user to simulate an electronic vote.
+
+Do not automatically create official documents merely because a decision was selected.
+
+---
+
+# 16. OFFICIAL DOCUMENTS AND PUBLICATION
+
+Audit existing capabilities before proposing or modifying these interfaces.
+
+Possible existing functions:
+
+- Official decision reference.
+- Official decision PDF.
+- Results finalization.
+- Exported recognition list.
+- Publication.
+
+These functions must be treated according to the actual source and approved business model.
+
+### Do not assume
+
+- The product already supports digital signing.
+- Committee decisions automatically issue signed PDFs.
+- Results must be publicly published through the product.
+- A public lookup portal exists.
+- Publication is always permitted immediately after decision recording.
+- A special honorary ranking algorithm is approved.
+
+### Allowed scope
+
+Simplify the UX of verified existing authorized functions.
+
+Preserve their actual business behavior.
+
+### Not allowed
+
+- New digital signature implementation.
+- New official document generator without approval.
+- New public portal.
+- Automatic publication.
+- Automatic award ranking.
+- Automatic honor selection.
+
+If an unsupported feature is discovered, document it as a separate future proposal.
+
+Do not implement it in LEAN-5.
+
+---
+
+# 17. COLLECTIVE TT01–TT04
+
+Collective applications belong to the City/Committee operational experience.
+
+This phase must verify and, where safely possible, harmonize their interface.
+
+The Collective flow is:
+
+Collective representative
+→ Direct City submission
+→ City review of TT01–TT04
+→ Committee official decision.
+
+There is no School forwarding stage.
+
+### City Collective list
+
+Provide clear:
+
+- Collective name.
+- Original institution.
+- Award season.
+- Review progress.
+- TT01–TT04 results.
+- Supplementation status when relevant.
+- Open dossier action.
+
+### Collective review detail
+
+Show four applicable standards:
+
+- TT01.
+- TT02.
+- TT03.
+- TT04.
+
+Use correct names and approved criteria from the actual active policy.
+
+Display declared data and evidence with simple human review controls at the canonical scope.
+
+Do not force a five-criterion Individual layout onto Collective records.
+
+### Quantitative rules
+
+Preserve actual approved thresholds and counting units.
+
+Where TT02 and TT03 use the same denominator, reuse the authoritative source.
+
+Guard against:
+
+- Division by zero.
+- Missing values.
+- Inconsistent member counts.
+- Duplicate Student counting.
+- Misleading rounding.
+- Cross-season data mixing.
+
+Do not silently invent qualification thresholds.
+
+### Restrict scope
+
+Only perform targeted UX harmonization and verified safe consistency fixes.
+
+Do not rebuild the entire Collective domain.
+
+Do not create a new Collective workflow.
+
+---
+
+# 18. SYSTEM-WIDE STATUS NORMALIZATION
+
+The customer has strongly rejected excessive user-facing status complexity.
+
+LEAN-5 must audit ordinary user-visible statuses across all roles.
+
+## Principle
+
+**Backend complexity is acceptable. User-facing status complexity must be minimized.**
+
+Create one centralized, typed status presentation strategy wherever appropriate.
+
+Do not scatter contradictory ad hoc label mappings across components.
+
+### Separate dimensions
+
+1. Application lifecycle.
+2. Review progress.
+3. Criterion result.
+4. Supplementation.
+5. School recommendation.
+6. School forwarding.
+7. City review result.
+8. Committee decision.
+
+These dimensions must remain independently representable.
+
+### Compact visible vocabulary
+
+Review progress:
+
+- Chưa xét.
+- Đang xét.
+- Đã xét.
+
+Criterion result:
+
+- Chưa xác định.
+- Đạt.
+- Không đạt.
+
+Supplementation:
+
+- Cần bổ sung.
+- Đã bổ sung — Chờ xét lại.
+
+School:
+
+- Chưa kết luận.
+- Đề nghị.
+- Không đề nghị.
+- Đã gửi Thành phố.
+
+City:
+
+- Chờ thẩm định.
+- Đang thẩm định.
+- Đã thẩm định.
+
+Committee:
+
+- Chờ quyết định.
+- Được công nhận.
+- Không được công nhận.
+
+These are proposed presentation labels.
+
+Map them to actual supported states.
+
+Do not add new enums merely to match these labels.
+
+Do not hide meaningful exceptional states behind a misleading "Đã xét" label.
+
+### Important
+
+At a given screen, show the status dimension most relevant to the task.
+
+Do not show every technical dimension as a separate badge.
+
+---
+
+# 19. STATUS PROJECTION CONTRACT
+
+Create an explicit projection matrix:
+
+**Backend state → Business meaning → Primary UI status → Secondary context → Available actions.**
+
+The projection must be role-aware and stage-aware.
+
+### Example — School
+
+A Student has:
+
+- 5/5 criteria reviewed.
+- 4/5 criteria passed.
+- Not recommended.
+- Not forwarded.
+
+Primary School list status:
+
+"Không đề nghị"
+
+Secondary:
+
+"Đã xét 5/5 · Đạt 4/5"
+
+### Example — City
+
+A Student has:
+
+- Forwarded from School.
+- City reviewed 3/5 criteria.
+- No official City review completion yet.
+
+Primary:
+
+"Đang thẩm định"
+
+Secondary:
+
+"Đã xét 3/5"
+
+### Example — Committee
+
+An application has:
+
+- Completed City review.
+- No Committee decision.
+
+Primary:
+
+"Chờ quyết định"
+
+Do not label it "Được công nhận" even if all five criteria pass.
+
+Use actual canonical records to generate each projection.
+
+---
+
+# 20. CROSS-ROLE STATUS CONSISTENCY
+
+Verify the same application across:
+
+- Student.
+- School.
+- City.
+- Committee.
+- Administration.
+
+The status should be appropriate to the role without contradicting the actual data.
+
+### Example
+
+A School-forwarded application:
+
+Student:
+
+"Đã gửi lên Thành phố"
+
+School:
+
+"Đã gửi Thành phố"
+
+City:
+
+"Chờ thẩm định"
+
+Committee:
+
+Not yet available for decision unless actual authorized lifecycle conditions are met.
+
+These different labels may all be correct because they describe the same application from different authorized contexts.
+
+Do not create a single universal status label that loses this distinction.
+
+Preserve role-appropriate visibility.
+
+---
+
+# 21. ELIMINATE REDUNDANT UI STRUCTURES
+
+Audit:
+
+- Status badge duplication.
+- Nested cards.
+- Repeated headers.
+- Repeated criterion titles.
+- Too many KPI cards.
+- Long instruction banners.
+- Oversized warning boxes.
+- Multiple toolbars.
+- Permanent Inspector panels.
+- Duplicate filters.
+- Duplicate navigation.
+- Excessive empty space.
+- Unnecessary workflow steppers.
+
+### Simplification guidelines
+
+Prefer:
+
+- One clear page title.
+- One concise subtitle when needed.
+- One primary task area.
+- One obvious main action.
+- Useful secondary actions.
+- Compact statistics.
+- Progressive disclosure for details.
+
+Avoid putting a card inside a card inside another card.
+
+Do not remove useful content merely to achieve minimalism.
+
+Prioritize actual operating efficiency.
+
+---
+
+# 22. VIETNAMESE PRODUCT LANGUAGE
+
+The product should use professional, natural Vietnamese appropriate for Vietnamese Student Association staff.
+
+Avoid technical/developer language.
+
+### Bad
+
+"Canonical Review Completion"
+
+### Better
+
+"Hoàn tất thẩm định"
+
+### Bad
+
+"Committee Decision Pipeline"
+
+### Better
+
+"Kết quả xét chọn"
+
+### Bad
+
+"Read-only after finalization"
+
+### Better
+
+"Danh sách đã gửi, không thể chỉnh sửa."
+
+### Bad
+
+"Review Scope"
+
+### Better
+
+"Nội dung xét"
+
+### Bad
+
+"Batch forwarding"
+
+### Better
+
+"Gửi danh sách lên Thành phố"
+
+Use concise labels.
+
+Do not include unnecessary English words.
+
+Do not overexplain familiar administrative actions.
+
+Do not use AI-generated promotional language.
+
+### Official terminology
+
+Preserve legally significant official terms from the actual approved regulations.
+
+Do not invent new names for government or Student Association decisions.
+
+Create or update a common Vietnamese product glossary.
+
+---
+
+# 23. AI ASSISTANCE — QUIET BY DEFAULT
+
+The customer does not want the application to look like an AI-generated software product.
+
+AI may remain an optional support tool.
+
+Possible authorized uses:
+
+- Evidence summaries.
+- Advisory analysis.
+- Suggested reviewer notes.
+- Possible eligibility concerns.
+- Evidence completeness suggestions.
+
+### Default behavior
+
+AI is collapsed or otherwise unobtrusive.
+
+Use one secondary entry point:
+
+"AI hỗ trợ"
+
+Do not place AI badges on every criterion row.
+
+Do not auto-open AI panels.
+
+Do not visually equate AI advice with human judgments.
+
+### Authority
+
+AI must never:
+
+- Save an official human Pass/Fail decision.
+- Request supplementation automatically.
+- Complete City review.
+- Record School recommendation.
+- Forward applications.
+- Record Committee recognition.
+- Publish awards.
+
+No new AI features in LEAN-5.
+
+---
+
+# 24. DASHBOARDS AND STATISTICS CONSISTENCY
+
+The previous UX-S3 work provided dashboard and reporting features.
+
+LEAN-5 must ensure the simpler status model does not corrupt metrics.
+
+Audit dashboard and list counters for:
+
+- Submitted applications.
+- Fully reviewed applications.
+- Criteria passed.
+- Criteria failed.
+- Recommended applications.
+- Forwarded applications.
+- City completed reviews.
+- Committee recognized applications.
+- Committee non-recognized applications.
+- Collective applications.
+
+### Important
+
+A reviewed dossier is not necessarily eligible.
+
+A recommended application is not necessarily forwarded.
+
+A forwarded application is not necessarily City approved.
+
+A City-reviewed application is not officially recognized.
+
+Dashboard counts must preserve these distinctions.
+
+### Filters
+
+Ensure:
+
+- Award season consistency.
+- Institution consistency.
+- School Review Unit consistency.
+- Individual/Collective separation.
+- Authorized role scope.
+
+For UDN, preserve eight original member institutions while allowing aggregate statistics for the shared Review Unit.
+
+### KPI presentation
+
+Prefer compact relevant operational indicators.
+
+Do not create six huge decorative cards above every working list.
+
+A dashboard may contain richer analytics where actually useful, but routine queue/list screens should remain task-oriented.
+
+---
+
+# 25. EXCEL EXPORT CONSISTENCY
+
+Preserve actual authorized Excel reporting.
+
+Verify that exports respect:
+
+- Current selected season.
+- Role scope.
+- School Review Unit.
+- Original institution.
+- Application type.
+- Review result.
+- School recommendation.
+- Forwarding status.
+- City result.
+- Committee result.
+
+Do not derive official export results from AI advisory values.
+
+Do not mark a Student recognized because all five criteria passed.
+
+Preserve existing Excel safety measures, including formula injection protection where applicable.
+
+Do not redesign export templates without a verified reporting requirement.
+
+Only correct inconsistencies introduced by status presentation changes.
+
+---
+
+# 26. RESPONSIVE — MANDATORY CROSS-ROLE QUALITY GATE
+
+The customer has previously reported significant responsive and screen-space problems.
+
+LEAN-5 must verify all affected City and Committee screens at:
+
+- 320px.
+- 360px.
+- 390px.
+- 430px.
+- 768px.
+- 1024px.
+- 1280px.
+- 1440px.
+- 1660px.
+- 1920px.
+
+## Desktop
+
+City:
+
+- Efficient application table.
+- Readable dossier.
+- Inline Pass/Fail controls.
+- Evidence viewing.
+- No large unused side rail.
+
+Committee:
+
+- Clear result tables.
+- Comfortable dossier reading.
+- Official decision controls visible without excessive navigation.
+
+## Laptop
+
+- Balanced column widths.
+- No squeezed declaration text.
+- No clipped action buttons.
+- No unnecessary permanent side panels.
+
+## Tablet
+
+- Adapt list/table layout.
+- Keep all important actions accessible.
+- Use compact filter controls.
+- Avoid nested horizontal scrolling.
+
+## Mobile
+
+City application cards or compact responsive rows:
+
+- Student name.
+- Institution.
+- Review summary.
+- Current status.
+- Open dossier.
+
+City dossier:
+
+- Single-column declaration blocks.
+- Evidence.
+- Pass/Fail immediately below relevant content.
+
+Committee:
+
+- Application identity.
+- School result.
+- City result.
+- Committee status.
+- Open dossier.
+- Authorized decision control.
+
+### Global rules
+
+- No page-level horizontal overflow.
+- No clipped primary actions.
+- No floating AI control blocking buttons.
+- No Demo switcher covering official actions.
+- No giant fixed review toolbar.
+- No modal extending beyond the viewport.
+- No excessive nested scroll containers.
+- Comfortable touch targets.
+- Visible keyboard focus.
+- Readable Vietnamese labels.
+
+Use container-aware layout decisions where appropriate.
+
+Test actual rendered layout, not only CSS media queries.
+
+---
+
+# 27. NAVIGATION & CONTEXT PRESERVATION
+
+The reviewer should be able to:
+
+1. Open a filtered application list.
+2. Open a dossier.
+3. Inspect evidence.
+4. Record an authorized action.
+5. Return to the same list context.
+
+Preserve where applicable:
+
+- Season.
+- Filters.
+- Search query.
+- Pagination.
+- Scroll position.
+- Selected application category.
+
+Do not automatically reset filters after saving a judgment.
+
+Do not force a return to the dashboard after each application.
+
+Do not use unexpected automatic navigation after a Pass/Fail click.
+
+Avoid browser-history traps and unnecessary route changes.
+
+---
+
+# 28. ROLE AUTHORIZATION
+
+Verify the actual supported role and resource authorization contracts.
+
+## City Reviewer
+
+Can review only authorized City-stage applications.
+
+## School Reviewer
+
+Cannot perform City-stage judgments.
+
+## Committee
+
+Can perform only authorized Committee official decision actions.
+
+Does not automatically inherit City Officer assessment privileges.
+
+## Admin
+
+General administrative privileges must not automatically grant substantive Committee recognition authority.
+
+## Student
+
+Can view own permitted information.
+
+Cannot access private Officer notes or internal City/Committee controls.
+
+## Collective representative
+
+Can access only authorized Collective applications.
+
+### Negative tests
+
+- Unauthorized School reviewer submits a City judgment.
+- Unauthorized City reviewer records a Committee decision.
+- Admin without Committee authority records recognition.
+- Student reads private review notes.
+- Different Student accesses another dossier.
+- School reviewer accesses another School Review Unit.
+- City reviewer accesses unforwarded School Individual applications through unsupported routes.
+
+Authorization must be enforced by backend contracts.
+
+Frontend role-aware rendering alone is insufficient.
+
+---
+
+# 29. CONCURRENCY & DATA INTEGRITY
+
+The City shared queue allows multiple authorized reviewers to access the same application.
+
+This creates concurrency risks.
+
+Verify:
+
+- Two City reviewers editing the same declaration.
+- Stale judgment updates.
+- Conflict detection.
+- Refresh/reconciliation behavior.
+- Review completion racing with another mutation.
+- Supplementation and reassessment concurrency.
+- Committee decision concurrency.
+- Duplicate official decisions.
+- Retry safety.
+
+Do not silently overwrite newer persisted judgments.
+
+Do not claim a save succeeded before backend confirmation.
+
+For official Committee decisions, preserve the current canonical transaction and idempotency safeguards.
+
+Do not create a second decision record because a user double-clicked.
+
+Do not invent new concurrency architecture when existing mechanisms are sufficient.
+
+---
+
+# 30. DEMO MODE
+
+Demo Mode should demonstrate LEAN City/Committee workflows using deterministic synthetic records.
+
+Include:
+
+- School-forwarded application.
+- City pending application.
+- Partially reviewed application.
+- Fully reviewed, all criteria Pass.
+- Fully reviewed, one criterion Fail.
+- City supplementation pending.
+- City supplementation returned.
+- City review completed.
+- Committee pending decision.
+- Committee recognized.
+- Committee not recognized.
+- Collective TT01–TT04.
+- Different original institutions.
+- UDN consolidated source.
+
+### Consistency
+
+The same synthetic application must have consistent:
+
+- Student identity.
+- Institution.
+- Season.
+- School recommendation.
+- City judgments.
+- Committee result.
+- Application lifecycle.
+
+Demo data must not fabricate real official governmental decisions.
+
+Do not show unrelated coursework files as official award documents.
+
+All supported Demo interactions must update actual synthetic domain state.
+
+No cosmetic fake-save buttons.
+
+Preserve deterministic reset.
+
+---
+
+# 31. REAL MODE — ACTUAL BACKEND INTEGRATION
+
+Use real existing authenticated APIs.
+
+Inspect:
+
+- City application listing.
+- City review retrieval.
+- City human judgment mutations.
+- City review completion.
+- City supplementation.
+- Committee application listing.
+- Committee dossier retrieval.
+- Committee decision mutations.
+- Collective review.
+- Dashboard aggregation.
+- Excel exports.
+- Audit records.
+
+Do not invent API endpoints.
+
+Do not silently fall back to Demo.
+
+Do not fake successful official decisions.
+
+### Backend changes
+
+If a verified interface contract mismatch requires a backend fix:
+
+- Keep it narrowly scoped.
+- Preserve Modular Monolith architecture.
+- Preserve existing authorization.
+- Preserve existing persistence semantics.
+- Add focused tests.
+- Document the exact reason.
+
+Do not change Prisma schema without separately authorized scope.
+
+Do not run migrations against a live database.
+
+Do not seed production.
+
+Do not deploy.
+
+### Verification honesty
+
+A green frontend build is not proof that:
+
+- Human judgments persist correctly.
+- City review completion is authorized.
+- Committee decisions are transaction-safe.
+- PostgreSQL constraints work.
+- Official documents are securely stored.
+
+Report these independently.
+
+---
+
+# 32. FUNCTIONAL ACCEPTANCE MATRIX
+
+Implement and execute targeted tests.
+
+## City
+
+### C01
+Authorized City reviewer opens the shared City queue.
+
+### C02
+No mandatory individual assignment is required.
+
+### C03
+City list respects forwarded application scope.
+
+### C04
+Original institution and Review Unit remain distinct.
+
+### C05
+City reviewer can open the full shared dossier.
+
+### C06
+City Pass judgment persists at the correct canonical scope.
+
+### C07
+City Fail judgment persists correctly.
+
+### C08
+City judgment does not overwrite School judgment.
+
+### C09
+City review progress and criterion eligibility remain separate.
+
+### C10
+Five reviewed criteria with one failing criterion are represented correctly.
+
+### C11
+ONE_OF alternatives do not generate false outstanding work.
+
+### C12
+City supplementation follows LEAN-3 contextual behavior.
+
+### C13
+Returned supplementation requires actual human reassessment.
+
+### C14
+Authorized City completion behaves according to the verified backend contract.
+
+### C15
+City completion does not automatically create Committee recognition.
+
+### C16
+No legacy assignment or ResolutionCase UI is required.
+
+### C17
+Concurrent City updates do not silently overwrite newer judgments.
+
+### C18
+Failed API saves do not appear persisted.
+
+## Committee
+
+### C19
+Committee list displays the correct authorized applications.
+
+### C20
+School and City outcomes are clearly distinguishable.
+
+### C21
+Committee sees the original dossier and evidence.
+
+### C22
+Committee does not receive normal City Officer row-level assessment controls.
+
+### C23
+Official Committee recognition is recorded only through authorized human action.
+
+### C24
+Official non-recognition is supported by the actual existing contract.
+
+### C25
+Committee result does not alter School or City historical judgments.
+
+### C26
+A five-criteria Pass result does not automatically mark the application recognized.
+
+### C27
+Admin without substantive Committee authority cannot record recognition.
+
+### C28
+Double-click/retry does not duplicate official decisions.
+
+### C29
+No fictional voting/hearing workflow appears.
+
+### C30
+No automatic public publication is introduced.
+
+## Collective
+
+### C31
+Collective applications enter City directly.
+
+### C32
+Collective review uses TT01–TT04, not Individual criteria.
+
+### C33
+Shared TT02/TT03 data and percentages remain correct.
+
+### C34
+Collective supplementation and Committee result remain functional.
+
+## Status and Reporting
+
+### C35
+Primary status labels correspond to actual backend state.
+
+### C36
+Reviewed, passed, recommended, forwarded and recognized counters remain distinct.
+
+### C37
+Student, School, City and Committee show consistent role-appropriate application context.
+
+### C38
+Analytics and Excel results agree with authoritative records.
+
+### C39
+Season filters do not mix applications across academic years.
+
+### C40
+UDN aggregation preserves all eight original institutions.
+
+## Responsive and UX
+
+### C41
+City list works at 390px without page-level overflow.
+
+### C42
+City dossier inline review works at 390px.
+
+### C43
+Committee list and official decision controls work at 390px.
+
+### C44
+Desktop dossier uses available width efficiently at 1440px and 1660px.
+
+### C45
+No conflicting active-criterion toolbar remains.
+
+### C46
+AI assistance stays optional and visually secondary.
+
+### C47
+Normal business UI contains no exposed technical state labels.
+
+### C48
+Navigation preserves useful filters and context.
+
+## Security and Integration
+
+### C49
+Unauthorized role mutations are denied by the backend.
+
+### C50
+Private internal notes do not leak to Student views.
+
+### C51
+Demo state never affects Real Mode.
+
+### C52
+Official decisions require actual supported backend persistence.
+
+### C53
+Evidence access respects authorization.
+
+### C54
+All changed user actions retain correct actor attribution and audit history.
+
+---
+
+# 33. MANUAL BROWSER UAT
+
+Create detailed Vietnamese click-by-click test scripts.
+
+## Scenario A — City shared review
+
+1. Sign in as City Reviewer.
+2. Open "Hồ sơ cá nhân".
+3. Verify forwarded School applications.
+4. Select an academic year.
+5. Filter by institution.
+6. Open an application.
+7. Verify submitted Student identity.
+8. Verify School preliminary result.
+9. Inspect evidence.
+10. Record City Pass/Fail.
+11. Confirm persisted result.
+12. Return to the list.
+13. Verify context and progress.
+
+## Scenario B — Completed review with Fail
+
+1. Open a suitable City-stage application.
+2. Assess all applicable required items.
+3. Record one confirmed failing criterion.
+4. Verify 5/5 reviewed.
+5. Verify only 4/5 passed.
+6. Verify no false "Đang xét" state.
+7. Complete authorized City review where required.
+8. Verify no automatic recognition.
+
+## Scenario C — City supplementation
+
+1. Open a declaration.
+2. Request supplementation.
+3. Verify exact scope.
+4. Sign in as Student.
+5. Submit correction.
+6. Return to City Reviewer.
+7. Compare old and new evidence.
+8. Reassess.
+9. Verify School judgments remain unchanged.
+
+## Scenario D — Committee decision
+
+1. Sign in as authorized Committee user.
+2. Open the Committee application list.
+3. Find a City-reviewed application.
+4. Open dossier.
+5. Inspect School and City outcomes.
+6. Open original evidence when needed.
+7. Record an authorized Committee decision.
+8. Confirm the actual server response.
+9. Refresh the application.
+10. Verify persisted official outcome.
+11. Verify no automatic publication.
+
+## Scenario E — Committee non-recognition
+
+1. Open an application with completed reviews.
+2. Record non-recognition through the authorized operation.
+3. Confirm the official result.
+4. Verify the application is not labeled recognized.
+5. Verify review history remains intact.
+
+## Scenario F — Collective
+
+1. Open City Collective applications.
+2. Open a submitted TT01–TT04 dossier.
+3. Inspect all four standards.
+4. Verify shared quantitative values.
+5. Review evidence.
+6. Record authorized assessments.
+7. Verify correct Committee visibility.
+
+## Scenario G — Responsive
+
+Repeat core City and Committee interactions at:
+
+- 390px.
+- 768px.
+- 1024px.
+- 1440px.
+
+Inspect table adaptation, modals, evidence viewers, status labels, toolbars and mobile touch targets.
+
+## Scenario H — Authorization
+
+Attempt inappropriate mutations from:
+
+- School Reviewer.
+- City Reviewer.
+- Committee user.
+- Admin without decision authority.
+- Student.
+
+Verify actual backend rejection.
+
+Do not rely only on hidden controls.
+
+---
+
+# 34. VISUAL QA REQUIREMENTS
+
+Capture actual browser screenshots where tooling permits.
+
+At minimum:
+
+1. City Individual list — desktop.
+2. City Individual list — mobile.
+3. City dossier — all five criteria.
+4. City dossier — direct Pass/Fail.
+5. City dossier — review complete with Fail.
+6. City supplementation returned.
+7. Committee list — desktop.
+8. Committee list — mobile.
+9. Committee dossier summary.
+10. Committee official decision.
+11. Collective City list.
+12. Collective TT01–TT04 dossier.
+13. City dashboard.
+14. Committee reporting view.
+15. Tablet layout.
+16. Laptop layout.
+
+Inspect:
+
+- Readability.
+- Information hierarchy.
+- Excessive status labels.
+- Duplicate navigation.
+- Unused whitespace.
+- Nested cards.
+- Natural Vietnamese wording.
+- Responsive table behavior.
+- Primary action visibility.
+- Evidence preview.
+- AI overlay behavior.
+
+No generated mockups presented as actual browser verification.
+
+---
+
+# 35. UX PERFORMANCE MEASUREMENT
+
+Compare before/after actual interactions where possible.
+
+City tasks:
+
+- Find one application.
+- Open a dossier.
+- Find a declaration.
+- View evidence.
+- Record Pass/Fail.
+- Complete authorized review.
+- Return to the list.
+
+Committee tasks:
+
+- Find an application awaiting decision.
+- Open accumulated review summary.
+- Inspect original dossier.
+- Record an authorized decision.
+
+Measure:
+
+- Actual click count.
+- Navigation changes.
+- Modal count.
+- Forced status-transition actions.
+- Required scrolling.
+- Lost context.
+- Responsive defects.
+
+Previous LEAN-0 performance percentages were estimates, not measured facts.
+
+Do not repeat unsupported improvement percentages.
+
+Separate observed measurements from targets.
+
+---
+
+# 36. TECHNICAL QUALITY GATES
+
+Run actual available checks.
+
+## Frontend
+
+- TypeScript typecheck.
+- Production build.
+- City list tests.
+- City review component tests.
+- Human judgment selector tests.
+- Status projection tests.
+- Committee UI tests.
+- Collective regression tests.
+- Role-based rendering tests.
+- Responsive browser tests.
+- Demo/Real isolation tests.
+
+## Backend, if affected
+
+- TypeScript typecheck.
+- Production build.
+- City review mutation tests.
+- City completion authorization tests.
+- Committee decision authorization tests.
+- Committee concurrency tests.
+- Collective API tests.
+- Resource-scope authorization tests.
+- Audit attribution tests.
+- API contract tests.
+
+Record exact commands and outcomes.
+
+Do not claim live PostgreSQL verification if no authorized test database was used.
+
+---
+
+# 37. SOURCE PROTECTION
+
+Preserve:
+
+- Golden Frontend historical manifest.
+- Existing FSD architecture.
+- Existing backend Modular Monolith architecture.
+- LEAN-1 Student declaration behavior.
+- LEAN-2 direct review behavior.
+- LEAN-3 contextual supplementation.
+- LEAN-4 School recommendation and forwarding.
+- Immutable submitted Student snapshots.
+- Evidence version history.
+- UDN one shared Review Unit.
+- City shared review queue.
+- School/City independent judgments.
+- Committee official decision authority.
+- Collective direct-to-City flow.
+- Existing authorized analytics and Excel.
+- Existing audit history.
+- Optional AI support.
+
+Do not:
+
+- Rebuild the entire frontend.
+- Redesign unrelated Admin functionality.
+- Add new award programs.
+- Add Officer assignment.
+- Add workload management.
+- Restore ResolutionCase.
+- Create new Committee voting systems.
+- Add hearings or meeting management.
+- Create a new public publication portal.
+- Auto-recognize applicants.
+- Auto-publish decisions.
+- Invent rankings for honorary awards.
+- Change award eligibility thresholds.
+- Introduce arbitrary supplementation limits.
+- Create database migrations without authorization.
+- Access or modify production data.
+- Seed production.
+- Deploy.
+- Automatically push, merge or rebase.
+
+Only implement verified LEAN-5 requirements.
+
+---
+
+# 38. REQUIRED DELIVERABLES
+
+Create:
+
+`docs/lean/LEAN_5_IMPLEMENTATION_REPORT.md`
+
+Include:
+
+1. Actual source baseline.
+2. LEAN-0.1 contract verification.
+3. LEAN-1 through LEAN-4 integration status.
+4. Current City UX bottlenecks.
+5. Current Committee UX bottlenecks.
+6. City shared queue improvements.
+7. City dossier reuse.
+8. School vs City judgment separation.
+9. City completion behavior.
+10. Committee official decision UX.
+11. Collective TT01–TT04 consistency.
+12. User-facing status projection matrix.
+13. Vietnamese terminology changes.
+14. Redundant UI elements removed.
+15. Dashboard and reporting consistency.
+16. Excel regression results.
+17. Authorization verification.
+18. Concurrency verification.
+19. Responsive screenshots.
+20. Demo vs Real verification.
+21. Actual test commands and results.
+22. Exact modified source files.
+23. Unresolved policy items.
+24. LEAN-6 integration dependencies.
+25. Final verdict: PASS / PARTIAL / BLOCKED.
+
+Also create:
+
+`docs/lean/LEAN_5_MANUAL_UAT.md`
+
+Write it in Vietnamese.
+
+Provide detailed click-by-click instructions for:
+
+- City Reviewer.
+- Committee.
+- Collective Applicant/Reviewer.
+- Unauthorized actors.
+- Mobile tester.
+
+Also create or update:
+
+`docs/lean/LEAN_5_UI_STATUS_GLOSSARY.md`
+
+Include:
+
+- Canonical backend state.
+- Approved business meaning.
+- User-facing Vietnamese label.
+- Role.
+- Available actions.
+- Related UI component.
+- Test coverage.
+
+---
+
+# 39. DEFINITION OF DONE
+
+LEAN-5 is complete only when:
+
+- City uses a simple shared review queue without mandatory personal assignment.
+- City can open and independently review the canonical submitted dossier.
+- Pass/Fail remains direct, contextual and correctly persisted.
+- Review completion remains distinct from eligibility results.
+- City supplementation follows the streamlined LEAN-3 pattern.
+- Committee sees School and City results clearly.
+- Committee can inspect original evidence without repeating Officer review.
+- Official Committee decisions remain human-controlled and authorized.
+- Collective TT01–TT04 remains separate and correct.
+- User-facing statuses are concise and consistent.
+- Technical workflow language is removed from normal business screens.
+- No unnecessary duplicate navigation or giant floating review toolbar remains.
+- AI is optional and visually secondary.
+- Dashboards and Excel use correct independent metrics.
+- Mobile, tablet and desktop layouts are usable.
+- Backend authorization and auditability remain intact.
+- Real Mode never silently uses synthetic Demo state.
+- Relevant tests pass.
+- Unverified database/storage integration is accurately reported.
+- No unrelated new features were introduced.
+
+Do not mark LEAN-5 fully PASS merely because the Demo interface looks clean.
+
+---
+
+# FINAL PRODUCT VISION
+
+**5TOT MUST FEEL LIKE A REAL STUDENT ASSOCIATION AWARD REVIEW PLATFORM, NOT A COMPLEX WORKFLOW MANAGEMENT SYSTEM.**
+
+## Student
+
+Declare achievements → Attach evidence → Submit.
+
+## School
+
+Review declarations → Record recommendations → Select applications → Attach decision → Forward once.
+
+## City
+
+Open shared list → Review declarations → Record human judgments → Complete authorized assessment.
+
+## Committee
+
+Open results → Inspect relevant dossiers → Record official recognition decisions.
+
+## Product UX
+
+- One clear primary operation.
+- Few unnecessary clicks.
+- Minimal user-facing statuses.
+- Natural Vietnamese language.
+- Clean modern visual design.
+- Excellent responsive behavior.
+- Correct real data.
+- Proper authorization.
+- Complete audit history.
+
+**LEAN-5 SUCCESS = CITY & COMMITTEE OPERATIONS THAT FEEL SIMPLE, FAMILIAR, PROFESSIONAL AND BUSINESS-CORRECT.**
+
+## HARD STOP
+
+Implement, test and report LEAN-5 only.
+
+Do NOT automatically begin LEAN-6.
+
+Do NOT deploy.
+
+Do NOT create new award programs or official workflows.
+
+Stop after completing the implementation report, manual UAT checklist, status glossary, tests and actual browser verification.

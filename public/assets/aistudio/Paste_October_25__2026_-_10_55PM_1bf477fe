@@ -1,0 +1,1004 @@
+# 5TOT ĐÀ NẴNG — LEAN-4.2
+## SCHOOL NAVIGATION & WORKFLOW DEDUPLICATION — PDF-ONLY OFFICIAL DOCUMENT UPLOAD
+
+**Priority:** P0 — Customer UX Correction
+
+**Execution Mode:** VERIFY SOURCE → AUDIT MENU & BUSINESS FLOWS → CONSOLIDATE DUPLICATE UX → SIMPLIFY DOCUMENT UPLOAD → TEST → REPORT
+
+**Implementation Authorization:** YES — Targeted Frontend and Necessary Backend Contract Corrections
+
+**Primary Scope:** School Reviewer navigation, application management, supplementation entry points, recommendation list and official document upload.
+
+**Secondary Scope:** Cross-role navigation consistency audit to prevent duplicated flows and regressions.
+
+**Hard Stop:** No deployment, push, merge, database migration or unrelated redesign.
+
+---
+
+# 1. CRITICAL CUSTOMER FEEDBACK
+
+The customer has reviewed the current School forwarding interface and identified two remaining problems.
+
+### Problem A — Official document entry is unnecessarily complicated
+
+The reviewer has already received or prepared the official signed School decision/proposal document.
+
+The system currently requires manual inputs such as:
+
+- Document number.
+- Issue date.
+- Signatory name.
+- Signatory position.
+- Official PDF attachment.
+
+This is unnecessary for the intended user interaction.
+
+**The authorized School Reviewer should only need to upload the official PDF.**
+
+Do not force them to manually transcribe information already contained in the document.
+
+### Problem B — The sidebar and business flows are unnecessarily fragmented
+
+The current School navigation contains potentially overlapping destinations:
+
+- Tổng quan.
+- Hồ sơ sinh viên.
+- Cần xét sơ tuyển.
+- Yêu cầu bổ sung.
+- Danh sách đề nghị Thành phố.
+- Đã chuyển Thành phố.
+- Thống kê.
+- Thông báo.
+
+Some may be separate routes for different filters or statuses of the same underlying workflow.
+
+This creates unnecessary navigation, duplicated application lists and confusing business states.
+
+**The customer wants a small number of intuitive destinations organized around real staff tasks.**
+
+Do not simply rename menu items.
+
+Audit and remove actual UX duplication while preserving every legitimate capability.
+
+---
+
+# 2. CONFIRMED SCHOOL AUTHORITY MODEL
+
+The current School Reviewer is already the authorized person responsible for finalizing the School's proposed application list.
+
+The reviewer is NOT required to complete an additional per-Student recommendation approval workflow after preliminary review.
+
+The intended process is:
+
+**REVIEW APPLICATIONS → SELECT STUDENTS → ATTACH ONE PDF → FORWARD TO CITY.**
+
+When selecting applications for official forwarding, the authorized reviewer expresses the School's recommendation intent.
+
+Any separate backend recommendation records necessary for the canonical model should be reconciled through the authorized finalization process, subject to actual business constraints.
+
+Do not require an additional mandatory "Đánh giá đề xuất" step for every Student.
+
+Do not automatically mark unselected Students as failing or not recommended.
+
+Do not automatically select applications merely because all five criteria pass.
+
+---
+
+# 3. AUDIT THE ACTUAL CURRENT SOURCE
+
+Before making changes, inspect the current project.
+
+Find and document:
+
+- School sidebar configuration.
+- Route definitions.
+- Role-based navigation.
+- School dashboard.
+- Student application list.
+- Preliminary review queue.
+- Supplementation queue/inbox.
+- Application detail and inline review.
+- School forwarding page.
+- Forwarded-list history.
+- Statistics.
+- Notifications.
+- School recommendation APIs.
+- Forwarding batch APIs.
+- Official decision document DTO.
+- File upload and storage service.
+- Actual backend validation.
+- Demo/Real adapters.
+
+Verify previous LEAN-1 through LEAN-4.1 behavior from source.
+
+Do not assume every previous implementation was completed successfully.
+
+## Required inventory
+
+For every existing School navigation item, record:
+
+1. Menu label.
+2. Route.
+3. Component/page.
+4. User task.
+5. Backend API.
+6. Data source.
+7. Filters.
+8. Mutations.
+9. Unique capabilities.
+10. Overlapping capabilities.
+11. Current role permissions.
+12. Proposed destination.
+
+Classify each item as:
+
+- KEEP.
+- MERGE INTO EXISTING PAGE.
+- CONVERT INTO FILTER.
+- CONVERT INTO QUICK LINK.
+- REMOVE FROM PRIMARY NAVIGATION.
+- RETAIN FOR LEGACY DEEP-LINK COMPATIBILITY.
+
+No menu item should be removed without checking its actual unique business behavior.
+
+---
+
+# 4. TARGET SCHOOL INFORMATION ARCHITECTURE
+
+Preferred primary navigation:
+
+## 1. Tổng quan
+
+Purpose:
+
+A compact School-level operational overview.
+
+Show important current-season information and useful shortcuts.
+
+Do not turn it into a second application-management page.
+
+If separate Statistics functionality contains substantial reporting capabilities, preserve them through a clearly labeled secondary route or navigation destination.
+
+Do not discard analytics or Excel exports.
+
+## 2. Hồ sơ sơ tuyển
+
+This should be the canonical School application-management workspace.
+
+Provide one searchable list with useful filters:
+
+- Tất cả.
+- Chờ xét.
+- Đang xét.
+- Cần bổ sung.
+- Đã xét.
+
+Include returned supplementation when relevant.
+
+The existing "Hồ sơ sinh viên" and "Cần xét sơ tuyển" screens should be consolidated if they are simply different filtered views of the same submitted applications.
+
+The reviewer should be able to:
+
+- Find a Student.
+- Open the dossier.
+- Review declarations.
+- View evidence.
+- Assess Pass/Fail.
+- Request supplementation.
+- Inspect returned evidence.
+- Reassess.
+- Return to the same list.
+
+Do not force a reviewer to switch between multiple sidebar entries to handle one application.
+
+## 3. Danh sách đề nghị
+
+This is the authorized School finalization workspace.
+
+It should support:
+
+- Viewing completed School assessment results.
+- Selecting applications.
+- Bulk selection when explicitly requested.
+- Filtering UDN member institutions.
+- Attaching one official PDF.
+- Final forwarding confirmation.
+- Viewing the forwarded list and document afterward.
+
+The old separate "Đã chuyển Thành phố" destination should be integrated into this workflow if it is only the post-forwarding view of the same seasonal batch.
+
+Before forwarding:
+
+Show the editable selection and PDF attachment.
+
+After forwarding:
+
+Show the actual submitted list and official PDF in a read-only presentation.
+
+Do not create duplicate submission pages or multiple competing batch drafts.
+
+## 4. Thông báo
+
+Preserve actual notifications.
+
+Link relevant notifications directly to the affected application or declaration.
+
+Do not duplicate the entire supplementation management interface inside the notification page.
+
+### Navigation flexibility
+
+The above is the preferred target, not an excuse to remove legitimate capabilities.
+
+If the source audit proves that Statistics, Supplementation or another destination has independent functionality, preserve it through the least confusing structure.
+
+Favor task-based navigation over technical lifecycle navigation.
+
+---
+
+# 5. DEDUPLICATE SUPPLEMENTATION NAVIGATION
+
+The customer has already approved LEAN-3.
+
+Supplementation should happen inside the relevant dossier.
+
+The normal path should be:
+
+**Hồ sơ sơ tuyển → Hồ sơ cần bổ sung → Xem nội dung → Xét lại.**
+
+A separate permanent sidebar item should not be mandatory just to find returned supplementary evidence.
+
+### Acceptable design
+
+Use the "Cần bổ sung" or "Đã bổ sung" filter within the canonical School application list.
+
+Display a useful notification badge where appropriate.
+
+Provide direct deep links from notifications.
+
+### Preserve
+
+- Active supplementation requests.
+- Returned supplementation.
+- Deadlines.
+- Correct request scope.
+- Historical messages.
+- Original and updated evidence.
+- Correct requesting review stage.
+- Staff internal notes.
+- Actual authorization.
+
+If a dedicated supplementation view provides unique bulk or operational capabilities, preserve those capabilities through an appropriate secondary access point.
+
+Do not lose pending requests when simplifying navigation.
+
+---
+
+# 6. DEDUPLICATE THE APPLICATION LIST
+
+A single application should not need to appear in several competing operational lists merely because its status changes.
+
+Audit current list overlap across:
+
+- Hồ sơ sinh viên.
+- Cần xét sơ tuyển.
+- Yêu cầu bổ sung.
+- Danh sách đề nghị.
+- Đã chuyển Thành phố.
+
+Determine whether these screens share:
+
+- Application identity.
+- Search logic.
+- Filtering.
+- Status projection.
+- List row components.
+- Dossier-opening behavior.
+- Pagination.
+- Season context.
+- School Review Unit scope.
+
+Where they do, reuse canonical list infrastructure.
+
+Do not create several slightly different implementations of the same application table.
+
+### Desired result
+
+The reviewer should always know:
+
+- Where to find an application.
+- Where to review it.
+- Where to find returned supplementation.
+- Where to select Students.
+- Where to see what was forwarded.
+
+No duplicated business action should be presented on several pages with inconsistent behavior.
+
+---
+
+# 7. PDF-ONLY OFFICIAL DOCUMENT UPLOAD
+
+This is an explicit customer requirement.
+
+Replace the current document entry form.
+
+Remove manual user inputs for:
+
+- Số hiệu văn bản.
+- Ngày ban hành.
+- Người ký.
+- Chức vụ người ký.
+
+The user should not have to type any of these fields to upload the official proposal.
+
+## New UI
+
+Section title:
+
+**Văn bản đề nghị xét chọn**
+
+Short instruction:
+
+"Đính kèm văn bản PDF đề nghị xét chọn của đơn vị."
+
+Primary attachment action:
+
+**Tải tệp PDF**
+
+After uploading:
+
+Show:
+
+- File name.
+- File size.
+- Confirmation that the upload is stored.
+- Preview action.
+- Replace/remove action where authorized.
+
+That is all.
+
+### Critical distinction
+
+The official PDF is the authoritative uploaded document.
+
+Do not invent its document number, issuing date or signatory.
+
+Do not silently infer these values from the filename.
+
+Do not fabricate document metadata to satisfy backend validation.
+
+Do not introduce OCR or AI extraction as a required step.
+
+Do not automatically generate a signed official document.
+
+The existing official PDF must remain retrievable by authorized staff.
+
+---
+
+# 8. BACKEND DOCUMENT CONTRACT RECONCILIATION
+
+The existing backend may require structured decision-document metadata.
+
+Audit the actual DTO, service validations, Prisma model and API consumers.
+
+Identify:
+
+- Required frontend fields.
+- Required API payload fields.
+- Required database fields.
+- Fields used for legal or audit purposes.
+- Fields used in exports.
+- Fields used in the City intake.
+- Fields that are merely optional presentation metadata.
+
+### Preferred target contract
+
+The minimum authorized document submission consists of:
+
+- School Review Unit.
+- Award season.
+- Selected application references.
+- Uploaded PDF reference.
+- Authenticated actor.
+- Server-generated upload/audit metadata.
+
+The user should supply only the required PDF.
+
+The application and authenticated server context provide the remaining information.
+
+### Existing historical metadata
+
+Preserve already stored document numbers, issue dates and signatories.
+
+They may remain visible as read-only historical information when genuinely useful.
+
+Do not delete existing records or break older exports.
+
+### If structured legal metadata is independently mandatory
+
+Verify the actual authoritative policy or API constraint.
+
+Where legally permissible, make redundant metadata optional in the backend contract.
+
+Use a backward-compatible approach.
+
+Do not fabricate placeholders such as:
+
+- "Không rõ".
+- "N/A".
+- "Tự động".
+- Fake decision numbers.
+- Today's date as the decision date.
+- Logged-in reviewer's name as the signatory.
+
+If the database currently has non-null constraints that make safe PDF-only submission impossible without a schema change, report the exact blocker.
+
+Do not run an unauthorized migration.
+
+Complete the safe frontend/navigation work and mark the Real Mode document submission dependency clearly.
+
+---
+
+# 9. REMOVE THE LARGE FORWARDING CONDITIONS CHECKLIST
+
+The current UI shows four large green validation rows:
+
+- Selected applications exist.
+- Official document attached.
+- List has not been forwarded.
+- Applications belong to the correct Review Unit.
+
+These are backend safety validations, not tasks requiring a permanent dashboard.
+
+Remove the large checklist from the default interface.
+
+## Desired behavior
+
+When everything is valid:
+
+Simply enable the primary forwarding action.
+
+When something is missing:
+
+Show one concise contextual error.
+
+Examples:
+
+- "Vui lòng chọn ít nhất một hồ sơ."
+- "Vui lòng đính kèm văn bản PDF."
+- "Danh sách này đã được gửi lên Thành phố."
+- "Có hồ sơ không thuộc đơn vị xét sơ hiện tại."
+
+Do not remove actual validations.
+
+The backend must independently enforce every existing authorization and forwarding rule.
+
+Do not rely on a disabled button for security.
+
+---
+
+# 10. KEEP THE FINAL SCREEN EXTREMELY SIMPLE
+
+Target layout:
+
+## Header
+
+"Danh sách đề nghị xét chọn cấp Thành phố"
+
+Context:
+
+"Đại học Đà Nẵng · Năm học 2026–2027"
+
+The year is an example; use actual selected season data.
+
+## Section 1 — Student list
+
+- Search.
+- Member institution filter.
+- Selection checkbox.
+- Student identity.
+- Five criterion results.
+- View dossier.
+
+## Section 2 — Official PDF
+
+- Upload.
+- File preview.
+- Replace/remove when authorized.
+
+## Section 3 — Final action
+
+"Đã chọn [N] sinh viên"
+
+Primary action:
+
+"Gửi danh sách lên Thành phố"
+
+One concise irreversible-operation confirmation.
+
+No additional per-Student recommendation wizard.
+
+No oversized status dashboard.
+
+No complex document metadata form.
+
+No validation checklist of all-green cards.
+
+No redundant forwarding status tabs.
+
+---
+
+# 11. PRESERVE SCHOOL FINALIZATION SEMANTICS
+
+The School Reviewer is the authorized finalizing actor.
+
+The selected applications and attached official PDF constitute the submitted recommendation list.
+
+If the existing backend requires `recommended` records, reconcile them through the authorized finalization contract where safe and approved.
+
+Do not automatically mark every unselected application as `not_recommended`.
+
+Do not automatically recommend applications solely because they pass five criteria.
+
+Do not automatically include all eligible applications without intentional selection.
+
+Maintain:
+
+- Selected list.
+- Actual School human review.
+- Official document association.
+- Correct unit/season.
+- One-time forwarding.
+- Correct City intake.
+- Audit history.
+
+### Eligibility and selection
+
+A completed review is not necessarily a passing review.
+
+Show actual five-criterion outcomes to help the reviewer decide.
+
+Enforce only verified canonical forwarding eligibility rules.
+
+Do not create a new frontend-only condition that was not approved.
+
+---
+
+# 12. UDN AND INDEPENDENT SCHOOL SUPPORT
+
+Preserve the eight University of Da Nang member institutions under:
+
+`unit-udn`
+
+Requirements:
+
+- One shared School Review Unit.
+- One unified application list.
+- Optional original-institution filter.
+- One common PDF.
+- One successful forwarding batch per season.
+- Original institution identity preserved.
+
+Independent Schools have separate authorized scopes and their own seasonal forwarding records.
+
+Do not mix their selected applications with UDN.
+
+Do not create eight forwarding batches for the eight UDN members.
+
+---
+
+# 13. SIDEBAR UX AND ACTIVE ROUTES
+
+After menu consolidation:
+
+- Every visible menu item must have a unique, understandable purpose.
+- Every active route must highlight the correct menu destination.
+- A dossier opened from a filtered list must return to the correct context.
+- Browser Back must work naturally.
+- Existing bookmarks/deep links should remain functional where feasible.
+- Legacy routes should redirect safely to the correct canonical destination, preserving IDs and useful filters when possible.
+- Do not create redirect loops.
+- Do not break permissions through a redirect.
+- Do not leave duplicated sidebar entries for the same user task.
+
+### Important
+
+Navigation simplification is not authorization simplification.
+
+Removing a menu item must not expand or restrict backend roles incorrectly.
+
+---
+
+# 14. AUDIT OTHER ROLE MENUS FOR CONSISTENCY
+
+Perform a read-only structural audit of:
+
+- Student.
+- School.
+- City.
+- Committee.
+- Admin.
+
+Identify:
+
+- Duplicate destinations.
+- Similar application lists.
+- Repeated review screens.
+- Redundant tabs.
+- Inconsistent naming.
+- Dead or legacy navigation.
+- Multiple paths to the same mutation.
+- Duplicate Student dossier renderers.
+
+### Scope restriction
+
+Implement the approved School menu refactor in this phase.
+
+Do not redesign every other role's menu without evidence and separate scope authorization.
+
+If relevant duplication exists in City/Committee/Student/Admin, document it with:
+
+- Current route.
+- Business purpose.
+- Duplicate route.
+- Proposed consolidation.
+- Dependency.
+- Risk.
+- Recommended phase.
+
+Do not disrupt previously verified LEAN-5 functionality.
+
+---
+
+# 15. RESPONSIVE REQUIREMENTS
+
+Test:
+
+320, 360, 390, 430, 768, 1024, 1280, 1440, 1660 and 1920px.
+
+## Desktop
+
+- Compact readable Student table.
+- Efficient document attachment.
+- No huge green validation blocks.
+- No unnecessary empty side panels.
+- Clearly visible final forwarding action.
+
+## Tablet
+
+- Filter controls adapt properly.
+- Selection remains obvious.
+- PDF attachment fits available width.
+- No oversized modal.
+
+## Mobile
+
+- Student checkbox remains visible.
+- Five-criterion results remain readable.
+- PDF upload is easy.
+- Final action remains accessible.
+- Sidebar navigation collapses without losing the menu structure.
+- No horizontal page overflow.
+
+Use the existing 5TOT design system.
+
+Do not rebuild the visual theme.
+
+---
+
+# 16. DEMO AND REAL MODE
+
+## Demo
+
+Use deterministic synthetic data.
+
+Support:
+
+- Student selection.
+- Multiple selection.
+- PDF attachment simulation with truthful Demo indicators.
+- Valid/invalid forwarding.
+- Forwarded read-only state.
+- Restored navigation.
+- Correct School unit/season.
+- Deterministic reset.
+
+Do not pretend a Demo PDF has been uploaded to Real storage.
+
+## Real
+
+Use actual authenticated APIs.
+
+Support:
+
+- Real file upload.
+- Actual storage reference.
+- Backend validation.
+- Correct batch association.
+- Safe forwarding.
+- Confirmed server responses.
+- Actual authorized read-only presentation.
+
+No fake success.
+
+No Demo fallback.
+
+Do not claim PostgreSQL integration PASS unless verified in an authorized test environment.
+
+---
+
+# 17. REGRESSION TESTS — DOCUMENT UPLOAD
+
+Implement tests covering:
+
+1. Upload a valid PDF without entering document number.
+2. Upload without issue date.
+3. Upload without signatory.
+4. Upload without signatory position.
+5. Reject unsupported file formats.
+6. Enforce actual file size limits.
+7. Preview uploaded PDF.
+8. Replace PDF before forwarding.
+9. Remove PDF before forwarding.
+10. Prevent forwarding when the required PDF is missing.
+11. Confirm the exact same PDF is referenced by the forwarded batch.
+12. Preserve historical document metadata.
+13. Do not fabricate missing metadata.
+14. Correct School unit association.
+15. Correct award season association.
+16. Deny unauthorized file mutations.
+17. Prevent replacing the official document after forwarding unless a separately approved operation allows it.
+18. Handle storage/API errors honestly.
+
+---
+
+# 18. REGRESSION TESTS — NAVIGATION & WORKFLOW
+
+Implement tests covering:
+
+1. School sidebar displays consolidated destinations.
+2. No redundant School application-management menu entries.
+3. The unified application list supports all necessary review filters.
+4. A reviewer can find an unreviewed application.
+5. A reviewer can find a partially reviewed application.
+6. A reviewer can find an active supplement request.
+7. A reviewer can find a returned supplement.
+8. Direct navigation opens the correct declaration/dossier.
+9. A reviewer can return to the prior list/filter.
+10. Existing application deep links remain functional.
+11. Legacy route redirects preserve correct authorization.
+12. Recommendation selection remains available.
+13. Selected applications remain correctly tracked.
+14. The forwarding page contains one PDF section.
+15. The large green condition checklist is removed.
+16. Final forwarding remains a single authorized action.
+17. After forwarding, the same page shows the read-only submitted list.
+18. Unselected Students are not automatically marked Fail or Not Recommended.
+19. School and City review judgments remain separate.
+20. City receives exactly the selected applications.
+21. UDN retains one unit/season batch.
+22. Independent School scopes remain separate.
+23. Dashboard and export access remain available.
+24. Notification links still open valid destinations.
+25. Student, City, Committee and Admin access permissions remain intact.
+26. Mobile and desktop navigation work correctly.
+27. Demo and Real state remain isolated.
+28. Actual backend errors are not hidden by frontend status badges.
+
+---
+
+# 19. USER JOURNEY VERIFICATION
+
+Perform actual browser QA where available.
+
+## Journey A — School review
+
+Login as School Reviewer.
+
+Open "Hồ sơ sơ tuyển".
+
+Filter "Chờ xét".
+
+Open a dossier.
+
+Review a declaration.
+
+Return to the same filtered list.
+
+## Journey B — Supplementation
+
+Open the unified application list.
+
+Filter by pending/returned supplementation.
+
+Open the relevant dossier.
+
+Inspect the correction.
+
+Reassess through the existing inline review controls.
+
+## Journey C — Finalization
+
+Open "Danh sách đề nghị".
+
+Select Students.
+
+Attach a PDF.
+
+Verify there are no document metadata inputs.
+
+Verify no additional mandatory recommendation action.
+
+Click "Gửi danh sách lên Thành phố".
+
+Confirm once.
+
+Verify the exact selected list and PDF in the saved forwarding result.
+
+## Journey D — Post-forwarding
+
+Open "Danh sách đề nghị" again.
+
+See the forwarded list and official document.
+
+Verify no second ordinary forwarding is available.
+
+## Journey E — UDN
+
+Filter by original member institutions.
+
+Select Students from multiple members.
+
+Verify one common list and document.
+
+## Journey F — Mobile
+
+Repeat selection, attachment and confirmation at 390px.
+
+Verify no hidden or obstructed controls.
+
+---
+
+# 20. QUALITY GATES
+
+Run actual:
+
+- Frontend TypeScript checks.
+- Frontend production build.
+- Route and navigation tests.
+- Application list tests.
+- Supplementation navigation tests.
+- PDF upload tests.
+- Forwarding tests.
+- Role-based rendering tests.
+- Demo/Real isolation tests.
+- Responsive browser QA.
+
+If backend code changes:
+
+- Backend TypeScript checks.
+- Backend build.
+- Document contract tests.
+- File authorization tests.
+- Batch validation tests.
+- One-time forwarding tests.
+- Concurrency/idempotency tests.
+- Audit tests.
+
+Record actual test commands and results.
+
+Do not report unexecuted tests as PASS.
+
+---
+
+# 21. REQUIRED DELIVERABLES
+
+Create:
+
+`docs/lean/LEAN_4_2_SCHOOL_UX_CORRECTION.md`
+
+Include:
+
+- Customer requirement clarification.
+- Current School UX.
+- PDF-only form correction.
+- Existing metadata contract.
+- Actual backend compatibility decisions.
+- Removed redundant controls.
+- Final forwarding behavior.
+- Files changed.
+- Actual tests and results.
+- Remaining blockers.
+
+Create:
+
+`docs/lean/LEAN_4_2_NAVIGATION_AUDIT.md`
+
+Include a table of:
+
+- Current role.
+- Current navigation.
+- Actual route.
+- Business purpose.
+- Duplication.
+- Proposed destination.
+- Implemented change.
+- Preserved capabilities.
+- Regression tests.
+
+Create:
+
+`docs/lean/LEAN_4_2_MANUAL_UAT.md`
+
+Write detailed Vietnamese click-by-click instructions.
+
+Include:
+
+- School reviewer.
+- UDN reviewer.
+- Independent School reviewer.
+- City receiving reviewer.
+- Unauthorized roles.
+- Mobile tester.
+
+Provide actual before/after screenshots if browser tooling is available.
+
+---
+
+# 22. DEFINITION OF DONE
+
+This correction is complete only when:
+
+- The School reviewer only needs to upload the official PDF in the document section.
+- Document number, date, signatory and position are no longer mandatory manual fields.
+- Existing historical document information remains safe.
+- No invented metadata is submitted.
+- The backend accepts the authorized PDF-only workflow, or any genuine contract blocker is explicitly documented.
+- The forwarding conditions remain enforced server-side.
+- The large validation checklist is removed from the default UI.
+- The School navigation is task-based and no longer contains unnecessary duplicate operational destinations.
+- Existing legitimate review, supplementation, dashboard, export and notification capabilities are preserved.
+- Direct navigation and deep links remain valid.
+- The reviewer can select applications and forward once without a second per-Student recommendation workflow.
+- The same official PDF is retained in the forwarded record and City intake.
+- UDN and independent School boundaries remain correct.
+- Demo and Real stay isolated.
+- Relevant tests actually pass.
+- Mobile and desktop layouts remain usable.
+
+---
+
+# FINAL UX STANDARD
+
+The School Reviewer should have three clear working areas:
+
+**TỔNG QUAN** — Understand operational progress.
+
+**HỒ SƠ SƠ TUYỂN** — Review applications and handle supplementation.
+
+**DANH SÁCH ĐỀ NGHỊ** — Select Students, attach the official PDF and forward once.
+
+Notifications and substantive reporting must remain accessible without creating duplicate application-processing workflows.
+
+**THE DOCUMENT IS ALREADY OFFICIALLY PREPARED. THE SYSTEM ONLY NEEDS ITS PDF.**
+
+Do not make reviewers retype document metadata.
+
+Do not make reviewers manage technical lifecycle states.
+
+Do not make reviewers approve the same Student twice.
+
+**LEAN-4.2 SUCCESS = ONE CLEAR MENU STRUCTURE + ONE REVIEW WORKSPACE + ONE SELECTABLE FORWARDING LIST + ONE PDF + ONE CONFIRMATION.**
+
+## HARD STOP
+
+Implement and verify LEAN-4.2 only.
+
+Do not initiate another broad frontend rewrite.
+
+Do not add new workflow states.
+
+Do not modify unrelated role menus without authorization.
+
+Do not deploy, push, merge or migrate.
+
+Finish with evidence-based PASS / PARTIAL / BLOCKED and actual changed-file/test details.

@@ -1,0 +1,162 @@
+import { RequirementData } from "../components/table/RequirementRow";
+
+export const PLAYGROUND_INITIAL_REQUIREMENTS: Record<string, RequirementData[]> = {
+    ethics: [
+      {
+        id: 'ethics-drl',
+        criterionId: 'ethics',
+        title: 'Điểm rèn luyện cả năm học',
+        ruleBadge: 'Yêu cầu bắt buộc',
+        ruleHelper: 'Từ 90 điểm trở lên (Loại Xuất sắc)',
+        declarationValue: '93 / 100 điểm',
+        declarationDetail: 'Loại Xuất sắc cả năm học 2026–2027 (HK1: 92 điểm, HK2: 94 điểm)',
+        declarationDate: '15/07/2026',
+        evidenceFiles: [
+          {
+            id: 'ev-drl-1',
+            name: 'Bang_diem_ren_luyen_2026_2027.pdf',
+            size: '1.2 MB',
+            uploadedAt: '16/07/2026',
+            status: 'ready',
+          },
+        ],
+        status: 'ready',
+      },
+      {
+        id: 'ethics-phongtrao',
+        criterionId: 'ethics',
+        title: 'Khen thưởng rèn luyện đạo đức & lối sống',
+        ruleBadge: 'Chọn 1 trong các hình thức',
+        ruleHelper: 'Giấy khen cấp Đoàn Trường hoặc giấy chứng nhận người tốt việc tốt',
+        declarationValue: 'Giấy khen Bí thư Đoàn trường',
+        declarationDetail: 'Khen thưởng có thành tích xuất sắc trong công tác Đoàn và phong trào thanh niên',
+        declarationDate: '26/03/2026',
+        evidenceFiles: [
+          {
+            id: 'ev-gk-1',
+            name: 'Giay_khen_Doan_truong_26_03.pdf',
+            size: '2.4 MB',
+            uploadedAt: '28/03/2026',
+            status: 'ready',
+          },
+        ],
+        status: 'declared',
+      },
+    ],
+    academic: [
+      {
+        id: 'academic-gpa',
+        criterionId: 'academic',
+        title: 'Điểm trung bình chung học tập (GPA)',
+        ruleBadge: 'Yêu cầu bắt buộc',
+        ruleHelper: 'Đạt từ 3.20/4.00 trở lên và không nợ môn',
+        declarationValue: '3.45 / 4.00',
+        declarationDetail: 'Xếp loại Giỏi toàn khóa học 2026–2027, tổng số 42 tín chỉ hoàn thành',
+        declarationDate: '10/08/2026',
+        evidenceFiles: [
+          {
+            id: 'ev-gpa-1',
+            name: 'Bang_diem_toan_nam_hoc_2026_2027.pdf',
+            size: '3.1 MB',
+            uploadedAt: '12/08/2026',
+            status: 'ready',
+          },
+        ],
+        status: 'ready',
+      },
+      {
+        id: 'academic-nckh',
+        criterionId: 'academic',
+        title: 'Nghiên cứu khoa học sinh viên',
+        ruleBadge: 'Chọn ít nhất 1 nội dung',
+        ruleHelper: 'Giải thưởng NCKH sinh viên cấp Khoa, Trường hoặc bài báo hội thảo',
+        declarationValue: 'Giải Nhì Hội nghị Sinh viên NCKH 2026',
+        declarationDetail: 'Đề tài: Ứng dụng mô hình thị giác máy tính nhận diện văn bản tự động, nghiệm xuất sắc',
+        declarationDate: '20/05/2026',
+        evidenceFiles: [
+          {
+            id: 'ev-nckh-1',
+            name: 'Giay_chung_nhan_NCKH_2026.pdf',
+            size: '1.8 MB',
+            uploadedAt: '22/05/2026',
+            status: 'needs_verification',
+            aiSuggestedInfo: {
+              achievementName: 'Giải Nhì Hội nghị Sinh viên Nghiên cứu Khoa học cấp Trường 2026',
+              date: '20/05/2026',
+              issuingAuthority: 'Trường Đại học Bách khoa - ĐH Đà Nẵng',
+            },
+          },
+          {
+            id: 'ev-nckh-2',
+            name: 'Quyet_dinh_khen_thuong_NCKH_so142.pdf',
+            size: '850 KB',
+            uploadedAt: '22/05/2026',
+            status: 'ready',
+          },
+          {
+            id: 'ev-nckh-3',
+            name: 'Bao_cao_tom_tat_de_tai.pdf',
+            size: '4.2 MB',
+            uploadedAt: '23/05/2026',
+            status: 'ready',
+          },
+        ],
+        status: 'needs_verification',
+        recommendation: {
+          variant: 'recommendation',
+          message:
+            'Tài liệu "Giay_chung_nhan_NCKH_2026.pdf" có thông tin được trích xuất tự động. Bạn vui lòng kiểm tra và xác nhận nội dung.',
+          actionLabel: 'Kiểm tra tài liệu',
+        },
+      },
+    ],
+    volunteer: [
+      {
+        id: 'vol-mhx',
+        criterionId: 'volunteer',
+        title: 'Chiến dịch Tình nguyện Mùa hè xanh',
+        ruleBadge: 'Có thể khai nhiều hoạt động',
+        ruleHelper: 'Tham gia đầy đủ chiến dịch cấp Trường hoặc cấp Thành phố',
+        declarationValue: 'Đội trưởng Mùa hè xanh 2026 tại Huyện Hòa Vang',
+        declarationDetail: 'Thời gian tham gia: 15 ngày, hoàn thành 02 công trình thanh niên',
+        declarationDate: '18/07/2026',
+        evidenceFiles: [
+          {
+            id: 'ev-vol-1',
+            name: 'Chung_nhan_Mua_he_xanh_2026.pdf',
+            size: '1.5 MB',
+            uploadedAt: '25/07/2026',
+            status: 'ready',
+          },
+        ],
+        status: 'ready',
+      },
+      {
+        id: 'vol-blood',
+        criterionId: 'volunteer',
+        title: 'Hiến máu nhân đạo',
+        ruleBadge: 'Tiêu chuẩn cộng điểm',
+        ruleHelper: 'Tối thiểu 01 lần trong năm học',
+        declarationValue: '02 lần hiến máu nhân đạo',
+        declarationDetail: 'Hiến máu đợt 1 (15/10/2026 tại BV Phụ sản - Nhi) và đợt 2 (12/03/2027 tại BV Đà Nẵng)',
+        declarationDate: '12/03/2027',
+        evidenceFiles: [
+          {
+            id: 'ev-vol-2',
+            name: 'Giay_chung_nhan_hien_mau_dot1.pdf',
+            size: '920 KB',
+            uploadedAt: '16/10/2026',
+            status: 'ready',
+          },
+          {
+            id: 'ev-vol-3',
+            name: 'Giay_chung_nhan_hien_mau_dot2.pdf',
+            size: '890 KB',
+            uploadedAt: '14/03/2027',
+            status: 'ready',
+          },
+        ],
+        status: 'has_evidence',
+      },
+    ],
+  };

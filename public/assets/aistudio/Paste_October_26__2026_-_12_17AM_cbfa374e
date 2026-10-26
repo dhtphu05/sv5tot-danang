@@ -1,0 +1,919 @@
+# 5TOT ĐÀ NẴNG — LEAN REVIEW UX CORRECTION
+## ALWAYS-EXPANDED DOSSIER, DECLARED-ONLY REVIEW, MANUAL CRITERION CONCLUSION & DESKTOP DENSITY
+
+**Priority:** P0 — Customer-Confirmed UX and Business Contract Correction
+
+**Scope:** School and City Individual review workspace, application list, criterion conclusion, responsive desktop presentation
+
+**Execution:** SOURCE AUDIT → CONTRACT ALIGNMENT → TARGETED IMPLEMENTATION → TEST → BROWSER QA → REPORT
+
+**Implementation Authorization:** YES — Targeted frontend and necessary backend contract changes
+
+**Hard Stop:** No deployment, push, merge, schema migration or unrelated feature development.
+
+---
+
+# 1. CUSTOMER FEEDBACK — OVERRIDES PREVIOUS LEAN ASSUMPTIONS
+
+The customer has reviewed the latest LEAN implementation against the Central Youth Union's existing award application system.
+
+The customer explicitly requests:
+
+1. Remove the redundant "Cán bộ thẩm định" column from the relevant application list.
+2. Show the entire dossier expanded by default.
+3. Display submitted declarations clearly and directly.
+4. Do not display unused optional alternatives as failing requirements.
+5. Do not automatically conclude a criterion as Passed.
+6. Allow the authorized human reviewer to explicitly click "Đạt tiêu chí".
+7. Also support the corresponding legitimate "Không đạt tiêu chí" conclusion.
+8. Improve desktop information density to make more content readable.
+9. Reduce unnecessary font sizes and layout spacing without compromising usability.
+10. Preserve correct backend authority, persistence, audit and security.
+
+**This customer clarification supersedes the previous design assumption that passing declaration-level assessments automatically creates an official Passed criterion conclusion.**
+
+Do not continue implementing that outdated assumption.
+
+---
+
+# 2. PRODUCT NORTH STAR
+
+The preferred visual reference is a clear, continuous Central-level award dossier table.
+
+However, retain the modern 5TOT design system.
+
+The reviewer should be able to:
+
+**READ ALL DECLARED CONTENT → INSPECT EVIDENCE → ASSESS DECLARATIONS → EXPLICITLY CONCLUDE THE CRITERION → CONTINUE SCROLLING.**
+
+No excessive nested accordions.
+
+No unused optional forms marked red.
+
+No automatically recorded human criterion conclusion.
+
+No giant floating review toolbar.
+
+No unnecessary navigation between criteria.
+
+---
+
+# 3. VERIFY ACTUAL SOURCE AND BUSINESS CONTRACT
+
+Before modifying source:
+
+- Inspect the current School application list.
+- Inspect the City application list.
+- Inspect the shared Individual dossier renderer.
+- Inspect criterion and requirement components.
+- Inspect row-level Pass/Fail persistence.
+- Inspect criterion completion and assessment APIs.
+- Inspect review selectors.
+- Inspect current Demo and Real state.
+- Inspect the corrected LEAN-0.1 review truth table.
+- Inspect LEAN-2 and LEAN-5 implementation reports where available.
+
+Identify whether the backend already supports explicit criterion-level human conclusions.
+
+If it does, reuse the existing authorized operation.
+
+If it only supports derived criteria, identify the smallest safe compatible solution.
+
+Do not simulate an official criterion decision using local frontend state.
+
+Do not overwrite historical declarations, evidence or assessments.
+
+Record actual source references and API contracts.
+
+---
+
+# 4. REMOVE REDUNDANT REVIEWER COLUMN
+
+The customer identified a redundant "Cán bộ thẩm định" column.
+
+Audit where this column appears across School and City lists.
+
+In the provided City screenshot, this column displays "Chờ Trường chuyển giao", which is not a reviewer identity.
+
+This indicates potentially incorrect column semantics or status mapping.
+
+### Required change
+
+Remove the redundant column from the relevant main application lists.
+
+Do not replace it with another technical workflow-state column.
+
+Preserve actor attribution in actual audit history and application details where genuinely useful.
+
+Do not introduce mandatory Officer assignment.
+
+### City intake correctness
+
+Investigate any City queue entries that show:
+
+- "Chờ Trường chuyển giao".
+- "Chưa đề xuất".
+
+while also permitting active City assessment.
+
+Verify whether these represent:
+
+- Incorrect Demo fixtures.
+- Wrong status projection.
+- Unauthorized premature City intake.
+- A legitimate legacy state requiring special presentation.
+
+Do not silently hide genuine backend lifecycle defects with a cosmetic label change.
+
+City-stage assessment must respect actual valid School forwarding.
+
+---
+
+# 5. ALWAYS EXPAND ALL FIVE CRITERIA
+
+Current UX requires unnecessary expansion through multiple accordion layers.
+
+Target:
+
+When opening an Individual dossier, display all five criterion sections expanded by default:
+
+1. Đạo đức tốt.
+2. Học tập tốt.
+3. Thể lực tốt.
+4. Tình nguyện tốt.
+5. Hội nhập tốt.
+
+Within every criterion, show its submitted declarations directly.
+
+### Requirements
+
+- All declared items visible by default.
+- All applicable requirement groups understandable.
+- No mandatory criterion activation.
+- No forced accordion expansion before assessment.
+- No automatically selected active criterion.
+- No wizard-like Previous/Next workflow.
+- Natural vertical scrolling through the dossier.
+
+Optional collapse actions may remain for convenience.
+
+However, opening the dossier should not initially conceal submitted evidence behind multiple nested accordions.
+
+### Large dossiers
+
+If a dossier contains many declarations, maintain acceptable rendering performance.
+
+Use efficient React rendering and existing performance techniques.
+
+Do not sacrifice readability or force a virtualization approach that hides content unexpectedly.
+
+---
+
+# 6. DISPLAY DECLARED CONTENT — NOT EMPTY ALTERNATIVE ROWS
+
+This is a critical user-facing correction.
+
+The customer screenshot shows an academic requirement group that needs at least one qualifying form among several alternatives.
+
+The Student has already submitted qualifying academic achievements.
+
+However, the UI displays unselected alternatives with:
+
+- "Chưa kê khai (Bắt buộc)".
+- "Chưa đạt".
+- Red failure borders.
+- Empty declaration panels.
+
+This is misleading.
+
+### Correct ONE_OF / AT_LEAST_N presentation
+
+If a requirement group allows choosing one among several forms:
+
+- Display the group title.
+- Display the actual applicable rule.
+- Display all submitted declarations.
+- Display their evidence.
+- Display their human assessments.
+- Hide unselected alternative forms from the default review table.
+
+Example:
+
+**Thành tích học thuật — Đạt ít nhất 1 trong 6 hình thức**
+
+Student has submitted:
+
+1. Scientific research achievement.
+2. Published academic paper.
+
+Display those submitted achievements.
+
+Do not render all four unselected alternatives as empty red rows.
+
+### Optional discoverability
+
+A secondary "Xem các hình thức khác" control may be provided if reviewers genuinely need to inspect the policy alternatives.
+
+Do not make that secondary content mandatory to interact with.
+
+### Mandatory missing requirements
+
+A genuinely mandatory requirement that is not satisfied must remain discoverable.
+
+However:
+
+- Do not create a fake human Fail judgment.
+- Do not conflate absence of a declaration with a reviewer rejection.
+- Use neutral, concise presentation such as "Chưa có kê khai".
+- Identify the missing mandatory requirement once rather than generating multiple duplicate warning panels.
+
+### All submitted declarations remain visible
+
+If the Student voluntarily submits multiple achievements or multiple qualifying forms, preserve them all.
+
+Do not hide actual declarations simply because one already satisfies the minimum threshold.
+
+---
+
+# 7. REVIEW DECLARATIONS INLINE
+
+Keep LEAN-2 direct human review.
+
+Each submitted declaration should show:
+
+- Automatic display number.
+- Actual requirement/form.
+- Full declaration content.
+- Structured values where applicable.
+- Linked evidence.
+- Human assessment controls.
+
+Primary controls:
+
+"Đạt" and "Không đạt".
+
+Secondary controls where appropriate:
+
+- "Yêu cầu bổ sung".
+- "Nhận xét".
+- "Xem minh chứng".
+
+The controls must save through actual canonical APIs.
+
+No additional mandatory "Hoàn tất dòng" action.
+
+No separate mandatory evidence approval when it merely duplicates the same human judgment.
+
+Do not automatically mark unsubmitted alternatives as failed.
+
+---
+
+# 8. CRITICAL CHANGE — MANUAL CRITERION CONCLUSION
+
+The customer explicitly requires human-controlled criterion conclusions.
+
+Previous LEAN iterations attempted to automatically mark an entire criterion as Passed when enough child requirements were assessed as suitable.
+
+**THIS MUST CHANGE.**
+
+### New business distinction
+
+A criterion has at least two relevant dimensions:
+
+**A. Derived assessment readiness**
+
+The system may calculate whether the submitted evidence and recorded assessments appear to satisfy the rule.
+
+**B. Official human criterion conclusion**
+
+The authorized reviewer explicitly confirms:
+
+- Đạt tiêu chí.
+- Không đạt tiêu chí.
+
+Derived readiness is advisory or supporting information.
+
+It is not a substitute for the authorized human conclusion.
+
+### Required interface
+
+At the bottom of each of the five criterion sections, show:
+
+**Kết luận tiêu chí**
+
+Buttons:
+
+- "Đạt tiêu chí".
+- "Không đạt tiêu chí".
+
+The current saved conclusion must be clearly visible.
+
+If no human conclusion exists:
+
+"Chưa kết luận"
+
+### Persistence
+
+Clicking a conclusion must:
+
+1. Verify authorized reviewer role.
+2. Verify School or City stage.
+3. Verify application identity.
+4. Verify criterion identity.
+5. Apply applicable business validations.
+6. Persist the human conclusion.
+7. Record actor and timestamp.
+8. Preserve audit history.
+9. Update summaries and progress.
+10. Display confirmed server state.
+
+Do not claim success before persistence confirmation.
+
+### No automatic criterion passing
+
+When every relevant declaration passes:
+
+- The UI may indicate that the criterion appears to meet requirements.
+- The criterion remains "Chưa kết luận" until the reviewer explicitly confirms.
+- No automatic official criterion Pass record is created.
+
+### Manual Fail
+
+A reviewer must be able to explicitly record a negative criterion conclusion through an authorized operation.
+
+Handle reason requirements according to the actual approved backend contract.
+
+Do not invent mandatory notes unless necessary.
+
+### Inconsistency safety
+
+If a reviewer attempts to conclude Pass while mandatory requirements appear unsatisfied:
+
+- Identify the actual business rule.
+- Show the discrepancy clearly.
+- Enforce only approved constraints.
+- Do not silently override recorded data.
+- Do not auto-fail or auto-pass the criterion.
+
+Any authorized exception or override must be represented by the real domain contract, not fabricated through frontend flags.
+
+---
+
+# 9. SCHOOL AND CITY MUST CONCLUDE INDEPENDENTLY
+
+School criterion conclusion and City criterion conclusion are separate.
+
+Example:
+
+School — Học tập tốt:
+
+"Đạt tiêu chí"
+
+City — Học tập tốt:
+
+"Không đạt tiêu chí"
+
+Both must remain correctly persisted and attributable to their respective stages.
+
+Do not overwrite School conclusions when City concludes differently.
+
+### School
+
+The authorized School reviewer evaluates declarations and explicitly concludes each criterion.
+
+This must not introduce a separate per-Student recommendation wizard.
+
+Final School forwarding remains:
+
+**Select Students → Attach PDF → Forward Once.**
+
+### City
+
+The City reviewer independently evaluates and concludes each criterion.
+
+An explicit whole-City-review completion/attestation action remains only if it is a genuinely separate approved business operation.
+
+Do not automatically create Committee decisions.
+
+---
+
+# 10. UPDATE REVIEW PROGRESS AND STATUS PROJECTIONS
+
+The change to manual criterion conclusions affects dashboards and lists.
+
+Do not continue counting only derived eligibility as officially Passed.
+
+Distinguish:
+
+- Declaration judgments completed.
+- Criteria explicitly concluded.
+- Criteria explicitly concluded Passed.
+- Criteria explicitly concluded Failed.
+- Criteria still awaiting conclusion.
+
+### Example
+
+The reviewer has evaluated all relevant declarations for five criteria.
+
+Four criterion conclusions are saved.
+
+One criterion remains without an explicit conclusion.
+
+Display:
+
+"Đã kết luận 4/5 tiêu chí"
+
+Do not display:
+
+"Đã kết luận 5/5"
+
+merely because the fifth criterion's declaration judgments are sufficient for a suggested positive result.
+
+### Failed-but-completed example
+
+Five explicit human conclusions:
+
+- Four Pass.
+- One Fail.
+
+Display:
+
+"Đã xét 5/5 · Đạt 4/5 · Không đạt 1/5"
+
+This is a completed review with an unsuccessful criterion.
+
+Do not leave the application permanently in progress merely because it failed.
+
+### Historical compatibility
+
+Existing applications may contain derived criterion completion but no separate human conclusion record.
+
+Audit how the existing domain represents these records.
+
+Do not silently backfill official human decisions from computed eligibility.
+
+Use a safe, documented compatibility strategy.
+
+---
+
+# 11. DO NOT AUTO-INVALIDATE WITHOUT CONTRACT
+
+If a declaration's assessment changes after the reviewer has explicitly concluded the criterion, the criterion conclusion may become stale.
+
+Investigate the actual canonical lifecycle and existing revision rules.
+
+Required behavior:
+
+- Do not silently maintain a misleading stale Pass conclusion.
+- Do not silently reverse an authorized human decision without audit.
+- Distinguish a changed underlying assessment from a confirmed criterion conclusion.
+- Require authorized reconfirmation where the verified business contract calls for it.
+- Preserve history of previous conclusions.
+
+Document and test the selected strategy.
+
+---
+
+# 12. DESKTOP-FIRST INFORMATION DENSITY
+
+The customer wants a clearer, more explicit desktop presentation.
+
+The screenshot shows:
+
+- Large row heights.
+- Wide gaps.
+- Repeated descriptions.
+- Truncated academic achievements.
+- Small usable content width despite a large monitor.
+- Numerous nested requirement labels.
+- Disproportionate status badges.
+
+### Visual target
+
+A clean, dense, professional review table.
+
+Desktop columns should prioritize:
+
+1. Requirement/form.
+2. Full declaration content.
+3. Evidence.
+4. Human declaration assessment.
+
+Criterion conclusion should be clearly placed beneath the criterion group, not duplicated on every requirement row.
+
+### Suggested typography
+
+At desktop widths:
+
+- Important dossier headings: approximately 17–20px.
+- Criterion headings: approximately 15–17px.
+- Main table/declaration text: approximately 12–13px where still comfortably readable.
+- Secondary metadata: approximately 11–12px, with sufficient contrast.
+- Buttons: approximately 12–13px labels with appropriate hit targets.
+
+These are starting guidelines, not rigid values.
+
+Do not reduce text below readable accessibility limits merely to fit more columns.
+
+### Density optimization
+
+- Reduce excessive row padding.
+- Reduce giant card spacing.
+- Remove duplicate metadata.
+- Avoid repeated criterion descriptions.
+- Use restrained borders.
+- Wrap important declaration content instead of truncating everything.
+- Keep evidence filenames accessible.
+- Align review actions consistently.
+- Use the available desktop content width efficiently.
+- Keep sidebar width reasonable.
+
+### Important
+
+Do not rely on tiny fonts to compensate for unnecessary columns.
+
+First remove redundant information.
+
+Then tune font sizes and spacing.
+
+---
+
+# 13. FULL DECLARATION READABILITY
+
+The customer's reference screenshot shows full textual eligibility conditions and submitted results in a continuous table.
+
+The new 5TOT presentation should preserve that clarity.
+
+Avoid truncating:
+
+- Achievement names.
+- Research paper titles.
+- Volunteer activity descriptions.
+- Certificate scores.
+- Important eligibility conditions.
+
+For extremely long content:
+
+Use natural wrapping, progressive expansion or an accessible "Xem đầy đủ" action when appropriate.
+
+Do not hide important assessment information behind hover-only tooltips.
+
+Reviewers must be able to read declared content before making a judgment.
+
+---
+
+# 14. RESPONSIVE BEHAVIOR
+
+Test:
+
+320, 360, 390, 430, 768, 1024, 1280, 1440, 1660 and 1920px.
+
+## 1440–1920px
+
+Prioritize the dense full-width table.
+
+Show more actual declaration content.
+
+Avoid excessive whitespace.
+
+Avoid oversized side panels.
+
+## 1024–1280px
+
+Adapt columns intelligently.
+
+Use compact evidence and action cells.
+
+Do not squeeze text into unreadable narrow columns.
+
+## 768px
+
+Use a responsive table/list layout appropriate to the container.
+
+## 320–430px
+
+Use single-column review blocks.
+
+Each block should contain:
+
+- Requirement.
+- Declaration.
+- Evidence.
+- Inline Pass/Fail.
+- Optional supplementation action.
+
+At the end of the criterion:
+
+- Explicit criterion conclusion buttons.
+
+### Global requirements
+
+- No page-level horizontal overflow.
+- No clipped actions.
+- No overlapping badges.
+- No giant floating toolbar.
+- No nested accordion navigation.
+- No hidden primary criterion conclusion.
+- No unusably small touch targets.
+- No fixed desktop column layout forced onto mobile.
+
+---
+
+# 15. APPLICATION LIST SIMPLIFICATION
+
+Apply list-column correction to the actual affected School/City application lists.
+
+### Remove
+
+Redundant "Cán bộ thẩm định" columns where no real actor assignment is needed.
+
+Avoid redundant stage labels that duplicate the page context.
+
+### Prioritize
+
+- Student name and ID.
+- Original institution.
+- School conclusion/forwarding context where relevant.
+- Five criterion results.
+- Current review progress.
+- Open dossier action.
+
+Do not overload the list with:
+
+- Reviewer assignment.
+- Internal processing stages.
+- Repeated timestamps.
+- Several technical status badges.
+
+Move secondary metadata into dossier detail or an optional information area when useful.
+
+### City correctness
+
+City queue should not silently assess applications that have not entered the City stage through an authorized transition.
+
+Keep actual City-stage eligibility and stage validity checks.
+
+---
+
+# 16. PRESERVE SUPPLEMENTATION
+
+LEAN-3 contextual supplementation remains intact.
+
+A reviewer can still click:
+
+"Yêu cầu bổ sung"
+
+at an appropriate declaration or requirement.
+
+Do not issue supplementation automatically when clicking Fail.
+
+Do not automatically mark a criterion Pass after a Student submits new evidence.
+
+A returned supplement may require:
+
+1. New declaration-level human assessment.
+2. Explicit human criterion reconfirmation where applicable.
+
+Preserve:
+
+- Request scope.
+- Requesting stage.
+- Evidence versions.
+- Student explanation.
+- Reviewer notes.
+- Audit history.
+- Permissions.
+
+---
+
+# 17. BACKEND CONTRACT AND DATA SAFETY
+
+If an explicit human criterion conclusion already exists in the backend, use it.
+
+If not, propose and implement only the smallest safe compatible change that can be supported without unauthorized schema migration.
+
+Do not:
+
+- Store official human conclusions only in localStorage.
+- Use Demo status as a Real decision.
+- Convert derived eligibility directly into official Pass.
+- Overwrite application source declarations.
+- Overwrite School outcomes with City outcomes.
+- Invent a new global approval workflow.
+
+Use existing canonical authorization and assessment infrastructure.
+
+If a safe persisted manual criterion conclusion is impossible under current schema/API constraints, report it as a blocking contract gap.
+
+Do not fake implementation success.
+
+---
+
+# 18. TEST MATRIX
+
+Implement and execute tests covering at least:
+
+1. Five criteria expanded on initial dossier load.
+2. Submitted declarations visible without nested expansion.
+3. Multiple declarations visible.
+4. Unselected ONE_OF alternatives hidden by default.
+5. Unselected optional alternatives not marked Fail.
+6. Truly missing mandatory requirements remain discoverable.
+7. No false human judgments created for undeclared forms.
+8. Inline declaration Pass persists.
+9. Inline declaration Fail persists.
+10. No duplicate mandatory evidence approval.
+11. Criterion stays unconfirmed even if all declarations Pass.
+12. Authorized reviewer explicitly clicks "Đạt tiêu chí".
+13. Manual Pass conclusion persists after reload.
+14. Authorized reviewer explicitly clicks "Không đạt tiêu chí".
+15. Manual Fail conclusion persists after reload.
+16. Five criteria concluded, one Fail shows 5/5 reviewed and 4/5 passed.
+17. Incomplete criterion conclusions do not falsely appear complete.
+18. School and City conclusions remain independent.
+19. Reassessment does not silently corrupt an existing criterion conclusion.
+20. Historical judgments remain auditable.
+21. Student cannot perform Staff criterion decisions.
+22. Committee does not inherit Officer criterion controls.
+23. Unauthorized School Review Unit access is denied.
+24. City cannot assess invalid unforwarded applications.
+25. City queue removes or correctly projects the redundant Reviewer column.
+26. Review list status matches actual backend stage.
+27. Desktop 1440px and 1920px show readable full declaration content.
+28. Laptop 1024px does not squeeze controls.
+29. Mobile 390px remains fully operable.
+30. Evidence preview preserves review context.
+31. Pending supplementation does not auto-pass a criterion.
+32. Demo/Real isolation remains intact.
+33. Existing School forwarding remains intentional and one-time.
+34. Existing Collective TT01–TT04 flow remains unaffected.
+35. Dashboard review counts reflect explicit criterion conclusions where required.
+
+---
+
+# 19. MANUAL BROWSER QA
+
+Execute actual browser QA where available.
+
+### Scenario A — Expanded dossier
+
+Open a Student dossier.
+
+Verify all five criteria and submitted achievements are visible without manually expanding multiple layers.
+
+### Scenario B — Academic ONE_OF group
+
+Open the Academic criterion with at least one of six qualifying forms.
+
+Verify submitted achievements are shown.
+
+Verify unselected alternative forms do not appear as red "Chưa đạt" rows.
+
+### Scenario C — Manual Pass criterion
+
+Mark relevant declarations Pass.
+
+Verify criterion remains "Chưa kết luận".
+
+Click "Đạt tiêu chí".
+
+Verify saved human conclusion.
+
+Refresh.
+
+Verify it persists.
+
+### Scenario D — Manual Fail criterion
+
+Review the actual declarations.
+
+Click "Không đạt tiêu chí".
+
+Verify correct persisted Fail conclusion and any required reason.
+
+Refresh.
+
+Verify result persists.
+
+### Scenario E — Completed with Fail
+
+Explicitly conclude five criteria.
+
+Four Pass, one Fail.
+
+Verify correct independent progress and result.
+
+### Scenario F — City list
+
+Open the City review queue.
+
+Verify redundant Reviewer column is removed.
+
+Verify every actively reviewable application is legitimately in the City stage.
+
+### Scenario G — Desktop
+
+Test at 1440px and 1920px.
+
+Read long achievement descriptions.
+
+Verify content is not unnecessarily truncated.
+
+Verify all important actions remain visible.
+
+### Scenario H — Mobile
+
+Test at 390px.
+
+Review a declaration and explicitly conclude a criterion.
+
+Verify no horizontal overflow.
+
+---
+
+# 20. UPDATE LEAN DOCUMENTATION
+
+This customer feedback introduces a deliberate change from earlier LEAN assumptions.
+
+Update affected documentation:
+
+- `LEAN_0_REVIEW_CONTRACT.md`
+- `LEAN_0_BUSINESS_STATE_MATRIX.md`
+- `LEAN_0_1_REVIEW_STATE_TRUTH_TABLE.md`
+- `LEAN_2_IMPLEMENTATION_REPORT.md`
+- `LEAN_5_IMPLEMENTATION_REPORT.md`
+- Relevant status projection documentation.
+
+Do not erase prior history.
+
+Record the new confirmed product decision:
+
+**DECLARATION ASSESSMENTS MAY SUPPORT AUTOMATIC ELIGIBILITY CALCULATIONS, BUT FINAL CRITERION PASS/FAIL CONCLUSIONS ARE EXPLICIT AUTHORIZED HUMAN ACTIONS.**
+
+Keep School recommendation, City review completion and Committee official decisions separate.
+
+---
+
+# 21. REQUIRED REPORT
+
+Create:
+
+`docs/lean/LEAN_REVIEW_MANUAL_CRITERION_UX_CORRECTION.md`
+
+Include:
+
+- Baseline.
+- Customer-requested corrections.
+- Screenshot problems addressed.
+- Existing canonical criterion contract.
+- Manual criterion conclusion persistence.
+- ONE_OF/ALL_REQUIRED display rules.
+- List column corrections.
+- School/City independence.
+- Desktop density changes.
+- Responsive screenshots.
+- Actual test results.
+- Exact modified files.
+- Remaining backend blockers.
+- Final verdict: PASS / PARTIAL / BLOCKED.
+
+Create a Vietnamese click-by-click manual test checklist for the changed School and City screens.
+
+---
+
+# DEFINITION OF DONE
+
+This correction is complete when:
+
+- Reviewer assignment column clutter is removed.
+- All five criterion sections are expanded by default.
+- All actual submitted declarations are visible and understandable.
+- Optional undeclared alternatives do not show false failure badges.
+- Mandatory missing information remains distinguishable without fabricated human Fail judgments.
+- Declaration-level Pass/Fail remains direct.
+- Criterion-level Pass/Fail is explicitly recorded by authorized humans.
+- Automatic eligibility hints do not silently write official criterion conclusions.
+- Review progress and passing criteria remain separate.
+- School and City conclusions remain independent.
+- The desktop interface is denser, clearer and more informative.
+- Responsive behavior is correct.
+- Backend persistence, audit and authorization remain intact.
+- No unrelated workflow regressions are introduced.
+
+## FINAL PRODUCT STANDARD
+
+**SHOW THE SUBMITTED DOSSIER CLEARLY.**
+
+**HIDE UNUSED OPTIONAL ALTERNATIVES.**
+
+**LET REVIEWERS ASSESS DECLARATIONS DIRECTLY.**
+
+**LET REVIEWERS EXPLICITLY CONCLUDE EACH CRITERION.**
+
+**KEEP THE DESKTOP TABLE DENSE, READABLE AND PROFESSIONAL.**
+
+## HARD STOP
+
+Implement this targeted UX and contract correction only.
+
+Do not deploy, push, merge, run production migrations or alter live award data.
