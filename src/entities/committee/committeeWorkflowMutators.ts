@@ -434,11 +434,21 @@ export function applyForwardSchoolApplicationsToCity(
       snapshot,
     };
 
+    const baseCriteriaList = Array.isArray(app.criteriaReview)
+      ? app.criteriaReview
+      : [];
+
     return {
       ...app,
       currentReviewStage: 'CITY' as const,
       schoolPreliminaryStatus: 'forwarded_to_city' as const,
       workflowStatus: 'unassigned' as const,
+      reviewedCriteriaCount: 0,
+      criteriaReview: baseCriteriaList.map((cr) => ({
+        ...cr,
+        status: 'not_reviewed' as const,
+        noteSummary: undefined,
+      })),
       schoolReviewSummary: nextSummary,
       latestOperationalNote:
         'Đã chuyển Hội Sinh viên Thành phố Đà Nẵng · Sẵn sàng tiếp nhận & phân công',

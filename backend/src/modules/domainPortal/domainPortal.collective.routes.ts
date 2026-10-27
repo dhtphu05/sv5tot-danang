@@ -248,10 +248,13 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
       }
 
       const isReassignment = Boolean(app.assignedOfficerId);
-      const officerAcc = STAFF_SEED_ACCOUNTS.find((s) => s.id === officerId);
+      const officerAcc =
+        STAFF_SEED_ACCOUNTS.find((s) => s.id === officerId) ||
+        STAFF_SEED_ACCOUNTS.find((s) => s.role === 'CITY_OFFICER');
       app.status = 'city_assigned';
-      app.assignedOfficerId = officerId || 'staff-off-nam';
-      app.assignedOfficerName = officerAcc?.fullName || 'Trần Hoài Nam';
+      app.assignedOfficerId = officerAcc?.id || 'staff-off-nam';
+      app.assignedOfficerName =
+        officerAcc?.fullName || 'Cán bộ xét duyệt cấp Thành phố';
       app.assignmentNote = assignmentNote || '';
       app.updatedAt = new Date().toISOString();
 

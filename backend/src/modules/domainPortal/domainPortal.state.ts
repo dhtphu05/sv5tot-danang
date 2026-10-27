@@ -152,6 +152,7 @@ export const SCHOOL_UNIT_MAP: Record<string, { unitId: string; unitName: string;
 export const STAFF_SEED_ACCOUNTS: Array<{
   id: string;
   email: string;
+  aliases?: string[];
   fullName: string;
   role: SystemRoleCode;
   roleLabel: string;
@@ -159,196 +160,134 @@ export const STAFF_SEED_ACCOUNTS: Array<{
   unitLabel: string;
   institutionId?: string;
 }> = [
-  // Cán bộ sơ tuyển cấp Trường / Đơn vị (SCHOOL_OFFICER)
+  // Cán bộ sơ tuyển cấp Trường / Đơn vị (SCHOOL_OFFICER) — mỗi trường 01 tài khoản duy nhất
   {
     id: 'staff-sch-an',
-    email: 'an.nv@udn.vn',
-    fullName: 'Nguyễn Văn An',
+    email: 'canbo.udn@udn.vn',
+    aliases: ['an.nv@udn.vn', 'tien.nv@udn.vn'],
+    fullName: 'Cán bộ xét cấp trường Đại học Đà Nẵng',
     role: 'SCHOOL_OFFICER',
-    roleLabel: 'Cán bộ xét sơ tuyển',
+    roleLabel: 'Cán bộ xét cấp trường',
     unitId: 'unit-udn',
     unitLabel: 'Đại học Đà Nẵng',
     institutionId: 'inst-dut',
   },
   {
-    id: 'staff-sch-udn',
-    email: 'tien.nv@udn.vn',
-    fullName: 'Nguyễn Văn Tiến',
-    role: 'SCHOOL_OFFICER',
-    roleLabel: 'Cán bộ sơ tuyển cấp Trường',
-    unitId: 'unit-udn',
-    unitLabel: 'Hội đồng Sơ tuyển Đại học Đà Nẵng',
-    institutionId: 'inst-dut',
-  },
-  {
     id: 'staff-sch-dtu',
-    email: 'dung.th@duytan.edu.vn',
-    fullName: 'Trần Hoàng Dũng',
-    role: 'SCHOOL_OFFICER',
-    roleLabel: 'Cán bộ sơ tuyển cấp Trường',
-    unitId: 'unit-dtu',
-    unitLabel: 'Trường Đại học Duy Tân',
-    institutionId: 'inst-dtu',
-  },
-  {
-    id: 'staff-sch-dtu-huy',
     email: 'canbo.dtu@duytan.edu.vn',
-    fullName: 'Trần Gia Huy',
+    aliases: ['dung.th@duytan.edu.vn', 'minh.lh@dtt.udn.vn'],
+    fullName: 'Cán bộ xét cấp trường Đại học Duy Tân',
     role: 'SCHOOL_OFFICER',
-    roleLabel: 'Cán bộ sơ tuyển cấp Trường',
+    roleLabel: 'Cán bộ xét cấp trường',
     unitId: 'unit-dtu',
     unitLabel: 'Trường Đại học Duy Tân',
     institutionId: 'inst-dtu',
   },
   {
     id: 'staff-sch-donga',
-    email: 'thao.htt@donga.edu.vn',
-    fullName: 'Hoàng Thị Thu Thảo',
+    email: 'canbo.donga@donga.edu.vn',
+    aliases: ['thao.htt@donga.edu.vn', 'hoa.nt@donga.edu.vn'],
+    fullName: 'Cán bộ xét cấp trường Trường Đại học Đông Á',
     role: 'SCHOOL_OFFICER',
-    roleLabel: 'Cán bộ sơ tuyển cấp Trường',
+    roleLabel: 'Cán bộ xét cấp trường',
     unitId: 'unit-donga',
     unitLabel: 'Trường Đại học Đông Á',
     institutionId: 'inst-donga',
   },
   {
     id: 'staff-sch-dau',
-    email: 'hai.lt@dau.edu.vn',
-    fullName: 'Lê Thanh Hải',
+    email: 'canbo.dau@dau.edu.vn',
+    aliases: ['hai.lt@dau.edu.vn', 'tuan.pv@dhktdn.edu.vn'],
+    fullName: 'Cán bộ xét cấp trường Trường Đại học Kiến trúc Đà Nẵng',
     role: 'SCHOOL_OFFICER',
-    roleLabel: 'Cán bộ sơ tuyển cấp Trường',
+    roleLabel: 'Cán bộ xét cấp trường',
     unitId: 'unit-dau',
     unitLabel: 'Trường Đại học Kiến trúc Đà Nẵng',
     institutionId: 'inst-dau',
   },
   {
     id: 'staff-sch-upes3',
-    email: 'tri.vm@upes3.edu.vn',
-    fullName: 'Võ Minh Trí',
+    email: 'canbo.upes3@upes3.edu.vn',
+    aliases: ['tri.vm@upes3.edu.vn'],
+    fullName: 'Cán bộ xét cấp trường Trường Đại học Thể dục Thể thao Đà Nẵng',
     role: 'SCHOOL_OFFICER',
-    roleLabel: 'Cán bộ sơ tuyển cấp Trường',
+    roleLabel: 'Cán bộ xét cấp trường',
     unitId: 'unit-upes3',
     unitLabel: 'Trường Đại học Thể dục Thể thao Đà Nẵng',
     institutionId: 'inst-upes3',
   },
   {
     id: 'staff-sch-tyd',
-    email: 'phuong.nt@dhktyduocdn.edu.vn',
-    fullName: 'Nguyễn Thị Phương',
+    email: 'canbo.tyd@dhktyduocdn.edu.vn',
+    aliases: ['phuong.nt@dhktyduocdn.edu.vn'],
+    fullName: 'Cán bộ xét cấp trường Trường Đại học Kỹ thuật Y - Dược Đà Nẵng',
     role: 'SCHOOL_OFFICER',
-    roleLabel: 'Cán bộ sơ tuyển cấp Trường',
+    roleLabel: 'Cán bộ xét cấp trường',
     unitId: 'unit-tyd',
     unitLabel: 'Trường Đại học Kỹ thuật Y - Dược Đà Nẵng',
     institutionId: 'inst-tyd',
   },
   {
     id: 'staff-sch-fpt',
-    email: 'anh.bd@fpt.edu.vn',
-    fullName: 'Bùi Đức Anh',
+    email: 'canbo.fpt@fpt.edu.vn',
+    aliases: ['anh.bd@fpt.edu.vn'],
+    fullName: 'Cán bộ xét cấp trường Trường Đại học FPT phân hiệu Đà Nẵng',
     role: 'SCHOOL_OFFICER',
-    roleLabel: 'Cán bộ sơ tuyển cấp Trường',
+    roleLabel: 'Cán bộ xét cấp trường',
     unitId: 'unit-fpt',
     unitLabel: 'Trường Đại học FPT phân hiệu Đà Nẵng',
     institutionId: 'inst-fpt',
   },
-  // Cán bộ xét duyệt Thành phố (CITY_OFFICER)
+  // Cán bộ xét duyệt Thành phố (CITY_OFFICER) — 01 tài khoản duy nhất
   {
     id: 'staff-off-nam',
-    email: 'nam.th@hsvdanang.vn',
-    fullName: 'Trần Hoàng Nam',
+    email: 'canbo.thanhpho@hsvdanang.vn',
+    aliases: [
+      'nam.th@hsvdanang.vn',
+      'chau.vtm@hsvdanang.vn',
+      'huy.dq@hsvdanang.vn',
+      'tung.pt@hsvdanang.vn',
+      'linh.pt@hsvdanang.vn',
+      'linh.ptm@hsvdanang.vn',
+    ],
+    fullName: 'Cán bộ xét duyệt cấp Thành phố',
     role: 'CITY_OFFICER',
     roleLabel: 'Cán bộ xét duyệt Thành phố',
-    unitLabel: 'Tổ Thẩm định Hồ sơ · Khối Kỹ thuật & Công nghệ',
+    unitLabel: 'Hội Sinh viên Việt Nam TP. Đà Nẵng',
   },
-  {
-    id: 'staff-off-chau',
-    email: 'chau.vtm@hsvdanang.vn',
-    fullName: 'Võ Thị Minh Châu',
-    role: 'CITY_OFFICER',
-    roleLabel: 'Cán bộ xét duyệt Thành phố',
-    unitLabel: 'Tổ Thẩm định Hồ sơ · Khối Kinh tế & Sư phạm',
-  },
-  {
-    id: 'staff-off-huy',
-    email: 'huy.dq@hsvdanang.vn',
-    fullName: 'Đặng Quốc Huy',
-    role: 'CITY_OFFICER',
-    roleLabel: 'Cán bộ xét duyệt Thành phố',
-    unitLabel: 'Tổ Thẩm định Hồ sơ · Khối Ngoại ngữ & Y Dược',
-  },
-  {
-    id: 'staff-off-tung',
-    email: 'tung.pt@hsvdanang.vn',
-    fullName: 'Phan Thanh Tùng',
-    role: 'CITY_OFFICER',
-    roleLabel: 'Cán bộ xét duyệt Thành phố',
-    unitLabel: 'Tổ Thẩm định Hồ sơ · Khối Đại học & Học viện',
-  },
-  {
-    id: 'staff-off-linh',
-    email: 'linh.pt@hsvdanang.vn',
-    fullName: 'Phạm Thùy Linh',
-    role: 'CITY_OFFICER',
-    roleLabel: 'Cán bộ xét duyệt Thành phố',
-    unitLabel: 'Hội Sinh viên TP. Đà Nẵng',
-  },
-  // Quản lý xét duyệt Thành phố (CITY_MANAGER)
+  // Quản lý xét duyệt Thành phố (CITY_MANAGER) — 01 tài khoản duy nhất
   {
     id: 'staff-mgr-ha',
-    email: 'ha.nt@hsvdanang.vn',
-    fullName: 'Nguyễn Thu Hà',
+    email: 'quanly.thanhpho@hsvdanang.vn',
+    aliases: ['ha.nt@hsvdanang.vn'],
+    fullName: 'Quản lý xét duyệt cấp Thành phố',
     role: 'CITY_MANAGER',
     roleLabel: 'Quản lý xét duyệt Thành phố',
     unitLabel: 'Ban Thư ký · Hội Sinh viên TP. Đà Nẵng',
   },
-  // Hội đồng xét chọn Thành phố (CITY_COMMITTEE)
+  // Hội đồng xét chọn Thành phố (CITY_COMMITTEE) — 01 tài khoản duy nhất
   {
     id: 'staff-com-quan',
-    email: 'quan.lm@hsvdanang.vn',
-    fullName: 'Lê Minh Quân',
+    email: 'hoidong.thanhpho@hsvdanang.vn',
+    aliases: [
+      'quan.lm@hsvdanang.vn',
+      'thao.tp@hsvdanang.vn',
+      'viet.hq@hsvdanang.vn',
+    ],
+    fullName: 'Hội đồng xét chọn cấp Thành phố',
     role: 'CITY_COMMITTEE',
     roleLabel: 'Hội đồng xét chọn Thành phố',
     unitLabel: 'Hội đồng xét chọn cấp Thành phố Đà Nẵng',
   },
-  {
-    id: 'staff-com-thao',
-    email: 'thao.tp@hsvdanang.vn',
-    fullName: 'Trương Phương Thảo',
-    role: 'CITY_COMMITTEE',
-    roleLabel: 'Hội đồng xét chọn Thành phố',
-    unitLabel: 'Ban Thanh niên Trường học Thành Đoàn',
-  },
-  {
-    id: 'staff-com-viet',
-    email: 'viet.hq@hsvdanang.vn',
-    fullName: 'Hoàng Quốc Việt',
-    role: 'CITY_COMMITTEE',
-    roleLabel: 'Hội đồng xét chọn Thành phố',
-    unitLabel: 'Hội đồng xét chọn cấp Thành phố Đà Nẵng',
-  },
-  // Quản trị hệ thống (ADMIN)
-  {
-    id: 'staff-adm-khoa',
-    email: 'khoa.nd@hsvdanang.vn',
-    fullName: 'Nguyễn Đăng Khoa',
-    role: 'ADMIN',
-    roleLabel: 'Quản trị hệ thống',
-    unitLabel: 'Thành Đoàn Đà Nẵng',
-  },
+  // Quản trị hệ thống (ADMIN) — 01 tài khoản duy nhất
   {
     id: 'staff-adm-lan',
-    email: 'lan.pn@hsvdanang.vn',
-    fullName: 'Phạm Ngọc Lan',
+    email: 'admin@hsvdanang.vn',
+    aliases: ['lan.pn@hsvdanang.vn', 'khoa.nd@hsvdanang.vn'],
+    fullName: 'Quản trị hệ thống 5TOT Đà Nẵng',
     role: 'ADMIN',
     roleLabel: 'Quản trị hệ thống',
     unitLabel: 'Văn phòng Hội Sinh viên TP. Đà Nẵng',
-  },
-  {
-    id: 'staff-adm-root',
-    email: 'admin@hsvdanang.vn',
-    fullName: 'Quản trị viên 5TOT Đà Nẵng',
-    role: 'ADMIN',
-    roleLabel: 'Quản trị hệ thống',
-    unitLabel: 'Hội Sinh viên TP. Đà Nẵng',
   },
 ];
 
@@ -999,13 +938,44 @@ export function loadPortalStateFromDisk(): boolean {
       portalState.registeredStudents = new Map(parsed.registeredStudents);
     }
     if (Array.isArray(parsed.individualStaffRecords)) {
-      portalState.individualStaffRecords = parsed.individualStaffRecords;
+      portalState.individualStaffRecords = parsed.individualStaffRecords.map(
+        (rec) => {
+          if (rec?.assignment?.officerId) {
+            return {
+              ...rec,
+              assignment: {
+                ...rec.assignment,
+                officerId: 'staff-off-nam',
+                officerName: 'Cán bộ xét duyệt cấp Thành phố',
+                assignedBy: 'Quản lý xét duyệt cấp Thành phố',
+              },
+              latestOperationalNote:
+                typeof rec.latestOperationalNote === 'string' &&
+                rec.latestOperationalNote.includes('Phân công')
+                  ? 'Đã phân công cho Cán bộ xét duyệt cấp Thành phố'
+                  : rec.latestOperationalNote,
+            };
+          }
+          return rec;
+        }
+      );
     }
     if (parsed.studentApplications && typeof parsed.studentApplications === 'object') {
       portalState.studentApplications = parsed.studentApplications;
     }
     if (Array.isArray(parsed.collectiveApplications)) {
-      portalState.collectiveApplications = parsed.collectiveApplications;
+      portalState.collectiveApplications = parsed.collectiveApplications.map(
+        (col) => {
+          if (col?.assignedOfficerId) {
+            return {
+              ...col,
+              assignedOfficerId: 'staff-off-nam',
+              assignedOfficerName: 'Cán bộ xét duyệt cấp Thành phố',
+            };
+          }
+          return col;
+        }
+      );
     }
     if (Array.isArray(parsed.evidenceIndex)) {
       portalState.evidenceIndex = new Map(parsed.evidenceIndex);
@@ -1013,6 +983,7 @@ export function loadPortalStateFromDisk(): boolean {
     if (Array.isArray(parsed.auditLogs)) {
       portalState.auditLogs = parsed.auditLogs;
     }
+    savePortalStateToDisk();
     return true;
   } catch {
     return false;
@@ -1164,6 +1135,9 @@ export async function issueZeroTrustJwtToken(
           grantedByUserId: 'system-portal',
         });
       }
+    }
+    if (existing && params.fullName && existing.fullName !== params.fullName) {
+      existing = { ...existing, fullName: params.fullName };
     }
     const tokens = await deps.sessionService.createSession(
       existing,

@@ -305,12 +305,23 @@ export const demoServicesAdapter: DomainServicesBundle = {
         (acc) => acc.email.toLowerCase() === normalized && acc.status === 'active'
       );
 
-      // Check canonical Staff demo users
+      // Check canonical Staff demo users (including legacy aliases)
       const staffRoleEntry = (Object.entries(STAFF_DEMO_USERS) as [StaffRole, typeof STAFF_DEMO_USERS[StaffRole]][]).find(
         ([, user]) =>
           user.email.toLowerCase() === normalized ||
+          (user.primaryRole === 'CITY_OFFICER' &&
+            (normalized === 'nam.th@hsvdanang.vn' ||
+              normalized === 'canbo.thanhpho@hsvdanang.vn')) ||
+          (user.primaryRole === 'CITY_MANAGER' &&
+            (normalized === 'ha.nt@hsvdanang.vn' ||
+              normalized === 'quanly.thanhpho@hsvdanang.vn')) ||
+          (user.primaryRole === 'CITY_COMMITTEE' &&
+            (normalized === 'quan.lm@hsvdanang.vn' ||
+              normalized === 'hoidong.thanhpho@hsvdanang.vn')) ||
           (user.primaryRole === 'ADMIN' &&
-            (normalized === 'khoa.nd@hsvdanang.vn' || normalized === 'admin@hsvdanang.vn'))
+            (normalized === 'lan.pn@hsvdanang.vn' ||
+              normalized === 'khoa.nd@hsvdanang.vn' ||
+              normalized === 'admin@hsvdanang.vn'))
       );
 
       if (matchedStaffAccount || staffRoleEntry || preferredTrack === 'STAFF') {

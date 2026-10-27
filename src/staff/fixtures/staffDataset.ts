@@ -29,27 +29,27 @@ import { HERO_SUPPLEMENT_REQUEST } from '../../demo/fixtures/supplementScenarios
 export const STAFF_DEMO_USERS: Record<StaffRole, StaffUser> = {
   SCHOOL_OFFICER: {
     id: 'staff-sch-an',
-    fullName: 'Nguyễn Văn An',
-    email: 'an.nv@udn.vn',
+    fullName: 'Cán bộ xét cấp trường Đại học Đà Nẵng',
+    email: 'canbo.udn@udn.vn',
     primaryRole: 'SCHOOL_OFFICER',
-    roleLabel: 'Cán bộ xét sơ tuyển',
+    roleLabel: 'Cán bộ xét cấp trường',
     unitLabel: 'Đại học Đà Nẵng',
     schoolReviewUnitId: 'unit-udn',
     roles: ['SCHOOL_OFFICER'],
   },
   CITY_OFFICER: {
     id: 'staff-off-nam',
-    fullName: 'Trần Hoàng Nam',
-    email: 'nam.th@hsvdanang.vn',
+    fullName: 'Cán bộ xét duyệt cấp Thành phố',
+    email: 'canbo.thanhpho@hsvdanang.vn',
     primaryRole: 'CITY_OFFICER',
     roleLabel: 'Cán bộ xét duyệt',
-    unitLabel: 'Tổ Thẩm định Hồ sơ · Hội Sinh viên TP. Đà Nẵng',
+    unitLabel: 'Hội Sinh viên Việt Nam TP. Đà Nẵng',
     roles: ['CITY_OFFICER'],
   },
   CITY_MANAGER: {
     id: 'staff-mgr-ha',
-    fullName: 'Nguyễn Thu Hà',
-    email: 'ha.nt@hsvdanang.vn',
+    fullName: 'Quản lý xét duyệt cấp Thành phố',
+    email: 'quanly.thanhpho@hsvdanang.vn',
     primaryRole: 'CITY_MANAGER',
     roleLabel: 'Quản lý xét duyệt',
     unitLabel: 'Ban Thư ký · Hội Sinh viên TP. Đà Nẵng',
@@ -57,8 +57,8 @@ export const STAFF_DEMO_USERS: Record<StaffRole, StaffUser> = {
   },
   CITY_COMMITTEE: {
     id: 'staff-com-quan',
-    fullName: 'Lê Minh Quân',
-    email: 'quan.lm@hsvdanang.vn',
+    fullName: 'Hội đồng xét chọn cấp Thành phố',
+    email: 'hoidong.thanhpho@hsvdanang.vn',
     primaryRole: 'CITY_COMMITTEE',
     roleLabel: 'Hội đồng xét chọn',
     unitLabel: 'Hội đồng xét chọn cấp Thành phố Đà Nẵng',
@@ -66,8 +66,8 @@ export const STAFF_DEMO_USERS: Record<StaffRole, StaffUser> = {
   },
   ADMIN: {
     id: 'staff-adm-lan',
-    fullName: 'Phạm Ngọc Lan',
-    email: 'lan.pn@hsvdanang.vn',
+    fullName: 'Quản trị hệ thống 5TOT Đà Nẵng',
+    email: 'admin@hsvdanang.vn',
     primaryRole: 'ADMIN',
     roleLabel: 'Quản trị hệ thống',
     unitLabel: 'Văn phòng Hội Sinh viên TP. Đà Nẵng',
@@ -76,7 +76,7 @@ export const STAFF_DEMO_USERS: Record<StaffRole, StaffUser> = {
 };
 
 /**
- * Complete pool of City-level Reviewing Officers (for Manager assignment & workload derivation)
+ * Single canonical City-level Reviewing Officer account
  */
 export const CITY_REVIEW_OFFICERS: {
   id: string;
@@ -86,27 +86,9 @@ export const CITY_REVIEW_OFFICERS: {
 }[] = [
   {
     id: 'staff-off-nam',
-    fullName: 'Trần Hoàng Nam',
-    email: 'nam.th@hsvdanang.vn',
-    unitLabel: 'Tổ Thẩm định Hồ sơ · Khối Kỹ thuật & Công nghệ',
-  },
-  {
-    id: 'staff-off-chau',
-    fullName: 'Võ Thị Minh Châu',
-    email: 'chau.vtm@hsvdanang.vn',
-    unitLabel: 'Tổ Thẩm định Hồ sơ · Khối Kinh tế & Sư phạm',
-  },
-  {
-    id: 'staff-off-huy',
-    fullName: 'Đặng Quốc Huy',
-    email: 'huy.dq@hsvdanang.vn',
-    unitLabel: 'Tổ Thẩm định Hồ sơ · Khối Ngoại ngữ & Y Dược',
-  },
-  {
-    id: 'staff-off-tung',
-    fullName: 'Phan Thanh Tùng',
-    email: 'tung.pt@hsvdanang.vn',
-    unitLabel: 'Tổ Thẩm định Hồ sơ · Khối Đại học & Học viện',
+    fullName: 'Cán bộ xét duyệt cấp Thành phố',
+    email: 'canbo.thanhpho@hsvdanang.vn',
+    unitLabel: 'Hội Sinh viên Việt Nam TP. Đà Nẵng',
   },
 ];
 

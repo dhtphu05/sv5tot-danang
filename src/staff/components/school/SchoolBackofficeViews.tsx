@@ -525,6 +525,14 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
                 >
                   Đổi
                 </button>
+                <button
+                  type="button"
+                  onClick={() => onRecordRecommendation?.(app.applicationId, 'pending')}
+                  title="Hoàn tác kết luận đề nghị"
+                  className="inline-flex items-center gap-0.5 text-[11px] text-[#B45309] hover:text-[#92400E] underline cursor-pointer ml-1"
+                >
+                  <RotateCcw size={10} /> Hoàn tác
+                </button>
               </div>
             ) : rec === 'not_recommended' ? (
               <div className="flex items-center gap-1.5">
@@ -538,6 +546,14 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
                   className="text-[11px] text-[#526B7C] hover:text-[#0F2335] underline cursor-pointer"
                 >
                   Đổi
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onRecordRecommendation?.(app.applicationId, 'pending')}
+                  title="Hoàn tác kết luận không đề nghị"
+                  className="inline-flex items-center gap-0.5 text-[11px] text-[#B45309] hover:text-[#92400E] underline cursor-pointer ml-1"
+                >
+                  <RotateCcw size={10} /> Hoàn tác
                 </button>
               </div>
             ) : (

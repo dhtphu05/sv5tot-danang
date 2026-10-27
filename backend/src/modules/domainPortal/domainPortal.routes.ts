@@ -48,6 +48,70 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
       const prisma = await dbManager.getClient();
       await (prisma as any).schoolForwardingBatch.deleteMany({});
       await (prisma as any).individualApplication.deleteMany({});
+      // Remove duplicate/stale staff rows in Neon DB
+      const staleEmails = [
+        'tien.nv@udn.vn',
+        'dung.th@duytan.edu.vn',
+        'minh.lh@dtt.udn.vn',
+        'thao.htt@donga.edu.vn',
+        'hoa.nt@donga.edu.vn',
+        'hai.lt@dau.edu.vn',
+        'tuan.pv@dhktdn.edu.vn',
+        'tri.vm@upes3.edu.vn',
+        'phuong.nt@dhktyduocdn.edu.vn',
+        'anh.bd@fpt.edu.vn',
+        'long.tv@caodangdanang.edu.vn',
+        'an.nv@udn.vn',
+        'chau.vtm@hsvdanang.vn',
+        'huy.dq@hsvdanang.vn',
+        'tung.pt@hsvdanang.vn',
+        'linh.pt@hsvdanang.vn',
+        'thao.tp@hsvdanang.vn',
+        'viet.hq@hsvdanang.vn',
+        'khoa.nd@hsvdanang.vn',
+      ];
+      const staleIds = [
+        'staff-sch-udn',
+        'staff-sch-dtu-huy',
+        'staff-off-chau',
+        'staff-off-huy',
+        'staff-off-tung',
+        'staff-off-linh',
+        'staff-com-thao',
+        'staff-com-viet',
+        'staff-adm-khoa',
+        'staff-adm-root',
+      ];
+      const staleUsers = await (prisma as any).user.findMany({
+        where: {
+          OR: [
+            { id: { in: staleIds } },
+            { email: { in: staleEmails } },
+          ],
+        },
+        select: { id: true, email: true },
+      });
+      for (const u of staleUsers) {
+        // Keep canonical IDs if they match STAFF_SEED_ACCOUNTS, otherwise delete
+        const isCanonicalId = STAFF_SEED_ACCOUNTS.some((s) => s.id === u.id);
+        if (!isCanonicalId) {
+          await (prisma as any).userRoleAssignment.deleteMany({ where: { userId: u.id } }).catch(() => {});
+          await (prisma as any).user.delete({ where: { id: u.id } }).catch(() => {});
+        }
+      }
+      // Update all canonical STAFF_SEED_ACCOUNTS in Neon DB to 1 account per role/school
+      for (const s of STAFF_SEED_ACCOUNTS) {
+        await (prisma as any).user
+          .update({
+            where: { id: s.id },
+            data: {
+              email: s.email,
+              fullName: s.fullName,
+              institutionId: s.institutionId || null,
+            },
+          })
+          .catch(() => {});
+      }
     } catch {
       // Offline or test fake DB
     }
@@ -88,7 +152,11 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
       normalizedEmail === 'minhanh.nguyen@dut.udn.vn' ||
       portalState.registeredStudents.has(normalizedEmail) ||
       Boolean(existingDbEmail) ||
-      STAFF_SEED_ACCOUNTS.some((s) => s.email.toLowerCase() === normalizedEmail) ||
+      STAFF_SEED_ACCOUNTS.some(
+        (s) =>
+          s.email.toLowerCase() === normalizedEmail ||
+          Boolean(s.aliases?.some((a) => a.toLowerCase() === normalizedEmail))
+      ) ||
       COLLECTIVE_PREPARERS.some((c) => c.email.toLowerCase() === normalizedEmail)
     ) {
       res.status(409).json({
@@ -199,9 +267,13 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
     }
 
     // A. Staff Account Login
-    const staffMatch = STAFF_SEED_ACCOUNTS.find((s) => s.email.toLowerCase() === normalized);
+    const staffMatch = STAFF_SEED_ACCOUNTS.find(
+      (s) =>
+        s.email.toLowerCase() === normalized ||
+        Boolean(s.aliases?.some((a) => a.toLowerCase() === normalized))
+    );
     if (staffMatch || preferredTrack === 'STAFF') {
-      const target = staffMatch || STAFF_SEED_ACCOUNTS[1]; // default CITY_OFFICER
+      const target = staffMatch || STAFF_SEED_ACCOUNTS.find((s) => s.role === 'CITY_OFFICER')!;
       const issued = await issueZeroTrustJwtToken(deps, {
         id: target.id,
         email: target.email,
@@ -217,7 +289,7 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
         token: issued.accessToken,
         accountType: 'STAFF',
         user: {
-          id: issued.userId,
+          id: target.id,
           fullName: target.fullName,
           email: target.email,
           role: target.role,
@@ -651,13 +723,30 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
       if (!Array.isArray(reqObj.declarations)) {
         reqObj.declarations = [];
       }
+      const rawEvFiles = Array.isArray(declaration.evidenceFiles)
+        ? declaration.evidenceFiles
+        : [];
+      const normalizedEvFiles = rawEvFiles.map((ev: Record<string, any>) => ({
+        ...ev,
+        id: ev.id || `ev-${requirementId}-${Date.now()}`,
+        name: ev.name || ev.fileName || 'Minh_chung.pdf',
+        fileName: ev.fileName || ev.name || 'Minh_chung.pdf',
+        fileType: ev.fileType || 'pdf',
+        size: ev.size || ev.fileSize || '240 KB',
+        fileSize: ev.fileSize || ev.size || '240 KB',
+        uploadedAt: ev.uploadedAt || '10/10/2026',
+        status: ev.status || 'completed',
+      }));
       const normalizedDecl = {
         id: declaration.id || `decl-${requirementId}-${Date.now()}`,
-        title: declaration.title || 'Nội dung kê khai',
-        description: declaration.description || '',
+        title: declaration.title || declaration.value || 'Nội dung kê khai',
+        value: declaration.value || declaration.title || 'Nội dung kê khai',
+        description: declaration.description || declaration.detail || '',
+        detail: declaration.detail || declaration.description || '',
         date: declaration.date || '10/10/2026',
         authority: declaration.authority || '',
-        evidenceFiles: Array.isArray(declaration.evidenceFiles) ? declaration.evidenceFiles : [],
+        status: 'completed',
+        evidenceFiles: normalizedEvFiles,
       };
       const existingDeclIdx = reqObj.declarations.findIndex(
         (d: Record<string, any>) => d.id === normalizedDecl.id
@@ -668,6 +757,23 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
         reqObj.declarations.push(normalizedDecl);
       }
       reqObj.status = 'completed';
+      crit.statusLabel = 'Đã kê khai';
+      const declaredReqCount = crit.requirements.filter(
+        (r: Record<string, any>) => Array.isArray(r.declarations) && r.declarations.length > 0
+      ).length;
+      const totalCritEvidence = crit.requirements.reduce(
+        (sum: number, r: Record<string, any>) =>
+          sum +
+          (r.declarations || []).reduce(
+            (dSum: number, d: Record<string, any>) => dSum + (d.evidenceFiles?.length || 0),
+            0
+          ),
+        0
+      );
+      crit.shortSummary =
+        criterionId === 'physical'
+          ? `${declaredReqCount}/2 hình thức đã kê khai · ${totalCritEvidence} minh chứng`
+          : `${declaredReqCount} nội dung đã kê khai · ${totalCritEvidence} minh chứng`;
     }
 
     portalState.studentApplications[id] = app;
@@ -867,6 +973,184 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
     }
   );
 
+  router.put(
+    '/individual/applications/:id/review-workspace',
+    requireAllowedRoles('SCHOOL_OFFICER', 'CITY_OFFICER', 'CITY_MANAGER', 'ADMIN'),
+    (req: Request, res: Response): void => {
+      const { id } = req.params;
+      const {
+        workspaceState,
+        workflowStatus,
+        schoolPreliminaryStatus,
+        assignmentStatus,
+        latestOperationalNote,
+        studentSupplementCreated,
+      } = (req.body || {}) as Record<string, any>;
+
+      const idx = portalState.individualStaffRecords.findIndex((r) => r.applicationId === id);
+      if (idx === -1) {
+        res.status(404).json({ success: false, error: `Không tìm thấy hồ sơ ${id}` });
+        return;
+      }
+
+      const current = portalState.individualStaffRecords[idx];
+      const actor = resolveSessionActor(req);
+
+      const completedMap = workspaceState?.criterionCompletedMap || {};
+      const conclusionsMap = workspaceState?.criterionConclusions || {};
+      const activeSupps = Array.isArray(workspaceState?.supplementRequests)
+        ? workspaceState.supplementRequests.filter(
+            (r: Record<string, any>) =>
+              r.status === 'active' && r.staffStatus === 'waiting_student'
+          )
+        : [];
+      const waitingSupp = activeSupps[0];
+      const completedCount = Object.values(completedMap).filter(Boolean).length;
+
+      const nextCriteriaReview = (
+        current.criteriaReview || createDefaultCriteriaReviewList()
+      ).map((cr: Record<string, any>) => {
+        const cid = cr.criterionId;
+        const hasSupp = activeSupps.some((s: Record<string, any>) => s.criterionId === cid);
+        const conc = conclusionsMap[cid];
+        const isDone = Boolean(completedMap[cid]) || Boolean(conc);
+        if (hasSupp) {
+          return {
+            ...cr,
+            status: 'needs_supplement',
+            noteSummary: waitingSupp?.message || cr.noteSummary,
+          };
+        }
+        if (isDone) {
+          return {
+            ...cr,
+            status: 'reviewed',
+            noteSummary:
+              conc?.conclusion === 'fail'
+                ? `Không đạt${conc.reason ? `: ${conc.reason}` : ''}`
+                : conc?.reason || cr.noteSummary || 'Đạt yêu cầu tiêu chí',
+          };
+        }
+        return {
+          ...cr,
+          status: 'not_reviewed',
+          noteSummary: undefined,
+        };
+      });
+
+      const resolvedSchoolStatus =
+        schoolPreliminaryStatus ||
+        (actor.role === 'SCHOOL_OFFICER'
+          ? workflowStatus === 'review_completed'
+            ? 'preliminary_completed'
+            : workflowStatus === 'supplement_requested'
+            ? 'supplement_requested'
+            : workflowStatus === 'under_review' &&
+              (!current.schoolPreliminaryStatus ||
+                current.schoolPreliminaryStatus === 'pending_intake')
+            ? 'under_review'
+            : current.schoolPreliminaryStatus
+          : current.schoolPreliminaryStatus);
+
+      const isReopenedSchoolReview =
+        actor.role === 'SCHOOL_OFFICER' &&
+        resolvedSchoolStatus === 'under_review';
+
+      const updated = {
+        ...current,
+        workspaceState: workspaceState || current.workspaceState,
+        workflowStatus: workflowStatus || current.workflowStatus,
+        schoolPreliminaryStatus: resolvedSchoolStatus,
+        schoolRecommendation: isReopenedSchoolReview
+          ? 'pending'
+          : current.schoolRecommendation,
+        assignment: current.assignment
+          ? {
+              ...current.assignment,
+              status: assignmentStatus || current.assignment.status,
+            }
+          : current.assignment,
+        latestOperationalNote: latestOperationalNote || current.latestOperationalNote,
+        reviewedCriteriaCount: completedCount,
+        criteriaReview: nextCriteriaReview,
+        schoolReviewSummary:
+          actor.role === 'SCHOOL_OFFICER' || current.schoolReviewSummary
+            ? {
+                ...(current.schoolReviewSummary || {
+                  schoolReviewUnitId: current.schoolReviewUnitId || 'unit-udn',
+                  schoolReviewUnitName: current.schoolReviewUnitName || 'Đại học Đà Nẵng',
+                  isForwardedToCity: false,
+                  totalCriteriaCount: 5,
+                }),
+                status: resolvedSchoolStatus,
+                recommendation: isReopenedSchoolReview
+                  ? 'pending'
+                  : current.schoolReviewSummary?.recommendation,
+                reviewedCriteriaCount: completedCount,
+                recommendingOfficerName:
+                  current.schoolReviewSummary?.recommendingOfficerName || actor.name,
+              }
+            : current.schoolReviewSummary,
+        supplementSummary: waitingSupp
+          ? {
+              requestCount: (workspaceState?.supplementRequests || []).length || 1,
+              activeStatus: 'waiting_student',
+              latestRequest: {
+                ...waitingSupp,
+                staffStatus: 'waiting_student',
+              },
+            }
+          : {
+              ...(current.supplementSummary || { requestCount: 0 }),
+              activeStatus: null,
+            },
+        updatedAt: 'Vừa cập nhật',
+        updatedSortKey: Date.now(),
+      };
+
+      portalState.individualStaffRecords[idx] = updated;
+
+      if (studentSupplementCreated && portalState.studentApplications[id]) {
+        const stuApp = portalState.studentApplications[id];
+        const existingSupps = Array.isArray(stuApp.supplementRequests)
+          ? stuApp.supplementRequests
+          : [];
+        if (
+          !existingSupps.some(
+            (s: Record<string, any>) => s.id === studentSupplementCreated.id
+          )
+        ) {
+          stuApp.supplementRequests = [
+            {
+              ...studentSupplementCreated,
+              requestedAt: new Date().toLocaleDateString('vi-VN'),
+              status: 'active',
+            },
+            ...existingSupps,
+          ];
+        }
+        stuApp.status = 'supplement_required';
+        stuApp.schoolPreliminaryStatus = resolvedSchoolStatus;
+      } else if (portalState.studentApplications[id] && resolvedSchoolStatus) {
+        portalState.studentApplications[id].schoolPreliminaryStatus = resolvedSchoolStatus;
+      }
+
+      appendPortalAuditLog({
+        track: 'INDIVIDUAL',
+        applicationId: id,
+        action: 'SYNC_REVIEW_WORKSPACE',
+        actorId: actor.id,
+        actorName: actor.name,
+        actorRole: actor.role,
+        details:
+          latestOperationalNote ||
+          `Cập nhật tiến độ xét duyệt hồ sơ (${completedCount}/5 tiêu chí)`,
+      });
+
+      res.status(200).json({ success: true, data: updated });
+    }
+  );
+
   router.post(
     '/school-review/applications/:id/complete',
     requireAllowedRoles('SCHOOL_OFFICER', 'ADMIN'),
@@ -882,16 +1166,67 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
         return;
       }
 
+      const actor = resolveSessionActor(req);
       const current = portalState.individualStaffRecords[idx];
+      const nextRec =
+        recommendation === 'not_recommended'
+          ? 'not_recommended'
+          : recommendation === 'recommended'
+          ? 'recommended'
+          : recommendation === 'pending'
+          ? 'pending'
+          : undefined;
+      const nextStatus =
+        nextRec === 'recommended'
+          ? 'recommended_forwarding'
+          : nextRec === 'not_recommended'
+          ? 'not_recommended'
+          : 'preliminary_completed';
+
       const updated = {
         ...current,
-        schoolPreliminaryStatus:
-          recommendation === 'recommended' ? 'recommended_forwarding' : 'not_recommended',
-        latestOperationalNote: summaryNote || current.latestOperationalNote,
+        schoolPreliminaryStatus: nextStatus,
+        schoolRecommendation: nextRec || current.schoolRecommendation,
+        schoolRecommendationNotes:
+          nextRec === 'recommended'
+            ? summaryNote || current.schoolRecommendationNotes
+            : nextRec === 'pending'
+            ? undefined
+            : current.schoolRecommendationNotes,
+        schoolRecommendationReason:
+          nextRec === 'not_recommended'
+            ? summaryNote || current.schoolRecommendationReason
+            : nextRec === 'pending'
+            ? undefined
+            : current.schoolRecommendationReason,
+        reviewedCriteriaCount: 5,
+        latestOperationalNote:
+          nextRec === 'pending'
+            ? `Đã hoàn tác kết luận đề xuất (${actor.name})`
+            : summaryNote || current.latestOperationalNote,
+        schoolReviewSummary: {
+          ...(current.schoolReviewSummary || {}),
+          schoolReviewUnitId: current.schoolReviewUnitId || 'unit-udn',
+          schoolReviewUnitName: current.schoolReviewUnitName || 'Đại học Đà Nẵng',
+          recommendingOfficerName: actor.name,
+          status: nextStatus,
+          reviewedCriteriaCount: 5,
+          totalCriteriaCount: 5,
+          recommendation: nextRec || current.schoolReviewSummary?.recommendation,
+          officerNotes:
+            nextRec === 'pending'
+              ? undefined
+              : summaryNote || current.latestOperationalNote,
+          notRecommendedReason:
+            nextRec === 'not_recommended'
+              ? summaryNote || current.schoolReviewSummary?.notRecommendedReason
+              : nextRec === 'pending'
+              ? undefined
+              : current.schoolReviewSummary?.notRecommendedReason,
+        },
       };
       portalState.individualStaffRecords[idx] = updated;
 
-      const actor = resolveSessionActor(req);
       appendPortalAuditLog({
         track: 'INDIVIDUAL',
         applicationId: id,
@@ -899,7 +1234,7 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
         actorId: actor.id,
         actorName: actor.name,
         actorRole: actor.role,
-        details: `Kết luận xét sơ tuyển: ${recommendation}`,
+        details: `Kết luận xét sơ tuyển: ${recommendation || 'preliminary_completed'}`,
       });
 
       res.status(200).json({ success: true, data: updated });
@@ -917,10 +1252,23 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
         return;
       }
 
+      const actor = resolveSessionActor(req);
       const current = portalState.individualStaffRecords[idx];
       const now = new Date().toISOString();
+      const nextWorkspaceState = current.workspaceState
+        ? {
+            ...current.workspaceState,
+            reviewStage: 'CITY',
+            hasStartedReview: false,
+            completedAt: undefined,
+            criterionCompletedMap: {},
+            criterionConclusions: {},
+            scopeRecords: {},
+          }
+        : undefined;
       const updated = {
         ...current,
+        workspaceState: nextWorkspaceState,
         currentReviewStage: 'CITY',
         schoolPreliminaryStatus: 'forwarded_to_city',
         workflowStatus: 'unassigned',
@@ -931,11 +1279,21 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
           status: 'not_reviewed',
           noteSummary: undefined,
         })),
+        schoolReviewSummary: {
+          ...(current.schoolReviewSummary || {}),
+          schoolReviewUnitId: current.schoolReviewUnitId || 'unit-udn',
+          schoolReviewUnitName: current.schoolReviewUnitName || 'Đại học Đà Nẵng',
+          recommendingOfficerName: actor.name,
+          forwardedByName: actor.name,
+          forwardedAt: now,
+          isForwardedToCity: true,
+          status: 'forwarded_to_city',
+          recommendation: 'recommended',
+        },
         latestOperationalNote: `Đã chuyển từ ${current.schoolReviewUnitName || 'Đơn vị xét sơ tuyển'} lên Hội Sinh viên TP. Đà Nẵng (${now}).`,
       };
       portalState.individualStaffRecords[idx] = updated;
 
-      const actor = resolveSessionActor(req);
       appendPortalAuditLog({
         track: 'INDIVIDUAL',
         applicationId: id,
@@ -969,15 +1327,17 @@ export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
         return;
       }
 
-      const officerAcc = STAFF_SEED_ACCOUNTS.find((s) => s.id === officerId);
+      const officerAcc =
+        STAFF_SEED_ACCOUNTS.find((s) => s.id === officerId) ||
+        STAFF_SEED_ACCOUNTS.find((s) => s.role === 'CITY_OFFICER');
       const actor = resolveSessionActor(req);
       const current = portalState.individualStaffRecords[idx];
       const updated = {
         ...current,
         workflowStatus: 'assigned',
         assignment: {
-          officerId: officerId || 'staff-off-nam',
-          officerName: officerAcc?.fullName || 'Trần Hoài Nam',
+          officerId: officerAcc?.id || 'staff-off-nam',
+          officerName: officerAcc?.fullName || 'Cán bộ xét duyệt cấp Thành phố',
           assignedAt: new Date().toISOString(),
           assignedBy: actor.name,
           reason,

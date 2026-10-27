@@ -697,6 +697,7 @@ export function getApplicationCriteriaSummary(
 
     // 1. Check workspace if available
     if (workspace) {
+      const humanConc = workspace.criterionConclusions?.[cid];
       const isCompletedInWs = workspace.criterionCompletedMap?.[cid] === true;
       const critScopeRecords = Object.values(workspace.scopeRecords || {}).filter(
         (r) => r.criterionId === cid
@@ -714,6 +715,19 @@ export function getApplicationCriteriaSummary(
           status: 'supplement',
           statusLabel: 'Chờ bổ sung',
           dotColor: '#D97706',
+        };
+      }
+
+      if (humanConc) {
+        const isFail = humanConc.conclusion === 'fail';
+        return {
+          criterionId: cid,
+          criterionNumber: crit.number,
+          shortCode,
+          name: crit.name,
+          status: isFail ? 'failed' : 'passed',
+          statusLabel: isFail ? 'Không đạt' : 'Đạt',
+          dotColor: isFail ? '#DC2626' : '#16A34A',
         };
       }
 
