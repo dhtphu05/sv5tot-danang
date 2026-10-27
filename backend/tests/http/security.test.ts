@@ -55,4 +55,34 @@ describe('Backend V2: Security Baseline HTTP Tests', () => {
 
     assert.equal(res.status, 403);
   });
+
+  it('allows https://sv5tot.thanhdoandanang.org.vn CORS pre-flight and API requests', async () => {
+    const preflightRes = await fetch(`${baseUrl}/api/v2/portal/auth/register`, {
+      method: 'OPTIONS',
+      headers: {
+        origin: 'https://sv5tot.thanhdoandanang.org.vn',
+        'access-control-request-method': 'POST',
+        'access-control-request-headers': 'content-type,authorization',
+      },
+    });
+
+    assert.equal(preflightRes.status, 204);
+    assert.equal(
+      preflightRes.headers.get('access-control-allow-origin'),
+      'https://sv5tot.thanhdoandanang.org.vn'
+    );
+
+    const getRes = await fetch(`${baseUrl}/api/v2/portal/collective/applications`, {
+      method: 'GET',
+      headers: {
+        origin: 'https://sv5tot.thanhdoandanang.org.vn',
+      },
+    });
+
+    assert.equal(getRes.status, 200);
+    assert.equal(
+      getRes.headers.get('access-control-allow-origin'),
+      'https://sv5tot.thanhdoandanang.org.vn'
+    );
+  });
 });
