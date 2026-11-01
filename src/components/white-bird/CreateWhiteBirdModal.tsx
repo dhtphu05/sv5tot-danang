@@ -102,7 +102,8 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
     return AUTHORITATIVE_SCHOOL_REVIEW_UNITS[0];
   }, [initialInstitutionId, initialUniversity]);
 
-  const [category, setCategory] = useState<WhiteBirdCategory>(initialCategory || 'UOM_MAM');
+  const [category, setCategory] = useState<WhiteBirdCategory | null>(initialCategory || null);
+  const [categoryError, setCategoryError] = useState<string>('');
   const [nomineeType, setNomineeType] = useState<WhiteBirdNomineeType>('INDIVIDUAL');
   const [selectedUnitId, setSelectedUnitId] = useState<SchoolReviewUnitId>(
     defaultResolvedUnit.id
@@ -116,11 +117,10 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
 
   useEffect(() => {
     if (!isOpen) return;
-    if (initialCategory) {
-      setCategory(initialCategory);
-      if (initialCategory === 'TRUYEN_LUA') {
-        setNomineeType('INDIVIDUAL');
-      }
+    setCategory(initialCategory || null);
+    setCategoryError('');
+    if (initialCategory === 'TRUYEN_LUA') {
+      setNomineeType('INDIVIDUAL');
     }
     setSelectedUnitId(defaultResolvedUnit.id);
     if (initialUserName && !nomineeName) {
@@ -148,6 +148,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
 
   const handleSelectCategory = (nextCat: WhiteBirdCategory) => {
     setCategory(nextCat);
+    setCategoryError('');
     if (nextCat === 'TRUYEN_LUA') {
       setNomineeType('INDIVIDUAL');
       setNomineeName(initialUserName || nomineeName);
@@ -177,10 +178,14 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
 
   if (!isOpen) return null;
 
-  const categoryMeta = WHITE_BIRD_CATEGORIES[category];
+  const categoryMeta = category ? WHITE_BIRD_CATEGORIES[category] : null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!category) {
+      setCategoryError('Vui lòng chọn 1 trong 3 hạng mục Giải thưởng trước khi tiếp tục.');
+      return;
+    }
     if (!nominationTitle.trim()) {
       setTitleError('Vui lòng nhập tên đề cử / mô hình / dự án / báo cáo thành tích.');
       return;
@@ -207,7 +212,9 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
       ? 'VD: Mô hình Số hóa Sổ tay Sinh viên 5 tốt & Ngân hàng Minh chứng Cấp Liên chi hội'
       : category === 'TRUYEN_LUA'
       ? `VD: Hồ sơ đề cử Cánh chim truyền lửa — ${initialUserName || 'Cán bộ Hội tiêu biểu'}`
-      : 'VD: Dự án Khởi nghiệp Hệ thống IoT Cảnh báo ngập lụt đô thị thông minh tại Đà Nẵng';
+      : category === 'SANG_TAO'
+      ? 'VD: Dự án Khởi nghiệp Hệ thống IoT Cảnh báo ngập lụt đô thị thông minh tại Đà Nẵng'
+      : 'VD: Nhập tên mô hình, giải pháp, dự án hoặc đề tài đề cử...';
 
   return (
     <div
@@ -266,9 +273,16 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
 
           {/* Step 1: Select Category */}
           <div>
-            <label className="block text-[12.5px] font-bold text-[#172A3A] mb-2">
-              1. Chọn hạng mục Giải thưởng “Cánh chim trắng” (Điều 3 & Điều 6 Quy chế 14-QĐ/ĐHĐN-HSV) *
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-[12.5px] font-bold text-[#172A3A]">
+                1. Chọn hạng mục Giải thưởng “Cánh chim trắng” (Điều 3 & Điều 6 Quy chế 14-QĐ/ĐHĐN-HSV) *
+              </label>
+              {categoryError && (
+                <span className="text-[11.5px] font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200">
+                  {categoryError}
+                </span>
+              )}
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
               {CATEGORY_CARDS.map((card) => {
                 const meta = WHITE_BIRD_CATEGORIES[card.code];
@@ -310,16 +324,22 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
                 );
               })}
             </div>
-            <div className="mt-2.5 p-3 rounded-[9px] bg-[#F8FAFC] border border-[#E2E8F0] text-[12px] text-[#334155]">
-              <div className="font-bold text-[#0F172A] mb-1">
-                {categoryMeta.name} ({categoryMeta.articleRef}):
+            {categoryMeta ? (
+              <div className="mt-2.5 p-3 rounded-[9px] bg-[#F8FAFC] border border-[#E2E8F0] text-[12px] text-[#334155]">
+                <div className="font-bold text-[#0F172A] mb-1">
+                  {categoryMeta.name} ({categoryMeta.articleRef}):
+                </div>
+                <ul className="list-disc list-inside space-y-0.5 text-[11.5px] text-[#475569]">
+                  {categoryMeta.dossierRequirementsSummary.map((item, idx) => (
+                    <li key={idx}>{item}</li>
+                  ))}
+                </ul>
               </div>
-              <ul className="list-disc list-inside space-y-0.5 text-[11.5px] text-[#475569]">
-                {categoryMeta.dossierRequirementsSummary.map((item, idx) => (
-                  <li key={idx}>{item}</li>
-                ))}
-              </ul>
-            </div>
+            ) : (
+              <div className="mt-2.5 p-3 rounded-[9px] bg-[#F8FAFC] border border-dashed border-[#CBD5E1] text-[11.5px] text-[#64748B] text-center">
+                Vui lòng chọn 1 trong 3 hạng mục ở trên để tiếp tục kê khai thông tin hồ sơ đề cử.
+              </div>
+            )}
           </div>
 
           {/* Step 2: Select Nominee Type & Unit */}
@@ -401,7 +421,9 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
                     ? 'Tên mô hình, giải pháp, sáng kiến đề cử *'
                     : category === 'TRUYEN_LUA'
                     ? 'Tiêu đề hồ sơ đề cử Cánh chim truyền lửa *'
-                    : 'Tên dự án khởi nghiệp đổi mới sáng tạo / Đề tài nghiên cứu khoa học *'
+                    : category === 'SANG_TAO'
+                    ? 'Tên dự án khởi nghiệp đổi mới sáng tạo / Đề tài nghiên cứu khoa học *'
+                    : 'Tên đề cử / mô hình / dự án / báo cáo thành tích *'
                 }
                 value={nominationTitle}
                 onChange={(e) => {
