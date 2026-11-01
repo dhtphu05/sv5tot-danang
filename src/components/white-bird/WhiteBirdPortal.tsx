@@ -379,26 +379,31 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
 
   const [isConfirmSubmitOpen, setIsConfirmSubmitOpen] = useState(false);
   const [isSubmittingDossier, setIsSubmittingDossier] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   const handleOpenSubmitModal = () => {
     if (!activeApp) return;
-    if (!readiness.canSubmit) {
-      showToast(readiness.missingReasons[0] || 'Chưa đủ điều kiện nộp hồ sơ', 'warn');
-      return;
-    }
+    setSubmissionError(null);
     setIsConfirmSubmitOpen(true);
   };
 
   const handleConfirmSubmitDossier = async () => {
     if (!activeApp || isSubmittingDossier) return;
+    if (!readiness.canSubmit) {
+      setSubmissionError(
+        readiness.missingReasons[0] || 'Hồ sơ chưa hoàn thiện đủ các thành phần bắt buộc theo quy định.'
+      );
+      return;
+    }
     setIsSubmittingDossier(true);
+    setSubmissionError(null);
     try {
       // Short delay for visual progress feedback & anti double-click
       await new Promise((resolve) => setTimeout(resolve, 350));
       const wasSupplement = activeApp.status === 'supplement_requested';
       const res = submitWhiteBirdApplication(activeApp.id);
       if (!res.success) {
-        showToast(res.error || 'Chưa đủ điều kiện nộp hồ sơ', 'warn');
+        setSubmissionError(res.error || 'Chưa đủ điều kiện nộp hồ sơ, vui lòng kiểm tra lại.');
         return;
       }
       setIsConfirmSubmitOpen(false);
@@ -409,7 +414,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
       );
       setActiveTab('overview');
     } catch {
-      showToast('Có lỗi xảy ra khi nộp hồ sơ, vui lòng thử lại sau', 'warn');
+      setSubmissionError('Có lỗi xảy ra khi nộp hồ sơ, vui lòng thử lại sau.');
     } finally {
       setIsSubmittingDossier(false);
     }
@@ -1033,11 +1038,12 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                 <Button
                   type="button"
                   variant="primary"
-                  disabled={!readiness.canSubmit}
                   onClick={handleSubmitDossier}
                 >
                   <Send size={15} className="mr-1.5" />
-                  Nộp hồ sơ Giải thưởng ({readiness.readyCount}/{readiness.totalRequired})
+                  {readiness.canSubmit
+                    ? `Nộp hồ sơ Giải thưởng (${readiness.readyCount}/${readiness.totalRequired})`
+                    : `Kiểm tra & Nộp hồ sơ (${readiness.readyCount}/${readiness.totalRequired})`}
                 </Button>
               )}
             </div>
@@ -1141,11 +1147,12 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   type="button"
                   variant="primary"
                   className="w-full justify-center"
-                  disabled={!readiness.canSubmit}
                   onClick={handleSubmitDossier}
                 >
                   <Send size={15} className="mr-1.5" />
-                  Nộp hồ sơ Giải thưởng ({readiness.readyCount}/{readiness.totalRequired})
+                  {readiness.canSubmit
+                    ? `Nộp hồ sơ Giải thưởng (${readiness.readyCount}/${readiness.totalRequired})`
+                    : `Kiểm tra & Nộp hồ sơ (${readiness.readyCount}/${readiness.totalRequired})`}
                 </Button>
               ) : (
                 <div className="p-2.5 rounded-lg bg-[#E0F2FE] text-[#0369A1] text-[12px] font-bold text-center">
@@ -3185,6 +3192,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
         onClose={() => {
           if (!isSubmittingDossier) {
             setIsConfirmSubmitOpen(false);
+            setSubmissionError(null);
           }
         }}
         onConfirm={handleConfirmSubmitDossier}
@@ -3193,6 +3201,12 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
         readiness={readiness}
         categoryMeta={categoryMeta}
         allEvidenceFilesCount={allEvidenceFiles.length}
+        onNavigateToRequirement={(reqId) => {
+          setIsConfirmSubmitOpen(false);
+          setActiveTab('workspace');
+          setActiveReqId(reqId);
+        }}
+        submissionError={submissionError}
       />
     </div>
   );
