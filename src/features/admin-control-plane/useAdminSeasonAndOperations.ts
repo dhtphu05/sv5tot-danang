@@ -872,7 +872,17 @@ export function useAdminSeasonAndOperations({
       void syncAdminActionToServer(
         `/api/v2/admin/notifications/${id}`,
         'PUT',
-        updates
+        {
+          nameVi: updates.titleVi || target.titleVi,
+          subjectTemplateVi: updates.subjectTemplate || target.subjectTemplate,
+          bodyTemplateVi:
+            updates.bodyTemplate ||
+            updates.bodyTemplateVi ||
+            target.bodyTemplate ||
+            target.bodyTemplateVi ||
+            'Nội dung thông báo hệ thống 5TOT ĐHĐN.',
+          enabled: updates.enabled ?? target.enabled,
+        }
       );
     },
     [
@@ -917,11 +927,12 @@ export function useAdminSeasonAndOperations({
         type: 'success',
         message: 'Đã lưu cấu hình chính sách vận hành quy trình xét chọn.',
       });
-      void syncAdminActionToServer(
-        '/api/v2/admin/workflow-policy',
-        'PUT',
-        nextPolicy
-      );
+      void syncAdminActionToServer('/api/v2/admin/workflow-policy', 'PUT', {
+        defaultSupplementWindowHours: nextPolicy.defaultSupplementWindowHours,
+        allowLateSupplementSubmission: !nextPolicy.allowStudentEditBeforeDeadline,
+        requirePdfForSchoolForwarding:
+          nextPolicy.requireCommonPdfForSchoolForwarding,
+      });
     },
     [
       staffUser,

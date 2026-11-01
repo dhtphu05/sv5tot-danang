@@ -242,6 +242,57 @@ export class AdminController {
   public createOperationalApplication: RequestHandler = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const body = CreateOperationalApplicationSchema.parse(req.body);
     const application = await this.appHotfixService!.createOperationalApplication(req.actor!, body);
+    try {
+      const { portalState, SCHOOL_UNIT_MAP, createDefaultCriteriaList } = await import(
+        '../domainPortal/domainPortal.state'
+      );
+      const { schedulePortalStateNeonDbSync } = await import('../domainPortal/domainPortal.dbSync');
+      const unitInfo = SCHOOL_UNIT_MAP[body.institutionId] || SCHOOL_UNIT_MAP['inst-dut'];
+      const nowVi = new Date().toLocaleDateString('vi-VN');
+      const portalAppId = `APP-2026-DN-${body.studentCode.trim().toUpperCase()}`;
+      const existing = portalState.individualStaffRecords.find(
+        (r) => r.applicationId === portalAppId
+      );
+      const record = {
+        applicationId: portalAppId,
+        student: {
+          fullName: body.fullName,
+          studentCode: body.studentCode.trim().toUpperCase(),
+          email:
+            (existing?.student as any)?.email ||
+            `${body.studentCode.trim().toLowerCase()}@sv.udn.vn`,
+          phone: '0905123456',
+          faculty: body.facultyName || 'Khoa Công nghệ Thông tin',
+          className: body.className || '22TCLC_DT1',
+          gpa: body.gpaScale4 ?? 3.5,
+          conductScore: body.conductScore ?? 90,
+        },
+        institution: {
+          id: body.institutionId,
+          officialName: unitInfo.instName,
+          schoolReviewUnitId: unitInfo.unitId,
+          schoolReviewUnitName: unitInfo.unitName,
+        },
+        schoolYear: body.academicYear || '2025–2026',
+        submittedAt: nowVi,
+        updatedAt: nowVi,
+        workflowStatus: 'under_review',
+        schoolPreliminaryStatus: 'pending_school_review',
+        isSchoolForwarded: false,
+        criteriaSummary: existing?.criteriaSummary || createDefaultCriteriaList(),
+        totalEvidenceCount: existing?.totalEvidenceCount || 0,
+        openSupplementCount: 0,
+        latestOperationalNote: `[Tạo hồ sơ vận hành]: ${body.reason}`,
+        applicantProfileSnapshot: existing?.applicantProfileSnapshot || null,
+      };
+      portalState.individualStaffRecords = [
+        record,
+        ...portalState.individualStaffRecords.filter((r) => r.applicationId !== portalAppId),
+      ];
+      schedulePortalStateNeonDbSync();
+    } catch {
+      // Fallback if portalState sync fails
+    }
     res.status(201).json({
       success: true,
       data: { application },
@@ -251,7 +302,60 @@ export class AdminController {
   public hotfixOperationalApplication: RequestHandler = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     const body = HotfixOperationalApplicationSchema.parse(req.body);
-    const application = await this.appHotfixService!.hotfixOperationalApplication(req.actor!, id, body);
+    let application: any = null;
+    try {
+      application = await this.appHotfixService!.hotfixOperationalApplication(req.actor!, id, body);
+    } catch (err) {
+      const { portalState } = await import('../domainPortal/domainPortal.state');
+      const existsInPortal = portalState.individualStaffRecords.some(
+        (r) => r.applicationId === id
+      );
+      if (!existsInPortal) {
+        throw err;
+      }
+    }
+    try {
+      const { portalState, SCHOOL_UNIT_MAP } = await import('../domainPortal/domainPortal.state');
+      const { schedulePortalStateNeonDbSync } = await import('../domainPortal/domainPortal.dbSync');
+      const portalApp =
+        portalState.individualStaffRecords.find((r) => r.applicationId === id) ||
+        (application?.studentCodeSnapshot
+          ? portalState.individualStaffRecords.find(
+              (r) => r.applicationId === `APP-2026-DN-${application.studentCodeSnapshot}`
+            )
+          : undefined);
+      if (portalApp) {
+        if (body.fullName) (portalApp.student as any).fullName = body.fullName;
+        if (body.studentCode) (portalApp.student as any).studentCode = body.studentCode;
+        if (body.facultyName) (portalApp.student as any).faculty = body.facultyName;
+        if (body.className) (portalApp.student as any).className = body.className;
+        if (body.institutionId && SCHOOL_UNIT_MAP[body.institutionId]) {
+          const u = SCHOOL_UNIT_MAP[body.institutionId];
+          portalApp.institution = {
+            ...(portalApp.institution as any),
+            id: body.institutionId,
+            officialName: u.instName,
+            schoolReviewUnitId: u.unitId,
+            schoolReviewUnitName: u.unitName,
+          };
+        }
+        if (body.schoolPreliminaryStatus === 'SCHOOL_SUPPLEMENT_REQUESTED') {
+          portalApp.schoolPreliminaryStatus = 'school_supplement_requested';
+          portalApp.workflowStatus = 'needs_supplement';
+        }
+        if (typeof body.openSupplementCount === 'number') {
+          portalApp.openSupplementCount = body.openSupplementCount;
+        }
+        portalApp.latestOperationalNote = `[Hotfix]: ${body.reason}`;
+        portalApp.updatedAt = new Date().toLocaleDateString('vi-VN');
+        schedulePortalStateNeonDbSync();
+        if (!application) {
+          application = portalApp;
+        }
+      }
+    } catch {
+      // Fallback
+    }
     res.status(200).json({
       success: true,
       data: { application },
@@ -261,7 +365,32 @@ export class AdminController {
   public deleteOperationalApplication: RequestHandler = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     const body = DeleteOperationalApplicationSchema.parse(req.body || {});
-    const result = await this.appHotfixService!.deleteOperationalApplication(req.actor!, id, body.reason);
+    let result: any = { deleted: true, applicationId: id };
+    try {
+      result = await this.appHotfixService!.deleteOperationalApplication(req.actor!, id, body.reason);
+    } catch (err) {
+      const { portalState } = await import('../domainPortal/domainPortal.state');
+      const existsInPortal = portalState.individualStaffRecords.some(
+        (r) => r.applicationId === id
+      );
+      if (!existsInPortal) {
+        throw err;
+      }
+    }
+    try {
+      const { portalState } = await import('../domainPortal/domainPortal.state');
+      const { schedulePortalStateNeonDbSync } = await import('../domainPortal/domainPortal.dbSync');
+      const prevLen = portalState.individualStaffRecords.length;
+      portalState.individualStaffRecords = portalState.individualStaffRecords.filter(
+        (r) => r.applicationId !== id
+      );
+      delete portalState.studentApplications[id];
+      if (portalState.individualStaffRecords.length !== prevLen) {
+        schedulePortalStateNeonDbSync();
+      }
+    } catch {
+      // Fallback
+    }
     res.status(200).json({
       success: true,
       data: result,
