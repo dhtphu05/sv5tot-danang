@@ -264,31 +264,31 @@ export const WHITE_BIRD_NOMINATING_SUBJECT_OPTIONS: WhiteBirdNominatingSubjectOp
     value: 'UV_BCH_HSV_DHDN',
     label: 'Ủy viên Ban Chấp hành Hội Sinh viên Việt Nam Đại học Đà Nẵng',
     category: 'Cá nhân',
-    articleRef: 'Khoản 1 Điều 5',
+    articleRef: 'Điều 5 Quy chế',
   },
   {
     value: 'BTK_HSV_TRUONG',
     label: 'Ban Thư ký Hội Sinh viên Việt Nam các Trường Đại học thành viên Đại học Đà Nẵng',
     category: 'Tổ chức',
-    articleRef: 'Khoản 2 Điều 5',
+    articleRef: 'Điều 5 Quy chế',
   },
   {
     value: 'BCN_CLB_DHDN',
     label: 'Ban Chủ nhiệm (hoặc tương đương) CLB/Đội/Nhóm trực thuộc Hội Sinh viên Việt Nam Đại học Đà Nẵng',
     category: 'Tổ chức',
-    articleRef: 'Khoản 3 Điều 5',
+    articleRef: 'Điều 5 Quy chế',
   },
   {
     value: 'BCH_LIEN_CHI_HOI',
     label: 'Ban Chấp hành Liên chi Hội',
     category: 'Tổ chức',
-    articleRef: 'Khoản 4 Điều 5',
+    articleRef: 'Điều 5 Quy chế',
   },
   {
     value: 'BCN_CLB_TRUONG',
     label: 'Ban Chủ nhiệm (hoặc tương đương) CLB/Đội/Nhóm trực thuộc Hội Sinh viên các Trường thành viên Đại học Đà Nẵng',
     category: 'Tổ chức',
-    articleRef: 'Khoản 5 Điều 5',
+    articleRef: 'Điều 5 Quy chế',
   },
 ];
 
@@ -308,6 +308,9 @@ export interface WhiteBirdWB02Declaration {
   contextAndObjectives: string;
   solutionAndExecution: string;
   impactAndResults: string;
+  scalabilityAndSpread?: string;
+  exemplaryNature?: string;
+  leadRepresentative?: string;
   coAuthorsOrTeamMembers: string;
   commitmentConfirmed: boolean;
   evidenceFiles: WhiteBirdEvidenceItem[];

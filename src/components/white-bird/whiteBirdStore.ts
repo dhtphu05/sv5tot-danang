@@ -167,6 +167,12 @@ export function createWhiteBirdApplication(payload: {
         contextAndObjectives: '',
         solutionAndExecution: '',
         impactAndResults: '',
+        scalabilityAndSpread: '',
+        exemplaryNature: '',
+        leadRepresentative:
+          payload.nomineeType === 'COLLECTIVE'
+            ? `${payload.preparedByUserName}${payload.studentId ? ` (${payload.studentId})` : ''}`
+            : '',
         coAuthorsOrTeamMembers:
           payload.nomineeType === 'COLLECTIVE'
             ? `${payload.preparedByUserName} (${payload.studentId}) - Đại diện nhóm tác giả / tập thể`

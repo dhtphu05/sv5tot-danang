@@ -372,7 +372,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
   // ---------------------------------------------------------------------------
   if (!activeApp) {
     return (
-      <div className="w-full max-w-[1440px] mx-auto px-6 md:px-8 py-6 space-y-6 pb-12">
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-12 min-w-0">
         {/* Hero Banner */}
         <div className="rounded-[16px] bg-gradient-to-r from-[#0B3B5B] via-[#0D5C8C] to-[#0D78AE] text-white p-6 md:p-7 shadow-sm border border-[#0D5C8C]">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
@@ -671,7 +671,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
   })();
 
   return (
-    <div className="space-y-4 pb-10">
+    <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5 pb-12 min-w-0">
       {/* Hidden file input for WB01-WB03 evidence uploads */}
       <input
         ref={fileInputRef}
@@ -966,9 +966,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
 
       {/* TAB 2: WORKSPACE (WB01, WB02, WB03) */}
       {activeTab === 'workspace' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 min-w-0">
           {/* Left Rail: 3 Requirements */}
-          <div className="lg:col-span-4 space-y-2.5">
+          <div className="lg:col-span-4 space-y-2.5 min-w-0">
             {(
               [
                 {
@@ -1061,7 +1061,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
           </div>
 
           {/* Right Form Panel */}
-          <div className="lg:col-span-8 bg-white rounded-[14px] border border-[#DCE7EE] p-5 space-y-5">
+          <div className="lg:col-span-8 bg-white rounded-[14px] border border-[#DCE7EE] p-5 md:p-6 space-y-5 min-w-0">
             {activeReqId === 'WB01' && (() => {
               const wb01Data = activeApp.requirements.wb01;
               const isIndividualNominator = wb01Data.nominatingUnitType === 'UV_BCH_HSV_DHDN';
@@ -1120,7 +1120,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         }
                         className="w-full px-3 py-2.5 text-[13px] font-semibold text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
                       >
-                        <optgroup label="Cá nhân có thẩm quyền đề xuất (Khoản 1 Điều 5)">
+                        <optgroup label="Cá nhân có thẩm quyền đề xuất (Điều 5)">
                           {WHITE_BIRD_NOMINATING_SUBJECT_OPTIONS.filter((o) => o.category === 'Cá nhân').map(
                             (opt) => (
                               <option key={opt.value} value={opt.value}>
@@ -1129,7 +1129,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             )
                           )}
                         </optgroup>
-                        <optgroup label="Tổ chức có thẩm quyền đề xuất (Khoản 2, 3, 4, 5 Điều 5)">
+                        <optgroup label="Tổ chức có thẩm quyền đề xuất (Điều 5)">
                           {WHITE_BIRD_NOMINATING_SUBJECT_OPTIONS.filter((o) => o.category === 'Tổ chức').map(
                             (opt) => (
                               <option key={opt.value} value={opt.value}>
@@ -1141,8 +1141,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       </select>
                       <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
                         {isIndividualNominator
-                          ? 'Ủy viên BCH Hội Sinh viên Việt Nam ĐHĐN trực tiếp đề xuất theo Khoản 1 Điều 5.'
-                          : 'Tổ chức Hội Sinh viên có thẩm quyền đề xuất theo Điều 5 Quy chế.'}
+                          ? 'Ủy viên Ban Chấp hành Hội Sinh viên Việt Nam Đại học Đà Nẵng là chủ thể có thẩm quyền đề xuất xét trao theo Điều 5 của Quy chế.'
+                          : 'Cấp bộ Hội / Đơn vị trực thuộc có thẩm quyền đề xuất xét trao theo Điều 5 của Quy chế.'}
                       </p>
                     </div>
 
@@ -1234,141 +1234,401 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
               );
             })()}
 
-            {activeReqId === 'WB02' && (
-              <div className="space-y-4">
-                <div className="border-b border-[#EDF3F8] pb-3">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D78AE]">
-                    Thành phần WB02 · {categoryMeta.articleRef}
-                  </span>
-                  <h2 className="text-[16px] font-bold text-[#172A3A] mt-0.5">
-                    {categoryMeta.wb02Title}
-                  </h2>
-                </div>
+            {activeReqId === 'WB02' && (() => {
+              const wb02Data = activeApp.requirements.wb02;
+              const statusMeta = getRequirementCompletionStatus(readiness.wb02Ready, activeApp.status);
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="md:col-span-2">
+              if (activeApp.category === 'UOM_MAM') {
+                const leadRep = wb02Data.leadRepresentative !== undefined
+                  ? wb02Data.leadRepresentative
+                  : (activeApp.nomineeType === 'COLLECTIVE' ? `${activeApp.preparedByUserName}${activeApp.studentId ? ` (${activeApp.studentId})` : ''}` : '');
+
+                return (
+                  <div className="space-y-5">
+                    {/* Header */}
+                    <div className="border-b border-[#EDF3F8] pb-3 flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D78AE]">
+                            Thành phần WB02 · Điểm a khoản 4.2 Điều 4 & Khoản 6.1 Điều 6 (QĐ 14-QĐ/ĐHĐN-HSV)
+                          </span>
+                          <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full ${statusMeta.badgeClass}`}>
+                            {statusMeta.label}
+                          </span>
+                        </div>
+                        <h2 className="text-[16px] font-bold text-[#172A3A] mt-0.5">
+                          Báo cáo thuyết minh mô hình, giải pháp, sáng kiến & Cam kết tính sáng tạo
+                        </h2>
+                        <p className="text-[12.5px] text-[#607483] mt-0.5 leading-relaxed">
+                          Thuyết minh chi tiết theo 4 tiêu chuẩn xét trao tại Điểm a khoản 4.2 Điều 4 Quy chế (Tính mới, sáng tạo; Tính hiệu quả; Tính lan tỏa; Tính điển hình) và cam kết tính sáng tạo theo Khoản 6.1 Điều 6.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Section 1: Thông tin mô hình & Thời gian */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="md:col-span-2">
+                        <Input
+                          label="Tên mô hình, giải pháp, sáng kiến *"
+                          disabled={isReadOnly}
+                          value={wb02Data.reportTitle}
+                          onChange={(e) =>
+                            updateWhiteBirdWB02(activeApp.id, {
+                              reportTitle: e.target.value,
+                            })
+                          }
+                          placeholder="VD: Mô hình Số hóa Sổ tay Sinh viên 5 tốt & Ngân hàng Minh chứng trực tuyến"
+                        />
+                      </div>
+                      <Input
+                        label="Thời gian triển khai mô hình *"
+                        disabled={isReadOnly}
+                        value={wb02Data.implementationPeriod}
+                        onChange={(e) =>
+                          updateWhiteBirdWB02(activeApp.id, {
+                            implementationPeriod: e.target.value,
+                          })
+                        }
+                        placeholder="VD: Năm học 2024–2025 hoặc 10/2024 – 05/2025"
+                      />
+                    </div>
+
+                    {/* Bối cảnh, sự cần thiết & mục tiêu */}
+                    <div>
+                      <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1">
+                        Bối cảnh, sự cần thiết và mục tiêu của mô hình, giải pháp, sáng kiến
+                      </label>
+                      <p className="text-[11.5px] text-[#64748B] mb-1.5 leading-snug">
+                        <em>(Nêu rõ bối cảnh công tác Hội và phong trào sinh viên tại cơ sở, sự cần thiết ra đời của mô hình và mục tiêu hướng tới)</em>
+                      </p>
+                      <textarea
+                        rows={3}
+                        disabled={isReadOnly}
+                        value={wb02Data.contextAndObjectives}
+                        onChange={(e) =>
+                          updateWhiteBirdWB02(activeApp.id, {
+                            contextAndObjectives: e.target.value,
+                          })
+                        }
+                        placeholder="Trình bày bối cảnh thực tiễn công tác Hội và phong trào sinh viên tại cơ sở, lý do hình thành và mục tiêu cần giải quyết của mô hình, sáng kiến..."
+                        className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y"
+                      />
+                    </div>
+
+                    {/* Section 2: Thông tin Người chịu trách nhiệm chính (Tập thể) */}
+                    {activeApp.nomineeType === 'COLLECTIVE' && (
+                      <div className="p-4 rounded-[12px] bg-[#F8FBFD] border border-[#DCE7EE] space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[12px] font-bold uppercase tracking-wider text-[#0D78AE]">
+                            Thông tin phụ trách mô hình tập thể
+                          </span>
+                          <span className="text-[11.5px] text-[#64748B]">
+                            Tập thể đề cử: <strong className="text-[#172A3A]">{activeApp.nomineeName}</strong>
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                          <div>
+                            <Input
+                              label="Họ tên người chịu trách nhiệm chính của mô hình *"
+                              disabled={isReadOnly}
+                              value={leadRep}
+                              onChange={(e) =>
+                                updateWhiteBirdWB02(activeApp.id, {
+                                  leadRepresentative: e.target.value,
+                                })
+                              }
+                              placeholder="VD: Nguyễn Văn A (MSSV 102220084, Chi hội trưởng / Chủ nhiệm CLB)"
+                            />
+                            <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
+                              Theo Mẫu báo cáo, hồ sơ cần ghi rõ họ tên và vai trò của người trực tiếp chịu trách nhiệm chính điều hành mô hình.
+                            </p>
+                          </div>
+                          <div>
+                            <Input
+                              label="Các thành viên khác trong ban điều hành / nhóm tác giả (nếu có)"
+                              disabled={isReadOnly}
+                              value={wb02Data.coAuthorsOrTeamMembers}
+                              onChange={(e) =>
+                                updateWhiteBirdWB02(activeApp.id, {
+                                  coAuthorsOrTeamMembers: e.target.value,
+                                })
+                              }
+                              placeholder="Liệt kê họ tên, vai trò các thành viên tham gia phát triển (không bắt buộc)..."
+                            />
+                            <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
+                              Trường thông tin hỗ trợ; không bắt buộc kê khai toàn bộ thành viên nếu không có yêu cầu riêng.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Section 3: 4 Tiêu chuẩn Thuyết minh theo Điểm a khoản 4.2 Điều 4 */}
+                    <div className="space-y-4 pt-1">
+                      <div className="p-3 rounded-[9px] bg-[#F0F7FC] border border-[#CDE3F3] text-[12px] text-[#0D5C8C]">
+                        <strong>Tiêu chuẩn xét trao Giải thưởng “Cánh chim ươm mầm” (Điểm a khoản 4.2 Điều 4 Quy chế):</strong>
+                        <p className="text-[11.5px] text-[#334155] mt-0.5">
+                          Kê khai đầy đủ 4 tiêu chuẩn: Tính mới & sáng tạo, Tính hiệu quả, Tính lan tỏa và Tính điển hình.
+                        </p>
+                      </div>
+
+                      {/* Tiêu chuẩn 1: Tính mới, sáng tạo */}
+                      <div className="space-y-1.5">
+                        <label className="block text-[12.5px] font-bold text-[#172A3A]">
+                          1. Tính mới, sáng tạo của mô hình, giải pháp, sáng kiến <span className="text-red-500">*</span>
+                        </label>
+                        <p className="text-[11.5px] text-[#64748B] leading-snug">
+                          Mô tả nội dung mới của mô hình, giải pháp, sáng kiến; điểm khác biệt, cải tiến so với các hình thức tương tự đã áp dụng trong công tác Hội và phong trào sinh viên trước ngày nộp hồ sơ.
+                        </p>
+                        <textarea
+                          rows={4}
+                          disabled={isReadOnly}
+                          value={wb02Data.solutionAndExecution}
+                          onChange={(e) =>
+                            updateWhiteBirdWB02(activeApp.id, {
+                              solutionAndExecution: e.target.value,
+                            })
+                          }
+                          placeholder="Trình bày chi tiết tính mới của giải pháp, phương thức triển khai mới, ứng dụng chuyển đổi số hoặc sáng kiến nổi bật so với các cách làm trước đây..."
+                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y"
+                        />
+                      </div>
+
+                      {/* Tiêu chuẩn 2: Tính hiệu quả */}
+                      <div className="space-y-1.5">
+                        <label className="block text-[12.5px] font-bold text-[#172A3A]">
+                          2. Quá trình triển khai và tính hiệu quả thực tiễn <span className="text-red-500">*</span>
+                        </label>
+                        <p className="text-[11.5px] text-[#64748B] leading-snug">
+                          Mô tả quá trình triển khai, kết quả áp dụng vào thực tiễn công tác Hội và phong trào sinh viên; sự ghi nhận của lãnh đạo địa phương hoặc đơn vị cùng cấp; mức độ hưởng ứng tích cực của sinh viên (kèm số liệu thực tế nếu có).
+                        </p>
+                        <textarea
+                          rows={4}
+                          disabled={isReadOnly}
+                          value={wb02Data.impactAndResults}
+                          onChange={(e) =>
+                            updateWhiteBirdWB02(activeApp.id, {
+                              impactAndResults: e.target.value,
+                            })
+                          }
+                          placeholder="Trình bày kết quả áp dụng cụ thể vào thực tiễn, số lượng hội viên sinh viên tham gia/hưởng ứng, đánh giá và ghi nhận của lãnh đạo đơn vị, tác động tích cực đến phong trào..."
+                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y"
+                        />
+                      </div>
+
+                      {/* Tiêu chuẩn 3: Tính lan tỏa */}
+                      <div className="space-y-1.5">
+                        <label className="block text-[12.5px] font-bold text-[#172A3A]">
+                          3. Khả năng lan tỏa và nhân rộng
+                        </label>
+                        <p className="text-[11.5px] text-[#64748B] leading-snug">
+                          Trình bày khả năng nghiên cứu triển khai mô hình, giải pháp, sáng kiến trong phạm vi rộng hơn (trong trường thành viên, các liên chi hội, cụm thi đua hoặc toàn ĐHĐN).
+                        </p>
+                        <textarea
+                          rows={3}
+                          disabled={isReadOnly}
+                          value={wb02Data.scalabilityAndSpread || ''}
+                          onChange={(e) =>
+                            updateWhiteBirdWB02(activeApp.id, {
+                              scalabilityAndSpread: e.target.value,
+                            })
+                          }
+                          placeholder="Nêu rõ tiềm năng, điều kiện và phương án để mô hình có thể được chuyển giao, nhân rộng và áp dụng hiệu quả cho các đơn vị bạn..."
+                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y"
+                        />
+                      </div>
+
+                      {/* Tiêu chuẩn 4: Tính điển hình */}
+                      <div className="space-y-1.5">
+                        <label className="block text-[12.5px] font-bold text-[#172A3A]">
+                          4. Tính điển hình, tiêu biểu của mô hình
+                        </label>
+                        <p className="text-[11.5px] text-[#64748B] leading-snug">
+                          Làm rõ tính tiêu biểu của mô hình, giải pháp, sáng kiến so với các mô hình, giải pháp, sáng kiến cùng cấp, cùng nội dung và lĩnh vực áp dụng.
+                        </p>
+                        <textarea
+                          rows={3}
+                          disabled={isReadOnly}
+                          value={wb02Data.exemplaryNature || ''}
+                          onChange={(e) =>
+                            updateWhiteBirdWB02(activeApp.id, {
+                              exemplaryNature: e.target.value,
+                            })
+                          }
+                          placeholder="Phân tích tính tiêu biểu, nổi trội của mô hình so với các hoạt động tương tự trong năm học..."
+                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Section 4: Cam kết tính sáng tạo */}
+                    <div className="space-y-2 pt-2 border-t border-[#EDF3F8]">
+                      <label className="flex items-start gap-2.5 p-3.5 rounded-[10px] bg-[#F4F9FD] border border-[#CBE4F5] hover:bg-[#EBF6FC] transition-colors cursor-pointer">
+                        <input
+                          type="checkbox"
+                          disabled={isReadOnly}
+                          checked={Boolean(wb02Data.commitmentConfirmed)}
+                          onChange={(e) =>
+                            updateWhiteBirdWB02(activeApp.id, {
+                              commitmentConfirmed: e.target.checked,
+                            })
+                          }
+                          className="mt-1 w-4 h-4 accent-[#0D78AE]"
+                        />
+                        <span className="text-[12.5px] font-semibold text-[#172A3A] leading-relaxed">
+                          {categoryMeta.wb02CommitmentLabel}
+                        </span>
+                      </label>
+                      <p className="text-[11.5px] text-[#64748B] leading-snug">
+                        * Lời cam kết về tính sáng tạo là thành phần bắt buộc trong Báo cáo thuyết minh theo Khoản 6.1 Điều 6 Quy chế.
+                      </p>
+                    </div>
+                  </div>
+                );
+              }
+
+              // Fallback for TRUYEN_LUA and SANG_TAO
+              return (
+                <div className="space-y-4">
+                  <div className="border-b border-[#EDF3F8] pb-3 flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D78AE]">
+                          Thành phần WB02 · {categoryMeta.articleRef}
+                        </span>
+                        <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full ${statusMeta.badgeClass}`}>
+                          {statusMeta.label}
+                        </span>
+                      </div>
+                      <h2 className="text-[16px] font-bold text-[#172A3A] mt-0.5">
+                        {categoryMeta.wb02Title}
+                      </h2>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="md:col-span-2">
+                      <Input
+                        label={
+                          activeApp.category === 'TRUYEN_LUA'
+                            ? 'Tiêu đề báo cáo thành tích cá nhân nhiều năm liền *'
+                            : 'Tên dự án khởi nghiệp / Đề tài nghiên cứu khoa học *'
+                        }
+                        disabled={isReadOnly}
+                        value={wb02Data.reportTitle}
+                        onChange={(e) =>
+                          updateWhiteBirdWB02(activeApp.id, {
+                            reportTitle: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
                     <Input
-                      label={
-                        activeApp.category === 'UOM_MAM'
-                          ? 'Tên mô hình, giải pháp, sáng kiến *'
-                          : activeApp.category === 'TRUYEN_LUA'
-                          ? 'Tiêu đề báo cáo thành tích cá nhân nhiều năm liền *'
-                          : 'Tên dự án khởi nghiệp / Đề tài nghiên cứu khoa học *'
-                      }
+                      label="Giai đoạn triển khai / cống hiến *"
                       disabled={isReadOnly}
-                      value={activeApp.requirements.wb02.reportTitle}
+                      value={wb02Data.implementationPeriod}
                       onChange={(e) =>
                         updateWhiteBirdWB02(activeApp.id, {
-                          reportTitle: e.target.value,
+                          implementationPeriod: e.target.value,
                         })
                       }
+                      placeholder="VD: 2023 – 2026"
                     />
                   </div>
-                  <Input
-                    label="Giai đoạn triển khai / cống hiến *"
-                    disabled={isReadOnly}
-                    value={activeApp.requirements.wb02.implementationPeriod}
-                    onChange={(e) =>
-                      updateWhiteBirdWB02(activeApp.id, {
-                        implementationPeriod: e.target.value,
-                      })
-                    }
-                    placeholder="VD: 2023 – 2026"
-                  />
-                </div>
 
-                <div>
-                  <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
-                    {activeApp.category === 'TRUYEN_LUA'
-                      ? 'Quá trình giữ chức vụ và rèn luyện, phấn đấu trong nhiều năm liền'
-                      : 'Bối cảnh xuất phát, tính cấp thiết và mục tiêu của mô hình / dự án / đề tài'}
+                  <div>
+                    <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
+                      {activeApp.category === 'TRUYEN_LUA'
+                        ? 'Quá trình giữ chức vụ và rèn luyện, phấn đấu trong nhiều năm liền'
+                        : 'Bối cảnh xuất phát, tính cấp thiết và mục tiêu của dự án / đề tài'}
+                    </label>
+                    <textarea
+                      rows={3}
+                      disabled={isReadOnly}
+                      value={wb02Data.contextAndObjectives}
+                      onChange={(e) =>
+                        updateWhiteBirdWB02(activeApp.id, {
+                          contextAndObjectives: e.target.value,
+                        })
+                      }
+                      placeholder="Trình bày bối cảnh, mục tiêu hoặc các cột mốc rèn luyện..."
+                      className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
+                      {activeApp.category === 'TRUYEN_LUA'
+                        ? 'Các đóng góp tiêu biểu cho sự phát triển chung của công tác Hội và phong trào sinh viên ĐHĐN *'
+                        : 'Nội dung khoa học, công nghệ, điểm đổi mới sáng tạo và tính thiết thực của dự án / đề tài *'}
+                    </label>
+                    <textarea
+                      rows={4}
+                      disabled={isReadOnly}
+                      value={wb02Data.solutionAndExecution}
+                      onChange={(e) =>
+                        updateWhiteBirdWB02(activeApp.id, {
+                          solutionAndExecution: e.target.value,
+                        })
+                      }
+                      placeholder="Mô tả chi tiết nội dung triển khai..."
+                      className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
+                      {activeApp.category === 'TRUYEN_LUA'
+                        ? 'Hiệu quả và thành tích cụ thể đã đạt được *'
+                        : 'Kết quả định lượng đạt được, hiệu quả thực tiễn & khả năng ứng dụng *'}
+                    </label>
+                    <textarea
+                      rows={3}
+                      disabled={isReadOnly}
+                      value={wb02Data.impactAndResults}
+                      onChange={(e) =>
+                        updateWhiteBirdWB02(activeApp.id, {
+                          impactAndResults: e.target.value,
+                        })
+                      }
+                      placeholder="VD: Thu hút hơn 2.500 hội viên sinh viên tham gia..."
+                      className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y"
+                    />
+                  </div>
+
+                  {activeApp.nomineeType === 'COLLECTIVE' && (
+                    <Input
+                      label="Danh sách thành viên nhóm tác giả / Ban điều hành tập thể"
+                      disabled={isReadOnly}
+                      value={wb02Data.coAuthorsOrTeamMembers}
+                      onChange={(e) =>
+                        updateWhiteBirdWB02(activeApp.id, {
+                          coAuthorsOrTeamMembers: e.target.value,
+                        })
+                      }
+                      placeholder="Nhập họ tên, MSSV, vai trò các thành viên chính..."
+                    />
+                  )}
+
+                  <label className="flex items-start gap-2.5 p-3.5 rounded-[10px] bg-[#F4F9FD] border border-[#CBE4F5] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      disabled={isReadOnly}
+                      checked={Boolean(wb02Data.commitmentConfirmed)}
+                      onChange={(e) =>
+                        updateWhiteBirdWB02(activeApp.id, {
+                          commitmentConfirmed: e.target.checked,
+                        })
+                      }
+                      className="mt-1 w-4 h-4 accent-[#0D78AE]"
+                    />
+                    <span className="text-[12.5px] font-semibold text-[#172A3A] leading-relaxed">
+                      {categoryMeta.wb02CommitmentLabel}
+                    </span>
                   </label>
-                  <textarea
-                    rows={3}
-                    disabled={isReadOnly}
-                    value={activeApp.requirements.wb02.contextAndObjectives}
-                    onChange={(e) =>
-                      updateWhiteBirdWB02(activeApp.id, {
-                        contextAndObjectives: e.target.value,
-                      })
-                    }
-                    placeholder="Trình bày bối cảnh, mục tiêu hoặc các cột mốc rèn luyện..."
-                    className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
-                  />
                 </div>
-
-                <div>
-                  <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
-                    {activeApp.category === 'UOM_MAM'
-                      ? 'Nội dung trọng tâm, tính mới, sáng tạo của mô hình, giải pháp, sáng kiến *'
-                      : activeApp.category === 'TRUYEN_LUA'
-                      ? 'Các đóng góp tiêu biểu cho sự phát triển chung của công tác Hội và phong trào sinh viên ĐHĐN *'
-                      : 'Nội dung khoa học, công nghệ, điểm đổi mới sáng tạo và tính thiết thực của dự án / đề tài *'}
-                  </label>
-                  <textarea
-                    rows={4}
-                    disabled={isReadOnly}
-                    value={activeApp.requirements.wb02.solutionAndExecution}
-                    onChange={(e) =>
-                      updateWhiteBirdWB02(activeApp.id, {
-                        solutionAndExecution: e.target.value,
-                      })
-                    }
-                    placeholder="Mô tả chi tiết nội dung triển khai..."
-                    className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
-                    Kết quả định lượng đạt được, hiệu quả thực tiễn & khả năng nhân rộng tại ĐHĐN *
-                  </label>
-                  <textarea
-                    rows={3}
-                    disabled={isReadOnly}
-                    value={activeApp.requirements.wb02.impactAndResults}
-                    onChange={(e) =>
-                      updateWhiteBirdWB02(activeApp.id, {
-                        impactAndResults: e.target.value,
-                      })
-                    }
-                    placeholder="VD: Thu hút hơn 2.500 hội viên sinh viên tham gia, áp dụng tại 09 Liên chi hội..."
-                    className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
-                  />
-                </div>
-
-                {activeApp.nomineeType === 'COLLECTIVE' && (
-                  <Input
-                    label="Danh sách thành viên nhóm tác giả / Ban điều hành tập thể"
-                    disabled={isReadOnly}
-                    value={activeApp.requirements.wb02.coAuthorsOrTeamMembers}
-                    onChange={(e) =>
-                      updateWhiteBirdWB02(activeApp.id, {
-                        coAuthorsOrTeamMembers: e.target.value,
-                      })
-                    }
-                    placeholder="Nhập họ tên, MSSV, vai trò các thành viên chính..."
-                  />
-                )}
-
-                <label className="flex items-start gap-2.5 p-3.5 rounded-[10px] bg-[#F4F9FD] border border-[#CBE4F5] cursor-pointer">
-                  <input
-                    type="checkbox"
-                    disabled={isReadOnly}
-                    checked={activeApp.requirements.wb02.commitmentConfirmed}
-                    onChange={(e) =>
-                      updateWhiteBirdWB02(activeApp.id, {
-                        commitmentConfirmed: e.target.checked,
-                      })
-                    }
-                    className="mt-1 w-4 h-4 accent-[#0D78AE]"
-                  />
-                  <span className="text-[12.5px] font-semibold text-[#172A3A] leading-relaxed">
-                    {categoryMeta.wb02CommitmentLabel}
-                  </span>
-                </label>
-              </div>
-            )}
+              );
+            })()}
 
             {activeReqId === 'WB03' && (
               <div className="space-y-4">
