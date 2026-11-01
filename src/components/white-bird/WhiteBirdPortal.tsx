@@ -37,6 +37,8 @@ import {
   saveEvidenceFile,
   deleteEvidenceFile,
   getEvidenceBlobUrl,
+  getEvidenceBlobUrlByIdOrName,
+  revokeEvidenceBlobUrl,
   downloadEvidenceFile,
 } from '../../staff/demoEvidenceStorage';
 import { CollectiveDocumentPreviewModal } from '../../features/evidence-upload';
@@ -85,33 +87,35 @@ const getRequirementCompletionStatus = (
   appStatus?: WhiteBirdApplicationStatus,
   options?: { isOptional?: boolean; hasOptionalData?: boolean }
 ): { label: string; badgeClass: string } => {
+  const baseClasses =
+    'whitespace-nowrap shrink-0 inline-flex items-center justify-center font-bold px-2 py-0.5 rounded-full text-[10.5px]';
   if (appStatus && appStatus !== 'draft' && appStatus !== 'supplement_returned') {
     return {
-      label: 'Đang chờ thẩm định',
-      badgeClass: 'bg-[#E0F2FE] text-[#0369A1] border border-[#BAE6FD]',
+      label: 'Đang thẩm định',
+      badgeClass: `${baseClasses} bg-[#E0F2FE] text-[#0369A1] border border-[#BAE6FD]`,
     };
   }
   if (options?.isOptional) {
     if (options.hasOptionalData) {
       return {
         label: 'Đã bổ sung minh họa',
-        badgeClass: 'bg-[#ECFDF5] text-[#047857] border border-[#A7F3D0]',
+        badgeClass: `${baseClasses} bg-[#ECFDF5] text-[#047857] border border-[#A7F3D0]`,
       };
     }
     return {
       label: 'Không bắt buộc',
-      badgeClass: 'bg-[#F1F5F9] text-[#64748B] border border-[#E2E8F0]',
+      badgeClass: `${baseClasses} bg-[#F1F5F9] text-[#64748B] border border-[#E2E8F0]`,
     };
   }
   if (isReady) {
     return {
-      label: 'Đã hoàn thiện kê khai',
-      badgeClass: 'bg-[#ECFDF5] text-[#047857] border border-[#A7F3D0]',
+      label: 'Đã hoàn thiện',
+      badgeClass: `${baseClasses} bg-[#ECFDF5] text-[#047857] border border-[#A7F3D0]`,
     };
   }
   return {
     label: 'Chưa hoàn thiện',
-    badgeClass: 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]',
+    badgeClass: `${baseClasses} bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]`,
   };
 };
 
@@ -342,18 +346,24 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
     setPreviewFile(file);
     setIsLoadingPreview(true);
     try {
-      const url = await getEvidenceBlobUrl(file.id);
-      setPreviewBlobUrl(url);
+      const url = await getEvidenceBlobUrlByIdOrName(file.id, file.name);
+      setPreviewBlobUrl(url || file.url || null);
     } catch {
-      setPreviewBlobUrl(null);
+      setPreviewBlobUrl(file.url || null);
     } finally {
       setIsLoadingPreview(false);
     }
   };
 
   const handleClosePreview = () => {
-    if (previewBlobUrl && previewBlobUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(previewBlobUrl);
+    if (previewFile?.id) {
+      revokeEvidenceBlobUrl(previewFile.id);
+    } else if (previewBlobUrl && previewBlobUrl.startsWith('blob:')) {
+      try {
+        URL.revokeObjectURL(previewBlobUrl);
+      } catch {
+        // ignore
+      }
     }
     setPreviewFile(null);
     setPreviewBlobUrl(null);
@@ -766,7 +776,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   {statusBadge.label}
                 </span>
               </div>
-              <h1 className="text-[16.5px] font-extrabold text-[#172A3A] truncate mt-1">
+              <h1 className="text-[16.5px] font-extrabold text-[#172A3A] break-words mt-1 leading-snug">
                 {activeApp.nominationTitle}
               </h1>
               <div className="text-[12px] text-[#607483] flex flex-wrap items-center gap-2 mt-0.5">
@@ -862,33 +872,35 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
               [
                 {
                   id: 'WB01' as const,
-                  code: 'Thành phần WB01 · Điều 5',
+                  code: 'WB01',
+                  isOptional: false,
                   title: 'Văn bản đề nghị xét trao Giải thưởng',
                   ready: readiness.wb01Ready,
                   filesCount: activeApp.requirements.wb01.evidenceFiles.length,
                   desc:
                     activeApp.requirements.wb01.nominatingUnitName ||
                     'Chưa kê khai đơn vị giới thiệu đề cử',
-                  isOptional: false,
                   hasOptionalData: false,
                 },
                 {
                   id: 'WB02' as const,
-                  code: 'Thành phần WB02 · Điều 6',
-                  title: categoryMeta.wb02Title,
+                  code: 'WB02',
+                  isOptional: false,
+                  title:
+                    activeApp.category === 'UOM_MAM'
+                      ? 'Báo cáo thuyết minh và cam kết tính sáng tạo'
+                      : categoryMeta.wb02Title,
                   ready: readiness.wb02Ready,
                   filesCount: activeApp.requirements.wb02.evidenceFiles.length,
                   desc:
                     activeApp.requirements.wb02.reportTitle ||
                     'Chưa hoàn thiện báo cáo thuyết minh / thành tích',
-                  isOptional: false,
                   hasOptionalData: false,
                 },
                 {
                   id: 'WB03' as const,
-                  code: readiness.isWb03Optional
-                    ? 'Thành phần WB03 · Khoản 6.1 Điều 6 (Tùy chọn)'
-                    : 'Thành phần WB03 · Điều 6',
+                  code: 'WB03',
+                  isOptional: readiness.isWb03Optional,
                   title: readiness.isWb03Optional
                     ? 'Hình ảnh, sản phẩm minh họa (nếu có)'
                     : categoryMeta.wb03Title,
@@ -897,9 +909,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   desc:
                     activeApp.requirements.wb03.awardOrRecognitionSummary ||
                     (readiness.isWb03Optional
-                      ? 'Bạn có thể bổ sung hình ảnh, sản phẩm hoặc tài liệu minh họa (không bắt buộc)'
+                      ? 'Bổ sung hình ảnh, video hoặc sản phẩm minh họa (tùy chọn)'
                       : 'Chưa kê khai tóm tắt minh chứng hiệu quả / giải thưởng'),
-                  isOptional: readiness.isWb03Optional,
                   hasOptionalData: readiness.wb03HasData,
                 },
               ]
@@ -912,21 +923,29 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
               return (
                 <div
                   key={card.id}
-                  className="bg-white rounded-[13px] border border-[#DCE7EE] p-4 flex flex-col justify-between"
+                  className="bg-white rounded-[13px] border border-[#DCE7EE] p-4 flex flex-col justify-between h-full"
                 >
                   <div>
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className="text-[11px] font-bold text-[#0D78AE] uppercase">
-                        {card.code}
-                      </span>
-                      <span
-                        className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${status.badgeClass}`}
-                      >
+                      <div className="text-[11.5px] font-bold text-[#0D78AE]">
+                        <span>{card.code}</span>
+                        <span className="text-[#94A3B8] font-normal mx-1">·</span>
+                        <span className={card.isOptional ? 'text-[#D97706]' : 'text-[#64748B]'}>
+                          {card.isOptional ? 'Tùy chọn' : 'Bắt buộc'}
+                        </span>
+                      </div>
+                      <span className={status.badgeClass}>
                         {status.label}
                       </span>
                     </div>
-                    <h3 className="text-[14px] font-bold text-[#172A3A]">{card.title}</h3>
-                    <p className="text-[12px] text-[#55697B] mt-1.5 line-clamp-2">{card.desc}</p>
+                    <div className="min-h-[4.75rem] flex flex-col">
+                      <h3 className="text-[14px] font-bold text-[#172A3A] leading-snug break-words">
+                        {card.title}
+                      </h3>
+                      <p className="text-[12px] text-[#55697B] mt-1.5 line-clamp-2">
+                        {card.desc}
+                      </p>
+                    </div>
                   </div>
                   <div className="mt-4 pt-3 border-t border-[#EDF3F8] flex items-center justify-between">
                     <span className="text-[11.5px] font-semibold text-[#607483]">
@@ -971,7 +990,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     ? (readiness.wb03HasData
                         ? 'Hồ sơ đã hoàn tất 2/2 thành phần bắt buộc (WB01, WB02) và đã đính kèm tài liệu minh họa (WB03).'
                         : 'Hồ sơ đã hoàn tất 2/2 thành phần bắt buộc (WB01, WB02). Bạn có thể nộp ngay hoặc bổ sung hình ảnh, sản phẩm minh họa ở WB03 (không bắt buộc).')
-                    : 'Hồ sơ đã đáp ứng đầy đủ 3 thành phần theo Điều 6 Quy chế Giải thưởng Cánh chim trắng (QĐ 14-QĐ/ĐHĐN-HSV).'}
+                    : 'Hồ sơ đã đáp ứng đầy đủ 3 thành phần theo Điều 6 Quy chế Giải thưởng Cánh chim trắng.'}
                 </p>
               )}
             </div>
@@ -992,7 +1011,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   onClick={handleSubmitDossier}
                 >
                   <Send size={15} className="mr-1.5" />
-                  Nộp hồ sơ Giải thưởng (${readiness.readyCount}/${readiness.totalRequired})
+                  Nộp hồ sơ Giải thưởng ({readiness.readyCount}/{readiness.totalRequired})
                 </Button>
               )}
             </div>
@@ -1009,8 +1028,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
               [
                 {
                   id: 'WB01' as const,
-                  badge: 'Điều 5 Quy chế',
-                  title: 'WB01 · Văn bản đề nghị xét trao',
+                  badge: 'WB01 · Bắt buộc',
+                  title: 'Văn bản đề nghị xét trao',
                   subtitle: 'Giới thiệu của cấp bộ Hội có thẩm quyền',
                   ready: readiness.wb01Ready,
                   files: activeApp.requirements.wb01.evidenceFiles.length,
@@ -1019,9 +1038,12 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                 },
                 {
                   id: 'WB02' as const,
-                  badge: 'Điều 6 Quy chế',
-                  title: `WB02 · ${categoryMeta.wb02Title}`,
-                  subtitle: 'Thuyết minh nội dung & Cam kết quy chế',
+                  badge: 'WB02 · Bắt buộc',
+                  title:
+                    activeApp.category === 'UOM_MAM'
+                      ? 'Báo cáo thuyết minh và cam kết tính sáng tạo'
+                      : categoryMeta.wb02Title,
+                  subtitle: 'Thuyết minh nội dung & Cam kết sáng tạo',
                   ready: readiness.wb02Ready,
                   files: activeApp.requirements.wb02.evidenceFiles.length,
                   isOptional: false,
@@ -1029,13 +1051,13 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                 },
                 {
                   id: 'WB03' as const,
-                  badge: readiness.isWb03Optional ? 'Khoản 6.1 Điều 6 (Tùy chọn)' : 'Điều 6 Quy chế',
+                  badge: readiness.isWb03Optional ? 'WB03 · Tùy chọn' : 'WB03 · Bắt buộc',
                   title: readiness.isWb03Optional
-                    ? 'WB03 · Hình ảnh, sản phẩm minh họa'
-                    : `WB03 · ${categoryMeta.wb03Title}`,
+                    ? 'Hình ảnh, sản phẩm minh họa'
+                    : categoryMeta.wb03Title,
                   subtitle: readiness.isWb03Optional
                     ? 'Tài liệu, sản phẩm minh họa (nếu có)'
-                    : 'Bằng khen, giải thưởng & Hình ảnh thực tế',
+                    : 'Bằng khen, giải thưởng & Minh chứng',
                   ready: readiness.wb03Ready,
                   files: activeApp.requirements.wb03.evidenceFiles.length,
                   isOptional: readiness.isWb03Optional,
@@ -1060,18 +1082,18 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       : 'bg-white border-[#DCE7EE] hover:bg-[#F8FBFD]'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-[11px] font-bold text-[#0D78AE] uppercase">
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="text-[11px] font-bold text-[#0D78AE]">
                       {req.badge}
                     </span>
-                    <span
-                      className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full ${status.badgeClass}`}
-                    >
+                    <span className={status.badgeClass}>
                       {status.label}
                     </span>
                   </div>
-                  <div className="text-[13.5px] font-bold text-[#172A3A]">{req.title}</div>
-                  <div className="text-[11.5px] text-[#607483] mt-0.5">
+                  <div className="text-[13.5px] font-bold text-[#172A3A] leading-snug break-words">
+                    {req.title}
+                  </div>
+                  <div className="text-[11.5px] text-[#607483] mt-1">
                     {req.subtitle} · {req.files} tệp đính kèm
                   </div>
                 </button>
@@ -1138,9 +1160,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D78AE]">
-                          Thành phần WB01 · Điều 5 Quy chế (QĐ 14-QĐ/ĐHĐN-HSV)
+                          Thành phần WB01 · Điều 5 Quy chế
                         </span>
-                        <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full ${statusMeta.badgeClass}`}>
+                        <span className={statusMeta.badgeClass}>
                           {statusMeta.label}
                         </span>
                       </div>
@@ -1148,7 +1170,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         Văn bản đề nghị xét trao Giải thưởng “Cánh chim trắng”
                       </h2>
                       <p className="text-[12.5px] text-[#607483] mt-0.5 leading-relaxed">
-                        Kê khai thông tin tổ chức, cá nhân có thẩm quyền đề nghị xét trao theo Điều 5 Quy chế ban hành kèm Quyết định số 14-QĐ/ĐHĐN-HSV và đính kèm văn bản đề nghị xét trao theo Khoản 6.1 Điều 6.
+                        Kê khai thông tin tổ chức, cá nhân có thẩm quyền đề nghị xét trao theo Điều 5 Quy chế và đính kèm văn bản đề nghị theo Khoản 6.1 Điều 6.
                       </p>
                     </div>
                   </div>
@@ -1191,10 +1213,25 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           )}
                         </optgroup>
                       </select>
+                      {(() => {
+                        const selectedSubject = WHITE_BIRD_NOMINATING_SUBJECT_OPTIONS.find(
+                          (o) => o.value === wb01Data.nominatingUnitType
+                        );
+                        return (
+                          <div className="mt-2 p-2.5 rounded-[9px] bg-[#F8FBFD] border border-[#DCE7EE] text-[12px] leading-relaxed">
+                            <span className="text-[11px] font-bold text-[#0D78AE] uppercase tracking-wide block">
+                              Chủ thể đề xuất chính thức (Điều 5):
+                            </span>
+                            <span className="font-semibold text-[#1E293B] break-words">
+                              {selectedSubject?.label || wb01Data.nominatingUnitType}
+                            </span>
+                          </div>
+                        );
+                      })()}
                       <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
                         {isIndividualNominator
-                          ? 'Ủy viên Ban Chấp hành Hội Sinh viên Việt Nam Đại học Đà Nẵng là cá nhân có thẩm quyền trực tiếp đề xuất xét trao Giải thưởng (Điều 5).'
-                          : 'Cấp bộ Hội / Đơn vị trực thuộc có thẩm quyền đề xuất xét trao theo Điều 5 của Quy chế.'}
+                          ? 'Ủy viên Ban Chấp hành Hội Sinh viên Việt Nam ĐHĐN có thẩm quyền trực tiếp đề xuất (Điều 5).'
+                          : 'Cấp bộ Hội hoặc Đơn vị trực thuộc có thẩm quyền đề xuất theo Điều 5.'}
                       </p>
                     </div>
 
@@ -1209,8 +1246,11 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             : 'Tên tổ chức đề nghị xét trao *'}
                         </label>
                       </div>
-                      <input
+                      <AutoResizeTextarea
                         id="wb01-nominator-unit-name"
+                        rows={1}
+                        minHeight={42}
+                        maxHeight={140}
                         disabled={isReadOnly}
                         value={wb01Data.nominatingUnitName}
                         onChange={(e) =>
@@ -1219,11 +1259,10 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           })
                         }
                         placeholder={unitNamePlaceholder}
-                        className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
                       />
                       <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
                         {isIndividualNominator
-                          ? 'Nhập họ và tên Ủy viên Ban Chấp hành HSV ĐHĐN trực tiếp đề xuất xét trao.'
+                          ? 'Nhập họ và tên Ủy viên Ban Chấp hành HSV ĐHĐN đề xuất.'
                           : 'Nhập tên Ban Thư ký HSV trường, Liên chi Hội hoặc CLB/Đội/Nhóm đề nghị.'}
                       </p>
                     </div>
@@ -1237,8 +1276,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           className="text-[12.5px] font-bold text-[#172A3A] select-none"
                         >
                           {isIndividualNominator
-                            ? 'Số hiệu văn bản / Giấy giới thiệu (nếu có)'
-                            : 'Số hiệu văn bản đề nghị xét trao (nếu có)'}
+                            ? 'Số hiệu văn bản / Giấy giới thiệu'
+                            : 'Số hiệu văn bản đề nghị xét trao'}
                         </label>
                       </div>
                       <input
@@ -1266,8 +1305,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           className="text-[12.5px] font-bold text-[#172A3A] select-none"
                         >
                           {isIndividualNominator
-                            ? 'Ngày ký / Ngày đề xuất (nếu có)'
-                            : 'Ngày ký văn bản đề nghị (nếu có)'}
+                            ? 'Ngày ký / Ngày đề xuất'
+                            : 'Ngày ký văn bản đề nghị'}
                         </label>
                       </div>
                       <input
@@ -1291,8 +1330,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           className="text-[12.5px] font-bold text-[#172A3A] select-none"
                         >
                           {isIndividualNominator
-                            ? 'Họ tên Ủy viên BCH ký đề xuất (nếu có)'
-                            : 'Họ tên người ký văn bản đề nghị & chức vụ (nếu có)'}
+                            ? 'Họ tên Ủy viên BCH ký đề xuất'
+                            : 'Họ tên người ký văn bản & chức vụ'}
                         </label>
                       </div>
                       <input
@@ -1378,9 +1417,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D78AE]">
-                            Thành phần WB02 · Điểm a khoản 4.2 Điều 4 & Khoản 6.1 Điều 6 (QĐ 14-QĐ/ĐHĐN-HSV)
+                            Thành phần WB02 · Điểm a khoản 4.2 Điều 4 & Khoản 6.1 Điều 6
                           </span>
-                          <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full ${statusMeta.badgeClass}`}>
+                          <span className={statusMeta.badgeClass}>
                             {statusMeta.label}
                           </span>
                         </div>
@@ -1388,7 +1427,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           WB02 · Báo cáo thuyết minh và cam kết tính sáng tạo
                         </h2>
                         <p className="text-[12.5px] text-[#607483] mt-0.5 leading-relaxed">
-                          Thuyết minh chi tiết theo 4 tiêu chuẩn xét trao (Tính mới, sáng tạo; Tính hiệu quả; Tính lan tỏa; Tính điển hình) và cam kết tính sáng tạo theo Quy chế Giải thưởng.
+                          Thuyết minh chi tiết theo 4 tiêu chuẩn xét trao (Điểm a khoản 4.2 Điều 4) và cam kết tính sáng tạo theo Khoản 6.1 Điều 6 Quy chế.
                         </p>
                       </div>
                     </div>
@@ -1401,8 +1440,11 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             Tên mô hình, giải pháp, sáng kiến <span className="text-red-500">*</span>
                           </label>
                         </div>
-                        <input
+                        <AutoResizeTextarea
                           id="wb02-report-title"
+                          rows={2}
+                          minHeight={58}
+                          maxHeight={180}
                           disabled={isReadOnly}
                           value={wb02Data.reportTitle}
                           onChange={(e) =>
@@ -1411,7 +1453,6 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             })
                           }
                           placeholder="VD: Mô hình Số hóa Sổ tay Sinh viên 5 tốt & Ngân hàng Minh chứng trực tuyến"
-                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
                         />
                       </div>
                       <div>
@@ -1432,6 +1473,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           placeholder="VD: Tháng 10/2024 – Tháng 05/2025"
                           className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
                         />
+                        <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
+                          * Căn cứ Khoản 4.1 Điều 4, thành tích được tính trong năm học xét trao ({activeApp.academicYear || '2025–2026'}) cho đến thời điểm kết thúc nhận hồ sơ.
+                        </p>
                       </div>
                     </div>
 
@@ -1478,7 +1522,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             Thông tin Người chịu trách nhiệm chính của mô hình
                           </span>
                           <p className="text-[11.5px] text-[#607483] mt-0.5">
-                            Kê khai đúng theo Mẫu báo cáo chính thức (có thể chỉnh sửa trực tiếp, không bắt buộc trùng với thông tin tài khoản nộp).
+                            Kê khai theo Mẫu báo cáo chính thức (không bắt buộc trùng với tài khoản nộp trực tuyến).
                           </p>
                         </div>
                         {activeApp.nomineeType === 'COLLECTIVE' && (
@@ -1495,8 +1539,11 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                               Họ và tên người chịu trách nhiệm chính <span className="text-red-500">*</span>
                             </label>
                           </div>
-                          <input
+                          <AutoResizeTextarea
                             id="wb02-lead-rep"
+                            rows={1}
+                            minHeight={42}
+                            maxHeight={100}
                             disabled={isReadOnly}
                             value={leadRep}
                             onChange={(e) =>
@@ -1505,7 +1552,6 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                               })
                             }
                             placeholder="VD: Nguyễn Văn A (Trưởng nhóm / Chủ nhiệm CLB)"
-                            className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
                           />
                         </div>
 
@@ -1515,8 +1561,11 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                               Đơn vị / Chi hội / Lớp / Khoa / Trường
                             </label>
                           </div>
-                          <input
+                          <AutoResizeTextarea
                             id="wb02-lead-unit"
+                            rows={1}
+                            minHeight={42}
+                            maxHeight={120}
                             disabled={isReadOnly}
                             value={leadUnit}
                             onChange={(e) =>
@@ -1525,7 +1574,6 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                               })
                             }
                             placeholder="VD: Chi hội 22T_DT1, Khoa Công nghệ Thông tin, Trường ĐH Bách khoa"
-                            className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
                           />
                         </div>
                       </div>
@@ -1576,7 +1624,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       <div>
                         <div className="md:min-h-[2rem] flex items-end pb-1.5">
                           <label htmlFor="wb02-pres-link" className="text-[12.5px] font-bold text-[#172A3A] select-none">
-                            Liên kết slide trình chiếu / video thuyết minh mô hình (nếu có)
+                            Liên kết slide trình chiếu / video thuyết minh mô hình
                           </label>
                         </div>
                         <input
@@ -1588,7 +1636,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                               presentationLink: e.target.value,
                             })
                           }
-                          placeholder="https://drive.google.com/... hoặc https://youtube.com/... hoặc link Canva / Slide"
+                          placeholder="https://drive.google.com/... hoặc link Canva / Slide / Video"
                           className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
                         />
                         <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
@@ -1795,7 +1843,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     </div>
 
                     {/* Section 4: Cam kết tính sáng tạo */}
-                    <div className="space-y-2 pt-2 border-t border-[#EDF3F8]">
+                    <div className="pt-2 border-t border-[#EDF3F8]">
                       <label className="flex items-start gap-2.5 p-3.5 rounded-[10px] bg-[#F4F9FD] border border-[#CBE4F5] hover:bg-[#EBF6FC] transition-colors cursor-pointer">
                         <input
                           type="checkbox"
@@ -1809,12 +1857,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           className="mt-1 w-4 h-4 accent-[#0D78AE]"
                         />
                         <span className="text-[12.5px] font-semibold text-[#172A3A] leading-relaxed">
-                          Tôi/Đại diện tập thể cam kết thông tin trong báo cáo là trung thực, mô hình, giải pháp, sáng kiến được kê khai có tính sáng tạo và chịu trách nhiệm về nội dung cung cấp.
+                          Tôi/Đại diện tập thể cam kết thông tin trong báo cáo là trung thực, mô hình, giải pháp, sáng kiến được kê khai có tính sáng tạo và chịu trách nhiệm về nội dung cung cấp theo Khoản 6.1 Điều 6.
                         </span>
                       </label>
-                      <p className="text-[11.5px] text-[#64748B] leading-snug">
-                        * Lời cam kết về tính sáng tạo là thành phần bắt buộc trong Báo cáo thuyết minh theo Khoản 6.1 Điều 6 Quy chế.
-                      </p>
                     </div>
                   </div>
                 );
@@ -1848,8 +1893,11 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             : 'Tên dự án khởi nghiệp / Đề tài nghiên cứu khoa học *'}
                         </label>
                       </div>
-                      <input
+                      <AutoResizeTextarea
                         id="wb02-report-title-fallback"
+                        rows={2}
+                        minHeight={58}
+                        maxHeight={180}
                         disabled={isReadOnly}
                         value={wb02Data.reportTitle}
                         onChange={(e) =>
@@ -1857,7 +1905,11 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             reportTitle: e.target.value,
                           })
                         }
-                        className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                        placeholder={
+                          activeApp.category === 'TRUYEN_LUA'
+                            ? 'VD: Báo cáo thành tích cá nhân xuất sắc giai đoạn 2024–2026'
+                            : 'VD: Dự án Nền tảng học tập thích ứng ứng dụng trí tuệ nhân tạo'
+                        }
                       />
                     </div>
                     <div>
@@ -1996,9 +2048,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D78AE]">
-                            Thành phần WB03 · Khoản 6.1 Điều 6 (QĐ 14-QĐ/ĐHĐN-HSV) · Tùy chọn
+                            Thành phần WB03 · Khoản 6.1 Điều 6 · Tùy chọn
                           </span>
-                          <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full ${statusMeta.badgeClass}`}>
+                          <span className={statusMeta.badgeClass}>
                             {statusMeta.label}
                           </span>
                         </div>
@@ -2006,14 +2058,14 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           WB03 – Hình ảnh, sản phẩm minh họa (nếu có)
                         </h2>
                         <p className="text-[12.5px] text-[#607483] mt-0.5 leading-relaxed">
-                          Bạn có thể bổ sung hình ảnh, sản phẩm hoặc tài liệu minh họa cho mô hình, giải pháp, sáng kiến. Thành phần này không bắt buộc.
+                          Bổ sung hình ảnh, sản phẩm hoặc tài liệu minh họa cho mô hình, giải pháp, sáng kiến (thành phần này không bắt buộc theo Khoản 6.1 Điều 6).
                         </p>
                       </div>
                     </div>
 
                     <div>
                       <label htmlFor="wb03-summary" className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
-                        Mô tả hình ảnh, sản phẩm minh họa (nếu có)
+                        Mô tả hình ảnh, sản phẩm minh họa
                       </label>
                       <AutoResizeTextarea
                         id="wb03-summary"
@@ -2027,13 +2079,13 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             awardOrRecognitionSummary: e.target.value,
                           })
                         }
-                        placeholder="Mô tả khái quát về các hình ảnh hoạt động, sản phẩm mẫu hoặc bài báo minh họa đính kèm (nếu có)..."
+                        placeholder="Mô tả khái quát về các hình ảnh hoạt động, sản phẩm mẫu hoặc bài báo minh họa đính kèm..."
                       />
                     </div>
 
                     <div>
                       <label htmlFor="wb03-links" className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
-                        Liên kết hình ảnh, video, sản phẩm hoặc tài liệu minh họa (nếu có)
+                        Liên kết hình ảnh, video, sản phẩm hoặc tài liệu minh họa trực tuyến
                       </label>
                       <input
                         id="wb03-links"
@@ -2174,20 +2226,23 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         </p>
                         <ul className="list-disc pl-4 space-y-0.5 text-[#334155]">
                           <li>
-                            <strong>1. Báo cáo thuyết minh mô hình theo mẫu:</strong> Bản PDF/DOCX hoàn chỉnh có chữ ký xác nhận của đại diện và cam kết tính sáng tạo.
+                            <strong>1. Báo cáo thuyết minh mô hình theo mẫu:</strong> Bản PDF hoặc DOCX hoàn chỉnh kèm lời cam kết về tính sáng tạo theo Mẫu báo cáo quy định.
                           </li>
                           <li>
-                            <strong>2. Minh chứng về tính hiệu quả:</strong> Các văn bản công nhận/khen thưởng, báo cáo thống kê số liệu thực tế, hình ảnh tổ chức hoặc bài viết truyền thông.
+                            <strong>2. Minh chứng về tính hiệu quả:</strong> Văn bản ghi nhận/khen thưởng, báo cáo thống kê số liệu thực tế, tài liệu minh chứng tính hiệu quả của mô hình.
                           </li>
                         </ul>
+                        <p className="text-[11px] text-[#64748B] pt-0.5">
+                          Hỗ trợ tệp PDF, JPG, PNG, DOCX, XLSX (Tối đa 25MB/tệp).
+                        </p>
                       </>
                     ) : activeReqId === 'WB03' && activeApp.category === 'UOM_MAM' ? (
                       <p>
-                        Hỗ trợ hình ảnh, tài liệu minh họa (PDF, JPG, PNG, DOCX, XLSX – Tối đa 25MB/tệp, không bắt buộc).
+                        Hỗ trợ hình ảnh, sản phẩm, bài báo hoặc tài liệu minh họa (PDF, JPG, PNG, DOCX, XLSX – Tối đa 25MB/tệp, không bắt buộc).
                       </p>
                     ) : (
                       <p>
-                        Hỗ trợ PDF, JPG, PNG, DOCX, XLSX (Tối đa 25MB/tệp).
+                        Hỗ trợ tệp PDF, JPG, PNG, DOCX, XLSX (Tối đa 25MB/tệp).
                       </p>
                     )}
                   </div>
@@ -2238,17 +2293,21 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     {files.map((file) => (
                       <div
                         key={file.id}
-                        className="flex items-center justify-between gap-3 p-3 rounded-[9px] bg-[#F8FBFD] border border-[#DCE7EE]"
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 p-3 rounded-[9px] bg-[#F8FBFD] border border-[#DCE7EE]"
                       >
-                        <div className="min-w-0">
-                          <div className="text-[13px] font-bold text-[#172A3A] truncate">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[13px] font-bold text-[#172A3A] break-words leading-snug">
                             {file.name}
                           </div>
-                          <div className="text-[11px] text-[#607483]">
-                            {file.fileType.toUpperCase()} · {file.size} · Tải lên {file.uploadedAt}
+                          <div className="text-[11px] text-[#607483] mt-1 flex flex-wrap items-center gap-1.5">
+                            <span className="font-semibold text-[#334155]">{file.fileType.toUpperCase()}</span>
+                            <span>·</span>
+                            <span>{file.size}</span>
+                            <span>·</span>
+                            <span>Tải lên {file.uploadedAt}</span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="flex items-center justify-end gap-1.5 shrink-0 pt-1.5 sm:pt-0 border-t sm:border-t-0 border-[#EDF3F8]">
                           <button
                             type="button"
                             onClick={() => handleOpenPreview(file)}
@@ -2293,8 +2352,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                 Kho minh chứng Giải thưởng “Cánh chim trắng” ({allEvidenceFiles.length} tệp)
               </h2>
               <p className="text-[12.5px] text-[#607483]">
-                Tổng hợp toàn bộ văn bản đề nghị (WB01), báo cáo thuyết minh (WB02) và minh chứng
-                giải thưởng / hiệu quả (WB03).
+                {activeApp.category === 'UOM_MAM'
+                  ? 'Tổng hợp toàn bộ văn bản đề nghị (WB01), báo cáo thuyết minh & tài liệu minh chứng tính hiệu quả (WB02) cùng hình ảnh, sản phẩm minh họa nếu có (WB03).'
+                  : 'Tổng hợp toàn bộ văn bản đề nghị (WB01), báo cáo thành tích (WB02) và hồ sơ minh chứng khen thưởng / giải thưởng (WB03).'}
               </p>
             </div>
           </div>
@@ -2308,22 +2368,26 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
               {allEvidenceFiles.map((file) => (
                 <div
                   key={`${file.reqId}-${file.id}`}
-                  className="flex items-center justify-between gap-3 p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#DCE7EE]"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#DCE7EE]"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#E5F5FC] text-[#0D78AE]">
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#E5F5FC] text-[#0D78AE] shrink-0 mt-0.5">
                       {file.reqId}
                     </span>
-                    <div className="min-w-0">
-                      <div className="text-[13px] font-bold text-[#172A3A] truncate">
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[13px] font-bold text-[#172A3A] break-words leading-snug">
                         {file.name}
                       </div>
-                      <div className="text-[11.5px] text-[#607483]">
-                        {file.fileType.toUpperCase()} · {file.size} · Ngày tải lên: {file.uploadedAt}
+                      <div className="text-[11.5px] text-[#607483] mt-1 flex flex-wrap items-center gap-1.5">
+                        <span className="font-semibold text-[#334155]">{file.fileType.toUpperCase()}</span>
+                        <span>·</span>
+                        <span>{file.size}</span>
+                        <span>·</span>
+                        <span>Ngày tải lên: {file.uploadedAt}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center justify-end gap-2 shrink-0 pt-1.5 sm:pt-0 border-t sm:border-t-0 border-[#EDF3F8]">
                     <button
                       type="button"
                       onClick={() => handleOpenPreview(file)}
@@ -2364,22 +2428,39 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
             </div>
             <div className="space-y-2 flex-1">
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D78AE]">
-                Hội đồng xét duyệt Giải thưởng “Cánh chim trắng” · Hội Sinh viên Việt Nam ĐHĐN
+                {activeApp.status === 'draft'
+                  ? 'Trạng thái hồ sơ · Giải thưởng “Cánh chim trắng”'
+                  : 'Hội đồng xét duyệt Giải thưởng “Cánh chim trắng” · Hội Sinh viên Việt Nam ĐHĐN'}
               </span>
               <h2 className="text-[17px] font-extrabold text-[#172A3A] mt-0.5">
-                {statusBadge.label}
+                {activeApp.status === 'draft'
+                  ? 'Hồ sơ chưa nộp · Chưa có kết quả xét duyệt'
+                  : statusBadge.label}
               </h2>
               <p className="text-[13px] text-[#55697B] mt-1 leading-relaxed">
                 {activeApp.status === 'draft'
-                  ? 'Hồ sơ hiện đang ở trạng thái Bản nháp. Vui lòng hoàn tất đủ 3 mục WB01, WB02, WB03 và nhấn “Nộp về Văn phòng HSV ĐHĐN” để gửi thẳng hồ sơ lên Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng.'
+                  ? (activeApp.category === 'UOM_MAM'
+                      ? 'Hồ sơ hiện đang ở trạng thái bản nháp. Vui lòng hoàn tất 2 thành phần bắt buộc (WB01, WB02) và nhấn “Nộp hồ sơ Giải thưởng” để chuyển hồ sơ về Cơ quan Thường trực (Văn phòng Hội Sinh viên ĐHĐN). Thành phần WB03 là tài liệu minh họa tùy chọn nếu có.'
+                      : 'Hồ sơ hiện đang ở trạng thái bản nháp. Vui lòng hoàn tất đủ các thành phần WB01, WB02, WB03 và nhấn “Nộp hồ sơ Giải thưởng” để gửi về Cơ quan Thường trực (Văn phòng Hội Sinh viên ĐHĐN).')
                   : activeApp.status === 'recognized'
                   ? `Chúc mừng! Đề cử "${activeApp.nominationTitle}" (${categoryMeta.name}) đã được Hội đồng xét duyệt cấp Đại học Đà Nẵng quyết định trao Giải thưởng “Cánh chim trắng” (${
                       activeApp.decisionNumber || 'Quyết định của Ban Thư ký HSV ĐHĐN'
                     }).`
                   : activeApp.status === 'not_recognized'
                   ? 'Hội đồng xét duyệt cấp Đại học Đà Nẵng đã hoàn tất phiên họp xét chọn. Hồ sơ đề cử chưa đạt Giải thưởng trong kỳ xét này.'
-                  : 'Hồ sơ đề cử đã được nộp thẳng và tiếp nhận tại Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng (Cơ quan Thường trực Giải thưởng) để thẩm định và trình Hội đồng xét duyệt Giải thưởng Cánh chim trắng.'}
+                  : 'Hồ sơ đề cử đã được tiếp nhận tại Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng (Cơ quan Thường trực Giải thưởng) để thẩm định và trình Hội đồng xét duyệt Giải thưởng Cánh chim trắng.'}
               </p>
+              {activeApp.status === 'draft' && (
+                <div className="pt-2">
+                  <Button
+                    type="button"
+                    variant="primary"
+                    onClick={() => setActiveTab('workspace')}
+                  >
+                    Mở không gian kê khai hồ sơ →
+                  </Button>
+                </div>
+              )}
               {(activeApp.councilNote || activeApp.decisionNumber) && (
                 <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#DCE7EE] text-[12.5px] text-[#334155] space-y-1">
                   {activeApp.decisionNumber && (

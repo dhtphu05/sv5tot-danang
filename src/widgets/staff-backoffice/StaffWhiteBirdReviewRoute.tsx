@@ -29,6 +29,8 @@ import { StaffRouteId, StaffUser } from '../../staff/types';
 import { ApplicationEvidence } from '../../demo/fixtures/studentApplication';
 import {
   getEvidenceBlobUrl,
+  getEvidenceBlobUrlByIdOrName,
+  revokeEvidenceBlobUrl,
   downloadEvidenceFile,
 } from '../../staff/demoEvidenceStorage';
 import { CollectiveDocumentPreviewModal } from '../../features/evidence-upload';
@@ -136,18 +138,24 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
     setPreviewFile(file);
     setIsLoadingPreview(true);
     try {
-      const url = await getEvidenceBlobUrl(file.id);
-      setPreviewBlobUrl(url);
+      const url = await getEvidenceBlobUrlByIdOrName(file.id, file.name);
+      setPreviewBlobUrl(url || file.url || null);
     } catch {
-      setPreviewBlobUrl(null);
+      setPreviewBlobUrl(file.url || null);
     } finally {
       setIsLoadingPreview(false);
     }
   };
 
   const handleClosePreview = () => {
-    if (previewBlobUrl && previewBlobUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(previewBlobUrl);
+    if (previewFile?.id) {
+      revokeEvidenceBlobUrl(previewFile.id);
+    } else if (previewBlobUrl && previewBlobUrl.startsWith('blob:')) {
+      try {
+        URL.revokeObjectURL(previewBlobUrl);
+      } catch {
+        // ignore
+      }
     }
     setPreviewFile(null);
     setPreviewBlobUrl(null);

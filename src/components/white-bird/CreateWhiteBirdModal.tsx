@@ -26,6 +26,7 @@ import {
 import { resolveInstitutionFromUniversity } from '../../demo/fixtures/studentApplication';
 import { Button } from '../buttons/Button';
 import { Input } from '../forms/Input';
+import { AutoResizeTextarea } from '../forms/AutoResizeTextarea';
 import {
   WHITE_BIRD_CATEGORIES,
   WhiteBirdCategory,
@@ -543,7 +544,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
 
                 {/* Row 2: Nomination Title */}
                 <div>
-                  <Input
+                  <AutoResizeTextarea
                     label={
                       category === 'UOM_MAM'
                         ? 'Tên mô hình, giải pháp, sáng kiến *'
@@ -551,6 +552,9 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
                         ? 'Tiêu đề hồ sơ đề cử *'
                         : 'Tên dự án khởi nghiệp đổi mới sáng tạo / Đề tài NCKH *'
                     }
+                    rows={2}
+                    minHeight={58}
+                    maxHeight={160}
                     value={nominationTitle}
                     onChange={(e) => {
                       setNominationTitle(e.target.value);
