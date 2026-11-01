@@ -473,44 +473,59 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-[11.5px] leading-relaxed">
             <div className="p-3 rounded-[8px] bg-white border border-[#E8F5E9]">
               <strong className="text-[#15803D] block mb-1">Điều 3 · Nguyên tắc trao thưởng:</strong>
-              Mỗi cá nhân, tập thể chỉ nhận Giải thưởng của mỗi hạng mục 1 lần duy nhất.
+              Mỗi cá nhân, tập thể chỉ có thể nhận Giải thưởng của mỗi hạng mục một lần duy nhất.
             </div>
             <div className="p-3 rounded-[8px] bg-white border border-[#E8F5E9]">
               <strong className="text-[#15803D] block mb-1">Khoản 4.1 Điều 4 · Thời gian tính thành tích:</strong>
-              Thành tích, mô hình, giải pháp, sáng kiến, đề tài, dự án đề nghị xét trao Giải thưởng được tính trong năm học xét trao cho đến thời điểm kết thúc nhận hồ sơ.
+              Thành tích, mô hình, giải pháp, sáng kiến, đề tài, dự án đề nghị xét trao Giải thưởng được tính trong năm học xét trao cho đến thời điểm kết thúc nhận hồ sơ đề nghị xét trao.
             </div>
             <div className="p-3 rounded-[8px] bg-white border border-[#E8F5E9]">
-              <strong className="text-[#15803D] block mb-1">Điều 9 · Số lượng giải thưởng tối đa:</strong>
-              Hằng năm xét trao tối đa 05 mô hình, giải pháp, sáng kiến (“Cánh chim ươm mầm”); 05 cá nhân tiêu biểu (“Cánh chim truyền lửa”); và 05 đề tài, dự án (“Cánh chim sáng tạo”).
+              <strong className="text-[#15803D] block mb-1">Điều 9 · Số lượng Giải thưởng:</strong>
+              Hằng năm, Hội đồng Giải thưởng xét, trao Giải thưởng cho:
+              <ul className="list-disc list-inside mt-1 space-y-0.5 text-[#475569]">
+                <li>05 mô hình, giải pháp, sáng kiến tiêu biểu nhất ở hạng mục “Cánh chim ươm mầm”.</li>
+                <li>05 cá nhân có thành tích xuất sắc nhất ở hạng mục “Cánh chim truyền lửa”.</li>
+                <li>05 dự án, đề tài tiêu biểu nhất ở hạng mục “Cánh chim sáng tạo”.</li>
+              </ul>
             </div>
           </div>
         </div>
 
         {/* Official Regulation Summary Cards */}
         <div className="bg-white rounded-[14px] border border-[#E2EEF6] p-5 grid grid-cols-1 md:grid-cols-3 gap-5 shadow-xs">
-          <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#E2EEF6]">
-            <div className="text-[12px] font-bold text-[#0D5C8C] uppercase tracking-wide">
-              Điều 5 · Thẩm quyền đề xuất xét trao
+          <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#E2EEF6] flex flex-col justify-between">
+            <div>
+              <div className="text-[12px] font-bold text-[#0D5C8C] uppercase tracking-wide mb-1.5">
+                Điều 5 · Thẩm quyền đề xuất xét trao
+              </div>
+              <ul className="text-[11.5px] text-[#475569] space-y-1.5 leading-relaxed list-disc list-inside">
+                <li>Ủy viên Ban Chấp hành Hội Sinh viên Việt Nam Đại học Đà Nẵng.</li>
+                <li>Ban Thư ký Hội Sinh viên Việt Nam các Trường Đại học thành viên Đại học Đà Nẵng; Ban Chủ nhiệm (hoặc tương đương) của các CLB/Đội/Nhóm trực thuộc Hội Sinh viên Việt Nam Đại học Đà Nẵng.</li>
+                <li>Ban Chấp hành Liên chi Hội; Ban Chủ nhiệm (hoặc tương đương) của các CLB/Đội/Nhóm trực thuộc Hội Sinh viên Việt Nam các Trường thành viên Đại học Đà Nẵng.</li>
+              </ul>
             </div>
-            <p className="text-[12px] text-[#475569] mt-1.5 leading-relaxed">
-              Tổ chức, cá nhân có thẩm quyền đề xuất xét trao Giải thưởng gồm: Ban Thường vụ/Ban Chấp hành Đoàn Thanh niên hoặc Ban Thư ký/Ban Chấp hành Hội Sinh viên trường thành viên, đơn vị trực thuộc; Chi hội trưởng/Đội trưởng đối với tập thể, cá nhân thuộc quyền quản lý; hoặc Ủy viên Ban Chấp hành Hội Sinh viên Việt Nam Đại học Đà Nẵng giới thiệu.
-            </p>
           </div>
-          <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#E2EEF6]">
-            <div className="text-[12px] font-bold text-[#0D5C8C] uppercase tracking-wide">
-              Điều 11 · Hình thức Giải thưởng
+          <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#E2EEF6] flex flex-col justify-between">
+            <div>
+              <div className="text-[12px] font-bold text-[#0D5C8C] uppercase tracking-wide mb-1.5">
+                Điều 11 · Hình thức Giải thưởng
+              </div>
+              <ol className="text-[11.5px] text-[#475569] space-y-1.5 leading-relaxed list-decimal list-inside">
+                <li>Một biểu trưng “Giải thưởng Cánh chim trắng” dành cho cá nhân, tập thể được giải tương ứng với hạng mục được trao.</li>
+                <li>Giấy khen của Ban Chấp hành Hội Sinh viên Việt Nam Đại học Đà Nẵng.</li>
+                <li>Phần thưởng bằng tiền mặt hoặc hiện vật (tùy thuộc vào nguồn xã hội hóa hằng năm).</li>
+              </ol>
             </div>
-            <p className="text-[12px] text-[#475569] mt-1.5 leading-relaxed">
-              Cá nhân, tập thể đạt giải được trao tặng Biểu trưng Giải thưởng “Cánh chim trắng”, Giấy khen của Ban Chấp hành Hội Sinh viên Việt Nam Đại học Đà Nẵng và tiền thưởng theo quy định.
-            </p>
           </div>
-          <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#E2EEF6]">
-            <div className="text-[12px] font-bold text-[#0D5C8C] uppercase tracking-wide">
-              Điều 7 · Quy trình & Thời hạn tiếp nhận
+          <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#E2EEF6] flex flex-col justify-between">
+            <div>
+              <div className="text-[12px] font-bold text-[#0D5C8C] uppercase tracking-wide mb-1.5">
+                Điều 7 · Quy trình & Thời hạn tiếp nhận
+              </div>
+              <p className="text-[11.5px] text-[#475569] leading-relaxed">
+                Hồ sơ đề nghị xét trao Giải thưởng gửi về Cơ quan Thường trực Giải thưởng (Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng) trước ngày 30/11 hằng năm để Cơ quan Thường trực thẩm định và trình Hội đồng xét duyệt.
+              </p>
             </div>
-            <p className="text-[12px] text-[#475569] mt-1.5 leading-relaxed">
-              Hồ sơ gửi về Cơ quan Thường trực Giải thưởng (Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng) trước ngày 30/11 hằng năm để Cơ quan Thường trực thẩm định và trình Hội đồng xét duyệt.
-            </p>
           </div>
         </div>
 

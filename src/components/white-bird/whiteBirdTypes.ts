@@ -102,12 +102,12 @@ export const WHITE_BIRD_CATEGORIES: Record<WhiteBirdCategory, WhiteBirdCategoryM
     dossierItems: [
       {
         code: 'WB01',
-        title: 'Văn bản đề nghị xét trao Giải thưởng của tổ chức, cá nhân có thẩm quyền theo Điều 5.',
+        title: 'Văn bản đề nghị xét trao Giải thưởng của các tổ chức, cá nhân nêu tại Điều 5 của Quy chế.',
         isOptional: false,
       },
       {
         code: 'WB02',
-        title: 'Báo cáo thuyết minh mô hình, giải pháp, sáng kiến, có minh chứng về tính hiệu quả và lời cam kết về tính sáng tạo, theo mẫu.',
+        title: 'Báo cáo thuyết minh mô hình, giải pháp, sáng kiến có minh chứng về tính hiệu quả và lời cam kết về tính sáng tạo (theo mẫu gửi kèm).',
         isOptional: false,
       },
       {
@@ -117,8 +117,8 @@ export const WHITE_BIRD_CATEGORIES: Record<WhiteBirdCategory, WhiteBirdCategoryM
       },
     ],
     dossierRequirementsSummary: [
-      'WB01: Văn bản đề nghị xét trao Giải thưởng của tổ chức, cá nhân có thẩm quyền theo Điều 5.',
-      'WB02: Báo cáo thuyết minh mô hình, giải pháp, sáng kiến, có minh chứng về tính hiệu quả và lời cam kết về tính sáng tạo, theo mẫu.',
+      'WB01: Văn bản đề nghị xét trao Giải thưởng của các tổ chức, cá nhân nêu tại Điều 5 của Quy chế.',
+      'WB02: Báo cáo thuyết minh mô hình, giải pháp, sáng kiến có minh chứng về tính hiệu quả và lời cam kết về tính sáng tạo (theo mẫu gửi kèm).',
       'WB03: Hình ảnh, sản phẩm minh họa (nếu có).',
     ],
     wb02Title: 'Báo cáo thuyết minh mô hình, giải pháp, sáng kiến & Cam kết tính sáng tạo',
@@ -161,24 +161,24 @@ export const WHITE_BIRD_CATEGORIES: Record<WhiteBirdCategory, WhiteBirdCategoryM
     dossierItems: [
       {
         code: 'WB01',
-        title: 'Văn bản đề nghị xét trao Giải thưởng của tổ chức, cá nhân có thẩm quyền theo Điều 5.',
+        title: 'Văn bản đề nghị xét trao Giải thưởng của các tổ chức, cá nhân nêu tại Điều 5 của Quy chế.',
         isOptional: false,
       },
       {
         code: 'WB02',
-        title: 'Báo cáo thành tích cá nhân theo mẫu.',
+        title: 'Báo cáo thành tích cá nhân (theo mẫu gửi kèm).',
         isOptional: false,
       },
       {
         code: 'WB03',
-        title: 'Tài liệu minh chứng thông tin chức vụ, thành tích.',
+        title: 'Tài liệu minh chứng về thông tin chức vụ, bằng khen, giấy khen và thành tích tiêu biểu.',
         isOptional: false,
       },
     ],
     dossierRequirementsSummary: [
-      'WB01: Văn bản đề nghị xét trao Giải thưởng của tổ chức, cá nhân có thẩm quyền theo Điều 5.',
-      'WB02: Báo cáo thành tích cá nhân theo mẫu.',
-      'WB03: Tài liệu minh chứng thông tin chức vụ, thành tích.',
+      'WB01: Văn bản đề nghị xét trao Giải thưởng của các tổ chức, cá nhân nêu tại Điều 5 của Quy chế.',
+      'WB02: Báo cáo thành tích cá nhân (theo mẫu gửi kèm).',
+      'WB03: Tài liệu minh chứng về thông tin chức vụ, bằng khen, giấy khen và thành tích tiêu biểu.',
     ],
     wb02Title: 'Báo cáo thành tích cá nhân theo mẫu',
     wb02CommitmentLabel:
@@ -197,47 +197,47 @@ export const WHITE_BIRD_CATEGORIES: Record<WhiteBirdCategory, WhiteBirdCategoryM
     standards: [
       {
         number: 1,
-        label: 'Tính đề xuất và triển khai mới',
-        text: 'Dự án khởi nghiệp đổi mới sáng tạo, đề tài nghiên cứu khoa học mới, do chính cá nhân hoặc tập thể đề xuất và triển khai.',
+        label: 'Tính mới và quyền tác giả',
+        text: 'Là dự án, đề tài mới do chính cá nhân, tập thể đó đề xuất và thực hiện, không vi phạm quyền tác giả.',
       },
       {
         number: 2,
-        label: 'Giải thưởng cấp ĐHĐN trở lên',
-        text: 'Đạt ít nhất 01 giải thưởng từ cấp Đại học Đà Nẵng trở lên tại các cuộc thi khởi nghiệp đổi mới sáng tạo hoặc nghiên cứu khoa học.',
+        label: 'Thành tích giải thưởng',
+        text: 'Dự án, đề tài đã tham gia và đạt ít nhất 01 giải thưởng tại các cuộc thi từ cấp Đại học Đà Nẵng trở lên.',
       },
       {
         number: 3,
-        label: 'Tính thiết thực & ứng dụng thực tế',
-        text: 'Có tính thiết thực, khả năng ứng dụng thực tế cao vào đời sống, sản xuất hoặc công tác chuyên môn.',
+        label: 'Tính thiết thực và ứng dụng',
+        text: 'Dự án, đề tài cần có tính thiết thực cao, có thể áp dụng đưa vào đời sống xã hội và phục vụ cộng đồng.',
       },
     ],
     dossierArticleRef: 'Khoản 6.3 Điều 6',
     dossierItems: [
       {
         code: 'WB01',
-        title: 'Văn bản đề nghị xét trao Giải thưởng của tổ chức, cá nhân có thẩm quyền theo Điều 5.',
+        title: 'Văn bản đề nghị xét trao Giải thưởng của các tổ chức, cá nhân nêu tại Điều 5 của Quy chế.',
         isOptional: false,
       },
       {
         code: 'WB02',
-        title: 'Báo cáo thuyết minh về dự án khởi nghiệp / đề tài NCKH kèm lời cam kết về bản quyền.',
+        title: 'Báo cáo thuyết minh dự án, đề tài nghiên cứu khoa học, khởi nghiệp có minh chứng về tính hiệu quả và lời cam kết về bản quyền (theo mẫu gửi kèm).',
         isOptional: false,
       },
       {
         code: 'WB03',
-        title: 'Minh chứng đạt giải thưởng từ cấp Đại học Đà Nẵng trở lên tại các cuộc thi liên quan và hiệu quả ứng dụng.',
+        title: 'Minh chứng đạt giải thưởng tại các cuộc thi liên quan.',
         isOptional: false,
       },
     ],
     dossierRequirementsSummary: [
-      'WB01: Văn bản đề nghị xét trao Giải thưởng của tổ chức, cá nhân có thẩm quyền theo Điều 5.',
-      'WB02: Báo cáo thuyết minh về dự án khởi nghiệp / đề tài NCKH kèm lời cam kết về bản quyền.',
-      'WB03: Minh chứng đạt giải thưởng từ cấp Đại học Đà Nẵng trở lên tại các cuộc thi liên quan và hiệu quả ứng dụng.',
+      'WB01: Văn bản đề nghị xét trao Giải thưởng của các tổ chức, cá nhân nêu tại Điều 5 của Quy chế.',
+      'WB02: Báo cáo thuyết minh dự án, đề tài nghiên cứu khoa học, khởi nghiệp có minh chứng về tính hiệu quả và lời cam kết về bản quyền (theo mẫu gửi kèm).',
+      'WB03: Minh chứng đạt giải thưởng tại các cuộc thi liên quan.',
     ],
-    wb02Title: 'Báo cáo thuyết minh Dự án khởi nghiệp / Đề tài NCKH & Cam kết bản quyền',
+    wb02Title: 'Báo cáo thuyết minh dự án, đề tài NCKH, khởi nghiệp & Cam kết bản quyền',
     wb02CommitmentLabel:
       'Tôi/nhóm tác giả cam kết bản quyền đối với dự án khởi nghiệp đổi mới sáng tạo / đề tài nghiên cứu khoa học kê khai trên theo đúng quy định tại Khoản 3 Điều 6 Quy chế Giải thưởng.',
-    wb03Title: 'Minh chứng đạt giải thưởng từ cấp Đại học Đà Nẵng trở lên tại các cuộc thi liên quan và hiệu quả ứng dụng',
+    wb03Title: 'Minh chứng đạt giải thưởng tại các cuộc thi liên quan',
   },
 };
 
