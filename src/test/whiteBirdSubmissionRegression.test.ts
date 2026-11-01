@@ -12,7 +12,11 @@ import {
   removeWhiteBirdEvidence,
   getAllWhiteBirdApplications,
 } from '../components/white-bird/whiteBirdStore.js';
-import { WhiteBirdApplication, WhiteBirdEvidenceItem } from '../components/white-bird/whiteBirdTypes.js';
+import {
+  WhiteBirdApplication,
+  WhiteBirdEvidenceItem,
+  isValidOptionalHttpUrl,
+} from '../components/white-bird/whiteBirdTypes.js';
 
 describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement Regression Suite', () => {
   function mockEv(id: string, name: string, fileType = 'pdf'): WhiteBirdEvidenceItem {
@@ -454,5 +458,118 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
     assert.strictEqual(sangTaoCol.nomineeType, 'COLLECTIVE');
     assert.strictEqual(validateWhiteBirdReadiness(sangTaoInd).totalRequired, 3);
     assert.strictEqual(validateWhiteBirdReadiness(sangTaoCol).totalRequired, 3);
+  });
+
+  it('14. URL Validation: isValidOptionalHttpUrl cho phép để trống, chấp nhận http/https hợp lệ, từ chối văn bản thô', () => {
+    assert.strictEqual(isValidOptionalHttpUrl(''), true, 'Empty string is valid optional URL');
+    assert.strictEqual(isValidOptionalHttpUrl('   '), true, 'Whitespace string is valid optional URL');
+    assert.strictEqual(isValidOptionalHttpUrl(undefined), true, 'undefined is valid optional URL');
+    assert.strictEqual(isValidOptionalHttpUrl(null), true, 'null is valid optional URL');
+    assert.strictEqual(isValidOptionalHttpUrl('https://udn.vn/nckh'), true, 'HTTPS URL is valid');
+    assert.strictEqual(isValidOptionalHttpUrl('http://startup.vn/demo'), true, 'HTTP URL is valid');
+    assert.strictEqual(isValidOptionalHttpUrl('https://drive.google.com/file/d/123/view'), true, 'Google Drive URL is valid');
+
+    // Invalid non-URL strings
+    assert.strictEqual(isValidOptionalHttpUrl('không có link'), false, 'Plain text is rejected');
+    assert.strictEqual(isValidOptionalHttpUrl('udn.vn/demo'), false, 'Missing protocol is rejected');
+    assert.strictEqual(isValidOptionalHttpUrl('ftp://ftp.example.com'), false, 'FTP protocol is rejected');
+    assert.strictEqual(isValidOptionalHttpUrl('file:///C:/test.pdf'), false, 'File protocol is rejected');
+  });
+
+  it('15. Cánh chim sáng tạo: Ô liên kết WB03 có văn bản sai định dạng URL sẽ bị chặn nộp; khi sửa đúng URL hoặc xóa trống thì nộp thành công', () => {
+    const app = createTestApplication('SANG_TAO', 'INDIVIDUAL');
+
+    updateWhiteBirdWB01(app.id, {
+      nominatingUnitName: 'Ban Thư ký Hội Sinh viên Trường ĐH Sư phạm Kỹ thuật',
+      endorsementSummary: 'Đề tài xuất sắc',
+    });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('st15-wb01', 'Van_ban_gioi_thieu.pdf'));
+
+    updateWhiteBirdWB02(app.id, {
+      reportTitle: 'Hệ thống cảm biến đo nồng độ bụi mịn PM2.5 sử dụng năng lượng mặt trời',
+      implementationPeriod: 'Năm học 2025–2026',
+      contextAndObjectives: 'Ô nhiễm không khí tại các khu công nghiệp',
+      solutionAndExecution: 'Thiết kế node cảm biến IoT năng lượng mặt trời',
+      impactAndResults: 'Cung cấp dữ liệu quan trắc liên tục cho thành phố',
+      commitmentConfirmed: true,
+    });
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('st15-wb02', 'Bao_cao_thuyet_minh.pdf'));
+
+    // Set WB03 with invalid URL (regular plain text)
+    updateWhiteBirdWB03(app.id, {
+      highestAwardLevel: 'Cấp Toàn quốc / Trung ương',
+      awardOrRecognitionSummary: 'Giải Ba Cuộc thi Ý tưởng Khởi nghiệp Sáng tạo Sinh viên Toàn quốc năm 2025',
+      mediaAndProductLinks: 'Bài viết đăng trên báo Giáo dục và Thời đại', // Invalid text, not URL!
+    });
+    addWhiteBirdEvidence(app.id, 'WB03', mockEv('st15-wb03', 'Chung_nhan_giai_ba.pdf'));
+
+    let updated = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    let readiness = validateWhiteBirdReadiness(updated);
+
+    assert.strictEqual(readiness.wb03Ready, false, 'WB03 must be not ready due to invalid URL');
+    assert.strictEqual(readiness.canSubmit, false, 'Cannot submit when URL format is invalid');
+    assert.ok(
+      readiness.missingReasons.some((r) => r.includes('định dạng URL')),
+      'Must contain missing reason about invalid URL format'
+    );
+
+    // Now fix: clear the optional URL field (empty string)
+    updateWhiteBirdWB03(app.id, {
+      mediaAndProductLinks: '',
+    });
+    updated = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    readiness = validateWhiteBirdReadiness(updated);
+
+    assert.strictEqual(readiness.wb03Ready, true, 'WB03 must be ready when optional URL is empty');
+    assert.strictEqual(readiness.canSubmit, true, 'Can submit when optional URL is empty');
+
+    // Or set a valid HTTPS URL
+    updateWhiteBirdWB03(app.id, {
+      mediaAndProductLinks: 'https://giaoducthoidai.vn/trao-giai-khoi-nghiep-sinh-vien-2025',
+    });
+    updated = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    readiness = validateWhiteBirdReadiness(updated);
+
+    assert.strictEqual(readiness.wb03Ready, true, 'WB03 must be ready with valid URL');
+    assert.strictEqual(readiness.canSubmit, true, 'Can submit with valid URL');
+    assert.strictEqual(readiness.readyCount, 3);
+
+    const submitRes = submitWhiteBirdApplication(app.id);
+    assert.strictEqual(submitRes.success, true);
+  });
+
+  it('16. Cánh chim sáng tạo Tập thể: Danh sách thành viên nhóm coAuthorsOrTeamMembers là thông tin hỗ trợ, không bắt buộc chặn nộp nếu để trống', () => {
+    const app = createTestApplication('SANG_TAO', 'COLLECTIVE');
+
+    updateWhiteBirdWB01(app.id, {
+      nominatingUnitName: 'Ban Thư ký Hội Sinh viên Trường ĐH Bách khoa',
+      endorsementSummary: 'Đề tài sáng tạo xuất sắc',
+    });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('st16-wb01', 'Van_ban_gioi_thieu.pdf'));
+
+    // WB02 without coAuthorsOrTeamMembers (left blank)
+    updateWhiteBirdWB02(app.id, {
+      reportTitle: 'Dự án Nền tảng học tập số thông minh cho học sinh miền núi',
+      implementationPeriod: 'Năm học 2025–2026',
+      contextAndObjectives: 'Bối cảnh chuyển đổi số giáo dục vùng khó khăn',
+      solutionAndExecution: 'Phát triển nền tảng học ngoại tuyến trên Raspberry Pi',
+      impactAndResults: 'Triển khai tại 12 điểm trường',
+      leadRepresentative: 'Nguyễn Văn A (Trưởng nhóm)',
+      coAuthorsOrTeamMembers: '', // Left blank!
+      commitmentConfirmed: true,
+    });
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('st16-wb02', 'Bao_cao_thuyet_minh.pdf'));
+
+    updateWhiteBirdWB03(app.id, {
+      highestAwardLevel: 'Cấp Bộ / Ngành',
+      awardOrRecognitionSummary: 'Giải Nhất Cuộc thi Khoa học Kỹ thuật cấp Bộ',
+    });
+    addWhiteBirdEvidence(app.id, 'WB03', mockEv('st16-wb03', 'Giay_khen_bo.pdf'));
+
+    const updated = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    const readiness = validateWhiteBirdReadiness(updated);
+
+    assert.strictEqual(readiness.wb02Ready, true, 'WB02 should be ready even if team members list is empty');
+    assert.strictEqual(readiness.canSubmit, true, 'Collective dossier can submit without mandatory team members list');
   });
 });

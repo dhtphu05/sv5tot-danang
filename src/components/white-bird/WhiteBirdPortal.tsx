@@ -54,6 +54,7 @@ import {
   WhiteBirdCategory,
   WhiteBirdNominatingUnitType,
   WhiteBirdRequirementId,
+  isValidOptionalHttpUrl,
 } from './whiteBirdTypes';
 import {
   getAllWhiteBirdApplications,
@@ -1021,7 +1022,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     ? (readiness.wb03HasData
                         ? 'Hồ sơ đã hoàn tất 2/2 thành phần bắt buộc (WB01, WB02) và đã đính kèm tài liệu minh họa (WB03).'
                         : 'Hồ sơ đã hoàn tất 2/2 thành phần bắt buộc (WB01, WB02). Bạn có thể nộp ngay hoặc bổ sung hình ảnh, sản phẩm minh họa ở WB03 (không bắt buộc).')
-                    : 'Hồ sơ đã đáp ứng đầy đủ 3 thành phần theo Điều 6 Quy chế Giải thưởng Cánh chim trắng.'}
+                    : activeApp.category === 'SANG_TAO'
+                    ? 'Đã hoàn thành kê khai 3/3 thành phần hồ sơ theo Khoản 6.3 Điều 6. Nội dung và minh chứng sẽ được kiểm tra khi thẩm định.'
+                    : 'Đã hoàn thành kê khai 3/3 thành phần hồ sơ theo Khoản 6.2 Điều 6. Nội dung và minh chứng sẽ được kiểm tra khi thẩm định.'}
                 </p>
               )}
             </div>
@@ -1435,6 +1438,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   : (activeApp.preparedByUserEmail || currentEmail || studentProfileSnapshot?.email || '');
 
                 const presentationLink = wb02Data.presentationLink || '';
+                const wb03Data = activeApp.requirements.wb03;
 
                 // Kiểm tra 4 tiêu chuẩn để hiển thị khuyến nghị rà soát (không hard-block submission)
                 const missingStandards: { id: string; name: string }[] = [];
@@ -1918,6 +1922,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   : (activeApp.preparedByUserEmail || currentEmail || studentProfileSnapshot?.email || '');
 
                 const presentationLink = wb02Data.presentationLink || '';
+                const wb03Data = activeApp.requirements.wb03;
 
                 // Kiểm tra các nội dung thuyết minh bắt buộc của Cánh chim sáng tạo
                 const missingStandardsST: { id: string; name: string }[] = [];
@@ -1991,11 +1996,11 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                               implementationPeriod: e.target.value,
                             })
                           }
-                          placeholder="VD: Tháng 09/2024 – Tháng 05/2026 hoặc Năm học 2025–2026"
+                          placeholder={`VD: Tháng 09/... – Tháng 05/... trong năm học ${activeApp.academicYear || '2025–2026'}`}
                           className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
                         />
                         <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
-                          * Căn cứ Khoản 4.1 Điều 4, thành tích được tính trong năm học xét trao ({activeApp.academicYear || '2025–2026'}) cho đến thời điểm kết thúc nhận hồ sơ.
+                          * Căn cứ Khoản 4.1 Điều 4, thời gian triển khai do người kê khai ghi nhận thực tế; Hội đồng xét duyệt sẽ đối chiếu với thời gian tính thành tích trong năm học xét trao ({activeApp.academicYear || '2025–2026'}).
                         </p>
                       </div>
                     </div>
@@ -2146,10 +2151,20 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
 
                       {/* Liên kết slide / video thuyết minh */}
                       <div>
-                        <div className="md:min-h-[2rem] flex items-end pb-1.5">
+                        <div className="md:min-h-[2rem] flex items-end justify-between pb-1.5 gap-2">
                           <label htmlFor="wb02-st-presentation-link" className="text-[12.5px] font-bold text-[#172A3A] select-none">
                             Liên kết bài trình bày / slide thuyết minh / video demo sản phẩm (nếu có)
                           </label>
+                          {presentationLink.trim() && isValidOptionalHttpUrl(presentationLink) && (
+                            <a
+                              href={presentationLink.trim()}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[11.5px] font-semibold text-[#0D78AE] hover:underline inline-flex items-center gap-1"
+                            >
+                              <span>Mở liên kết ↗</span>
+                            </a>
+                          )}
                         </div>
                         <input
                           id="wb02-st-presentation-link"
@@ -2161,21 +2176,32 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             })
                           }
                           placeholder="https://drive.google.com/... hoặc link Canva / Slide / Video demo"
-                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                          className={`w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border rounded-[9px] focus:outline-none ${
+                            presentationLink.trim() && !isValidOptionalHttpUrl(presentationLink)
+                              ? 'border-[#E11D48] bg-rose-50/20 focus:border-[#E11D48]'
+                              : 'border-[#C8D9E6] focus:border-[#0D78AE]'
+                          }`}
                         />
-                        <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
-                          Liên kết slide trình chiếu (Canva, PowerPoint Online, Google Slides) hoặc video giới thiệu sản phẩm, giải pháp. Vui lòng mở quyền xem cho Hội đồng xét duyệt.
-                        </p>
+                        {presentationLink.trim() && !isValidOptionalHttpUrl(presentationLink) ? (
+                          <p className="text-[11.5px] text-[#E11D48] mt-1 font-medium flex items-center gap-1">
+                            <AlertCircle size={13} className="shrink-0" />
+                            <span>Định dạng liên kết không hợp lệ. Vui lòng nhập URL bắt đầu bằng http:// hoặc https:// (hoặc để trống nếu không có liên kết).</span>
+                          </p>
+                        ) : (
+                          <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
+                            Liên kết slide trình chiếu (Canva, PowerPoint Online, Google Slides) hoặc video giới thiệu sản phẩm, giải pháp. Vui lòng mở quyền xem cho Hội đồng xét duyệt.
+                          </p>
+                        )}
                       </div>
 
                       {/* Danh sách thành viên nhóm tác giả (Textarea toàn chiều rộng, tự điều chỉnh chiều cao) */}
                       {activeApp.nomineeType === 'COLLECTIVE' && (
                         <div className="space-y-1 pt-1 border-t border-[#EDF3F8]">
                           <label htmlFor="wb02-st-team-members" className="block text-[12.5px] font-bold text-[#172A3A]">
-                            Danh sách thành viên nhóm tác giả / nhóm dự án <span className="text-red-500">*</span>
+                            Danh sách thành viên nhóm tác giả / nhóm dự án (nếu có)
                           </label>
                           <p className="text-[11.5px] text-[#64748B] leading-snug">
-                            Họ và tên – MSSV – Vai trò – Đơn vị (mỗi thành viên một dòng; không cần nhập lại người chịu trách nhiệm chính).
+                            Họ và tên – MSSV – Vai trò – Đơn vị (mỗi thành viên một dòng; thông tin hỗ trợ rà soát danh sách nhóm, không bắt buộc nếu hồ sơ tập thể đã có quyết định thành lập nhóm riêng).
                           </p>
                           <AutoResizeTextarea
                             id="wb02-st-team-members"
@@ -2317,11 +2343,27 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       {/* Mục 4: Các giải thưởng đã đạt được (Tái sử dụng dữ liệu WB03) */}
                       <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#DCE7EE] text-[12.5px] leading-relaxed flex items-start gap-2.5">
                         <Info size={16} className="text-[#0D78AE] shrink-0 mt-0.5" />
-                        <div className="space-y-1">
+                        <div className="space-y-1.5 flex-1">
                           <span className="font-bold text-[#172A3A]">4. Các giải thưởng đã đạt được (Từ cấp Đại học Đà Nẵng trở lên)</span>
                           <p className="text-[12px] text-[#475569]">
-                            Căn cứ Điểm b khoản 4.2 Điều 4 và Khoản 6.3 Điều 6, thông tin về các giải thưởng NCKH, Khởi nghiệp đã đạt được từ cấp Đại học Đà Nẵng trở lên được kê khai chi tiết kèm tệp minh chứng công nhận tại <strong>Thành phần WB03</strong> (tránh kê khai trùng lặp).
+                            Căn cứ Điểm b khoản 4.2 Điều 4 và Khoản 6.3 Điều 6, thông tin về các giải thưởng NCKH, Khởi nghiệp đã đạt được từ cấp Đại học Đà Nẵng trở lên được kê khai chi tiết kèm tệp minh chứng công nhận tại <strong>Thành phần WB03</strong> (không cần kê khai lại thông tin trùng lặp tại đây).
                           </p>
+                          {wb03Data.awardOrRecognitionSummary?.trim() ? (
+                            <div className="mt-2 p-2.5 rounded-[8px] bg-white border border-[#CBE4F5] text-[12px] text-[#0B3B5B]">
+                              <span className="font-semibold block text-[#0D78AE] mb-0.5">Dữ liệu tham chiếu từ WB03:</span>
+                              <span className="font-medium text-[#1E293B]">{wb03Data.awardOrRecognitionSummary}</span>
+                              {wb03Data.highestAwardLevel && (
+                                <span className="block mt-1 text-[11.5px] text-[#64748B]">
+                                  Cấp công nhận giải: <strong className="text-[#172A3A]">{wb03Data.highestAwardLevel}</strong>
+                                  {wb03Data.decisionNumbersAndDates ? ` · Quyết định / Giấy chứng nhận: ${wb03Data.decisionNumbersAndDates}` : ''}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-[11.5px] text-[#94A3B8] italic pt-0.5">
+                              Chưa có thông tin giải thưởng tại WB03. Bạn có thể mở WB03 để kê khai tên cuộc thi và đính kèm giấy chứng nhận đạt giải.
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -2622,8 +2664,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         <p>
                           Đề tài nghiên cứu khoa học / dự án khởi nghiệp phải đạt <strong>ít nhất 01 giải thưởng tại các cuộc thi từ cấp Đại học Đà Nẵng trở lên</strong> (cấp ĐHĐN, cấp Thành phố/Tỉnh, cấp Bộ/Ngành, cấp Quốc gia hoặc Quốc tế).
                         </p>
-                        <p className="text-[11.5px] text-[#64748B]">
-                          Lưu ý: Giấy chứng nhận tham gia cuộc thi không được tính là minh chứng đạt giải. Hồ sơ bắt buộc phải đính kèm scan Quyết định khen thưởng hoặc Giấy chứng nhận đạt giải chính thức.
+                        <p className="text-[11.5px] text-[#475569]">
+                          Đính kèm quyết định công nhận giải thưởng, giấy chứng nhận đạt giải hoặc tài liệu kết quả chính thức do đơn vị tổ chức công bố, thể hiện rõ cuộc thi, giải thưởng và cá nhân/nhóm đạt giải. Minh chứng sẽ được cơ quan xét duyệt kiểm tra, đối chiếu.
                         </p>
                       </div>
                     </div>
@@ -2633,11 +2675,12 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       <div>
                         <div className="md:min-h-[2.25rem] flex items-end pb-1.5">
                           <label htmlFor="wb03-st-award-level" className="text-[12.5px] font-bold text-[#172A3A] select-none">
-                            Cấp tổ chức cuộc thi / cấp giải thưởng đạt được <span className="text-red-500">*</span>
+                            Cấp công nhận giải thưởng (Phạm vi giải) <span className="text-red-500">*</span>
                           </label>
                         </div>
                         <input
                           id="wb03-st-award-level"
+                          list="wb03-st-award-levels-list"
                           disabled={isReadOnly}
                           value={wb03Data.highestAwardLevel}
                           onChange={(e) =>
@@ -2645,12 +2688,28 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                               highestAwardLevel: e.target.value,
                             })
                           }
-                          placeholder="VD: Cấp Đại học Đà Nẵng / Cấp Thành phố / Cấp Bộ GD&ĐT / Cấp Quốc gia"
+                          placeholder="Chọn hoặc nhập cấp công nhận giải thưởng..."
                           className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
                         />
+                        <datalist id="wb03-st-award-levels-list">
+                          <option value="Cấp Đại học Đà Nẵng" />
+                          <option value="Cấp Thành phố / Tỉnh" />
+                          <option value="Cấp Bộ / Ngành (Bộ GD&ĐT, Bộ KH&CN...)" />
+                          <option value="Cấp Toàn quốc / Trung ương (TW Đoàn, TW Hội Sinh viên...)" />
+                          <option value="Cấp Quốc tế" />
+                        </datalist>
                         <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
-                          Chỉ tính các giải thưởng từ cấp Đại học Đà Nẵng trở lên theo Quy chế.
+                          Phân biệt cấp công nhận giải thưởng với đơn vị tổ chức (ví dụ cuộc thi do TW Hội Sinh viên VN tổ chức có thể trao giải Cấp Toàn quốc hoặc giải khu vực; vui lòng đối chiếu đúng văn bản/chứng nhận đạt giải đính kèm).
                         </p>
+                        {wb03Data.highestAwardLevel &&
+                          ['khoa', 'trường', 'viện', 'clb'].some((kw) =>
+                            wb03Data.highestAwardLevel.toLowerCase().includes(kw)
+                          ) && (
+                            <p className="text-[11px] text-[#B45309] mt-1 font-medium bg-[#FFFBEB] p-1.5 rounded border border-[#FDE68A] flex items-center gap-1">
+                              <AlertCircle size={12} className="shrink-0" />
+                              <span>Lưu ý đối chiếu: Điểm b khoản 4.2 Điều 4 yêu cầu giải thưởng phải từ cấp Đại học Đà Nẵng trở lên. Cán bộ thẩm định sẽ đối chiếu với văn bản công nhận chính thức.</span>
+                            </p>
+                          )}
                       </div>
 
                       <div>
@@ -2694,7 +2753,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             awardOrRecognitionSummary: e.target.value,
                           })
                         }
-                        placeholder="VD: Đạt Giải Nhất Cuộc thi Sinh viên Nghiên cứu Khoa học cấp Đại học Đà Nẵng năm học 2025–2026 theo Quyết định số 412/QĐ-ĐHĐN ngày 19/05/2026 của Giám đốc Đại học Đà Nẵng. Đề tài được Hội đồng chuyên môn đánh giá xuất sắc về tính sáng tạo và khả năng ứng dụng thực tế."
+                        placeholder={`VD: Đạt Giải Nhất Cuộc thi Sinh viên Nghiên cứu Khoa học cấp Đại học Đà Nẵng năm học ${activeApp.academicYear || '2025–2026'} theo Quyết định số 412/QĐ-ĐHĐN ngày 19/05/2026 của Giám đốc Đại học Đà Nẵng. Đề tài được Hội đồng chuyên môn đánh giá xuất sắc về tính sáng tạo và khả năng ứng dụng thực tế.`}
                       />
                       <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
                         Nêu rõ tên cuộc thi, cơ quan tổ chức, hạng giải (Nhất, Nhì, Ba, Khuyến khích, Giải thưởng chuyên đề) và tóm tắt quyết định công nhận.
@@ -2703,9 +2762,21 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
 
                     {/* Row 3: Product / Media Links */}
                     <div>
-                      <label htmlFor="wb03-st-links" className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
-                        Liên kết bài viết, trang tra cứu kết quả cuộc thi, video demo hoặc hình ảnh trao giải (nếu có)
-                      </label>
+                      <div className="flex items-center justify-between pb-1.5 gap-2">
+                        <label htmlFor="wb03-st-links" className="text-[12.5px] font-bold text-[#172A3A] select-none">
+                          Liên kết bài viết, trang tra cứu kết quả cuộc thi, video demo hoặc hình ảnh trao giải (nếu có)
+                        </label>
+                        {wb03Data.mediaAndProductLinks?.trim() && isValidOptionalHttpUrl(wb03Data.mediaAndProductLinks) && (
+                          <a
+                            href={wb03Data.mediaAndProductLinks.trim()}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[11.5px] font-semibold text-[#0D78AE] hover:underline inline-flex items-center gap-1"
+                          >
+                            <span>Mở liên kết ↗</span>
+                          </a>
+                        )}
+                      </div>
                       <input
                         id="wb03-st-links"
                         disabled={isReadOnly}
@@ -2716,8 +2787,22 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           })
                         }
                         placeholder="VD: https://udn.vn/tin-tuc/trao-giai-nckh-2026..."
-                        className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                        className={`w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border rounded-[9px] focus:outline-none ${
+                          wb03Data.mediaAndProductLinks?.trim() && !isValidOptionalHttpUrl(wb03Data.mediaAndProductLinks)
+                            ? 'border-[#E11D48] bg-rose-50/20 focus:border-[#E11D48]'
+                            : 'border-[#C8D9E6] focus:border-[#0D78AE]'
+                        }`}
                       />
+                      {wb03Data.mediaAndProductLinks?.trim() && !isValidOptionalHttpUrl(wb03Data.mediaAndProductLinks) ? (
+                        <p className="text-[11.5px] text-[#E11D48] mt-1 font-medium flex items-center gap-1">
+                          <AlertCircle size={13} className="shrink-0" />
+                          <span>Định dạng liên kết không hợp lệ. Vui lòng nhập URL bắt đầu bằng http:// hoặc https:// (hoặc để trống nếu không có liên kết).</span>
+                        </p>
+                      ) : (
+                        <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
+                          Trường không bắt buộc. Hỗ trợ liên kết bài viết công bố kết quả, bài báo khoa học hoặc video giới thiệu sản phẩm.
+                        </p>
+                      )}
                     </div>
 
                     {/* Row 4: Practical Note */}
@@ -2883,18 +2968,10 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     ) : activeReqId === 'WB02' && activeApp.category === 'SANG_TAO' ? (
                       <>
                         <p>
-                          Theo <strong>Khoản 6.3 Điều 6</strong>, hồ sơ WB02 bao gồm các tài liệu đính kèm:
+                          Theo <strong>Khoản 6.3 Điều 6</strong>, đính kèm tệp Báo cáo thuyết minh theo mẫu quy định (bao gồm nội dung thuyết minh tính hiệu quả và lời cam kết về bản quyền). Nếu một tệp báo cáo PDF/DOCX đã tích hợp đầy đủ các nội dung theo mẫu thì không bắt buộc phải tách thành nhiều tệp riêng lẻ.
                         </p>
-                        <ul className="list-disc pl-4 space-y-0.5 text-[#334155]">
-                          <li>
-                            <strong>1. Báo cáo thuyết minh dự án/đề tài theo mẫu:</strong> Bản PDF hoặc DOCX hoàn chỉnh kèm lời cam kết về bản quyền theo Mẫu báo cáo quy định.
-                          </li>
-                          <li>
-                            <strong>2. Minh chứng về tính hiệu quả:</strong> Biên bản nghiệm thu, văn bản ghi nhận áp dụng/chuyển giao thực tế, kết quả thử nghiệm hoặc đánh giá chuyên môn.
-                          </li>
-                        </ul>
                         <p className="text-[11px] text-[#64748B] pt-0.5">
-                          Hỗ trợ tệp PDF, JPG, PNG, DOCX, XLSX (Tối đa 25MB/tệp).
+                          Hỗ trợ tệp PDF, JPG, PNG, DOCX, XLSX (Tối đa 25MB/tệp). Minh chứng sẽ được cơ quan xét duyệt kiểm tra, đối chiếu nội dung chuyên môn.
                         </p>
                       </>
                     ) : activeReqId === 'WB03' && activeApp.category === 'UOM_MAM' ? (
@@ -2904,10 +2981,10 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     ) : activeReqId === 'WB03' && activeApp.category === 'SANG_TAO' ? (
                       <>
                         <p>
-                          Theo <strong>Điểm b khoản 4.2 Điều 4 và Khoản 6.3 Điều 6</strong>, đính kèm bản scan <strong>Quyết định khen thưởng</strong> hoặc <strong>Giấy chứng nhận đạt giải</strong> tại các cuộc thi từ cấp Đại học Đà Nẵng trở lên.
+                          Đính kèm quyết định công nhận giải thưởng, giấy chứng nhận đạt giải hoặc tài liệu kết quả chính thức do đơn vị tổ chức công bố, thể hiện rõ cuộc thi, giải thưởng và cá nhân/nhóm đạt giải. Minh chứng sẽ được cơ quan xét duyệt kiểm tra, đối chiếu.
                         </p>
                         <p className="text-[11px] text-[#64748B] pt-0.5">
-                          Bắt buộc ít nhất 01 tệp scan hợp lệ có dấu đỏ/chữ ký chính thức. Hỗ trợ tệp PDF, JPG, PNG (Tối đa 25MB/tệp).
+                          Hỗ trợ tệp PDF, JPG, PNG, DOCX (Tối đa 25MB/tệp). Giải thưởng phải từ cấp Đại học Đà Nẵng trở lên theo Điểm b khoản 4.2 Điều 4 Quy chế.
                         </p>
                       </>
                     ) : (
@@ -2954,7 +3031,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       ) : activeReqId === 'WB03' && activeApp.category === 'SANG_TAO' ? (
                         <span>
                           Chưa có tệp minh chứng đạt giải nào cho WB03. Nhấn{' '}
-                          <strong>“Tải minh chứng đạt giải WB03”</strong> để đính kèm bản scan Quyết định khen thưởng hoặc Giấy chứng nhận đạt giải từ cấp Đại học Đà Nẵng trở lên (bắt buộc).
+                          <strong>“Tải minh chứng đạt giải WB03”</strong> để đính kèm quyết định công nhận giải thưởng, giấy chứng nhận đạt giải hoặc tài liệu kết quả chính thức từ cấp Đại học Đà Nẵng trở lên.
                         </span>
                       ) : (
                         <span>
@@ -3031,7 +3108,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
               <p className="text-[12.5px] text-[#607483]">
                 {activeApp.category === 'UOM_MAM'
                   ? 'Tổng hợp toàn bộ văn bản đề nghị (WB01), báo cáo thuyết minh & tài liệu minh chứng tính hiệu quả (WB02) cùng hình ảnh, sản phẩm minh họa nếu có (WB03).'
-                  : 'Tổng hợp toàn bộ văn bản đề nghị (WB01), báo cáo thành tích (WB02) và hồ sơ minh chứng khen thưởng / giải thưởng (WB03).'}
+                  : activeApp.category === 'SANG_TAO'
+                  ? 'Tổng hợp toàn bộ văn bản đề nghị xét trao (WB01), báo cáo thuyết minh dự án/đề tài và tài liệu minh chứng tính hiệu quả, cam kết bản quyền (WB02) cùng minh chứng đạt giải thưởng tại các cuộc thi liên quan (WB03).'
+                  : 'Tổng hợp toàn bộ văn bản đề nghị xét trao (WB01), báo cáo thành tích cá nhân nhiều năm liền (WB02) và tài liệu minh chứng chức vụ, bằng khen, thành tích tiêu biểu (WB03).'}
               </p>
             </div>
           </div>
@@ -3052,6 +3131,21 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       {file.reqId}
                     </span>
                     <div className="min-w-0 flex-1">
+                      <div className="text-[11px] font-semibold text-[#0D78AE] mb-0.5">
+                        {file.reqId === 'WB01'
+                          ? 'Văn bản đề nghị xét trao'
+                          : file.reqId === 'WB02'
+                          ? activeApp.category === 'SANG_TAO'
+                            ? 'Báo cáo thuyết minh dự án/đề tài và tài liệu minh chứng tính hiệu quả, cam kết bản quyền'
+                            : activeApp.category === 'UOM_MAM'
+                            ? 'Báo cáo thuyết minh mô hình và tài liệu minh chứng tính hiệu quả'
+                            : 'Báo cáo thành tích cá nhân theo mẫu'
+                          : activeApp.category === 'SANG_TAO'
+                          ? 'Minh chứng đạt giải thưởng tại các cuộc thi liên quan'
+                          : activeApp.category === 'UOM_MAM'
+                          ? 'Hình ảnh, sản phẩm minh họa (nếu có)'
+                          : 'Tài liệu minh chứng về thông tin chức vụ, bằng khen và thành tích tiêu biểu'}
+                      </div>
                       <div className="text-[13px] font-bold text-[#172A3A] break-words leading-snug">
                         {file.name}
                       </div>
@@ -3111,14 +3205,24 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
               </span>
               <h2 className="text-[17px] font-extrabold text-[#172A3A] mt-0.5">
                 {activeApp.status === 'draft'
-                  ? 'Hồ sơ chưa nộp · Chưa có kết quả xét duyệt'
+                  ? (readiness.canSubmit
+                      ? 'Hồ sơ đã hoàn thành kê khai · Sẵn sàng nộp'
+                      : 'Bản nháp đang kê khai · Chưa đủ điều kiện nộp')
                   : statusBadge.label}
               </h2>
               <p className="text-[13px] text-[#55697B] mt-1 leading-relaxed">
                 {activeApp.status === 'draft'
-                  ? (activeApp.category === 'UOM_MAM'
-                      ? 'Hồ sơ hiện đang ở trạng thái bản nháp. Vui lòng hoàn tất 2 thành phần bắt buộc (WB01, WB02) và nhấn “Nộp hồ sơ Giải thưởng” để chuyển hồ sơ về Cơ quan Thường trực (Văn phòng Hội Sinh viên ĐHĐN). Thành phần WB03 là tài liệu minh họa tùy chọn nếu có.'
-                      : 'Hồ sơ hiện đang ở trạng thái bản nháp. Vui lòng hoàn tất đủ các thành phần WB01, WB02, WB03 và nhấn “Nộp hồ sơ Giải thưởng” để gửi về Cơ quan Thường trực (Văn phòng Hội Sinh viên ĐHĐN).')
+                  ? (readiness.canSubmit
+                      ? (activeApp.category === 'SANG_TAO'
+                          ? 'Hồ sơ đã hoàn thành kê khai 3/3 thành phần bắt buộc nhưng chưa được nộp. Vui lòng kiểm tra và xác nhận nộp để gửi đến Cơ quan Thường trực Giải thưởng.'
+                          : activeApp.category === 'UOM_MAM'
+                          ? 'Hồ sơ đã hoàn thành kê khai 2/2 thành phần bắt buộc (WB01, WB02) nhưng chưa được nộp. Vui lòng kiểm tra và xác nhận nộp để gửi đến Cơ quan Thường trực Giải thưởng (WB03 là thành phần tùy chọn nếu có).'
+                          : 'Hồ sơ đã hoàn thành kê khai 3/3 thành phần bắt buộc nhưng chưa được nộp. Vui lòng kiểm tra và xác nhận nộp để gửi đến Cơ quan Thường trực Giải thưởng.')
+                      : (activeApp.category === 'UOM_MAM'
+                          ? 'Hồ sơ hiện đang ở trạng thái bản nháp. Vui lòng hoàn tất 2 thành phần bắt buộc (WB01, WB02) và nhấn “Nộp hồ sơ Giải thưởng” để chuyển hồ sơ về Cơ quan Thường trực (Văn phòng Hội Sinh viên ĐHĐN). Thành phần WB03 là tài liệu minh họa tùy chọn nếu có.'
+                          : activeApp.category === 'SANG_TAO'
+                          ? 'Hồ sơ hiện đang ở trạng thái bản nháp. Vui lòng hoàn tất đủ 3 thành phần WB01, WB02, WB03 theo Khoản 6.3 Điều 6 và nhấn “Nộp hồ sơ Giải thưởng” để gửi về Cơ quan Thường trực (Văn phòng Hội Sinh viên ĐHĐN).'
+                          : 'Hồ sơ hiện đang ở trạng thái bản nháp. Vui lòng hoàn tất đủ các thành phần WB01, WB02, WB03 và nhấn “Nộp hồ sơ Giải thưởng” để gửi về Cơ quan Thường trực (Văn phòng Hội Sinh viên ĐHĐN).'))
                   : activeApp.status === 'recognized'
                   ? `Chúc mừng! Đề cử "${activeApp.nominationTitle}" (${categoryMeta.name}) đã được Hội đồng xét duyệt cấp Đại học Đà Nẵng quyết định trao Giải thưởng “Cánh chim trắng” (${
                       activeApp.decisionNumber || 'Quyết định của Ban Thư ký HSV ĐHĐN'
@@ -3128,14 +3232,25 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   : 'Hồ sơ đề cử đã được tiếp nhận tại Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng (Cơ quan Thường trực Giải thưởng) để thẩm định và trình Hội đồng xét duyệt Giải thưởng Cánh chim trắng.'}
               </p>
               {activeApp.status === 'draft' && (
-                <div className="pt-2">
-                  <Button
-                    type="button"
-                    variant="primary"
-                    onClick={() => setActiveTab('workspace')}
-                  >
-                    Mở không gian kê khai hồ sơ →
-                  </Button>
+                <div className="pt-2 flex items-center gap-2.5">
+                  {readiness.canSubmit ? (
+                    <Button
+                      type="button"
+                      variant="primary"
+                      onClick={handleSubmitDossier}
+                    >
+                      <Send size={15} className="mr-1.5" />
+                      Xác nhận nộp hồ sơ Giải thưởng ({readiness.readyCount}/{readiness.totalRequired})
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="primary"
+                      onClick={() => setActiveTab('workspace')}
+                    >
+                      Mở không gian kê khai hồ sơ →
+                    </Button>
+                  )}
                 </div>
               )}
               {(activeApp.councilNote || activeApp.decisionNumber) && (

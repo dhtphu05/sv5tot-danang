@@ -243,6 +243,22 @@ export const WHITE_BIRD_CATEGORIES: Record<WhiteBirdCategory, WhiteBirdCategoryM
   },
 };
 
+/**
+ * Kiểm tra tính hợp lệ của trường URL tùy chọn (WB02 slide/video link, WB03 bài viết tra cứu kết quả).
+ * - Rỗng hoặc khoảng trắng: Hợp lệ (cho phép để trống, không chặn nộp).
+ * - Có nội dung: Bắt buộc phải là URL có giao thức http: hoặc https: hợp lệ.
+ */
+export function isValidOptionalHttpUrl(val?: string | null): boolean {
+  if (!val || !val.trim()) return true;
+  const trimmed = val.trim();
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 export const WHITE_BIRD_NOMINATING_UNIT_LABELS: Record<WhiteBirdNominatingUnitType, string> = {
   UV_BCH_HSV_DHDN: 'Ủy viên Ban Chấp hành Hội Sinh viên Việt Nam Đại học Đà Nẵng',
   BTK_HSV_TRUONG: 'Ban Thư ký Hội Sinh viên Việt Nam các Trường Đại học thành viên Đại học Đà Nẵng',

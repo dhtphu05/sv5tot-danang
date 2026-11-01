@@ -16,6 +16,7 @@ import {
   WhiteBirdWB01Declaration,
   WhiteBirdWB02Declaration,
   WhiteBirdWB03Declaration,
+  isValidOptionalHttpUrl,
 } from './whiteBirdTypes';
 
 const LOCAL_STORAGE_KEY = '5tot_white_bird_applications_store';
@@ -186,8 +187,7 @@ export function createWhiteBirdApplication(payload: {
       },
       wb03: {
         awardOrRecognitionSummary: '',
-        highestAwardLevel:
-          payload.category === 'SANG_TAO' ? 'Cấp Đại học Đà Nẵng' : 'Cấp Trường thành viên ĐHĐN',
+        highestAwardLevel: '',
         decisionNumbersAndDates: '',
         mediaAndProductLinks: '',
         practicalApplicationNote: '',
@@ -398,19 +398,32 @@ export function validateWhiteBirdReadiness(app: WhiteBirdApplication): WhiteBird
     );
   }
 
+  const hasInvalidWb02Url =
+    Boolean(wb02.presentationLink?.trim()) && !isValidOptionalHttpUrl(wb02.presentationLink);
+
   const wb02Ready =
     Boolean(wb02.reportTitle.trim()) &&
     Boolean(wb02.solutionAndExecution.trim()) &&
     Boolean(wb02.impactAndResults.trim()) &&
     wb02.commitmentConfirmed &&
-    wb02.evidenceFiles.length > 0;
+    wb02.evidenceFiles.length > 0 &&
+    !hasInvalidWb02Url;
   if (!wb02Ready) {
-    missingReasons.push(
-      'WB02: Cần hoàn thiện nội dung Báo cáo thuyết minh / Báo cáo thành tích, xác nhận lời cam kết và đính kèm tệp báo cáo (Điều 6).'
-    );
+    if (hasInvalidWb02Url) {
+      missingReasons.push(
+        'WB02: Liên kết bài trình bày/video demo không đúng định dạng URL (vui lòng nhập URL bắt đầu bằng http:// hoặc https://, hoặc để trống).'
+      );
+    } else {
+      missingReasons.push(
+        'WB02: Cần hoàn thiện nội dung Báo cáo thuyết minh / Báo cáo thành tích, xác nhận lời cam kết và đính kèm tệp báo cáo (Điều 6).'
+      );
+    }
   }
 
   const isWb03Optional = app.category === 'UOM_MAM';
+  const hasInvalidWb03Url =
+    Boolean(wb03.mediaAndProductLinks?.trim()) && !isValidOptionalHttpUrl(wb03.mediaAndProductLinks);
+
   const wb03HasData =
     Boolean(wb03.awardOrRecognitionSummary?.trim()) ||
     Boolean(wb03.mediaAndProductLinks?.trim()) ||
@@ -425,19 +438,32 @@ export function validateWhiteBirdReadiness(app: WhiteBirdApplication): WhiteBird
     // Khoản 6.1 Điều 6: WB03 là hình ảnh, sản phẩm minh họa (nếu có) -> TÙY CHỌN, không chặn nộp
     totalRequired = 2;
     readyCount = [wb01Ready, wb02Ready].filter(Boolean).length;
-    canSubmit = wb01Ready && wb02Ready;
-    wb03Ready = wb03HasData;
+    canSubmit = wb01Ready && wb02Ready && !hasInvalidWb03Url;
+    wb03Ready = wb03HasData && !hasInvalidWb03Url;
+    if (hasInvalidWb03Url) {
+      missingReasons.push(
+        'WB03: Liên kết tra cứu/minh chứng không đúng định dạng URL (vui lòng nhập URL bắt đầu bằng http:// hoặc https://, hoặc để trống).'
+      );
+    }
   } else {
     // Khoản 6.2 và 6.3 Điều 6: WB03 là bắt buộc cho Cánh chim truyền lửa & Cánh chim sáng tạo
     totalRequired = 3;
     wb03Ready =
-      Boolean(wb03.awardOrRecognitionSummary?.trim()) && wb03.evidenceFiles.length > 0;
+      Boolean(wb03.awardOrRecognitionSummary?.trim()) &&
+      wb03.evidenceFiles.length > 0 &&
+      !hasInvalidWb03Url;
     if (!wb03Ready) {
-      missingReasons.push(
-        app.category === 'TRUYEN_LUA'
-          ? 'WB03: Cần kê khai danh mục chức vụ / thành tích và đính kèm tài liệu minh chứng (Khoản 6.2 Điều 6).'
-          : 'WB03: Cần kê khai tóm tắt giải thưởng đạt được và đính kèm minh chứng từ cấp ĐHĐN trở lên (Khoản 6.3 Điều 6).'
-      );
+      if (hasInvalidWb03Url) {
+        missingReasons.push(
+          'WB03: Liên kết tra cứu/minh chứng không đúng định dạng URL (vui lòng nhập URL bắt đầu bằng http:// hoặc https://, hoặc để trống).'
+        );
+      } else {
+        missingReasons.push(
+          app.category === 'TRUYEN_LUA'
+            ? 'WB03: Cần kê khai danh mục chức vụ / thành tích và đính kèm tài liệu minh chứng (Khoản 6.2 Điều 6).'
+            : 'WB03: Cần kê khai tóm tắt giải thưởng đạt được và đính kèm minh chứng từ cấp ĐHĐN trở lên (Khoản 6.3 Điều 6).'
+        );
+      }
     }
     readyCount = [wb01Ready, wb02Ready, wb03Ready].filter(Boolean).length;
     canSubmit = wb01Ready && wb02Ready && wb03Ready;
