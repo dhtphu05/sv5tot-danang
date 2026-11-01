@@ -919,9 +919,15 @@ export class AdminService {
       {
         component: 'NOTIFICATION_DELIVERY',
         nameVi: 'Hệ thống Thông báo & Thư điện tử',
-        status: 'CONFIGURED_FALLBACK',
-        modeLabelVi: 'Thông báo nội bộ (In-App) + Chế độ xem trước an toàn',
-        detailVi: 'Không tự động phát tán thư hàng loạt khi chưa kích hoạt cổng SMTP chính thức.',
+        status: env.RESEND_API_KEY ? 'HEALTHY' : 'CONFIGURED_FALLBACK',
+        modeLabelVi: env.RESEND_API_KEY
+          ? env.RESEND_MODE === 'live'
+            ? 'Resend Production (Live)'
+            : 'Resend Safe Mode (Bảo vệ hộp thư)'
+          : 'Thông báo nội bộ (In-App) + Chế độ xem trước an toàn',
+        detailVi: env.RESEND_API_KEY
+          ? 'Đã kết nối cổng email giao dịch Resend SDK (Đặt lại mật khẩu & Yêu cầu bổ sung minh chứng).'
+          : 'Không tự động phát tán thư hàng loạt khi chưa kích hoạt cổng SMTP chính thức.',
         checkedAt: nowIso,
       },
       {
@@ -948,6 +954,34 @@ export class AdminService {
     const institutions = await this.institutionService.getInstitutions({ limit: 100 });
     const units = await this.unitService.getUnits();
     const staff = await this.listStaffAccounts();
+    const auditEvents = await this.adminRepo.listAdminAuditEvents();
+
+    let portalCounts = {
+      individualCount: 0,
+      collectiveCount: 0,
+      whiteBirdCount: 0,
+      byInstitutionId: {} as Record<string, number>,
+    };
+    try {
+      const { portalState } = await import('../domainPortal/domainPortal.state');
+      const { ensurePortalStateHydratedFromNeonDb } = await import(
+        '../domainPortal/domainPortal.dbSync'
+      );
+      await ensurePortalStateHydratedFromNeonDb().catch(() => {});
+      const byInstitutionId: Record<string, number> = {};
+      for (const app of portalState.individualStaffRecords) {
+        const instId = (app.institution as any)?.id || 'inst-dut';
+        byInstitutionId[instId] = (byInstitutionId[instId] || 0) + 1;
+      }
+      portalCounts = {
+        individualCount: portalState.individualStaffRecords.length,
+        collectiveCount: portalState.collectiveApplications.length,
+        whiteBirdCount: portalState.whiteBirdApplications.length,
+        byInstitutionId,
+      };
+    } catch {
+      // Fallback if portalState unavailable
+    }
 
     return {
       activeSeason,
@@ -961,6 +995,12 @@ export class AdminService {
         activeStaffAccounts: staff.filter((s) => s.status === 'ACTIVE').length,
         totalStaffAccounts: staff.length,
       },
+      seasons,
+      institutions: institutions.data,
+      schoolReviewUnits: units,
+      staffAccounts: staff,
+      auditEvents,
+      portalCounts,
       notificationTemplates: await this.adminRepo.listNotificationTemplates(),
       workflowPolicy: await this.adminRepo.getWorkflowPolicy(),
       systemHealth: this.getSystemHealthDiagnostics(),

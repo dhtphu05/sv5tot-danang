@@ -314,13 +314,38 @@ export function registerAuthPortalRoutes(router: Router, deps: AuthPortalRouteDe
       return false;
     };
 
-    // A. Staff Account Login
+    // A. Staff Account Login (Seeded + Admin-provisioned DB Staff Accounts)
     const staffMatch = STAFF_SEED_ACCOUNTS.find(
       (s) =>
         s.email.toLowerCase() === normalized ||
         Boolean(s.aliases?.some((a) => a.toLowerCase() === normalized))
     );
-    if (staffMatch) {
+    const dbStaffCandidate = await resolveDbUser();
+    const dbStaffRoles = dbStaffCandidate?.id
+      ? await deps.identityRepo.getUserRoles(dbStaffCandidate.id).catch(() => [])
+      : [];
+    const activeDbStaffRole = dbStaffRoles.find(
+      (r) =>
+        r.isActive &&
+        !r.revokedAt &&
+        ['SCHOOL_OFFICER', 'CITY_OFFICER', 'CITY_MANAGER', 'CITY_COMMITTEE', 'ADMIN'].includes(
+          r.roleCode
+        )
+    );
+
+    if (staffMatch || activeDbStaffRole) {
+      if (
+        dbStaffCandidate?.status &&
+        (dbStaffCandidate.status === 'SUSPENDED' || dbStaffCandidate.status === 'LOCKED')
+      ) {
+        res.status(403).json({
+          success: false,
+          errorCode: 'ACCOUNT_SUSPENDED',
+          error: 'Tài khoản cán bộ này đã bị tạm khóa hoặc ngừng kích hoạt bởi Quản trị viên.',
+        });
+        return;
+      }
+
       const passwordOk = await verifyPasswordForSeededOrDbUser();
       if (!passwordOk) {
         res.status(401).json({
@@ -331,20 +356,53 @@ export function registerAuthPortalRoutes(router: Router, deps: AuthPortalRouteDe
         return;
       }
 
-      const target = staffMatch;
+      const resolvedRole = (activeDbStaffRole?.roleCode || staffMatch?.role || 'CITY_OFFICER') as
+        | 'SCHOOL_OFFICER'
+        | 'CITY_OFFICER'
+        | 'CITY_MANAGER'
+        | 'CITY_COMMITTEE'
+        | 'ADMIN';
+      const resolvedUnitId =
+        activeDbStaffRole?.schoolReviewUnitId ||
+        staffMatch?.unitId ||
+        (resolvedRole === 'SCHOOL_OFFICER' ? 'unit-dut' : 'unit-city');
+      const resolvedInstitutionId =
+        dbStaffCandidate?.institutionId || staffMatch?.institutionId;
+      const unitEntry = Object.entries(SCHOOL_UNIT_MAP).find(
+        ([instKey, val]) => val.unitId === resolvedUnitId || instKey === resolvedInstitutionId
+      )?.[1];
+      const resolvedRoleLabel =
+        resolvedRole === 'ADMIN'
+          ? 'Quản trị hệ thống'
+          : resolvedRole === 'CITY_COMMITTEE'
+          ? 'Thành viên Hội đồng xét chọn ĐHĐN'
+          : resolvedRole === 'CITY_MANAGER'
+          ? 'Quản lý xét duyệt Cấp ĐHĐN'
+          : resolvedRole === 'CITY_OFFICER'
+          ? 'Cán bộ Thẩm định Cấp ĐHĐN'
+          : staffMatch?.roleLabel || 'Cán bộ Hội Sinh viên Cấp Trường';
+      const resolvedUnitLabel =
+        resolvedRole === 'SCHOOL_OFFICER'
+          ? unitEntry?.unitName || staffMatch?.unitLabel || 'Hội Sinh viên Cấp Trường'
+          : staffMatch?.unitLabel || 'Ban Thư ký Hội Sinh viên Đại học Đà Nẵng';
+
+      const targetId = dbStaffCandidate?.id || staffMatch!.id;
+      const targetEmail = dbStaffCandidate?.email || staffMatch!.email;
+      const targetFullName = dbStaffCandidate?.fullName || staffMatch!.fullName;
+
       const issued = await issueZeroTrustJwtToken(deps, {
-        id: target.id,
-        email: target.email,
-        fullName: target.fullName,
-        role: target.role,
-        institutionId: target.institutionId,
-        unitId: target.unitId,
+        id: targetId,
+        email: targetEmail,
+        fullName: targetFullName,
+        role: resolvedRole,
+        institutionId: resolvedInstitutionId,
+        unitId: resolvedUnitId,
         existingUser: !isTestRuntime()
           ? {
-              id: target.id,
-              email: target.email,
-              fullName: target.fullName,
-              institutionId: target.institutionId,
+              id: targetId,
+              email: targetEmail,
+              fullName: targetFullName,
+              institutionId: resolvedInstitutionId,
               status: 'ACTIVE',
             }
           : undefined,
@@ -357,14 +415,14 @@ export function registerAuthPortalRoutes(router: Router, deps: AuthPortalRouteDe
         token: issued.accessToken,
         accountType: 'STAFF',
         user: {
-          id: target.id,
-          fullName: target.fullName,
-          email: target.email,
-          role: target.role,
-          roleLabel: target.roleLabel,
-          unitId: target.unitId,
-          unitLabel: target.unitLabel,
-          institutionId: target.institutionId,
+          id: targetId,
+          fullName: targetFullName,
+          email: targetEmail,
+          role: resolvedRole,
+          roleLabel: resolvedRoleLabel,
+          unitId: resolvedUnitId,
+          unitLabel: resolvedUnitLabel,
+          institutionId: resolvedInstitutionId,
         },
       };
       portalState.sessions.set(issued.accessToken, session);
@@ -374,7 +432,7 @@ export function registerAuthPortalRoutes(router: Router, deps: AuthPortalRouteDe
         actorId: session.user.id,
         actorName: session.user.fullName,
         actorRole: session.user.role,
-        details: `Đăng nhập hệ thống với vai trò ${target.roleLabel}`,
+        details: `Đăng nhập hệ thống với vai trò ${resolvedRoleLabel}`,
       });
       res.status(200).json({ success: true, data: session });
       return;

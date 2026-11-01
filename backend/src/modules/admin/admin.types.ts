@@ -147,6 +147,17 @@ export interface AdminControlPlaneSnapshotDto {
     activeStaffAccounts: number;
     totalStaffAccounts: number;
   };
+  seasons?: AwardSeasonDto[];
+  institutions?: unknown[];
+  schoolReviewUnits?: unknown[];
+  staffAccounts?: StaffAccountSummaryDto[];
+  auditEvents?: unknown[];
+  portalCounts?: {
+    individualCount: number;
+    collectiveCount: number;
+    whiteBirdCount: number;
+    byInstitutionId: Record<string, number>;
+  };
   notificationTemplates: NotificationTemplateConfigDto[];
   workflowPolicy: WorkflowOperationalPolicyDto;
   systemHealth: SystemHealthDiagnosticItemDto[];

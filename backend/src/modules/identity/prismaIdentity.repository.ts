@@ -96,13 +96,54 @@ export class PrismaIdentityRepository implements IIdentityRepository {
   public async createStaffUser(dto: CreateStaffUserDto): Promise<UserEntity> {
     const prisma = await this.getPrisma();
     return prisma.$transaction(async (tx: PrismaTransactionScope) => {
+      let resolvedInstitutionId: string | null = dto.institutionId || null;
+      if (resolvedInstitutionId && (tx as any).institution?.findUnique) {
+        const inst = await (tx as any).institution
+          .findUnique({ where: { id: resolvedInstitutionId } })
+          .catch(() => null);
+        if (!inst) {
+          resolvedInstitutionId = null;
+        }
+      }
+
+      let resolvedUnitId: string | null = dto.schoolReviewUnitId || null;
+      if (resolvedUnitId && (tx as any).schoolReviewUnit?.findUnique) {
+        const unit = await (tx as any).schoolReviewUnit
+          .findUnique({ where: { id: resolvedUnitId } })
+          .catch(() => null);
+        if (!unit) {
+          const fallbackInst = await (tx as any).institution
+            ?.findFirst?.()
+            ?.catch?.(() => null);
+          if (fallbackInst && (tx as any).schoolReviewUnit?.create) {
+            await (tx as any).schoolReviewUnit
+              .create({
+                data: {
+                  id: resolvedUnitId,
+                  institutionId: fallbackInst.id,
+                  code: resolvedUnitId.toUpperCase().replace(/[^A-Z0-9_]/g, '_'),
+                  officialName: `Đơn vị xét sơ tuyển (${resolvedUnitId})`,
+                  shortName: resolvedUnitId.toUpperCase(),
+                  unitType: 'HSV_TRUONG',
+                  isActive: true,
+                },
+              })
+              .catch(() => {
+                resolvedUnitId = null;
+              });
+          } else {
+            resolvedUnitId = null;
+          }
+        }
+      }
+
       const user = await tx.user.create({
         data: {
           email: dto.email.toLowerCase().trim(),
           passwordHash: dto.passwordHash,
           fullName: dto.fullName.trim(),
           phone: dto.phone?.trim() || null,
-          institutionId: dto.institutionId || null,
+          institutionId: resolvedInstitutionId,
           status: 'ACTIVE',
         },
       });
@@ -111,7 +152,7 @@ export class PrismaIdentityRepository implements IIdentityRepository {
         data: {
           userId: user.id,
           roleCode: dto.roleCode,
-          schoolReviewUnitId: dto.schoolReviewUnitId || null,
+          schoolReviewUnitId: resolvedUnitId,
           grantedByUserId: dto.grantedByUserId,
           isActive: true,
         },
@@ -284,11 +325,39 @@ export class PrismaIdentityRepository implements IIdentityRepository {
     grantedByUserId?: string | null
   ): Promise<UserRoleAssignmentEntity> {
     const prisma = await this.getPrisma();
+    let resolvedUnitId: string | null = schoolReviewUnitId || null;
+    if (resolvedUnitId && (prisma as any).schoolReviewUnit?.findUnique) {
+      const unit = await (prisma as any).schoolReviewUnit
+        .findUnique({ where: { id: resolvedUnitId } })
+        .catch(() => null);
+      if (!unit) {
+        const fallbackInst = await (prisma as any).institution
+          ?.findFirst?.()
+          ?.catch?.(() => null);
+        if (fallbackInst && (prisma as any).schoolReviewUnit?.create) {
+          await (prisma as any).schoolReviewUnit
+            .create({
+              data: {
+                id: resolvedUnitId,
+                institutionId: fallbackInst.id,
+                code: resolvedUnitId.toUpperCase().replace(/[^A-Z0-9_]/g, '_'),
+                officialName: `Đơn vị xét sơ tuyển (${resolvedUnitId})`,
+                shortName: resolvedUnitId.toUpperCase(),
+                unitType: 'HSV_TRUONG',
+                isActive: true,
+              },
+            })
+            .catch(() => {
+              resolvedUnitId = null;
+            });
+        }
+      }
+    }
     return prisma.userRoleAssignment.create({
       data: {
         userId,
         roleCode,
-        schoolReviewUnitId: schoolReviewUnitId || null,
+        schoolReviewUnitId: resolvedUnitId,
         grantedByUserId: grantedByUserId || null,
         isActive: true,
       },

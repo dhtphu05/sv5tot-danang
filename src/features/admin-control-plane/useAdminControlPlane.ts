@@ -321,7 +321,13 @@ export function useAdminControlPlane(
       void syncAdminActionToServer(
         '/api/v2/admin/bootstrap/initialize',
         'POST',
-        payload
+        {
+          setupToken: payload.bootstrapToken,
+          fullName: payload.fullName,
+          email: payload.email,
+          password: payload.password,
+          phone: payload.phone,
+        }
       );
       return { success: true };
     },
@@ -359,7 +365,24 @@ export function useAdminControlPlane(
         summary: `${staffUser.fullName} thêm mới đơn vị đào tạo ${created.officialName} (${created.shortName}).`,
       };
       setAdminAuditLogs((prev) => [auditEv, ...prev]);
-      void syncAdminActionToServer('/api/v2/institutions', 'POST', newInst);
+      void syncAdminActionToServer('/api/v2/institutions', 'POST', {
+        code: (newInst.code || newInst.shortName || `INST_${Date.now()}`)
+          .trim()
+          .toUpperCase(),
+        officialName: newInst.officialName,
+        shortName: newInst.shortName,
+        group: newInst.isUnderUdn
+          ? 'UD_MEMBER_UNIVERSITY'
+          : newInst.institutionType === 'college'
+          ? 'COLLEGE_JUNIOR_COLLEGE'
+          : 'AFFILIATED_UNIVERSITY',
+        hasStudentAssoc: true,
+        isActive: newInst.status === 'active',
+        organizationContext: newInst.organizationContext,
+        searchKeywords: newInst.searchKeywords || [],
+        contactEmail: newInst.contactEmail || undefined,
+        contactPhone: newInst.contactPhone || undefined,
+      });
     },
     [staffUser]
   );
@@ -400,11 +423,16 @@ export function useAdminControlPlane(
         }.`,
       };
       setAdminAuditLogs((prev) => [auditEv, ...prev]);
-      void syncAdminActionToServer(
-        `/api/v2/institutions/${id}`,
-        'PUT',
-        updates
-      );
+      void syncAdminActionToServer(`/api/v2/institutions/${id}`, 'PUT', {
+        officialName: updates.officialName,
+        shortName: updates.shortName,
+        isActive:
+          updates.status !== undefined ? updates.status === 'active' : undefined,
+        organizationContext: updates.organizationContext,
+        searchKeywords: updates.searchKeywords,
+        contactEmail: updates.contactEmail || undefined,
+        contactPhone: updates.contactPhone || undefined,
+      });
     },
     [staffUser, adminInstitutions, adminSchoolReviewUnits]
   );
@@ -507,13 +535,14 @@ export function useAdminControlPlane(
       >
     ) => {
       const nowLabel = 'Vừa xong · Hôm nay';
+      const tempId = `staff-custom-${Date.now()}`;
       const invitationCode =
         newAccount.status === 'pending_activation'
           ? `INV-5TOT-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
           : undefined;
       const created: StaffAccount = {
         ...newAccount,
-        id: `staff-custom-${Date.now()}`,
+        id: tempId,
         assignedApplicationCount: 0,
         lastActiveAt: 'Chưa đăng nhập',
         createdAt: nowLabel,
@@ -535,7 +564,37 @@ export function useAdminControlPlane(
         summary: `${staffUser.fullName} tạo tài khoản mới cho ${created.fullName} với vai trò ${created.roleLabel}.`,
       };
       setAdminAuditLogs((prev) => [auditEv, ...prev]);
-      void syncAdminActionToServer('/api/v2/admin/staff', 'POST', newAccount);
+      void syncAdminActionToServer<{
+        success: boolean;
+        data?: { staff?: { id?: string }; inviteCode?: string | null };
+      }>('/api/v2/admin/staff', 'POST', {
+        email: newAccount.email,
+        fullName: newAccount.fullName,
+        phone: newAccount.phone || undefined,
+        roleCode: newAccount.primaryRole,
+        schoolReviewUnitId:
+          newAccount.primaryRole === 'SCHOOL_OFFICER'
+            ? newAccount.schoolReviewUnitId || 'unit-dut'
+            : null,
+        institutionId: newAccount.institutionId || null,
+        provisioningMode:
+          newAccount.status === 'pending_activation' ? 'INVITE' : 'TEMP_PASSWORD',
+        temporaryPassword: 'MatKhau@2026',
+      }).then((res) => {
+        if (res?.data?.staff?.id) {
+          setAdminStaffAccounts((prev) =>
+            prev.map((s) =>
+              s.id === tempId
+                ? {
+                    ...s,
+                    id: res.data!.staff!.id!,
+                    invitationCode: res.data?.inviteCode || s.invitationCode,
+                  }
+                : s
+            )
+          );
+        }
+      });
     },
     [staffUser]
   );
@@ -576,6 +635,10 @@ export function useAdminControlPlane(
         type: 'success',
         message: `Đã kích hoạt tài khoản ${target?.fullName || ''}.`,
       });
+      void syncAdminActionToServer(`/api/v2/admin/staff/${id}/status`, 'PATCH', {
+        status: 'ACTIVE',
+        reason: 'Kích hoạt tài khoản cán bộ từ trang Quản trị',
+      });
     },
     [staffUser, adminStaffAccounts]
   );
@@ -614,10 +677,18 @@ export function useAdminControlPlane(
         type: 'success',
         message: `Đã cấp mã kích hoạt mới (${freshCode}) cho ${target.fullName}.`,
       });
-      void syncAdminActionToServer(
-        `/api/v2/admin/staff/${id}/resend-invite`,
-        'POST'
-      );
+      void syncAdminActionToServer<{
+        success: boolean;
+        data?: { inviteCode?: string };
+      }>(`/api/v2/admin/staff/${id}/resend-invite`, 'POST').then((res) => {
+        if (res?.data?.inviteCode) {
+          setAdminStaffAccounts((prev) =>
+            prev.map((s) =>
+              s.id === id ? { ...s, invitationCode: res.data!.inviteCode } : s
+            )
+          );
+        }
+      });
     },
     [staffUser, adminStaffAccounts]
   );
@@ -647,7 +718,7 @@ export function useAdminControlPlane(
       void syncAdminActionToServer(
         `/api/v2/admin/staff/${id}/reset-password`,
         'POST',
-        { reason }
+        { newTemporaryPassword: 'MatKhau@2026' }
       );
     },
     [staffUser, adminStaffAccounts]
@@ -694,6 +765,11 @@ export function useAdminControlPlane(
                 ? 'Cán bộ sơ tuyển cấp Trường'
                 : 'Quản trị hệ thống';
 
+      const resolvedUnitId =
+        newRole === 'SCHOOL_OFFICER'
+          ? schoolReviewUnitId || target.schoolReviewUnitId || 'unit-dut'
+          : undefined;
+
       setAdminStaffAccounts((prev) =>
         prev.map((s) =>
           s.id === id
@@ -702,10 +778,7 @@ export function useAdminControlPlane(
                 primaryRole: newRole,
                 roleLabel,
                 roles: [newRole],
-                schoolReviewUnitId:
-                  newRole === 'SCHOOL_OFFICER'
-                    ? schoolReviewUnitId || s.schoolReviewUnitId || 'unit-dut'
-                    : undefined,
+                schoolReviewUnitId: resolvedUnitId,
               }
             : s
         )
@@ -727,9 +800,9 @@ export function useAdminControlPlane(
       };
       setAdminAuditLogs((prev) => [auditEv, ...prev]);
       void syncAdminActionToServer(`/api/v2/admin/staff/${id}/role`, 'PUT', {
-        primaryRole: newRole,
-        schoolReviewUnitId,
-        reason,
+        roleCode: newRole,
+        schoolReviewUnitId: resolvedUnitId ?? null,
+        institutionId: target.institutionId ?? null,
       });
     },
     [staffUser, adminStaffAccounts]
@@ -782,11 +855,17 @@ export function useAdminControlPlane(
         reason,
       };
       setAdminAuditLogs((prev) => [auditEv, ...prev]);
+      const backendStatus =
+        nextStatus === 'active'
+          ? 'ACTIVE'
+          : nextStatus === 'suspended'
+            ? 'SUSPENDED'
+            : 'LOCKED';
       void syncAdminActionToServer(
         `/api/v2/admin/staff/${id}/status`,
         'PATCH',
         {
-          status: nextStatus,
+          status: backendStatus,
           reason,
         }
       );
