@@ -173,6 +173,10 @@ export function createWhiteBirdApplication(payload: {
           payload.nomineeType === 'COLLECTIVE'
             ? `${payload.preparedByUserName}${payload.studentId ? ` (${payload.studentId})` : ''}`
             : '',
+        leadUnit: payload.facultyName ? `${payload.facultyName} – ${payload.institutionName}` : payload.institutionName,
+        leadPhone: payload.contactPhone || '',
+        leadEmail: payload.preparedByUserEmail || '',
+        presentationLink: '',
         coAuthorsOrTeamMembers:
           payload.nomineeType === 'COLLECTIVE'
             ? `${payload.preparedByUserName} (${payload.studentId}) - Đại diện nhóm tác giả / tập thể`

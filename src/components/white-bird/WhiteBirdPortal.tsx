@@ -42,6 +42,7 @@ import {
 import { CollectiveDocumentPreviewModal } from '../../features/evidence-upload';
 import { Button } from '../buttons/Button';
 import { Input } from '../forms/Input';
+import { AutoResizeTextarea } from '../forms/AutoResizeTextarea';
 import {
   WHITE_BIRD_CATEGORIES,
   WHITE_BIRD_NOMINATING_UNIT_LABELS,
@@ -1003,7 +1004,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
       {activeTab === 'workspace' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 min-w-0">
           {/* Left Rail: 3 Requirements */}
-          <div className="lg:col-span-4 space-y-2.5 min-w-0">
+          <div className="lg:col-span-4 space-y-2.5 min-w-0 lg:sticky lg:top-6 self-start">
             {(
               [
                 {
@@ -1154,12 +1155,14 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label
-                        htmlFor="wb01-nominator-subject-select"
-                        className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5"
-                      >
-                        Chủ thể đề nghị xét trao Giải thưởng (Điều 5) <span className="text-red-500">*</span>
-                      </label>
+                      <div className="md:min-h-[2.5rem] flex items-end pb-1.5">
+                        <label
+                          htmlFor="wb01-nominator-subject-select"
+                          className="text-[12.5px] font-bold text-[#172A3A] select-none"
+                        >
+                          Chủ thể đề nghị xét trao Giải thưởng (Điều 5) <span className="text-red-500">*</span>
+                        </label>
+                      </div>
                       <select
                         id="wb01-nominator-subject-select"
                         disabled={isReadOnly}
@@ -1190,18 +1193,24 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       </select>
                       <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
                         {isIndividualNominator
-                          ? 'Ủy viên Ban Chấp hành Hội Sinh viên Việt Nam Đại học Đà Nẵng là chủ thể có thẩm quyền đề xuất xét trao theo Điều 5 của Quy chế.'
+                          ? 'Ủy viên Ban Chấp hành Hội Sinh viên Việt Nam Đại học Đà Nẵng là cá nhân có thẩm quyền trực tiếp đề xuất xét trao Giải thưởng (Điều 5).'
                           : 'Cấp bộ Hội / Đơn vị trực thuộc có thẩm quyền đề xuất xét trao theo Điều 5 của Quy chế.'}
                       </p>
                     </div>
 
                     <div>
-                      <Input
-                        label={
-                          isIndividualNominator
-                            ? 'Tên cá nhân đề nghị xét trao (Ủy viên BCH HSV ĐHĐN) *'
-                            : 'Tên tổ chức/cá nhân đề nghị xét trao *'
-                        }
+                      <div className="md:min-h-[2.5rem] flex items-end pb-1.5">
+                        <label
+                          htmlFor="wb01-nominator-unit-name"
+                          className="text-[12.5px] font-bold text-[#172A3A] select-none"
+                        >
+                          {isIndividualNominator
+                            ? 'Họ và tên Ủy viên Ban Chấp hành HSV ĐHĐN đề nghị *'
+                            : 'Tên tổ chức đề nghị xét trao *'}
+                        </label>
+                      </div>
+                      <input
+                        id="wb01-nominator-unit-name"
                         disabled={isReadOnly}
                         value={wb01Data.nominatingUnitName}
                         onChange={(e) =>
@@ -1210,64 +1219,112 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           })
                         }
                         placeholder={unitNamePlaceholder}
+                        className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
                       />
                       <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
                         {isIndividualNominator
-                          ? 'Nhập họ tên Ủy viên Ban Chấp hành HSV ĐHĐN giới thiệu đề xuất.'
+                          ? 'Nhập họ và tên Ủy viên Ban Chấp hành HSV ĐHĐN trực tiếp đề xuất xét trao.'
                           : 'Nhập tên Ban Thư ký HSV trường, Liên chi Hội hoặc CLB/Đội/Nhóm đề nghị.'}
                       </p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <Input
-                      label="Số hiệu văn bản đề nghị xét trao (nếu có)"
-                      disabled={isReadOnly}
-                      value={wb01Data.nominatingDocumentNumber}
-                      onChange={(e) =>
-                        updateWhiteBirdWB01(activeApp.id, {
-                          nominatingDocumentNumber: e.target.value,
-                        })
-                      }
-                      placeholder={
-                        isIndividualNominator
-                          ? 'VD: Giấy giới thiệu (nếu có)'
-                          : 'VD: 45-TTr/HSV hoặc Số công văn'
-                      }
-                    />
-                    <Input
-                      label="Ngày ký văn bản đề nghị (nếu có)"
-                      type="date"
-                      disabled={isReadOnly}
-                      value={wb01Data.nominatingDate}
-                      onChange={(e) =>
-                        updateWhiteBirdWB01(activeApp.id, {
-                          nominatingDate: e.target.value,
-                        })
-                      }
-                    />
-                    <Input
-                      label="Họ tên người ký văn bản đề nghị và chức vụ (nếu có)"
-                      disabled={isReadOnly}
-                      value={wb01Data.nominatorSignerName}
-                      onChange={(e) =>
-                        updateWhiteBirdWB01(activeApp.id, {
-                          nominatorSignerName: e.target.value,
-                        })
-                      }
-                      placeholder={signerPlaceholder}
-                    />
+                    <div>
+                      <div className="md:min-h-[2.5rem] flex items-end pb-1.5">
+                        <label
+                          htmlFor="wb01-doc-number"
+                          className="text-[12.5px] font-bold text-[#172A3A] select-none"
+                        >
+                          {isIndividualNominator
+                            ? 'Số hiệu văn bản / Giấy giới thiệu (nếu có)'
+                            : 'Số hiệu văn bản đề nghị xét trao (nếu có)'}
+                        </label>
+                      </div>
+                      <input
+                        id="wb01-doc-number"
+                        disabled={isReadOnly}
+                        value={wb01Data.nominatingDocumentNumber}
+                        onChange={(e) =>
+                          updateWhiteBirdWB01(activeApp.id, {
+                            nominatingDocumentNumber: e.target.value,
+                          })
+                        }
+                        placeholder={
+                          isIndividualNominator
+                            ? 'VD: Giấy giới thiệu (nếu có)'
+                            : 'VD: 45-TTr/HSV hoặc Số công văn'
+                        }
+                        className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="md:min-h-[2.5rem] flex items-end pb-1.5">
+                        <label
+                          htmlFor="wb01-doc-date"
+                          className="text-[12.5px] font-bold text-[#172A3A] select-none"
+                        >
+                          {isIndividualNominator
+                            ? 'Ngày ký / Ngày đề xuất (nếu có)'
+                            : 'Ngày ký văn bản đề nghị (nếu có)'}
+                        </label>
+                      </div>
+                      <input
+                        id="wb01-doc-date"
+                        type="date"
+                        disabled={isReadOnly}
+                        value={wb01Data.nominatingDate}
+                        onChange={(e) =>
+                          updateWhiteBirdWB01(activeApp.id, {
+                            nominatingDate: e.target.value,
+                          })
+                        }
+                        className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="md:min-h-[2.5rem] flex items-end pb-1.5">
+                        <label
+                          htmlFor="wb01-signer-name"
+                          className="text-[12.5px] font-bold text-[#172A3A] select-none"
+                        >
+                          {isIndividualNominator
+                            ? 'Họ tên Ủy viên BCH ký đề xuất (nếu có)'
+                            : 'Họ tên người ký văn bản đề nghị & chức vụ (nếu có)'}
+                        </label>
+                      </div>
+                      <input
+                        id="wb01-signer-name"
+                        disabled={isReadOnly}
+                        value={wb01Data.nominatorSignerName}
+                        onChange={(e) =>
+                          updateWhiteBirdWB01(activeApp.id, {
+                            nominatorSignerName: e.target.value,
+                          })
+                        }
+                        placeholder={signerPlaceholder}
+                        className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                      />
+                    </div>
                   </div>
 
                   <div>
-                    <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1">
+                    <label
+                      htmlFor="wb01-endorsement-summary"
+                      className="block text-[12.5px] font-bold text-[#172A3A] mb-1"
+                    >
                       Tóm tắt nhận xét, đánh giá & lý do đề nghị xét trao Giải thưởng <span className="text-red-500">*</span>
                     </label>
                     <p className="text-[11.5px] text-[#64748B] mb-1.5 leading-snug">
                       <em>(Thông tin hỗ trợ kê khai trên hệ thống nhằm tổng hợp nhanh hồ sơ; không thay thế cho Văn bản đề nghị xét trao chính thức theo Khoản 6.1 Điều 6)</em>
                     </p>
-                    <textarea
+                    <AutoResizeTextarea
+                      id="wb01-endorsement-summary"
                       rows={3}
+                      minHeight={84}
+                      maxHeight={320}
                       disabled={isReadOnly}
                       value={wb01Data.endorsementSummary}
                       onChange={(e) =>
@@ -1276,7 +1333,6 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         })
                       }
                       placeholder="Nhập tóm tắt nội dung nhận xét, đánh giá của tổ chức/cá nhân đề nghị đối với cá nhân/tập thể..."
-                      className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
                     />
                   </div>
                 </div>
@@ -1290,14 +1346,30 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
               if (activeApp.category === 'UOM_MAM') {
                 const leadRep = wb02Data.leadRepresentative !== undefined
                   ? wb02Data.leadRepresentative
-                  : (activeApp.nomineeType === 'COLLECTIVE' ? `${activeApp.preparedByUserName}${activeApp.studentId ? ` (${activeApp.studentId})` : ''}` : '');
+                  : (activeApp.nomineeType === 'COLLECTIVE'
+                      ? `${activeApp.preparedByUserName}${activeApp.studentId ? ` (${activeApp.studentId})` : ''}`
+                      : activeApp.preparedByUserName);
+
+                const leadUnit = wb02Data.leadUnit !== undefined
+                  ? wb02Data.leadUnit
+                  : (activeApp.facultyName ? `${activeApp.facultyName} – ${activeApp.institutionName}` : activeApp.institutionName);
+
+                const leadPhone = wb02Data.leadPhone !== undefined
+                  ? wb02Data.leadPhone
+                  : (activeApp.contactPhone || '');
+
+                const leadEmail = wb02Data.leadEmail !== undefined
+                  ? wb02Data.leadEmail
+                  : (activeApp.preparedByUserEmail || currentEmail || studentProfileSnapshot?.email || '');
+
+                const presentationLink = wb02Data.presentationLink || '';
 
                 // Kiểm tra 4 tiêu chuẩn để hiển thị khuyến nghị rà soát (không hard-block submission)
                 const missingStandards: { id: string; name: string }[] = [];
-                if (!wb02Data.solutionAndExecution?.trim()) missingStandards.push({ id: 'wb02-sec-solution', name: 'Tính mới, sáng tạo' });
-                if (!wb02Data.impactAndResults?.trim()) missingStandards.push({ id: 'wb02-sec-impact', name: 'Tính hiệu quả' });
-                if (!wb02Data.scalabilityAndSpread?.trim()) missingStandards.push({ id: 'wb02-sec-scalability', name: 'Tính lan tỏa' });
-                if (!wb02Data.exemplaryNature?.trim()) missingStandards.push({ id: 'wb02-sec-exemplary', name: 'Tính điển hình' });
+                if (!wb02Data.solutionAndExecution?.trim()) missingStandards.push({ id: 'wb02-sec-solution', name: '1. Tính mới, sáng tạo' });
+                if (!wb02Data.impactAndResults?.trim()) missingStandards.push({ id: 'wb02-sec-impact', name: '2. Tính hiệu quả' });
+                if (!wb02Data.scalabilityAndSpread?.trim()) missingStandards.push({ id: 'wb02-sec-scalability', name: '3. Tính lan tỏa' });
+                if (!wb02Data.exemplaryNature?.trim()) missingStandards.push({ id: 'wb02-sec-exemplary', name: '4. Tính điển hình' });
 
                 return (
                   <div className="space-y-5">
@@ -1321,11 +1393,16 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       </div>
                     </div>
 
-                    {/* Section 1: Thông tin mô hình & Thời gian */}
+                    {/* Section 1: Thông tin mô hình & Thời gian triển khai */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <div className="md:col-span-2">
-                        <Input
-                          label="Tên mô hình, giải pháp, sáng kiến *"
+                        <div className="md:min-h-[2.25rem] flex items-end pb-1.5">
+                          <label htmlFor="wb02-report-title" className="text-[12.5px] font-bold text-[#172A3A] select-none">
+                            Tên mô hình, giải pháp, sáng kiến <span className="text-red-500">*</span>
+                          </label>
+                        </div>
+                        <input
+                          id="wb02-report-title"
                           disabled={isReadOnly}
                           value={wb02Data.reportTitle}
                           onChange={(e) =>
@@ -1334,127 +1411,230 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             })
                           }
                           placeholder="VD: Mô hình Số hóa Sổ tay Sinh viên 5 tốt & Ngân hàng Minh chứng trực tuyến"
+                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
                         />
                       </div>
-                      <Input
-                        label="Thời gian triển khai thực tế *"
+                      <div>
+                        <div className="md:min-h-[2.25rem] flex items-end pb-1.5">
+                          <label htmlFor="wb02-implementation-period" className="text-[12.5px] font-bold text-[#172A3A] select-none">
+                            Thời gian triển khai thực tế <span className="text-red-500">*</span>
+                          </label>
+                        </div>
+                        <input
+                          id="wb02-implementation-period"
+                          disabled={isReadOnly}
+                          value={wb02Data.implementationPeriod}
+                          onChange={(e) =>
+                            updateWhiteBirdWB02(activeApp.id, {
+                              implementationPeriod: e.target.value,
+                            })
+                          }
+                          placeholder="VD: Tháng 10/2024 – Tháng 05/2025"
+                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Phân định: Tài khoản nộp hồ sơ vs. Người chịu trách nhiệm chính */}
+                    <div className="p-3.5 rounded-[12px] bg-[#F8FBFD] border border-[#DCE7EE] space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] font-bold text-[#0D78AE] uppercase tracking-wider">
+                          Tài khoản nộp hồ sơ trực tuyến
+                        </span>
+                        <span className="text-[11px] font-medium text-[#64748B]">
+                          Tài khoản thực hiện kê khai & theo dõi hồ sơ trên hệ thống
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[12px]">
+                        <div className="flex items-center gap-1.5">
+                          <User size={13} className="text-[#0D78AE]" />
+                          <span className="text-[#64748B]">Họ tên:</span>
+                          <strong className="text-[#172A3A]">
+                            {activeApp.preparedByUserName} {activeApp.studentId ? `(${activeApp.studentId})` : ''}
+                          </strong>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Building2 size={13} className="text-[#0D78AE]" />
+                          <span className="text-[#64748B]">Đơn vị:</span>
+                          <span className="text-[#172A3A] font-semibold">{activeApp.institutionName}</span>
+                        </div>
+                        {(activeApp.preparedByUserEmail || currentEmail || studentProfileSnapshot?.email) && (
+                          <div className="flex items-center gap-1.5">
+                            <Mail size={13} className="text-[#0D78AE]" />
+                            <span className="text-[#64748B]">Email:</span>
+                            <span className="text-[#334155] font-medium">
+                              {activeApp.preparedByUserEmail || currentEmail || studentProfileSnapshot?.email}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Section: Thông tin Người chịu trách nhiệm chính của mô hình (Mẫu báo cáo gốc) */}
+                    <div className="p-4 rounded-[12px] bg-white border border-[#C8D9E6] space-y-3.5 shadow-2xs">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-[#EDF3F8] pb-2.5">
+                        <div>
+                          <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#0D78AE]">
+                            Thông tin Người chịu trách nhiệm chính của mô hình
+                          </span>
+                          <p className="text-[11.5px] text-[#607483] mt-0.5">
+                            Kê khai đúng theo Mẫu báo cáo chính thức (có thể chỉnh sửa trực tiếp, không bắt buộc trùng với thông tin tài khoản nộp).
+                          </p>
+                        </div>
+                        {activeApp.nomineeType === 'COLLECTIVE' && (
+                          <span className="text-[11.5px] text-[#64748B] shrink-0">
+                            Tập thể/Nhóm: <strong className="text-[#172A3A]">{activeApp.nomineeName}</strong>
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        <div>
+                          <div className="md:min-h-[2.25rem] flex items-end pb-1.5">
+                            <label htmlFor="wb02-lead-rep" className="text-[12.5px] font-bold text-[#172A3A] select-none">
+                              Họ và tên người chịu trách nhiệm chính <span className="text-red-500">*</span>
+                            </label>
+                          </div>
+                          <input
+                            id="wb02-lead-rep"
+                            disabled={isReadOnly}
+                            value={leadRep}
+                            onChange={(e) =>
+                              updateWhiteBirdWB02(activeApp.id, {
+                                leadRepresentative: e.target.value,
+                              })
+                            }
+                            placeholder="VD: Nguyễn Văn A (Trưởng nhóm / Chủ nhiệm CLB)"
+                            className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                          />
+                        </div>
+
+                        <div>
+                          <div className="md:min-h-[2.25rem] flex items-end pb-1.5">
+                            <label htmlFor="wb02-lead-unit" className="text-[12.5px] font-bold text-[#172A3A] select-none">
+                              Đơn vị / Chi hội / Lớp / Khoa / Trường
+                            </label>
+                          </div>
+                          <input
+                            id="wb02-lead-unit"
+                            disabled={isReadOnly}
+                            value={leadUnit}
+                            onChange={(e) =>
+                              updateWhiteBirdWB02(activeApp.id, {
+                                leadUnit: e.target.value,
+                              })
+                            }
+                            placeholder="VD: Chi hội 22T_DT1, Khoa Công nghệ Thông tin, Trường ĐH Bách khoa"
+                            className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        <div>
+                          <div className="md:min-h-[2.25rem] flex items-end pb-1.5">
+                            <label htmlFor="wb02-lead-phone" className="text-[12.5px] font-bold text-[#172A3A] select-none">
+                              Số điện thoại liên hệ
+                            </label>
+                          </div>
+                          <input
+                            id="wb02-lead-phone"
+                            disabled={isReadOnly}
+                            value={leadPhone}
+                            onChange={(e) =>
+                              updateWhiteBirdWB02(activeApp.id, {
+                                leadPhone: e.target.value,
+                              })
+                            }
+                            placeholder="VD: 0905 123 456"
+                            className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                          />
+                        </div>
+
+                        <div>
+                          <div className="md:min-h-[2.25rem] flex items-end pb-1.5">
+                            <label htmlFor="wb02-lead-email" className="text-[12.5px] font-bold text-[#172A3A] select-none">
+                              Email liên hệ
+                            </label>
+                          </div>
+                          <input
+                            id="wb02-lead-email"
+                            type="email"
+                            disabled={isReadOnly}
+                            value={leadEmail}
+                            onChange={(e) =>
+                              updateWhiteBirdWB02(activeApp.id, {
+                                leadEmail: e.target.value,
+                              })
+                            }
+                            placeholder="VD: nguyenvana@dut.udn.vn"
+                            className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="md:min-h-[2rem] flex items-end pb-1.5">
+                          <label htmlFor="wb02-pres-link" className="text-[12.5px] font-bold text-[#172A3A] select-none">
+                            Liên kết slide trình chiếu / video thuyết minh mô hình (nếu có)
+                          </label>
+                        </div>
+                        <input
+                          id="wb02-pres-link"
+                          disabled={isReadOnly}
+                          value={presentationLink}
+                          onChange={(e) =>
+                            updateWhiteBirdWB02(activeApp.id, {
+                              presentationLink: e.target.value,
+                            })
+                          }
+                          placeholder="https://drive.google.com/... hoặc https://youtube.com/... hoặc link Canva / Slide"
+                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                        />
+                        <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
+                          Liên kết slide trình chiếu (Canva, PowerPoint Online, Google Slides) hoặc video giới thiệu mô hình. Vui lòng mở quyền xem cho Hội đồng xét duyệt.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Section: Đồng tác giả / Thành viên khác */}
+                    <div className="space-y-1">
+                      <label htmlFor="wb02-coauthors" className="block text-[12.5px] font-bold text-[#172A3A]">
+                        Các thành viên khác trong ban điều hành / nhóm tác giả (nếu có)
+                      </label>
+                      <p className="text-[11.5px] text-[#64748B] leading-snug">
+                        Họ và tên – Vai trò – Đơn vị (mỗi thành viên một dòng, không bắt buộc, không cần nhập lại người chịu trách nhiệm chính).
+                      </p>
+                      <AutoResizeTextarea
+                        id="wb02-coauthors"
+                        minHeight={72}
+                        maxHeight={200}
                         disabled={isReadOnly}
-                        value={wb02Data.implementationPeriod}
+                        value={wb02Data.coAuthorsOrTeamMembers}
                         onChange={(e) =>
                           updateWhiteBirdWB02(activeApp.id, {
-                            implementationPeriod: e.target.value,
+                            coAuthorsOrTeamMembers: e.target.value,
                           })
                         }
-                        placeholder="VD: Tháng 10/2024 – Tháng 05/2025"
+                        placeholder="VD:&#10;Trần Thị B – Đồng tác giả – Khoa CNTT, Trường ĐH Bách khoa&#10;Lê Văn C – Phụ trách truyền thông – CLB Học thuật"
                       />
                     </div>
 
-                    {/* Tóm tắt thông tin người phụ trách & Liên hệ */}
-                    <div className="p-3.5 rounded-[12px] bg-[#F8FBFD] border border-[#DCE7EE] flex flex-wrap items-center justify-between gap-3 text-[12px]">
-                      <div className="flex items-center gap-2">
-                        <Building2 size={14} className="text-[#0D78AE]" />
-                        <span className="text-[#64748B]">Đơn vị:</span>
-                        <strong className="text-[#172A3A]">{activeApp.institutionName}</strong>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <User size={14} className="text-[#0D78AE]" />
-                        <span className="text-[#64748B]">Người lập hồ sơ:</span>
-                        <strong className="text-[#172A3A]">
-                          {activeApp.preparedByUserName} {activeApp.studentId ? `(${activeApp.studentId})` : ''}
-                        </strong>
-                      </div>
-                      {(currentEmail || studentProfileSnapshot?.email) && (
-                        <div className="flex items-center gap-2">
-                          <Mail size={14} className="text-[#0D78AE]" />
-                          <span className="text-[#64748B]">Email:</span>
-                          <span className="text-[#334155]">{currentEmail || studentProfileSnapshot?.email}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Section Thông tin Người chịu trách nhiệm chính & Thành viên (Tập thể/Nhóm) */}
-                    {activeApp.nomineeType === 'COLLECTIVE' ? (
-                      <div className="p-4 rounded-[12px] bg-[#F8FBFD] border border-[#DCE7EE] space-y-3.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[12px] font-bold uppercase tracking-wider text-[#0D78AE]">
-                            Thông tin ban điều hành / nhóm tác giả mô hình
-                          </span>
-                          <span className="text-[11.5px] text-[#64748B]">
-                            Tập thể đề cử: <strong className="text-[#172A3A]">{activeApp.nomineeName}</strong>
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                          <div>
-                            <Input
-                              label="Họ tên người chịu trách nhiệm chính của mô hình *"
-                              disabled={isReadOnly}
-                              value={leadRep}
-                              onChange={(e) =>
-                                updateWhiteBirdWB02(activeApp.id, {
-                                  leadRepresentative: e.target.value,
-                                })
-                              }
-                              placeholder="VD: Nguyễn Văn A (MSSV 102220084, Trưởng nhóm / Chủ nhiệm CLB)"
-                            />
-                            <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
-                              Theo Mẫu báo cáo, hồ sơ cần ghi rõ họ tên và vai trò của người trực tiếp chịu trách nhiệm chính điều hành mô hình.
-                            </p>
-                          </div>
-                          <div>
-                            <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1">
-                              Các thành viên khác trong ban điều hành / nhóm tác giả (nếu có)
-                            </label>
-                            <textarea
-                              rows={3}
-                              disabled={isReadOnly}
-                              value={wb02Data.coAuthorsOrTeamMembers}
-                              onChange={(e) =>
-                                updateWhiteBirdWB02(activeApp.id, {
-                                  coAuthorsOrTeamMembers: e.target.value,
-                                })
-                              }
-                              placeholder="Họ và tên – Vai trò – Đơn vị (mỗi thành viên trên một dòng)&#10;VD:&#10;Nguyễn Văn A – Đồng tác giả – Khoa CNTT, Trường ĐH Bách khoa&#10;Trần Thị B – Kỹ thuật – CLB Học thuật"
-                              className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y min-h-[85px] max-h-[220px]"
-                            />
-                            <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
-                              Nhập danh sách các thành viên khác trong ban điều hành / nhóm tác giả (nếu có). Không cần nhập lại người chịu trách nhiệm chính.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div>
-                        <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1">
-                          Các thành viên khác / Người hỗ trợ (nếu có)
-                        </label>
-                        <textarea
-                          rows={2}
-                          disabled={isReadOnly}
-                          value={wb02Data.coAuthorsOrTeamMembers}
-                          onChange={(e) =>
-                            updateWhiteBirdWB02(activeApp.id, {
-                              coAuthorsOrTeamMembers: e.target.value,
-                            })
-                          }
-                          placeholder="Họ và tên – Vai trò – Đơn vị (nếu có hỗ trợ triển khai mô hình)"
-                          className="w-full px-3.5 py-2 text-[12.5px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y min-h-[65px]"
-                        />
-                      </div>
-                    )}
-
-                    {/* Bối cảnh, sự cần thiết & mục tiêu (Thông tin bổ sung - Giản lược & bảo toàn dữ liệu) */}
+                    {/* Bối cảnh, sự cần thiết & mục tiêu (Thông tin bổ sung - Tinh gọn, tùy chọn) */}
                     <div className="p-3.5 rounded-[11px] bg-[#F8FAFC] border border-[#E2E8F0] space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <label className="block text-[12.5px] font-bold text-[#334155]">
+                        <label htmlFor="wb02-context" className="block text-[12.5px] font-bold text-[#334155]">
                           Bối cảnh và mục tiêu hình thành (Thông tin bổ sung)
                         </label>
                         <span className="text-[11px] text-[#64748B] italic">Không bắt buộc</span>
                       </div>
                       <p className="text-[11.5px] text-[#64748B] leading-snug">
-                        Tóm tắt bối cảnh thực tiễn công tác Hội và phong trào sinh viên tại cơ sở cùng mục tiêu hướng tới để làm rõ hơn tính mới, sáng tạo.
+                        Tóm tắt ngắn gọn bối cảnh thực tiễn công tác Hội và phong trào sinh viên tại cơ sở cùng mục tiêu hướng tới để làm rõ hơn tính mới, sáng tạo.
                       </p>
-                      <textarea
-                        rows={2}
+                      <AutoResizeTextarea
+                        id="wb02-context"
+                        minHeight={64}
+                        maxHeight={160}
                         disabled={isReadOnly}
                         value={wb02Data.contextAndObjectives}
                         onChange={(e) =>
@@ -1463,7 +1643,6 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           })
                         }
                         placeholder="Trình bày ngắn gọn bối cảnh và lý do ra đời của mô hình, sáng kiến..."
-                        className="w-full px-3.5 py-2 text-[12.5px] text-[#172A3A] bg-white border border-[#CBD5E1] rounded-[8px] focus:outline-none focus:border-[#0D78AE] resize-y min-h-[65px]"
                       />
                     </div>
 
@@ -1515,11 +1694,13 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           1. Tính mới, sáng tạo của mô hình, giải pháp, sáng kiến <span className="text-red-500">*</span>
                         </label>
                         <p className="text-[11.5px] text-[#64748B] leading-snug">
-                          Mô tả nội dung mới của mô hình, giải pháp, sáng kiến; điểm khác biệt, cải tiến so với các hình thức tương tự đã áp dụng trong công tác Hội và phong trào sinh viên trước ngày nộp hồ sơ.
+                          <strong>Tiêu chuẩn:</strong> Là mô hình mới, không trùng lặp các hình thức tương tự đã áp dụng trong công tác Hội và phong trào sinh viên trước ngày nộp hồ sơ.
                         </p>
-                        <textarea
+                        <AutoResizeTextarea
                           id="wb02-sec-solution"
                           rows={4}
+                          minHeight={100}
+                          maxHeight={360}
                           disabled={isReadOnly}
                           value={wb02Data.solutionAndExecution}
                           onChange={(e) =>
@@ -1528,7 +1709,6 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             })
                           }
                           placeholder="Trình bày chi tiết tính mới của giải pháp, phương thức triển khai mới, ứng dụng chuyển đổi số hoặc sáng kiến nổi bật so với các cách làm trước đây..."
-                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y min-h-[100px]"
                         />
                       </div>
 
@@ -1541,11 +1721,13 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           2. Quá trình triển khai và tính hiệu quả thực tiễn <span className="text-red-500">*</span>
                         </label>
                         <p className="text-[11.5px] text-[#64748B] leading-snug">
-                          Mô tả quá trình triển khai, kết quả áp dụng vào thực tiễn công tác Hội và phong trào sinh viên; sự ghi nhận của lãnh đạo địa phương hoặc đơn vị cùng cấp; mức độ hưởng ứng tích cực của sinh viên (khuyến khích kèm số liệu thực tế nếu có).
+                          <strong>Tiêu chuẩn:</strong> Được áp dụng thành công vào thực tiễn công tác Hội và phong trào sinh viên; được lãnh đạo địa phương, đơn vị cùng cấp ghi nhận; được sinh viên tích cực hưởng ứng (khuyến khích kèm số liệu minh họa).
                         </p>
-                        <textarea
+                        <AutoResizeTextarea
                           id="wb02-sec-impact"
                           rows={4}
+                          minHeight={100}
+                          maxHeight={360}
                           disabled={isReadOnly}
                           value={wb02Data.impactAndResults}
                           onChange={(e) =>
@@ -1554,7 +1736,6 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             })
                           }
                           placeholder="Trình bày kết quả áp dụng cụ thể vào thực tiễn, số lượng hội viên sinh viên tham gia/hưởng ứng, đánh giá và ghi nhận của lãnh đạo đơn vị, tác động tích cực đến phong trào..."
-                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y min-h-[100px]"
                         />
                       </div>
 
@@ -1567,11 +1748,13 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           3. Khả năng lan tỏa và nhân rộng
                         </label>
                         <p className="text-[11.5px] text-[#64748B] leading-snug">
-                          Trình bày khả năng nghiên cứu triển khai mô hình, giải pháp, sáng kiến trong phạm vi rộng hơn (trong trường thành viên, các liên chi hội, cụm thi đua hoặc toàn ĐHĐN).
+                          <strong>Tiêu chuẩn:</strong> Có khả năng nghiên cứu triển khai mô hình, giải pháp, sáng kiến trong phạm vi rộng hơn (trong trường thành viên, các liên chi hội, cụm thi đua hoặc toàn Đại học Đà Nẵng).
                         </p>
-                        <textarea
+                        <AutoResizeTextarea
                           id="wb02-sec-scalability"
                           rows={3}
+                          minHeight={84}
+                          maxHeight={320}
                           disabled={isReadOnly}
                           value={wb02Data.scalabilityAndSpread || ''}
                           onChange={(e) =>
@@ -1580,7 +1763,6 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             })
                           }
                           placeholder="Nêu rõ tiềm năng, điều kiện và phương án để mô hình có thể được chuyển giao, nhân rộng và áp dụng hiệu quả cho các đơn vị bạn..."
-                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y min-h-[85px]"
                         />
                       </div>
 
@@ -1593,11 +1775,13 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           4. Tính điển hình, tiêu biểu của mô hình
                         </label>
                         <p className="text-[11.5px] text-[#64748B] leading-snug">
-                          Làm rõ tính tiêu biểu của mô hình, giải pháp, sáng kiến so với các mô hình, giải pháp, sáng kiến cùng cấp, cùng nội dung và lĩnh vực áp dụng.
+                          <strong>Tiêu chuẩn:</strong> Tiêu biểu so với các mô hình, giải pháp, sáng kiến cùng cấp, cùng nội dung và lĩnh vực áp dụng.
                         </p>
-                        <textarea
+                        <AutoResizeTextarea
                           id="wb02-sec-exemplary"
                           rows={3}
+                          minHeight={84}
+                          maxHeight={320}
                           disabled={isReadOnly}
                           value={wb02Data.exemplaryNature || ''}
                           onChange={(e) =>
@@ -1606,7 +1790,6 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             })
                           }
                           placeholder="Phân tích tính tiêu biểu, nổi trội của mô hình so với các hoạt động tương tự trong năm học..."
-                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y min-h-[85px]"
                         />
                       </div>
                     </div>
@@ -1658,12 +1841,15 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div className="md:col-span-2">
-                      <Input
-                        label={
-                          activeApp.category === 'TRUYEN_LUA'
+                      <div className="md:min-h-[2.25rem] flex items-end pb-1.5">
+                        <label htmlFor="wb02-report-title-fallback" className="text-[12.5px] font-bold text-[#172A3A] select-none">
+                          {activeApp.category === 'TRUYEN_LUA'
                             ? 'Tiêu đề báo cáo thành tích cá nhân nhiều năm liền *'
-                            : 'Tên dự án khởi nghiệp / Đề tài nghiên cứu khoa học *'
-                        }
+                            : 'Tên dự án khởi nghiệp / Đề tài nghiên cứu khoa học *'}
+                        </label>
+                      </div>
+                      <input
+                        id="wb02-report-title-fallback"
                         disabled={isReadOnly}
                         value={wb02Data.reportTitle}
                         onChange={(e) =>
@@ -1671,29 +1857,41 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             reportTitle: e.target.value,
                           })
                         }
+                        className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
                       />
                     </div>
-                    <Input
-                      label="Giai đoạn triển khai / cống hiến *"
-                      disabled={isReadOnly}
-                      value={wb02Data.implementationPeriod}
-                      onChange={(e) =>
-                        updateWhiteBirdWB02(activeApp.id, {
-                          implementationPeriod: e.target.value,
-                        })
-                      }
-                      placeholder="VD: 2023 – 2026"
-                    />
+                    <div>
+                      <div className="md:min-h-[2.25rem] flex items-end pb-1.5">
+                        <label htmlFor="wb02-period-fallback" className="text-[12.5px] font-bold text-[#172A3A] select-none">
+                          Giai đoạn triển khai / cống hiến *
+                        </label>
+                      </div>
+                      <input
+                        id="wb02-period-fallback"
+                        disabled={isReadOnly}
+                        value={wb02Data.implementationPeriod}
+                        onChange={(e) =>
+                          updateWhiteBirdWB02(activeApp.id, {
+                            implementationPeriod: e.target.value,
+                          })
+                        }
+                        placeholder="VD: 2023 – 2026"
+                        className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                      />
+                    </div>
                   </div>
 
                   <div>
-                    <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
+                    <label htmlFor="wb02-context-fallback" className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
                       {activeApp.category === 'TRUYEN_LUA'
                         ? 'Quá trình giữ chức vụ và rèn luyện, phấn đấu trong nhiều năm liền'
                         : 'Bối cảnh xuất phát, tính cấp thiết và mục tiêu của dự án / đề tài'}
                     </label>
-                    <textarea
+                    <AutoResizeTextarea
+                      id="wb02-context-fallback"
                       rows={3}
+                      minHeight={72}
+                      maxHeight={200}
                       disabled={isReadOnly}
                       value={wb02Data.contextAndObjectives}
                       onChange={(e) =>
@@ -1702,18 +1900,20 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         })
                       }
                       placeholder="Trình bày bối cảnh, mục tiêu hoặc các cột mốc rèn luyện..."
-                      className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
+                    <label htmlFor="wb02-solution-fallback" className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
                       {activeApp.category === 'TRUYEN_LUA'
                         ? 'Các đóng góp tiêu biểu cho sự phát triển chung của công tác Hội và phong trào sinh viên ĐHĐN *'
                         : 'Nội dung khoa học, công nghệ, điểm đổi mới sáng tạo và tính thiết thực của dự án / đề tài *'}
                     </label>
-                    <textarea
+                    <AutoResizeTextarea
+                      id="wb02-solution-fallback"
                       rows={4}
+                      minHeight={90}
+                      maxHeight={320}
                       disabled={isReadOnly}
                       value={wb02Data.solutionAndExecution}
                       onChange={(e) =>
@@ -1722,18 +1922,20 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         })
                       }
                       placeholder="Mô tả chi tiết nội dung triển khai..."
-                      className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
+                    <label htmlFor="wb02-impact-fallback" className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
                       {activeApp.category === 'TRUYEN_LUA'
                         ? 'Hiệu quả và thành tích cụ thể đã đạt được *'
                         : 'Kết quả định lượng đạt được, hiệu quả thực tiễn & khả năng ứng dụng *'}
                     </label>
-                    <textarea
+                    <AutoResizeTextarea
+                      id="wb02-impact-fallback"
                       rows={3}
+                      minHeight={90}
+                      maxHeight={320}
                       disabled={isReadOnly}
                       value={wb02Data.impactAndResults}
                       onChange={(e) =>
@@ -1742,7 +1944,6 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         })
                       }
                       placeholder="VD: Thu hút hơn 2.500 hội viên sinh viên tham gia..."
-                      className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y"
                     />
                   </div>
 
@@ -1811,11 +2012,14 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
+                      <label htmlFor="wb03-summary" className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
                         Mô tả hình ảnh, sản phẩm minh họa (nếu có)
                       </label>
-                      <textarea
+                      <AutoResizeTextarea
+                        id="wb03-summary"
                         rows={3}
+                        minHeight={84}
+                        maxHeight={260}
                         disabled={isReadOnly}
                         value={wb03Data.awardOrRecognitionSummary}
                         onChange={(e) =>
@@ -1824,21 +2028,26 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           })
                         }
                         placeholder="Mô tả khái quát về các hình ảnh hoạt động, sản phẩm mẫu hoặc bài báo minh họa đính kèm (nếu có)..."
-                        className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y min-h-[80px]"
                       />
                     </div>
 
-                    <Input
-                      label="Liên kết hình ảnh, video, sản phẩm hoặc tài liệu minh họa (nếu có)"
-                      disabled={isReadOnly}
-                      value={wb03Data.mediaAndProductLinks}
-                      onChange={(e) =>
-                        updateWhiteBirdWB03(activeApp.id, {
-                          mediaAndProductLinks: e.target.value,
-                        })
-                      }
-                      placeholder="https://..."
-                    />
+                    <div>
+                      <label htmlFor="wb03-links" className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
+                        Liên kết hình ảnh, video, sản phẩm hoặc tài liệu minh họa (nếu có)
+                      </label>
+                      <input
+                        id="wb03-links"
+                        disabled={isReadOnly}
+                        value={wb03Data.mediaAndProductLinks}
+                        onChange={(e) =>
+                          updateWhiteBirdWB03(activeApp.id, {
+                            mediaAndProductLinks: e.target.value,
+                          })
+                        }
+                        placeholder="https://..."
+                        className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                      />
+                    </div>
                   </div>
                 );
               }
@@ -1863,38 +2072,57 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <Input
-                      label="Cấp công nhận / giải thưởng cao nhất đạt được *"
-                      disabled={isReadOnly}
-                      value={activeApp.requirements.wb03.highestAwardLevel}
-                      onChange={(e) =>
-                        updateWhiteBirdWB03(activeApp.id, {
-                          highestAwardLevel: e.target.value,
-                        })
-                      }
-                      placeholder="VD: Giải Nhất cấp Đại học Đà Nẵng / Bằng khen HSV ĐHĐN"
-                    />
-                    <Input
-                      label="Số quyết định / Số giấy chứng nhận & Ngày cấp"
-                      disabled={isReadOnly}
-                      value={activeApp.requirements.wb03.decisionNumbersAndDates}
-                      onChange={(e) =>
-                        updateWhiteBirdWB03(activeApp.id, {
-                          decisionNumbersAndDates: e.target.value,
-                        })
-                      }
-                      placeholder="VD: QĐ số 189/QĐ-ĐHĐN ngày 15/05/2026"
-                    />
+                    <div>
+                      <div className="md:min-h-[2.25rem] flex items-end pb-1.5">
+                        <label htmlFor="wb03-award-level" className="text-[12.5px] font-bold text-[#172A3A] select-none">
+                          Cấp công nhận / giải thưởng cao nhất đạt được *
+                        </label>
+                      </div>
+                      <input
+                        id="wb03-award-level"
+                        disabled={isReadOnly}
+                        value={activeApp.requirements.wb03.highestAwardLevel}
+                        onChange={(e) =>
+                          updateWhiteBirdWB03(activeApp.id, {
+                            highestAwardLevel: e.target.value,
+                          })
+                        }
+                        placeholder="VD: Giải Nhất cấp Đại học Đà Nẵng / Bằng khen HSV ĐHĐN"
+                        className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                      />
+                    </div>
+                    <div>
+                      <div className="md:min-h-[2.25rem] flex items-end pb-1.5">
+                        <label htmlFor="wb03-decisions" className="text-[12.5px] font-bold text-[#172A3A] select-none">
+                          Số quyết định / Số giấy chứng nhận & Ngày cấp
+                        </label>
+                      </div>
+                      <input
+                        id="wb03-decisions"
+                        disabled={isReadOnly}
+                        value={activeApp.requirements.wb03.decisionNumbersAndDates}
+                        onChange={(e) =>
+                          updateWhiteBirdWB03(activeApp.id, {
+                            decisionNumbersAndDates: e.target.value,
+                          })
+                        }
+                        placeholder="VD: QĐ số 189/QĐ-ĐHĐN ngày 15/05/2026"
+                        className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                      />
+                    </div>
                   </div>
 
                   <div>
-                    <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
+                    <label htmlFor="wb03-summary-fallback" className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
                       {activeApp.category === 'TRUYEN_LUA'
                         ? 'Danh mục Quyết định chức vụ Hội, Bằng khen, Giấy khen và thành tích tiêu biểu *'
                         : 'Tóm tắt giải thưởng đạt được (từ cấp ĐHĐN trở lên) và minh chứng ứng dụng thực tế *'}
                     </label>
-                    <textarea
+                    <AutoResizeTextarea
+                      id="wb03-summary-fallback"
                       rows={4}
+                      minHeight={90}
+                      maxHeight={320}
                       disabled={isReadOnly}
                       value={activeApp.requirements.wb03.awardOrRecognitionSummary}
                       onChange={(e) =>
@@ -1903,43 +2131,66 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         })
                       }
                       placeholder="Liệt kê rõ tên giải thưởng, bằng khen, quyết định công nhận hoặc kết quả nghiệm thu..."
-                      className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
                     />
                   </div>
 
-                  <Input
-                    label="Liên kết hình ảnh hoạt động, sản phẩm mẫu, bài báo hoặc video minh họa (nếu có)"
-                    disabled={isReadOnly}
-                    value={activeApp.requirements.wb03.mediaAndProductLinks}
-                    onChange={(e) =>
-                      updateWhiteBirdWB03(activeApp.id, {
-                        mediaAndProductLinks: e.target.value,
-                      })
-                    }
-                    placeholder="https://..."
-                  />
+                  <div>
+                    <label htmlFor="wb03-links-fallback" className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
+                      Liên kết hình ảnh hoạt động, sản phẩm mẫu, bài báo hoặc video minh họa (nếu có)
+                    </label>
+                    <input
+                      id="wb03-links-fallback"
+                      disabled={isReadOnly}
+                      value={activeApp.requirements.wb03.mediaAndProductLinks}
+                      onChange={(e) =>
+                        updateWhiteBirdWB03(activeApp.id, {
+                          mediaAndProductLinks: e.target.value,
+                        })
+                      }
+                      placeholder="https://..."
+                      className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                    />
+                  </div>
                 </div>
               );
             })()}
 
             {/* Evidence Attachments Section for Current Requirement */}
             <div className="pt-4 border-t border-[#EDF3F8] space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <div>
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div className="space-y-1">
                   <h3 className="text-[13.5px] font-bold text-[#172A3A]">
                     {activeReqId === 'WB03' && activeApp.category === 'UOM_MAM'
-                      ? 'Tệp minh họa đính kèm (nếu có)'
+                      ? 'Tệp hình ảnh, sản phẩm minh họa đính kèm (nếu có)'
                       : activeReqId === 'WB02' && activeApp.category === 'UOM_MAM'
-                      ? 'Báo cáo thuyết minh theo mẫu và minh chứng về tính hiệu quả'
+                      ? 'Tệp Báo cáo thuyết minh theo mẫu & Tài liệu minh chứng tính hiệu quả'
                       : `Tệp minh chứng đính kèm cho ${activeReqId}`}
                   </h3>
-                  <p className="text-[11.5px] text-[#607483]">
-                    {activeReqId === 'WB03' && activeApp.category === 'UOM_MAM'
-                      ? 'Hỗ trợ hình ảnh, tài liệu minh họa (PDF, JPG, PNG, DOCX, XLSX – Tối đa 25MB/tệp, không bắt buộc)'
-                      : activeReqId === 'WB02' && activeApp.category === 'UOM_MAM'
-                      ? 'Đính kèm Báo cáo thuyết minh theo mẫu (có cam kết tính sáng tạo) cùng các minh chứng về tính hiệu quả thực tiễn (Khoản 6.1 Điều 6).'
-                      : 'Hỗ trợ PDF, JPG, PNG, DOCX, XLSX (Tối đa 25MB/tệp)'}
-                  </p>
+                  <div className="text-[11.5px] text-[#607483] space-y-1 leading-relaxed">
+                    {activeReqId === 'WB02' && activeApp.category === 'UOM_MAM' ? (
+                      <>
+                        <p>
+                          Theo <strong>Khoản 6.1 Điều 6</strong>, hồ sơ WB02 bao gồm 2 nhóm tài liệu đính kèm:
+                        </p>
+                        <ul className="list-disc pl-4 space-y-0.5 text-[#334155]">
+                          <li>
+                            <strong>1. Báo cáo thuyết minh mô hình theo mẫu:</strong> Bản PDF/DOCX hoàn chỉnh có chữ ký xác nhận của đại diện và cam kết tính sáng tạo.
+                          </li>
+                          <li>
+                            <strong>2. Minh chứng về tính hiệu quả:</strong> Các văn bản công nhận/khen thưởng, báo cáo thống kê số liệu thực tế, hình ảnh tổ chức hoặc bài viết truyền thông.
+                          </li>
+                        </ul>
+                      </>
+                    ) : activeReqId === 'WB03' && activeApp.category === 'UOM_MAM' ? (
+                      <p>
+                        Hỗ trợ hình ảnh, tài liệu minh họa (PDF, JPG, PNG, DOCX, XLSX – Tối đa 25MB/tệp, không bắt buộc).
+                      </p>
+                    ) : (
+                      <p>
+                        Hỗ trợ PDF, JPG, PNG, DOCX, XLSX (Tối đa 25MB/tệp).
+                      </p>
+                    )}
+                  </div>
                 </div>
                 {!isReadOnly && (
                   <Button
@@ -1947,12 +2198,15 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     variant="secondary"
                     disabled={isUploading}
                     onClick={() => triggerUploadForReq(activeReqId)}
+                    className="shrink-0"
                   >
                     <Upload size={14} className="mr-1.5" />
                     {isUploading
                       ? 'Đang tải lên...'
                       : activeReqId === 'WB03' && activeApp.category === 'UOM_MAM'
                       ? 'Tải tệp minh họa WB03 (nếu có)'
+                      : activeReqId === 'WB02' && activeApp.category === 'UOM_MAM'
+                      ? 'Tải tệp báo cáo / minh chứng WB02'
                       : `Tải tệp minh chứng ${activeReqId}`}
                   </Button>
                 )}

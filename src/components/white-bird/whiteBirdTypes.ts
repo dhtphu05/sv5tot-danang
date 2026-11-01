@@ -311,6 +311,10 @@ export interface WhiteBirdWB02Declaration {
   scalabilityAndSpread?: string;
   exemplaryNature?: string;
   leadRepresentative?: string;
+  leadUnit?: string;
+  leadPhone?: string;
+  leadEmail?: string;
+  presentationLink?: string;
   coAuthorsOrTeamMembers: string;
   commitmentConfirmed: boolean;
   evidenceFiles: WhiteBirdEvidenceItem[];

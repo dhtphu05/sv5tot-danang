@@ -12,9 +12,21 @@ import {
   removeWhiteBirdEvidence,
   getAllWhiteBirdApplications,
 } from '../components/white-bird/whiteBirdStore.js';
-import { WhiteBirdApplication } from '../components/white-bird/whiteBirdTypes.js';
+import { WhiteBirdApplication, WhiteBirdEvidenceItem } from '../components/white-bird/whiteBirdTypes.js';
 
 describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement Regression Suite', () => {
+  function mockEv(id: string, name: string, fileType = 'pdf'): WhiteBirdEvidenceItem {
+    return {
+      id,
+      name,
+      fileType,
+      size: '1.5 MB',
+      uploadedAt: '01/11/2026',
+      status: 'has_evidence',
+      url: `/blob/${name}`,
+    };
+  }
+
   // Helper to create a clean test app
   function createTestApplication(
     category: 'UOM_MAM' | 'TRUYEN_LUA' | 'SANG_TAO' = 'UOM_MAM',
@@ -26,12 +38,18 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
       nomineeType,
       nomineeName: nomineeType === 'COLLECTIVE' ? 'CLB Sinh viên Nghiên cứu Khoa học DUT' : 'Nguyễn Văn A',
       nominationTitle: 'Mô hình Số hóa Sổ tay Sinh viên 5 tốt & Ngân hàng Minh chứng trực tuyến',
+      studentId: '102220084',
       institutionId: 'DUT',
       institutionName: 'Trường Đại học Bách khoa – ĐHĐN',
+      schoolReviewUnitId: 'unit-dut',
+      schoolReviewUnitName: 'Hội Sinh viên ĐH Bách khoa',
       facultyName: 'Khoa Công nghệ Thông tin',
+      className: '22T_DT1',
       academicYear: '2025–2026',
+      contactPhone: '0905123456',
+      preparedByUserId: 'usr-test-1',
       preparedByUserName: 'Nguyễn Văn A',
-      preparedByStudentId: '102220084',
+      preparedByUserEmail: 'nguyenvana@dut.udn.vn',
     });
   }
 
@@ -43,14 +61,7 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
       nominatingUnitName: 'Ban Thư ký Hội Sinh viên Trường ĐH Bách khoa',
       endorsementSummary: 'Mô hình xuất sắc được Hội Sinh viên trường đánh giá cao',
     });
-    addWhiteBirdEvidence(app.id, 'WB01', {
-      id: 'wb01-test-file-1',
-      name: 'Van_ban_gioi_thieu.pdf',
-      fileType: 'pdf',
-      size: '2.4 MB',
-      uploadedAt: '01/11/2026',
-      url: '/blob/wb01.pdf',
-    });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('wb01-test-file-1', 'Van_ban_gioi_thieu.pdf'));
 
     // Fill WB02
     updateWhiteBirdWB02(app.id, {
@@ -62,17 +73,14 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
       scalabilityAndSpread: 'Có khả năng áp dụng cho toàn bộ các trường thành viên ĐHĐN',
       exemplaryNature: 'Là mô hình tiên phong chuyển đổi số trong phong trào sinh viên',
       leadRepresentative: 'Nguyễn Văn A (MSSV 102220084, Trưởng nhóm)',
+      leadUnit: 'Khoa Công nghệ Thông tin, Trường ĐH Bách khoa',
+      leadPhone: '0905123456',
+      leadEmail: 'nguyenvana@dut.udn.vn',
+      presentationLink: 'https://youtube.com/watch?v=demo',
       coAuthorsOrTeamMembers: 'Trần Thị B – Kỹ thuật\nLê Văn C – Thiết kế',
       commitmentConfirmed: true,
     });
-    addWhiteBirdEvidence(app.id, 'WB02', {
-      id: 'wb02-test-file-1',
-      name: 'Bao_cao_thuyet_minh.pdf',
-      fileType: 'pdf',
-      size: '4.8 MB',
-      uploadedAt: '01/11/2026',
-      url: '/blob/wb02.pdf',
-    });
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('wb02-test-file-1', 'Bao_cao_thuyet_minh.pdf'));
 
     // WB03 is kept empty!
     const updated = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
@@ -98,13 +106,7 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
       nominatingUnitName: 'Ban Thư ký Hội Sinh viên Trường ĐH Bách khoa',
       endorsementSummary: 'Mô hình xuất sắc được đánh giá cao',
     });
-    addWhiteBirdEvidence(app.id, 'WB01', {
-      id: 'f-wb01',
-      name: 'VB_De_Nghi.pdf',
-      fileType: 'pdf',
-      size: '1.2 MB',
-      uploadedAt: '01/11/2026',
-    });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('f-wb01', 'VB_De_Nghi.pdf'));
 
     updateWhiteBirdWB02(app.id, {
       reportTitle: 'Mô hình Đổi mới Sáng tạo',
@@ -113,26 +115,14 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
       impactAndResults: 'Hiệu quả cao trong toàn trường',
       commitmentConfirmed: true,
     });
-    addWhiteBirdEvidence(app.id, 'WB02', {
-      id: 'f-wb02',
-      name: 'BC_Thuyet_Minh.pdf',
-      fileType: 'pdf',
-      size: '3.1 MB',
-      uploadedAt: '01/11/2026',
-    });
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('f-wb02', 'BC_Thuyet_Minh.pdf'));
 
     // Add WB03 illustration file and description
     updateWhiteBirdWB03(app.id, {
       awardOrRecognitionSummary: 'Hình ảnh hoạt động tập huấn chuyển đổi số',
       mediaAndProductLinks: 'https://youtube.com/watch?v=demo',
     });
-    addWhiteBirdEvidence(app.id, 'WB03', {
-      id: 'f-wb03',
-      name: 'Hinh_anh_hoat_dong.jpg',
-      fileType: 'jpg',
-      size: '1.5 MB',
-      uploadedAt: '01/11/2026',
-    });
+    addWhiteBirdEvidence(app.id, 'WB03', mockEv('f-wb03', 'Hinh_anh_hoat_dong.jpg', 'jpg'));
 
     const updated = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
     const readiness = validateWhiteBirdReadiness(updated);
@@ -153,7 +143,7 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
       nominatingUnitName: 'Ban Thư ký Hội Sinh viên Trường',
       endorsementSummary: 'Tốt',
     });
-    addWhiteBirdEvidence(app.id, 'WB01', { id: 'f1', name: 'vb.pdf', fileType: 'pdf', size: '1MB', uploadedAt: 'today' });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('f1', 'vb.pdf'));
 
     updateWhiteBirdWB02(app.id, {
       reportTitle: 'Mô hình A',
@@ -162,10 +152,10 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
       impactAndResults: 'Hiệu quả cao',
       commitmentConfirmed: true,
     });
-    addWhiteBirdEvidence(app.id, 'WB02', { id: 'f2', name: 'bc.pdf', fileType: 'pdf', size: '1MB', uploadedAt: 'today' });
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('f2', 'bc.pdf'));
 
     // Add WB03 file
-    addWhiteBirdEvidence(app.id, 'WB03', { id: 'f3', name: 'demo.png', fileType: 'png', size: '500KB', uploadedAt: 'today' });
+    addWhiteBirdEvidence(app.id, 'WB03', mockEv('f3', 'demo.png', 'png'));
     let ready = validateWhiteBirdReadiness(getAllWhiteBirdApplications().find((a) => a.id === app.id)!);
     assert.strictEqual(ready.readyCount, 2);
     assert.strictEqual(ready.totalRequired, 2);
@@ -187,7 +177,7 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
       nominatingUnitName: 'Ban Thư ký Hội Sinh viên Trường',
       endorsementSummary: 'Tốt',
     });
-    addWhiteBirdEvidence(app.id, 'WB01', { id: 'f1', name: 'vb.pdf', fileType: 'pdf', size: '1MB', uploadedAt: 'today' });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('f1', 'vb.pdf'));
 
     const ready1 = validateWhiteBirdReadiness(getAllWhiteBirdApplications().find((a) => a.id === app.id)!);
     assert.strictEqual(ready1.readyCount, 1);
@@ -216,12 +206,16 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
     assert.strictEqual(updated.requirements.wb03.mediaAndProductLinks, 'https://danang.vn/award');
   });
 
-  it('6. Auto-save WB03 và WB02 hoạt động bảo toàn toàn bộ trường mới', () => {
+  it('6. Auto-save WB03 và WB02 hoạt động bảo toàn toàn bộ trường mới (bao gồm thông tin Người đại diện)', () => {
     const app = createTestApplication('UOM_MAM', 'COLLECTIVE');
     updateWhiteBirdWB02(app.id, {
       scalabilityAndSpread: 'Có thể áp dụng cho 5 trường thành viên',
       exemplaryNature: 'Được tuyên dương là sáng kiến tiêu biểu cấp cơ sở',
       leadRepresentative: 'Nguyễn Văn A – Trưởng ban điều hành',
+      leadUnit: 'Lớp 22T_DT1, Khoa CNTT, Trường ĐH Bách khoa',
+      leadPhone: '0905999888',
+      leadEmail: 'lead@dut.udn.vn',
+      presentationLink: 'https://canva.com/design/demo',
       coAuthorsOrTeamMembers: 'Nguyễn Văn A – Trưởng nhóm\nTrần Văn B – Lập trình',
     });
 
@@ -229,14 +223,18 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
     assert.strictEqual(updated.requirements.wb02.scalabilityAndSpread, 'Có thể áp dụng cho 5 trường thành viên');
     assert.strictEqual(updated.requirements.wb02.exemplaryNature, 'Được tuyên dương là sáng kiến tiêu biểu cấp cơ sở');
     assert.strictEqual(updated.requirements.wb02.leadRepresentative, 'Nguyễn Văn A – Trưởng ban điều hành');
+    assert.strictEqual(updated.requirements.wb02.leadUnit, 'Lớp 22T_DT1, Khoa CNTT, Trường ĐH Bách khoa');
+    assert.strictEqual(updated.requirements.wb02.leadPhone, '0905999888');
+    assert.strictEqual(updated.requirements.wb02.leadEmail, 'lead@dut.udn.vn');
+    assert.strictEqual(updated.requirements.wb02.presentationLink, 'https://canva.com/design/demo');
     assert.strictEqual(updated.requirements.wb02.coAuthorsOrTeamMembers, 'Nguyễn Văn A – Trưởng nhóm\nTrần Văn B – Lập trình');
   });
 
   it('7. Kho minh chứng cập nhật đúng tổng số lượng tệp của cả 3 mục', () => {
     const app = createTestApplication('UOM_MAM', 'COLLECTIVE');
-    addWhiteBirdEvidence(app.id, 'WB01', { id: 'f1', name: 'vb.pdf', fileType: 'pdf', size: '1MB', uploadedAt: 'today' });
-    addWhiteBirdEvidence(app.id, 'WB02', { id: 'f2', name: 'bc.pdf', fileType: 'pdf', size: '2MB', uploadedAt: 'today' });
-    addWhiteBirdEvidence(app.id, 'WB03', { id: 'f3', name: 'img.png', fileType: 'png', size: '500KB', uploadedAt: 'today' });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('f1', 'vb.pdf'));
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('f2', 'bc.pdf'));
+    addWhiteBirdEvidence(app.id, 'WB03', mockEv('f3', 'img.png', 'png'));
 
     const updated = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
     const totalFiles =
@@ -252,7 +250,7 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
       nominatingUnitName: 'BCH Liên chi Hội',
       endorsementSummary: 'Ủy viên gương mẫu',
     });
-    addWhiteBirdEvidence(app.id, 'WB01', { id: 'tl-1', name: 'vb.pdf', fileType: 'pdf', size: '1MB', uploadedAt: 'today' });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('tl-1', 'vb.pdf'));
 
     updateWhiteBirdWB02(app.id, {
       reportTitle: 'Báo cáo thành tích cá nhân xuất sắc nhiều năm liền',
@@ -261,7 +259,7 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
       impactAndResults: 'Được tặng nhiều bằng khen',
       commitmentConfirmed: true,
     });
-    addWhiteBirdEvidence(app.id, 'WB02', { id: 'tl-2', name: 'bc.pdf', fileType: 'pdf', size: '2MB', uploadedAt: 'today' });
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('tl-2', 'bc.pdf'));
 
     // Leave WB03 empty
     const updated = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
@@ -277,7 +275,7 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
     updateWhiteBirdWB03(app.id, {
       awardOrRecognitionSummary: 'Bằng khen Trung ương Hội Sinh viên Việt Nam năm 2024, 2025',
     });
-    addWhiteBirdEvidence(app.id, 'WB03', { id: 'tl-3', name: 'bang_khen.pdf', fileType: 'pdf', size: '1MB', uploadedAt: 'today' });
+    addWhiteBirdEvidence(app.id, 'WB03', mockEv('tl-3', 'bang_khen.pdf'));
 
     const updatedReady = validateWhiteBirdReadiness(getAllWhiteBirdApplications().find((a) => a.id === app.id)!);
     assert.strictEqual(updatedReady.readyCount, 3, 'Ready count is 3/3');
@@ -290,7 +288,7 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
       nominatingUnitName: 'Đơn vị giới thiệu',
       endorsementSummary: 'Đề tài xuất sắc',
     });
-    addWhiteBirdEvidence(app.id, 'WB01', { id: 'st-1', name: 'vb.pdf', fileType: 'pdf', size: '1MB', uploadedAt: 'today' });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('st-1', 'vb.pdf'));
 
     updateWhiteBirdWB02(app.id, {
       reportTitle: 'Dự án khởi nghiệp công nghệ AI',
@@ -299,7 +297,7 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
       impactAndResults: 'Ứng dụng vào 10 doanh nghiệp',
       commitmentConfirmed: true,
     });
-    addWhiteBirdEvidence(app.id, 'WB02', { id: 'st-2', name: 'bc.pdf', fileType: 'pdf', size: '2MB', uploadedAt: 'today' });
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('st-2', 'bc.pdf'));
 
     // Leave WB03 empty
     const updated = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
@@ -316,7 +314,7 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
       nominatingUnitName: 'Hội Sinh viên ĐHĐN',
       endorsementSummary: 'Xuất sắc',
     });
-    addWhiteBirdEvidence(app.id, 'WB01', { id: 'b-wb01', name: 'vb.pdf', fileType: 'pdf', size: '1MB', uploadedAt: 'today' });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('b-wb01', 'vb.pdf'));
 
     updateWhiteBirdWB02(app.id, {
       reportTitle: 'Mô hình X',
@@ -325,7 +323,7 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
       impactAndResults: 'Hiệu quả X',
       commitmentConfirmed: true,
     });
-    addWhiteBirdEvidence(app.id, 'WB02', { id: 'b-wb02', name: 'bc.pdf', fileType: 'pdf', size: '1MB', uploadedAt: 'today' });
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('b-wb02', 'bc.pdf'));
 
     // WB03 is empty
     const res = submitWhiteBirdApplication(app.id);
