@@ -335,4 +335,124 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
     assert.strictEqual(fromStore?.status, 'submitted');
     assert.strictEqual(fromStore?.requirements.wb03.evidenceFiles.length, 0);
   });
+
+  it('11. Cánh chim sáng tạo (SANG_TAO) Cá nhân: Hoàn thiện đủ WB01, WB02, WB03 → canSubmit = true, readyCount = 3/3, nộp thành công', () => {
+    const app = createTestApplication('SANG_TAO', 'INDIVIDUAL');
+
+    // WB01
+    updateWhiteBirdWB01(app.id, {
+      nominatingUnitName: 'Ban Thư ký Hội Sinh viên Trường ĐH Bách khoa',
+      endorsementSummary: 'Đề tài xuất sắc đạt giải cao trong nghiên cứu khoa học',
+      nominatingDocumentNumber: '12/TTr-HSV',
+    });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('st-ind-wb01', 'Van_ban_de_nghi_ST.pdf'));
+
+    // WB02
+    updateWhiteBirdWB02(app.id, {
+      reportTitle: 'Nghiên cứu ứng dụng công nghệ Edge AI trong giám sát giao thông đô thị',
+      implementationPeriod: '09/2024 – 05/2026',
+      contextAndObjectives: 'Giải quyết bài toán ùn tắc và giám sát phương tiện theo thời gian thực',
+      solutionAndExecution: 'Phát triển mô hình nhận diện AI tối ưu chạy trên phần cứng nhúng',
+      impactAndResults: 'Thử nghiệm đạt độ chính xác 96%, giảm độ trễ xử lý 40%',
+      leadRepresentative: 'Nguyễn Văn A',
+      leadUnit: 'Khoa CNTT – Trường ĐH Bách khoa',
+      leadPhone: '0905123456',
+      leadEmail: 'nguyenvana@dut.udn.vn',
+      presentationLink: 'https://youtube.com/watch?v=demo-st',
+      commitmentConfirmed: true,
+    });
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('st-ind-wb02', 'Bao_cao_thuyet_minh_ST.pdf'));
+
+    // WB03
+    updateWhiteBirdWB03(app.id, {
+      highestAwardLevel: 'Cấp Đại học Đà Nẵng',
+      decisionNumbersAndDates: 'QĐ số 412/QĐ-ĐHĐN ngày 19/05/2026',
+      awardOrRecognitionSummary: 'Giải Nhất Cuộc thi Sinh viên Nghiên cứu Khoa học cấp Đại học Đà Nẵng năm học 2025–2026',
+      mediaAndProductLinks: 'https://udn.vn/tin-tuc/trao-giai-nckh-2026',
+      practicalApplicationNote: 'Đã chuyển giao thử nghiệm tại Trung tâm Điều hành giao thông thông minh',
+    });
+    addWhiteBirdEvidence(app.id, 'WB03', mockEv('st-ind-wb03', 'Quyet_dinh_khen_thuong_NCKH_DHDN.pdf'));
+
+    const updated = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    const readiness = validateWhiteBirdReadiness(updated);
+
+    assert.strictEqual(readiness.wb01Ready, true);
+    assert.strictEqual(readiness.wb02Ready, true);
+    assert.strictEqual(readiness.wb03Ready, true);
+    assert.strictEqual(readiness.isWb03Optional, false);
+    assert.strictEqual(readiness.readyCount, 3);
+    assert.strictEqual(readiness.totalRequired, 3);
+    assert.strictEqual(readiness.canSubmit, true);
+
+    const submitRes = submitWhiteBirdApplication(app.id);
+    assert.strictEqual(submitRes.success, true);
+    assert.strictEqual(submitRes.application?.status, 'submitted');
+  });
+
+  it('12. Cánh chim sáng tạo (SANG_TAO) Tập thể: Kê khai đầy đủ người chịu trách nhiệm chính, danh sách thành viên nhóm, cam kết bản quyền & minh chứng giải thưởng → lưu trữ đầy đủ, canSubmit = true', () => {
+    const app = createTestApplication('SANG_TAO', 'COLLECTIVE');
+
+    updateWhiteBirdWB01(app.id, {
+      nominatingUnitName: 'Ban Chấp hành Liên chi Hội Khoa Điện tử Viễn thông',
+      endorsementSummary: 'Dự án khởi nghiệp đổi mới sáng tạo xuất sắc',
+    });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('st-col-wb01', 'Van_ban_LCH.pdf'));
+
+    const teamList =
+      '1. Nguyễn Văn A – MSSV 102220084 – Trưởng nhóm / Nghiên cứu chính\n2. Trần Thị B – MSSV 102220085 – Kỹ sư phần cứng IoT\n3. Lê Văn C – MSSV 102220086 – Phát triển ứng dụng Web/Mobile';
+
+    updateWhiteBirdWB02(app.id, {
+      reportTitle: 'Dự án Khởi nghiệp Thiết bị cảnh báo ngập lụt đô thị thông minh SmartFlood',
+      implementationPeriod: 'Năm học 2025–2026',
+      contextAndObjectives: 'Ứng phó tình trạng ngập lụt cục bộ tại khu vực đô thị Đà Nẵng',
+      solutionAndExecution: 'Hệ thống cảm biến đo mức nước siêu âm kết nối truyền thông LoRaWAN',
+      impactAndResults: 'Triển khai thử nghiệm 15 điểm đo tại quận Liên Chiểu, cảnh báo tin cậy cho 10.000 hộ dân',
+      leadRepresentative: 'Nguyễn Văn A (Trưởng nhóm sáng lập)',
+      leadUnit: 'Khoa Điện tử Viễn thông, Trường ĐH Bách khoa',
+      leadPhone: '0905123456',
+      leadEmail: 'nguyenvana@dut.udn.vn',
+      coAuthorsOrTeamMembers: teamList,
+      commitmentConfirmed: true,
+    });
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('st-col-wb02', 'Thuyet_minh_du_an_SmartFlood.pdf'));
+
+    updateWhiteBirdWB03(app.id, {
+      highestAwardLevel: 'Cấp Thành phố',
+      decisionNumbersAndDates: 'QĐ số 89/QĐ-UBND ngày 28/04/2026',
+      awardOrRecognitionSummary: 'Giải Nhì Cuộc thi Khởi nghiệp Đổi mới sáng tạo thành phố Đà Nẵng Festival Startup 2026',
+    });
+    addWhiteBirdEvidence(app.id, 'WB03', mockEv('st-col-wb03', 'Giay_chung_nhan_giai_thuong_startup.pdf'));
+
+    const updated = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    const readiness = validateWhiteBirdReadiness(updated);
+
+    assert.strictEqual(readiness.canSubmit, true);
+    assert.strictEqual(readiness.readyCount, 3);
+    assert.strictEqual(readiness.totalRequired, 3);
+    assert.strictEqual(updated.requirements.wb02.coAuthorsOrTeamMembers, teamList);
+    assert.strictEqual(updated.requirements.wb02.leadRepresentative, 'Nguyễn Văn A (Trưởng nhóm sáng lập)');
+  });
+
+  it('13. Kiểm tra tính nhất quán điều kiện nộp hồ sơ của cả 3 hạng mục: Ươm mầm (2/2), Truyền lửa (3/3), Sáng tạo (3/3)', () => {
+    // 1. UOM_MAM: totalRequired = 2
+    const uomMam = createTestApplication('UOM_MAM', 'COLLECTIVE');
+    const uomMamReady = validateWhiteBirdReadiness(uomMam);
+    assert.strictEqual(uomMamReady.isWb03Optional, true);
+    assert.strictEqual(uomMamReady.totalRequired, 2);
+
+    // 2. TRUYEN_LUA: totalRequired = 3, only INDIVIDUAL
+    const truyenLua = createTestApplication('TRUYEN_LUA', 'INDIVIDUAL');
+    assert.strictEqual(truyenLua.nomineeType, 'INDIVIDUAL');
+    const truyenLuaReady = validateWhiteBirdReadiness(truyenLua);
+    assert.strictEqual(truyenLuaReady.isWb03Optional, false);
+    assert.strictEqual(truyenLuaReady.totalRequired, 3);
+
+    // 3. SANG_TAO: totalRequired = 3, INDIVIDUAL or COLLECTIVE
+    const sangTaoInd = createTestApplication('SANG_TAO', 'INDIVIDUAL');
+    const sangTaoCol = createTestApplication('SANG_TAO', 'COLLECTIVE');
+    assert.strictEqual(sangTaoInd.nomineeType, 'INDIVIDUAL');
+    assert.strictEqual(sangTaoCol.nomineeType, 'COLLECTIVE');
+    assert.strictEqual(validateWhiteBirdReadiness(sangTaoInd).totalRequired, 3);
+    assert.strictEqual(validateWhiteBirdReadiness(sangTaoCol).totalRequired, 3);
+  });
 });
