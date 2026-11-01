@@ -1,6 +1,6 @@
 /**
  * 5TOT Đại học Đà Nẵng — Giải thưởng "Cánh chim trắng" Store & Backend Sync
- * Căn cứ Quyết định số 1720/QĐ-HSV của Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng.
+ * Căn cứ Quyết định số 14-QĐ/ĐHĐN-HSV ngày 04/10/2022 của Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng.
  * Hồ sơ Giải thưởng Cánh chim trắng được nộp thẳng lên Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng.
  */
 
@@ -379,7 +379,7 @@ export function validateWhiteBirdReadiness(app: WhiteBirdApplication): {
     wb01.evidenceFiles.length > 0;
   if (!wb01Ready) {
     missingReasons.push(
-      'WB01: Cần kê khai đơn vị giới thiệu, nhận xét đề nghị và đính kèm ít nhất 01 văn bản đề nghị xét trao (Điều 5).'
+      'WB01: Cần kê khai tổ chức/cá nhân đề nghị, nội dung tóm tắt nhận xét và đính kèm ít nhất 01 tệp văn bản đề nghị xét trao (Điều 5, Điều 6).'
     );
   }
 
@@ -579,7 +579,7 @@ export function recordWhiteBirdCommitteeDecision(
     ...current,
     status: outcome,
     decisionNumber:
-      decisionNumber.trim() || (outcome === 'recognized' ? '1720/QĐ-HSV-CCT' : ''),
+      decisionNumber.trim() || (outcome === 'recognized' ? '14-QĐ/ĐHĐN-HSV-CCT' : ''),
     decisionDate: now,
     councilNote: councilNote.trim(),
     decidedByName,

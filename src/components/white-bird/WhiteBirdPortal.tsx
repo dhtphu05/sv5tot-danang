@@ -44,7 +44,9 @@ import { Input } from '../forms/Input';
 import {
   WHITE_BIRD_CATEGORIES,
   WHITE_BIRD_NOMINATING_UNIT_LABELS,
+  WHITE_BIRD_NOMINATING_SUBJECT_OPTIONS,
   WhiteBirdApplication,
+  WhiteBirdApplicationStatus,
   WhiteBirdCategory,
   WhiteBirdNominatingUnitType,
   WhiteBirdRequirementId,
@@ -75,6 +77,28 @@ export interface WhiteBirdPortalProps {
 }
 
 type WhiteBirdPortalTabId = 'overview' | 'workspace' | 'evidence' | 'results';
+
+const getRequirementCompletionStatus = (
+  isReady: boolean,
+  appStatus?: WhiteBirdApplicationStatus
+): { label: string; badgeClass: string } => {
+  if (appStatus && appStatus !== 'draft' && appStatus !== 'supplement_returned') {
+    return {
+      label: 'Đang chờ thẩm định',
+      badgeClass: 'bg-[#E0F2FE] text-[#0369A1] border border-[#BAE6FD]',
+    };
+  }
+  if (isReady) {
+    return {
+      label: 'Đã hoàn thiện kê khai',
+      badgeClass: 'bg-[#ECFDF5] text-[#047857] border border-[#A7F3D0]',
+    };
+  }
+  return {
+    label: 'Chưa hoàn thiện',
+    badgeClass: 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]',
+  };
+};
 
 export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
   currentEmail = '',
@@ -145,6 +169,55 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
     if (userApps.length === 0) return null;
     return userApps.find((a) => a.id === selectedAppId) || userApps[0];
   }, [userApps, selectedAppId]);
+
+  const handleWB01NominatorTypeChange = (newType: WhiteBirdNominatingUnitType) => {
+    if (!activeApp) return;
+    const currentName = activeApp.requirements.wb01.nominatingUnitName || '';
+    const currentType = activeApp.requirements.wb01.nominatingUnitType;
+    if (newType === currentType) return;
+
+    const knownDefaults = [
+      '',
+      `Ban Thư ký Hội Sinh viên ${activeApp.institutionName}`.toLowerCase(),
+      `Ban Thư ký Hội Sinh viên Việt Nam ${activeApp.institutionName}`.toLowerCase(),
+      `Ban Chấp hành Liên chi Hội ${activeApp.facultyName || 'Khoa'}`.toLowerCase(),
+      'Ban Chấp hành Liên chi Hội'.toLowerCase(),
+      'Ban Chấp hành Liên chi hội'.toLowerCase(),
+      `Ban Chủ nhiệm CLB/Đội/Nhóm trực thuộc HSV ${activeApp.institutionName}`.toLowerCase(),
+      'Ban Chủ nhiệm CLB/Đội/Nhóm trực thuộc HSV Đại học Đà Nẵng'.toLowerCase(),
+    ];
+
+    const isCurrentDefault =
+      knownDefaults.includes(currentName.trim().toLowerCase()) ||
+      currentName.trim().toLowerCase().startsWith('ban thư ký hội sinh viên');
+
+    let updatedName = currentName;
+
+    if (newType === 'UV_BCH_HSV_DHDN') {
+      if (isCurrentDefault) {
+        updatedName = '';
+      }
+    } else {
+      if (isCurrentDefault || !currentName.trim()) {
+        if (newType === 'BTK_HSV_TRUONG') {
+          updatedName = `Ban Thư ký Hội Sinh viên ${activeApp.institutionName}`;
+        } else if (newType === 'BCH_LIEN_CHI_HOI') {
+          updatedName = activeApp.facultyName
+            ? `Ban Chấp hành Liên chi Hội ${activeApp.facultyName}`
+            : 'Ban Chấp hành Liên chi Hội';
+        } else if (newType === 'BCN_CLB_TRUONG' || newType === 'BCN_CLB_DOI_NHOM') {
+          updatedName = `Ban Chủ nhiệm CLB/Đội/Nhóm trực thuộc HSV ${activeApp.institutionName}`;
+        } else if (newType === 'BCN_CLB_DHDN') {
+          updatedName = 'Ban Chủ nhiệm CLB/Đội/Nhóm trực thuộc HSV Đại học Đà Nẵng';
+        }
+      }
+    }
+
+    updateWhiteBirdWB01(activeApp.id, {
+      nominatingUnitType: newType,
+      nominatingUnitName: updatedName,
+    });
+  };
 
   const handleCreateSubmit = (data: {
     nominationTitle: string;
@@ -815,12 +888,10 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     </span>
                     <span
                       className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                        card.ready
-                          ? 'bg-[#DCFCE7] text-[#15803D]'
-                          : 'bg-[#FEF3C7] text-[#B45309]'
+                        getRequirementCompletionStatus(card.ready, activeApp.status).badgeClass
                       }`}
                     >
-                      {card.ready ? 'Đã hoàn tất' : 'Cần bổ sung'}
+                      {getRequirementCompletionStatus(card.ready, activeApp.status).label}
                     </span>
                   </div>
                   <h3 className="text-[14px] font-bold text-[#172A3A]">{card.title}</h3>
@@ -864,7 +935,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
               ) : (
                 <p className="text-[12.5px] text-[#15803D] font-medium">
                   Hồ sơ đã đáp ứng đầy đủ 3 thành phần theo Điều 6 Quy chế Giải thưởng Cánh chim
-                  trắng (QĐ 1720/QĐ-HSV).
+                  trắng (QĐ 14-QĐ/ĐHĐN-HSV).
                 </p>
               )}
             </div>
@@ -944,12 +1015,10 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     </span>
                     <span
                       className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full ${
-                        req.ready
-                          ? 'bg-[#DCFCE7] text-[#15803D]'
-                          : 'bg-[#FEF3C7] text-[#B45309]'
+                        getRequirementCompletionStatus(req.ready, activeApp.status).badgeClass
                       }`}
                     >
-                      {req.ready ? 'Đạt yêu cầu' : 'Chưa đủ'}
+                      {getRequirementCompletionStatus(req.ready, activeApp.status).label}
                     </span>
                   </div>
                   <div className="text-[13.5px] font-bold text-[#172A3A]">{req.title}</div>
@@ -993,113 +1062,177 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
 
           {/* Right Form Panel */}
           <div className="lg:col-span-8 bg-white rounded-[14px] border border-[#DCE7EE] p-5 space-y-5">
-            {activeReqId === 'WB01' && (
-              <div className="space-y-4">
-                <div className="border-b border-[#EDF3F8] pb-3">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D78AE]">
-                    Thành phần WB01 · Điều 5 Quy chế 1720/QĐ-HSV
-                  </span>
-                  <h2 className="text-[16px] font-bold text-[#172A3A] mt-0.5">
-                    Văn bản đề nghị xét trao Giải thưởng “Cánh chim trắng”
-                  </h2>
-                  <p className="text-[12.5px] text-[#607483] mt-0.5">
-                    Kê khai thông tin cấp bộ Hội giới thiệu (Ban Thư ký HSV trường, BCH Liên chi
-                    hội, BCN CLB/Đội/Nhóm hoặc Ủy viên BCH HSV ĐHĐN) và đính kèm văn bản đề nghị có
-                    xác nhận.
-                  </p>
-                </div>
+            {activeReqId === 'WB01' && (() => {
+              const wb01Data = activeApp.requirements.wb01;
+              const isIndividualNominator = wb01Data.nominatingUnitType === 'UV_BCH_HSV_DHDN';
+              const unitNamePlaceholder = isIndividualNominator
+                ? 'VD: Đồng chí Nguyễn Văn A – Ủy viên BCH Hội Sinh viên Đại học Đà Nẵng'
+                : wb01Data.nominatingUnitType === 'BCH_LIEN_CHI_HOI'
+                ? 'VD: Ban Chấp hành Liên chi Hội Khoa Công nghệ Thông tin'
+                : wb01Data.nominatingUnitType === 'BCN_CLB_DHDN'
+                ? 'VD: Ban Chủ nhiệm CLB Sinh viên Nghiên cứu Khoa học ĐHĐN'
+                : wb01Data.nominatingUnitType === 'BCN_CLB_TRUONG' ||
+                  wb01Data.nominatingUnitType === 'BCN_CLB_DOI_NHOM'
+                ? 'VD: Ban Chủ nhiệm CLB Học thuật & Sáng tạo DUT'
+                : 'VD: Ban Thư ký Hội Sinh viên Trường Đại học Bách khoa – ĐHĐN';
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
-                      Cấp bộ Hội / Chủ thể giới thiệu đề cử (Điều 5) *
-                    </label>
-                    <select
-                      disabled={isReadOnly}
-                      value={activeApp.requirements.wb01.nominatingUnitType}
-                      onChange={(e) =>
-                        updateWhiteBirdWB01(activeApp.id, {
-                          nominatingUnitType: e.target.value as WhiteBirdNominatingUnitType,
-                        })
-                      }
-                      className="w-full px-3 py-2.5 text-[13px] font-semibold text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px]"
-                    >
-                      {Object.entries(WHITE_BIRD_NOMINATING_UNIT_LABELS).map(([key, label]) => (
-                        <option key={key} value={key}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
+              const signerPlaceholder = isIndividualNominator
+                ? 'VD: Nguyễn Văn A (Ủy viên Ban Chấp hành Hội Sinh viên ĐHĐN)'
+                : 'VD: Lê Văn B (Chủ tịch Hội Sinh viên Trường / Bí thư LCH)';
+
+              const statusMeta = getRequirementCompletionStatus(readiness.wb01Ready, activeApp.status);
+
+              return (
+                <div className="space-y-4">
+                  <div className="border-b border-[#EDF3F8] pb-3 flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D78AE]">
+                          Thành phần WB01 · Điều 5 Quy chế (QĐ 14-QĐ/ĐHĐN-HSV)
+                        </span>
+                        <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full ${statusMeta.badgeClass}`}>
+                          {statusMeta.label}
+                        </span>
+                      </div>
+                      <h2 className="text-[16px] font-bold text-[#172A3A] mt-0.5">
+                        Văn bản đề nghị xét trao Giải thưởng “Cánh chim trắng”
+                      </h2>
+                      <p className="text-[12.5px] text-[#607483] mt-0.5 leading-relaxed">
+                        Kê khai thông tin tổ chức, cá nhân có thẩm quyền đề nghị xét trao theo Điều 5 Quy chế ban hành kèm Quyết định số 14-QĐ/ĐHĐN-HSV và đính kèm văn bản đề nghị xét trao theo Khoản 6.1 Điều 6.
+                      </p>
+                    </div>
                   </div>
 
-                  <Input
-                    label="Tên đơn vị ký văn bản giới thiệu *"
-                    disabled={isReadOnly}
-                    value={activeApp.requirements.wb01.nominatingUnitName}
-                    onChange={(e) =>
-                      updateWhiteBirdWB01(activeApp.id, {
-                        nominatingUnitName: e.target.value,
-                      })
-                    }
-                    placeholder="VD: Ban Thư ký Hội Sinh viên Trường Đại học Bách khoa – ĐHĐN"
-                  />
-                </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        htmlFor="wb01-nominator-subject-select"
+                        className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5"
+                      >
+                        Chủ thể đề nghị xét trao Giải thưởng (Điều 5) <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        id="wb01-nominator-subject-select"
+                        disabled={isReadOnly}
+                        value={wb01Data.nominatingUnitType}
+                        onChange={(e) =>
+                          handleWB01NominatorTypeChange(e.target.value as WhiteBirdNominatingUnitType)
+                        }
+                        className="w-full px-3 py-2.5 text-[13px] font-semibold text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                      >
+                        <optgroup label="Cá nhân có thẩm quyền đề xuất (Khoản 1 Điều 5)">
+                          {WHITE_BIRD_NOMINATING_SUBJECT_OPTIONS.filter((o) => o.category === 'Cá nhân').map(
+                            (opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label} ({opt.articleRef})
+                              </option>
+                            )
+                          )}
+                        </optgroup>
+                        <optgroup label="Tổ chức có thẩm quyền đề xuất (Khoản 2, 3, 4, 5 Điều 5)">
+                          {WHITE_BIRD_NOMINATING_SUBJECT_OPTIONS.filter((o) => o.category === 'Tổ chức').map(
+                            (opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label} ({opt.articleRef})
+                              </option>
+                            )
+                          )}
+                        </optgroup>
+                      </select>
+                      <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
+                        {isIndividualNominator
+                          ? 'Ủy viên BCH Hội Sinh viên Việt Nam ĐHĐN trực tiếp đề xuất theo Khoản 1 Điều 5.'
+                          : 'Tổ chức Hội Sinh viên có thẩm quyền đề xuất theo Điều 5 Quy chế.'}
+                      </p>
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <Input
-                    label="Số hiệu văn bản / tờ trình"
-                    disabled={isReadOnly}
-                    value={activeApp.requirements.wb01.nominatingDocumentNumber}
-                    onChange={(e) =>
-                      updateWhiteBirdWB01(activeApp.id, {
-                        nominatingDocumentNumber: e.target.value,
-                      })
-                    }
-                    placeholder="VD: 45-TTr/HSV"
-                  />
-                  <Input
-                    label="Ngày ký văn bản đề nghị"
-                    type="date"
-                    disabled={isReadOnly}
-                    value={activeApp.requirements.wb01.nominatingDate}
-                    onChange={(e) =>
-                      updateWhiteBirdWB01(activeApp.id, {
-                        nominatingDate: e.target.value,
-                      })
-                    }
-                  />
-                  <Input
-                    label="Họ tên & chức vụ người ký xác nhận"
-                    disabled={isReadOnly}
-                    value={activeApp.requirements.wb01.nominatorSignerName}
-                    onChange={(e) =>
-                      updateWhiteBirdWB01(activeApp.id, {
-                        nominatorSignerName: e.target.value,
-                      })
-                    }
-                    placeholder="VD: Chủ tịch Hội Sinh viên Trường"
-                  />
-                </div>
+                    <div>
+                      <Input
+                        label={
+                          isIndividualNominator
+                            ? 'Tên cá nhân đề nghị xét trao (Ủy viên BCH HSV ĐHĐN) *'
+                            : 'Tên tổ chức/cá nhân đề nghị xét trao *'
+                        }
+                        disabled={isReadOnly}
+                        value={wb01Data.nominatingUnitName}
+                        onChange={(e) =>
+                          updateWhiteBirdWB01(activeApp.id, {
+                            nominatingUnitName: e.target.value,
+                          })
+                        }
+                        placeholder={unitNamePlaceholder}
+                      />
+                      <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
+                        {isIndividualNominator
+                          ? 'Nhập họ tên Ủy viên Ban Chấp hành HSV ĐHĐN giới thiệu đề xuất.'
+                          : 'Nhập tên Ban Thư ký HSV trường, Liên chi Hội hoặc CLB/Đội/Nhóm đề nghị.'}
+                      </p>
+                    </div>
+                  </div>
 
-                <div>
-                  <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
-                    Tóm tắt nhận xét, đánh giá & lý do đề nghị xét trao Giải thưởng *
-                  </label>
-                  <textarea
-                    rows={3}
-                    disabled={isReadOnly}
-                    value={activeApp.requirements.wb01.endorsementSummary}
-                    onChange={(e) =>
-                      updateWhiteBirdWB01(activeApp.id, {
-                        endorsementSummary: e.target.value,
-                      })
-                    }
-                    placeholder="Nhập tóm tắt nội dung nhận xét, đánh giá của cấp bộ Hội giới thiệu đối với cá nhân/tập thể..."
-                    className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <Input
+                      label="Số hiệu văn bản đề nghị xét trao (nếu có)"
+                      disabled={isReadOnly}
+                      value={wb01Data.nominatingDocumentNumber}
+                      onChange={(e) =>
+                        updateWhiteBirdWB01(activeApp.id, {
+                          nominatingDocumentNumber: e.target.value,
+                        })
+                      }
+                      placeholder={
+                        isIndividualNominator
+                          ? 'VD: Giấy giới thiệu (nếu có)'
+                          : 'VD: 45-TTr/HSV hoặc Số công văn'
+                      }
+                    />
+                    <Input
+                      label="Ngày ký văn bản đề nghị (nếu có)"
+                      type="date"
+                      disabled={isReadOnly}
+                      value={wb01Data.nominatingDate}
+                      onChange={(e) =>
+                        updateWhiteBirdWB01(activeApp.id, {
+                          nominatingDate: e.target.value,
+                        })
+                      }
+                    />
+                    <Input
+                      label="Họ tên người ký văn bản đề nghị và chức vụ (nếu có)"
+                      disabled={isReadOnly}
+                      value={wb01Data.nominatorSignerName}
+                      onChange={(e) =>
+                        updateWhiteBirdWB01(activeApp.id, {
+                          nominatorSignerName: e.target.value,
+                        })
+                      }
+                      placeholder={signerPlaceholder}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1">
+                      Tóm tắt nhận xét, đánh giá & lý do đề nghị xét trao Giải thưởng <span className="text-red-500">*</span>
+                    </label>
+                    <p className="text-[11.5px] text-[#64748B] mb-1.5 leading-snug">
+                      <em>(Thông tin hỗ trợ kê khai trên hệ thống nhằm tổng hợp nhanh hồ sơ; không thay thế cho Văn bản đề nghị xét trao chính thức theo Khoản 6.1 Điều 6)</em>
+                    </p>
+                    <textarea
+                      rows={3}
+                      disabled={isReadOnly}
+                      value={wb01Data.endorsementSummary}
+                      onChange={(e) =>
+                        updateWhiteBirdWB01(activeApp.id, {
+                          endorsementSummary: e.target.value,
+                        })
+                      }
+                      placeholder="Nhập tóm tắt nội dung nhận xét, đánh giá của tổ chức/cá nhân đề nghị đối với cá nhân/tập thể..."
+                      className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {activeReqId === 'WB02' && (
               <div className="space-y-4">

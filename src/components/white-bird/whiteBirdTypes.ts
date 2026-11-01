@@ -32,10 +32,12 @@ export type WhiteBirdApplicationStatus =
   | 'not_recognized';
 
 export type WhiteBirdNominatingUnitType =
+  | 'UV_BCH_HSV_DHDN'
   | 'BTK_HSV_TRUONG'
+  | 'BCN_CLB_DHDN'
   | 'BCH_LIEN_CHI_HOI'
-  | 'BCN_CLB_DOI_NHOM'
-  | 'UV_BCH_HSV_DHDN';
+  | 'BCN_CLB_TRUONG'
+  | 'BCN_CLB_DOI_NHOM';
 
 export interface WhiteBirdDossierItem {
   code: string;
@@ -242,11 +244,53 @@ export const WHITE_BIRD_CATEGORIES: Record<WhiteBirdCategory, WhiteBirdCategoryM
 };
 
 export const WHITE_BIRD_NOMINATING_UNIT_LABELS: Record<WhiteBirdNominatingUnitType, string> = {
-  BTK_HSV_TRUONG: 'Ban Thư ký Hội Sinh viên trường thành viên / đơn vị trực thuộc ĐHĐN',
-  BCH_LIEN_CHI_HOI: 'Ban Chấp hành Liên chi hội trực thuộc Hội Sinh viên trường',
-  BCN_CLB_DOI_NHOM: 'Ban Chủ nhiệm Câu lạc bộ / Đội / Nhóm trực thuộc Hội Sinh viên các cấp',
-  UV_BCH_HSV_DHDN: 'Ủy viên Ban Chấp hành Hội Sinh viên Việt Nam Đại học Đà Nẵng giới thiệu',
+  UV_BCH_HSV_DHDN: 'Ủy viên Ban Chấp hành Hội Sinh viên Việt Nam Đại học Đà Nẵng',
+  BTK_HSV_TRUONG: 'Ban Thư ký Hội Sinh viên Việt Nam các Trường Đại học thành viên Đại học Đà Nẵng',
+  BCN_CLB_DHDN: 'Ban Chủ nhiệm (hoặc tương đương) CLB/Đội/Nhóm trực thuộc Hội Sinh viên Việt Nam Đại học Đà Nẵng',
+  BCH_LIEN_CHI_HOI: 'Ban Chấp hành Liên chi Hội',
+  BCN_CLB_TRUONG: 'Ban Chủ nhiệm (hoặc tương đương) CLB/Đội/Nhóm trực thuộc Hội Sinh viên các Trường thành viên Đại học Đà Nẵng',
+  BCN_CLB_DOI_NHOM: 'Ban Chủ nhiệm (hoặc tương đương) CLB/Đội/Nhóm trực thuộc Hội Sinh viên các Trường thành viên Đại học Đà Nẵng',
 };
+
+export interface WhiteBirdNominatingSubjectOption {
+  value: WhiteBirdNominatingUnitType;
+  label: string;
+  category: 'Cá nhân' | 'Tổ chức';
+  articleRef: string;
+}
+
+export const WHITE_BIRD_NOMINATING_SUBJECT_OPTIONS: WhiteBirdNominatingSubjectOption[] = [
+  {
+    value: 'UV_BCH_HSV_DHDN',
+    label: 'Ủy viên Ban Chấp hành Hội Sinh viên Việt Nam Đại học Đà Nẵng',
+    category: 'Cá nhân',
+    articleRef: 'Khoản 1 Điều 5',
+  },
+  {
+    value: 'BTK_HSV_TRUONG',
+    label: 'Ban Thư ký Hội Sinh viên Việt Nam các Trường Đại học thành viên Đại học Đà Nẵng',
+    category: 'Tổ chức',
+    articleRef: 'Khoản 2 Điều 5',
+  },
+  {
+    value: 'BCN_CLB_DHDN',
+    label: 'Ban Chủ nhiệm (hoặc tương đương) CLB/Đội/Nhóm trực thuộc Hội Sinh viên Việt Nam Đại học Đà Nẵng',
+    category: 'Tổ chức',
+    articleRef: 'Khoản 3 Điều 5',
+  },
+  {
+    value: 'BCH_LIEN_CHI_HOI',
+    label: 'Ban Chấp hành Liên chi Hội',
+    category: 'Tổ chức',
+    articleRef: 'Khoản 4 Điều 5',
+  },
+  {
+    value: 'BCN_CLB_TRUONG',
+    label: 'Ban Chủ nhiệm (hoặc tương đương) CLB/Đội/Nhóm trực thuộc Hội Sinh viên các Trường thành viên Đại học Đà Nẵng',
+    category: 'Tổ chức',
+    articleRef: 'Khoản 5 Điều 5',
+  },
+];
 
 export interface WhiteBirdWB01Declaration {
   nominatingUnitType: WhiteBirdNominatingUnitType;
