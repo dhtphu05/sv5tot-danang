@@ -1,6 +1,6 @@
 /**
  * 5TOT Đại học Đà Nẵng — Giải thưởng "Cánh chim trắng" Domain Types
- * Căn cứ Quy chế Giải thưởng "Cánh chim trắng" ban hành kèm theo Quyết định số 1720/QĐ-HSV
+ * Căn cứ Quy chế Giải thưởng "Cánh chim trắng" ban hành kèm theo Quyết định số 14-QĐ/ĐHĐN-HSV ngày 04/10/2022
  * của Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng.
  * Cơ quan Thường trực Giải thưởng: Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng.
  */
@@ -37,6 +37,18 @@ export type WhiteBirdNominatingUnitType =
   | 'BCN_CLB_DOI_NHOM'
   | 'UV_BCH_HSV_DHDN';
 
+export interface WhiteBirdDossierItem {
+  code: string;
+  title: string;
+  isOptional?: boolean;
+}
+
+export interface WhiteBirdStandardItem {
+  number: number;
+  label: string;
+  text: string;
+}
+
 export interface WhiteBirdCategoryMeta {
   code: WhiteBirdCategory;
   name: string;
@@ -44,6 +56,10 @@ export interface WhiteBirdCategoryMeta {
   articleRef: string;
   allowedNomineeTypes: WhiteBirdNomineeType[];
   targetDescription: string;
+  standardsArticleRef: string;
+  standards: WhiteBirdStandardItem[];
+  dossierArticleRef: string;
+  dossierItems: WhiteBirdDossierItem[];
   dossierRequirementsSummary: string[];
   wb02Title: string;
   wb02CommitmentLabel: string;
@@ -55,55 +71,173 @@ export const WHITE_BIRD_CATEGORIES: Record<WhiteBirdCategory, WhiteBirdCategoryM
     code: 'UOM_MAM',
     name: 'Hạng mục “Cánh chim ươm mầm”',
     shortName: 'Cánh chim ươm mầm',
-    articleRef: 'Khoản 1 Điều 3 & Khoản 1 Điều 6 Quy chế 1720/QĐ-HSV',
+    articleRef: 'Điều 3; điểm a khoản 4.2 Điều 4; khoản 6.1 Điều 6',
     allowedNomineeTypes: ['INDIVIDUAL', 'COLLECTIVE'],
     targetDescription:
-      'Xét trao cho cá nhân hoặc tập thể có mô hình, giải pháp, sáng kiến đã được áp dụng thành công trong công tác Hội và phong trào sinh viên các cấp.',
+      'Cá nhân hoặc tập thể có mô hình, giải pháp, sáng kiến đã được áp dụng thành công trong công tác Hội và phong trào sinh viên các cấp.',
+    standardsArticleRef: 'Điểm a khoản 4.2 Điều 4',
+    standards: [
+      {
+        number: 1,
+        label: 'Tính mới, sáng tạo',
+        text: 'Mô hình, giải pháp, sáng kiến mới, không trùng với các hình thức tương tự đã được áp dụng trước ngày nộp hồ sơ.',
+      },
+      {
+        number: 2,
+        label: 'Tính hiệu quả',
+        text: 'Được áp dụng thành công vào thực tiễn công tác Hội và phong trào sinh viên; được lãnh đạo địa phương, đơn vị cùng cấp ghi nhận; được sinh viên tích cực hưởng ứng.',
+      },
+      {
+        number: 3,
+        label: 'Tính lan tỏa',
+        text: 'Có khả năng nghiên cứu triển khai trong phạm vi rộng hơn.',
+      },
+      {
+        number: 4,
+        label: 'Tính điển hình',
+        text: 'Tiêu biểu so với các mô hình, giải pháp, sáng kiến cùng cấp, cùng nội dung và lĩnh vực.',
+      },
+    ],
+    dossierArticleRef: 'Khoản 6.1 Điều 6',
+    dossierItems: [
+      {
+        code: 'WB01',
+        title: 'Văn bản đề nghị xét trao Giải thưởng của tổ chức, cá nhân có thẩm quyền theo Điều 5.',
+        isOptional: false,
+      },
+      {
+        code: 'WB02',
+        title: 'Báo cáo thuyết minh mô hình, giải pháp, sáng kiến, có minh chứng về tính hiệu quả và lời cam kết về tính sáng tạo, theo mẫu.',
+        isOptional: false,
+      },
+      {
+        code: 'WB03',
+        title: 'Hình ảnh, sản phẩm minh họa (nếu có).',
+        isOptional: true,
+      },
+    ],
     dossierRequirementsSummary: [
-      'WB01: Văn bản đề nghị xét trao Giải thưởng (theo quy định tại Điều 5).',
-      'WB02: Báo cáo thuyết minh về mô hình, giải pháp, sáng kiến kèm lời cam kết về tính sáng tạo.',
-      'WB03: Minh chứng tính hiệu quả thực tiễn, hình ảnh và sản phẩm minh họa.',
+      'WB01: Văn bản đề nghị xét trao Giải thưởng của tổ chức, cá nhân có thẩm quyền theo Điều 5.',
+      'WB02: Báo cáo thuyết minh mô hình, giải pháp, sáng kiến, có minh chứng về tính hiệu quả và lời cam kết về tính sáng tạo, theo mẫu.',
+      'WB03: Hình ảnh, sản phẩm minh họa (nếu có).',
     ],
     wb02Title: 'Báo cáo thuyết minh mô hình, giải pháp, sáng kiến & Cam kết tính sáng tạo',
     wb02CommitmentLabel:
       'Tôi/tập thể cam kết mô hình, giải pháp, sáng kiến kê khai trên đảm bảo tính sáng tạo, trung thực và đã được triển khai thực tế trong công tác Hội và phong trào sinh viên.',
-    wb03Title: 'Minh chứng hiệu quả áp dụng thực tiễn & Hình ảnh, sản phẩm minh họa',
+    wb03Title: 'Hình ảnh, sản phẩm minh họa (nếu có)',
   },
   TRUYEN_LUA: {
     code: 'TRUYEN_LUA',
     name: 'Hạng mục “Cánh chim truyền lửa”',
     shortName: 'Cánh chim truyền lửa',
-    articleRef: 'Khoản 2 Điều 3 & Khoản 2 Điều 6 Quy chế 1720/QĐ-HSV',
+    articleRef: 'Điều 3; điểm c khoản 4.2 Điều 4; khoản 6.2 Điều 6',
     allowedNomineeTypes: ['INDIVIDUAL'],
     targetDescription:
-      'Xét trao cho cá nhân có thành tích xuất sắc trong nhiều năm liền, có đóng góp tiêu biểu vào sự phát triển chung của công tác Hội và phong trào Hội Sinh viên Đại học Đà Nẵng.',
-    dossierRequirementsSummary: [
-      'WB01: Văn bản đề nghị xét trao Giải thưởng (theo quy định tại Điều 5).',
-      'WB02: Báo cáo thành tích cá nhân xuất sắc trong nhiều năm liền đóng góp cho công tác Hội và phong trào sinh viên ĐHĐN.',
-      'WB03: Tài liệu minh chứng thông tin chức vụ, bằng khen, giấy khen và thành tích tiêu biểu.',
+      'Cá nhân có thành tích xuất sắc trong nhiều năm liền, đóng góp vào sự phát triển chung của công tác Hội và phong trào Hội Sinh viên Việt Nam Đại học Đà Nẵng.',
+    standardsArticleRef: 'Điểm c khoản 4.2 Điều 4',
+    standards: [
+      {
+        number: 1,
+        label: 'Chức vụ cán bộ Hội (đơn vị có cơ sở Hội)',
+        text: 'Đối với đơn vị có tổ chức cơ sở Hội: Là cán bộ Hội từ chức vụ Chi Hội trưởng hoặc chức vụ cán bộ Hội tương đương trở lên.',
+      },
+      {
+        number: 2,
+        label: 'Chức vụ cán bộ Đoàn (đơn vị không có cơ sở Hội)',
+        text: 'Đối với đơn vị không có tổ chức cơ sở Hội: Là cán bộ Đoàn từ chức vụ Bí thư Chi đoàn hoặc chức vụ cán bộ Đoàn tương đương trở lên.',
+      },
+      {
+        number: 3,
+        label: 'Thời gian công tác',
+        text: 'Có thời gian công tác Đoàn – Hội ít nhất 2 năm.',
+      },
+      {
+        number: 4,
+        label: 'Thành tích xuất sắc 2 năm liên tục',
+        text: 'Có thành tích xuất sắc trong công tác Hội và phong trào sinh viên cấp trường trở lên đối với đơn vị có tổ chức cơ sở Hội; hoặc trong công tác Đoàn và phong trào thanh niên cấp trường trở lên đối với đơn vị không có tổ chức cơ sở Hội, trong 2 năm liên tục.',
+      },
     ],
-    wb02Title: 'Báo cáo thành tích cá nhân xuất sắc nhiều năm liền trong công tác Hội',
+    dossierArticleRef: 'Khoản 6.2 Điều 6',
+    dossierItems: [
+      {
+        code: 'WB01',
+        title: 'Văn bản đề nghị xét trao Giải thưởng của tổ chức, cá nhân có thẩm quyền theo Điều 5.',
+        isOptional: false,
+      },
+      {
+        code: 'WB02',
+        title: 'Báo cáo thành tích cá nhân theo mẫu.',
+        isOptional: false,
+      },
+      {
+        code: 'WB03',
+        title: 'Tài liệu minh chứng thông tin chức vụ, thành tích.',
+        isOptional: false,
+      },
+    ],
+    dossierRequirementsSummary: [
+      'WB01: Văn bản đề nghị xét trao Giải thưởng của tổ chức, cá nhân có thẩm quyền theo Điều 5.',
+      'WB02: Báo cáo thành tích cá nhân theo mẫu.',
+      'WB03: Tài liệu minh chứng thông tin chức vụ, thành tích.',
+    ],
+    wb02Title: 'Báo cáo thành tích cá nhân theo mẫu',
     wb02CommitmentLabel:
       'Tôi cam kết toàn bộ quá trình rèn luyện, giữ chức vụ và thành tích đóng góp cho công tác Hội và phong trào sinh viên Đại học Đà Nẵng kê khai trên là hoàn toàn trung thực.',
-    wb03Title: 'Tài liệu minh chứng chức vụ Hội, Bằng khen, Giấy khen & Thành tích tiêu biểu',
+    wb03Title: 'Tài liệu minh chứng thông tin chức vụ, thành tích',
   },
   SANG_TAO: {
     code: 'SANG_TAO',
     name: 'Hạng mục “Cánh chim sáng tạo”',
     shortName: 'Cánh chim sáng tạo',
-    articleRef: 'Khoản 3 Điều 3 & Khoản 3 Điều 6 Quy chế 1720/QĐ-HSV',
+    articleRef: 'Điều 3; điểm b khoản 4.2 Điều 4; khoản 6.3 Điều 6',
     allowedNomineeTypes: ['INDIVIDUAL', 'COLLECTIVE'],
     targetDescription:
-      'Xét trao cho cá nhân hoặc tập thể có dự án khởi nghiệp đổi mới sáng tạo, đề tài nghiên cứu khoa học đạt giải từ cấp Đại học Đà Nẵng trở lên và có tính thiết thực, ứng dụng thực tế cao.',
+      'Cá nhân hoặc tập thể có dự án khởi nghiệp đổi mới sáng tạo, đề tài nghiên cứu khoa học đạt giải từ cấp Đại học Đà Nẵng trở lên và có tính thiết thực, ứng dụng thực tế cao.',
+    standardsArticleRef: 'Điểm b khoản 4.2 Điều 4',
+    standards: [
+      {
+        number: 1,
+        label: 'Tính đề xuất và triển khai mới',
+        text: 'Dự án khởi nghiệp đổi mới sáng tạo, đề tài nghiên cứu khoa học mới, do chính cá nhân hoặc tập thể đề xuất và triển khai.',
+      },
+      {
+        number: 2,
+        label: 'Giải thưởng cấp ĐHĐN trở lên',
+        text: 'Đạt ít nhất 01 giải thưởng từ cấp Đại học Đà Nẵng trở lên tại các cuộc thi khởi nghiệp đổi mới sáng tạo hoặc nghiên cứu khoa học.',
+      },
+      {
+        number: 3,
+        label: 'Tính thiết thực & ứng dụng thực tế',
+        text: 'Có tính thiết thực, khả năng ứng dụng thực tế cao vào đời sống, sản xuất hoặc công tác chuyên môn.',
+      },
+    ],
+    dossierArticleRef: 'Khoản 6.3 Điều 6',
+    dossierItems: [
+      {
+        code: 'WB01',
+        title: 'Văn bản đề nghị xét trao Giải thưởng của tổ chức, cá nhân có thẩm quyền theo Điều 5.',
+        isOptional: false,
+      },
+      {
+        code: 'WB02',
+        title: 'Báo cáo thuyết minh về dự án khởi nghiệp / đề tài NCKH kèm lời cam kết về bản quyền.',
+        isOptional: false,
+      },
+      {
+        code: 'WB03',
+        title: 'Minh chứng đạt giải thưởng từ cấp Đại học Đà Nẵng trở lên tại các cuộc thi liên quan và hiệu quả ứng dụng.',
+        isOptional: false,
+      },
+    ],
     dossierRequirementsSummary: [
-      'WB01: Văn bản đề nghị xét trao Giải thưởng (theo quy định tại Điều 5).',
+      'WB01: Văn bản đề nghị xét trao Giải thưởng của tổ chức, cá nhân có thẩm quyền theo Điều 5.',
       'WB02: Báo cáo thuyết minh về dự án khởi nghiệp / đề tài NCKH kèm lời cam kết về bản quyền.',
       'WB03: Minh chứng đạt giải thưởng từ cấp Đại học Đà Nẵng trở lên tại các cuộc thi liên quan và hiệu quả ứng dụng.',
     ],
     wb02Title: 'Báo cáo thuyết minh Dự án khởi nghiệp / Đề tài NCKH & Cam kết bản quyền',
     wb02CommitmentLabel:
       'Tôi/nhóm tác giả cam kết bản quyền đối với dự án khởi nghiệp đổi mới sáng tạo / đề tài nghiên cứu khoa học kê khai trên theo đúng quy định tại Khoản 3 Điều 6 Quy chế Giải thưởng.',
-    wb03Title: 'Minh chứng đạt giải thưởng từ cấp Đại học Đà Nẵng trở lên & Hiệu quả ứng dụng',
+    wb03Title: 'Minh chứng đạt giải thưởng từ cấp Đại học Đà Nẵng trở lên tại các cuộc thi liên quan và hiệu quả ứng dụng',
   },
 };
 

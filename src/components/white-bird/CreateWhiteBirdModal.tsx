@@ -1,6 +1,6 @@
 /**
  * 5TOT Đại học Đà Nẵng — Create White Bird Award ("Giải thưởng Cánh chim trắng") Application Modal
- * Căn cứ Quy chế Giải thưởng "Cánh chim trắng" ban hành kèm theo Quyết định số 1720/QĐ-HSV
+ * Căn cứ Quy chế Giải thưởng "Cánh chim trắng" ban hành kèm theo Quyết định số 14-QĐ/ĐHĐN-HSV ngày 04/10/2022
  * của Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng.
  */
 
@@ -36,6 +36,7 @@ export interface CreateWhiteBirdModalProps {
     className: string;
     contactPhone: string;
   }) => void;
+  initialCategory?: WhiteBirdCategory;
   initialUserName?: string;
   initialUserEmail?: string;
   initialStudentId?: string;
@@ -53,17 +54,17 @@ const CATEGORY_CARDS: Array<{
 }> = [
   {
     code: 'UOM_MAM',
-    badge: 'Cá nhân / Tập thể',
+    badge: 'Cá nhân hoặc Tập thể',
     icon: <Sparkles size={16} className="text-[#0D78AE]" />,
   },
   {
     code: 'TRUYEN_LUA',
-    badge: 'Cá nhân',
+    badge: 'Dành cho Cá nhân',
     icon: <Flame size={16} className="text-[#D97706]" />,
   },
   {
     code: 'SANG_TAO',
-    badge: 'Cá nhân / Tập thể',
+    badge: 'Cá nhân hoặc Tập thể',
     icon: <Lightbulb size={16} className="text-[#0284C7]" />,
   },
 ];
@@ -72,6 +73,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
+  initialCategory,
   initialUserName = 'Sinh viên ĐHĐN',
   initialUserEmail = '',
   initialStudentId = '',
@@ -100,7 +102,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
     return AUTHORITATIVE_SCHOOL_REVIEW_UNITS[0];
   }, [initialInstitutionId, initialUniversity]);
 
-  const [category, setCategory] = useState<WhiteBirdCategory>('UOM_MAM');
+  const [category, setCategory] = useState<WhiteBirdCategory>(initialCategory || 'UOM_MAM');
   const [nomineeType, setNomineeType] = useState<WhiteBirdNomineeType>('INDIVIDUAL');
   const [selectedUnitId, setSelectedUnitId] = useState<SchoolReviewUnitId>(
     defaultResolvedUnit.id
@@ -114,6 +116,12 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
 
   useEffect(() => {
     if (!isOpen) return;
+    if (initialCategory) {
+      setCategory(initialCategory);
+      if (initialCategory === 'TRUYEN_LUA') {
+        setNomineeType('INDIVIDUAL');
+      }
+    }
     setSelectedUnitId(defaultResolvedUnit.id);
     if (initialUserName && !nomineeName) {
       setNomineeName(initialUserName);
@@ -130,6 +138,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
     setTitleError('');
   }, [
     isOpen,
+    initialCategory,
     defaultResolvedUnit.id,
     initialUserName,
     initialFaculty,
@@ -217,7 +226,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10.5px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-white/15 text-sky-100">
-                  Quyết định số 1720/QĐ-HSV
+                  Quyết định số 14-QĐ/ĐHĐN-HSV
                 </span>
                 <span className="text-[11px] text-sky-100/90 font-medium">
                   Hội Sinh viên Việt Nam Đại học Đà Nẵng
@@ -258,7 +267,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
           {/* Step 1: Select Category */}
           <div>
             <label className="block text-[12.5px] font-bold text-[#172A3A] mb-2">
-              1. Chọn hạng mục Giải thưởng “Cánh chim trắng” (Điều 3 Quy chế 1720/QĐ-HSV) *
+              1. Chọn hạng mục Giải thưởng “Cánh chim trắng” (Điều 3 & Điều 6 Quy chế 14-QĐ/ĐHĐN-HSV) *
             </label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
               {CATEGORY_CARDS.map((card) => {
@@ -350,7 +359,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
               </div>
               {category === 'TRUYEN_LUA' && (
                 <p className="text-[11px] text-[#D97706] mt-1 font-medium">
-                  * Hạng mục “Cánh chim truyền lửa” chỉ xét trao cho Cá nhân theo Khoản 2 Điều 3.
+                  * Hạng mục “Cánh chim truyền lửa” chỉ xét trao cho Cá nhân theo Điều 3.
                 </p>
               )}
             </div>

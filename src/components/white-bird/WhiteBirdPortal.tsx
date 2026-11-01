@@ -1,6 +1,6 @@
 /**
  * 5TOT Đại học Đà Nẵng — Giải thưởng "Cánh chim trắng" Student Account Tab & Workspace
- * Căn cứ Quy chế Giải thưởng "Cánh chim trắng" ban hành kèm theo Quyết định số 1720/QĐ-HSV
+ * Căn cứ Quy chế Giải thưởng "Cánh chim trắng" ban hành kèm theo Quyết định số 14-QĐ/ĐHĐN-HSV ngày 04/10/2022
  * của Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng.
  * Cơ quan Thường trực Giải thưởng: Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng.
  */
@@ -27,6 +27,10 @@ import {
   User,
   Users,
   AlertCircle,
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  Info,
 } from 'lucide-react';
 import { StudentProfileDto } from '../../entities/application/studentApplicationTypes';
 import { ApplicationEvidence } from '../../demo/fixtures/studentApplication';
@@ -84,6 +88,16 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
   const [activeReqId, setActiveReqId] = useState<WhiteBirdRequirementId>('WB01');
   const [selectedAppId, setSelectedAppId] = useState<string>('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedInitialCategory, setSelectedInitialCategory] = useState<WhiteBirdCategory | undefined>(undefined);
+  const [expandedStandards, setExpandedStandards] = useState<Record<WhiteBirdCategory, boolean>>({
+    UOM_MAM: false,
+    TRUYEN_LUA: false,
+    SANG_TAO: false,
+  });
+
+  const toggleStandards = (cat: WhiteBirdCategory) => {
+    setExpandedStandards((prev) => ({ ...prev, [cat]: !prev[cat] }));
+  };
   const [toastMessage, setToastMessage] = useState<{
     text: string;
     type: 'success' | 'warn';
@@ -304,7 +318,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
             <div className="space-y-2 max-w-[680px]">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 border border-white/25 text-[11.5px] font-bold tracking-wide uppercase">
                 <Feather size={14} />
-                <span>Giải thưởng “Cánh chim trắng” · Quyết định số 1720/QĐ-HSV</span>
+                <span>Giải thưởng “Cánh chim trắng” · Quyết định số 14-QĐ/ĐHĐN-HSV ngày 04/10/2022</span>
               </div>
               <h1 className="text-[22px] md:text-[24px] font-extrabold tracking-tight text-white">
                 Khởi tạo & Kê khai Hồ sơ Giải thưởng “Cánh chim trắng”
@@ -319,7 +333,10 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
             <div className="shrink-0">
               <button
                 type="button"
-                onClick={() => setIsCreateModalOpen(true)}
+                onClick={() => {
+                  setSelectedInitialCategory(undefined);
+                  setIsCreateModalOpen(true);
+                }}
                 className="inline-flex items-center gap-2.5 px-5 py-3 rounded-[11px] bg-white text-[#0B3B5B] hover:bg-sky-50 font-bold text-[13.5px] shadow-md transition-all cursor-pointer"
               >
                 <Plus size={17} strokeWidth={2.4} />
@@ -331,11 +348,16 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
 
         {/* 3 Official Categories Grid */}
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-[15.5px] font-bold text-[#172A3A]">
-              3 Hạng mục xét trao Giải thưởng “Cánh chim trắng” (Điều 3 & Điều 6 Quy chế 1720/QĐ-HSV)
-            </h2>
-            <span className="text-[12px] font-semibold text-[#0D78AE]">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
+            <div>
+              <h2 className="text-[15.5px] font-bold text-[#172A3A]">
+                3 hạng mục xét trao Giải thưởng “Cánh chim trắng”
+              </h2>
+              <p className="text-[12px] text-[#607483] mt-0.5">
+                Theo Điều 3 và Điều 6 Quy chế ban hành kèm theo Quyết định số 14-QĐ/ĐHĐN-HSV.
+              </p>
+            </div>
+            <span className="text-[12px] font-semibold text-[#0D78AE] shrink-0">
               Cơ quan Thường trực: Văn phòng Hội Sinh viên ĐHĐN
             </span>
           </div>
@@ -353,7 +375,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   code: 'TRUYEN_LUA' as WhiteBirdCategory,
                   icon: <Flame size={19} className="text-[#D97706]" />,
                   accentBg: 'bg-[#FEF3C7]',
-                  badge: 'Dành cho Cá nhân',
+                  badge: 'Chỉ dành cho Cá nhân',
                 },
                 {
                   code: 'SANG_TAO' as WhiteBirdCategory,
@@ -369,17 +391,18 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   key={item.code}
                   className="bg-white rounded-[14px] border border-[#DCE7EE] p-5 flex flex-col justify-between shadow-xs hover:border-[#B5CEDF] transition-all"
                 >
-                  <div>
+                  <div className="flex-1 flex flex-col">
                     <div className="flex items-center justify-between gap-2 mb-3">
                       <div
-                        className={`w-10 h-10 rounded-[10px] ${item.accentBg} flex items-center justify-center`}
+                        className={`w-10 h-10 rounded-[10px] ${item.accentBg} flex items-center justify-center shrink-0`}
                       >
                         {item.icon}
                       </div>
-                      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#F1F5F9] text-[#334155]">
+                      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#F1F5F9] text-[#334155] border border-[#E2E8F0]">
                         {item.badge}
                       </span>
                     </div>
+
                     <h3 className="text-[15.5px] font-bold text-[#172A3A]">{meta.name}</h3>
                     <p className="text-[11.5px] font-semibold text-[#0D78AE] mt-0.5">
                       {meta.articleRef}
@@ -387,18 +410,75 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     <p className="text-[12.5px] text-[#475569] mt-2 leading-relaxed">
                       {meta.targetDescription}
                     </p>
+
+                    {/* Collapsible Standards (Điều 4) */}
+                    <div className="mt-3">
+                      <button
+                        type="button"
+                        onClick={() => toggleStandards(item.code)}
+                        className="w-full flex items-center justify-between py-2 px-3 rounded-[8px] bg-[#F4F9FD] hover:bg-[#EBF5FB] text-[#0D78AE] text-[11.5px] font-bold border border-[#D9EAF5] transition-colors cursor-pointer"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <FileText size={13} />
+                          <span>Xem tiêu chuẩn xét trao ({meta.standardsArticleRef})</span>
+                        </span>
+                        {expandedStandards[item.code] ? (
+                          <ChevronUp size={14} />
+                        ) : (
+                          <ChevronDown size={14} />
+                        )}
+                      </button>
+
+                      {expandedStandards[item.code] && (
+                        <div className="mt-2 p-3 rounded-[9px] bg-[#F8FAFC] border border-[#E2E8F0] space-y-2 text-[11px] text-[#334155]">
+                          <div className="font-bold text-[#0F172A] border-b border-[#EDF2F7] pb-1 text-[11.5px]">
+                            Tiêu chuẩn xét trao ({meta.standardsArticleRef}):
+                          </div>
+                          {meta.standards.map((std) => (
+                            <div key={std.number} className="flex items-start gap-1.5">
+                              <span className="w-4 h-4 rounded-full bg-[#E0F2FE] text-[#0284C7] font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                                {std.number}
+                              </span>
+                              <div className="leading-snug">
+                                <strong className="text-[#1E293B]">{std.label}:</strong>{' '}
+                                <span className="text-[#475569]">{std.text}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Dossier Requirements (Điều 6) */}
                     <div className="mt-3.5 pt-3 border-t border-[#EDF2F7]">
-                      <div className="text-[11.5px] font-bold text-[#172A3A] mb-1.5">
-                        Thành phần hồ sơ bắt buộc (Điều 6):
+                      <div className="text-[11.5px] font-bold text-[#172A3A] mb-1.5 flex items-center justify-between">
+                        <span>Hồ sơ đề nghị xét trao (Điều 6):</span>
+                        <span className="text-[10.5px] font-medium text-[#64748B]">
+                          {meta.dossierArticleRef}
+                        </span>
                       </div>
-                      <ul className="space-y-1 text-[11.5px] text-[#55697B]">
-                        {meta.dossierRequirementsSummary.map((req, idx) => (
-                          <li key={idx} className="flex items-start gap-1.5">
+                      <ul className="space-y-1.5 text-[11.5px] text-[#55697B]">
+                        {meta.dossierItems.map((dossier) => (
+                          <li key={dossier.code} className="flex items-start gap-1.5">
                             <CheckCircle2
                               size={13}
-                              className="text-[#0D78AE] shrink-0 mt-0.5"
+                              className={`shrink-0 mt-0.5 ${
+                                dossier.isOptional ? 'text-[#D97706]' : 'text-[#0D78AE]'
+                              }`}
                             />
-                            <span>{req}</span>
+                            <div className="leading-snug">
+                              <span className="font-bold text-[#1E293B]">{dossier.code}:</span>{' '}
+                              <span>{dossier.title}</span>{' '}
+                              {dossier.isOptional ? (
+                                <span className="inline-block px-1.5 py-0.2 rounded text-[10px] font-semibold bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]">
+                                  Nếu có
+                                </span>
+                              ) : (
+                                <span className="inline-block px-1.5 py-0.2 rounded text-[10px] font-semibold bg-[#E0F2FE] text-[#0369A1]">
+                                  Bắt buộc
+                                </span>
+                              )}
+                            </div>
                           </li>
                         ))}
                       </ul>
@@ -408,7 +488,10 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   <div className="mt-4 pt-3 border-t border-[#EDF2F7]">
                     <button
                       type="button"
-                      onClick={() => setIsCreateModalOpen(true)}
+                      onClick={() => {
+                        setSelectedInitialCategory(item.code);
+                        setIsCreateModalOpen(true);
+                      }}
                       className="w-full py-2 px-3 rounded-[9px] bg-[#F3F8FC] hover:bg-[#E5F5FC] text-[#0D78AE] font-bold text-[12.5px] transition-colors cursor-pointer"
                     >
                       + Khởi tạo hồ sơ {meta.shortName}
@@ -420,43 +503,64 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
           </div>
         </div>
 
-        {/* Official Regulation Summary Card */}
+        {/* Important Business Notes */}
+        <div className="rounded-[14px] bg-[#F0FDF4] border border-[#BBF7D0] p-4 text-[12.5px] text-[#166534] shadow-xs">
+          <div className="flex items-center gap-2 font-bold text-[#15803D] mb-2.5">
+            <Info size={16} />
+            <span>Ghi chú nghiệp vụ quan trọng theo Quy chế Giải thưởng (Quyết định số 14-QĐ/ĐHĐN-HSV)</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-[12px] leading-relaxed">
+            <div className="p-3 rounded-[10px] bg-white/80 border border-[#DCFCE7]">
+              <strong className="text-[#166534] block mb-1">Điều 3 · Nguyên tắc trao thưởng:</strong>
+              Mỗi cá nhân, tập thể chỉ nhận Giải thưởng của mỗi hạng mục 1 lần duy nhất trong toàn bộ khóa học / quá trình học tập tại các đơn vị thuộc ĐHĐN.
+            </div>
+            <div className="p-3 rounded-[10px] bg-white/80 border border-[#DCFCE7]">
+              <strong className="text-[#166534] block mb-1">Khoản 4.1 Điều 4 · Thời gian tính thành tích:</strong>
+              Thành tích, mô hình, giải pháp, sáng kiến, đề tài, dự án đề nghị xét trao Giải thưởng được tính trong năm học xét trao cho đến thời điểm kết thúc nhận hồ sơ.
+            </div>
+            <div className="p-3 rounded-[10px] bg-white/80 border border-[#DCFCE7]">
+              <strong className="text-[#166534] block mb-1">Điều 9 · Số lượng giải thưởng tối đa:</strong>
+              Hằng năm xét trao tối đa 05 mô hình, giải pháp, sáng kiến (“Cánh chim ươm mầm”); 05 cá nhân tiêu biểu (“Cánh chim truyền lửa”); và 05 đề tài, dự án (“Cánh chim sáng tạo”).
+            </div>
+          </div>
+        </div>
+
+        {/* Official Regulation Summary Cards */}
         <div className="bg-white rounded-[14px] border border-[#DCE7EE] p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#E2EEF6]">
             <div className="text-[12px] font-bold text-[#0D5C8C] uppercase tracking-wide">
-              Điều 5 · Chủ thể đề cử & Giới thiệu
+              Điều 5 · Thẩm quyền đề xuất xét trao
             </div>
-            <p className="text-[12.5px] text-[#475569] mt-1 leading-relaxed">
-              Cá nhân, tập thể có thể tự ứng cử (kèm xác nhận của đơn vị quản lý trực tiếp) hoặc được
-              giới thiệu bởi BCH Liên chi hội, BCN CLB/Đội/Nhóm, BTK Hội Sinh viên trường hoặc Ủy viên
-              BCH Hội Sinh viên ĐHĐN.
+            <p className="text-[12.5px] text-[#475569] mt-1.5 leading-relaxed">
+              Tổ chức, cá nhân có thẩm quyền đề xuất xét trao Giải thưởng gồm: Ban Thường vụ/Ban Chấp hành Đoàn Thanh niên hoặc Ban Thư ký/Ban Chấp hành Hội Sinh viên trường thành viên, đơn vị trực thuộc; Chi hội trưởng/Đội trưởng đối với tập thể, cá nhân thuộc quyền quản lý; hoặc Ủy viên Ban Chấp hành Hội Sinh viên Việt Nam Đại học Đà Nẵng giới thiệu.
             </p>
           </div>
           <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#E2EEF6]">
             <div className="text-[12px] font-bold text-[#0D5C8C] uppercase tracking-wide">
-              Điều 7 · Quyền lợi Giải thưởng
+              Điều 11 · Hình thức Giải thưởng
             </div>
-            <p className="text-[12.5px] text-[#475569] mt-1 leading-relaxed">
-              Cá nhân, tập thể đạt giải được trao tặng Giấy chứng nhận của Ban Thư ký Hội Sinh viên
-              Việt Nam Đại học Đà Nẵng, Biểu trưng Giải thưởng “Cánh chim trắng” và tiền thưởng theo
-              quy định.
+            <p className="text-[12.5px] text-[#475569] mt-1.5 leading-relaxed">
+              Cá nhân, tập thể đạt giải được trao tặng Biểu trưng Giải thưởng “Cánh chim trắng”, Giấy khen của Ban Chấp hành Hội Sinh viên Việt Nam Đại học Đà Nẵng và tiền thưởng theo quy định.
             </p>
           </div>
           <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#E2EEF6]">
             <div className="text-[12px] font-bold text-[#0D5C8C] uppercase tracking-wide">
-              Điều 10 · Quy trình & Thời hạn tiếp nhận
+              Điều 7 · Quy trình & Thời hạn tiếp nhận
             </div>
-            <p className="text-[12.5px] text-[#475569] mt-1 leading-relaxed">
-              Hồ sơ được nộp trực tuyến và gửi về Cơ quan Thường trực Giải thưởng (Văn phòng Hội Sinh
-              viên Việt Nam Đại học Đà Nẵng) trước ngày 30/11 hằng năm để Hội đồng xét duyệt thẩm định.
+            <p className="text-[12.5px] text-[#475569] mt-1.5 leading-relaxed">
+              Hồ sơ gửi về Cơ quan Thường trực Giải thưởng (Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng) trước ngày 30/11 hằng năm để Cơ quan Thường trực thẩm định và trình Hội đồng xét duyệt.
             </p>
           </div>
         </div>
 
         <CreateWhiteBirdModal
           isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
+          onClose={() => {
+            setIsCreateModalOpen(false);
+            setSelectedInitialCategory(undefined);
+          }}
           onSubmit={handleCreateSubmit}
+          initialCategory={selectedInitialCategory}
           initialUserName={effectiveUserName}
           initialUserEmail={effectiveEmail}
           initialStudentId={effectiveStudentId}
@@ -469,7 +573,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
     );
   }
 
-  // ---------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------
   // ACTIVE APPLICATION WORKSPACE
   // ---------------------------------------------------------------------------
   const categoryMeta = WHITE_BIRD_CATEGORIES[activeApp.category];
