@@ -409,9 +409,20 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
                       <strong>Kết quả định lượng & Giá trị ứng dụng thực tế:</strong>{' '}
                       {activeApp.requirements.wb02.impactAndResults}
                     </div>
+                    {activeApp.requirements.wb02.scalabilityAndSpread && (
+                      <div className="p-3 rounded-lg bg-[#F8FBFD] border border-[#E2EEF6]">
+                        <strong>Tính lan tỏa (Khả năng nhân rộng):</strong>{' '}
+                        {activeApp.requirements.wb02.scalabilityAndSpread}
+                      </div>
+                    )}
+                    {activeApp.requirements.wb02.exemplaryNature && (
+                      <div className="p-3 rounded-lg bg-[#F8FBFD] border border-[#E2EEF6]">
+                        <strong>Tính điển hình:</strong>{' '}
+                        {activeApp.requirements.wb02.exemplaryNature}
+                      </div>
+                    )}
                     <div className="text-[12px] font-semibold text-[#15803D]">
-                      ✓ Đã xác nhận cam kết tính sáng tạo / bản quyền / trung thực theo Điều 6 Quy
-                      chế 1720/QĐ-HSV
+                      ✓ Đã xác nhận cam kết tính sáng tạo / trung thực theo Khoản 6.1 Điều 6 Quy chế (QĐ 14-QĐ/ĐHĐN-HSV)
                     </div>
                   </div>
                 ),

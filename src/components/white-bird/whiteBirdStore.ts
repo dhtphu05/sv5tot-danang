@@ -133,15 +133,15 @@ export function createWhiteBirdApplication(payload: {
     category: payload.category,
     nomineeType: payload.category === 'TRUYEN_LUA' ? 'INDIVIDUAL' : payload.nomineeType,
     nomineeName: payload.nomineeName.trim(),
-    studentId: payload.studentId.trim(),
+    studentId: (payload.studentId || '').trim(),
     institutionId: payload.institutionId,
     institutionName: payload.institutionName,
-    schoolReviewUnitId: payload.schoolReviewUnitId,
-    schoolReviewUnitName: payload.schoolReviewUnitName,
-    facultyName: payload.facultyName.trim(),
-    className: payload.className.trim(),
+    schoolReviewUnitId: payload.schoolReviewUnitId || `unit-${payload.institutionId.toLowerCase()}`,
+    schoolReviewUnitName: payload.schoolReviewUnitName || `Hội Sinh viên ${payload.institutionName}`,
+    facultyName: (payload.facultyName || '').trim(),
+    className: (payload.className || '').trim(),
     academicYear,
-    contactPhone: payload.contactPhone.trim(),
+    contactPhone: (payload.contactPhone || '').trim(),
     preparedByUserId: payload.preparedByUserId,
     preparedByUserName: payload.preparedByUserName,
     preparedByUserEmail: payload.preparedByUserEmail,
@@ -368,14 +368,19 @@ export function removeWhiteBirdEvidence(
   return updated;
 }
 
-export function validateWhiteBirdReadiness(app: WhiteBirdApplication): {
+export interface WhiteBirdReadinessResult {
   wb01Ready: boolean;
   wb02Ready: boolean;
   wb03Ready: boolean;
+  isWb03Optional: boolean;
+  wb03HasData: boolean;
   readyCount: number;
+  totalRequired: number;
   canSubmit: boolean;
   missingReasons: string[];
-} {
+}
+
+export function validateWhiteBirdReadiness(app: WhiteBirdApplication): WhiteBirdReadinessResult {
   const missingReasons: string[] = [];
   const { wb01, wb02, wb03 } = app.requirements;
 
@@ -401,21 +406,48 @@ export function validateWhiteBirdReadiness(app: WhiteBirdApplication): {
     );
   }
 
-  const wb03Ready =
-    Boolean(wb03.awardOrRecognitionSummary.trim()) && wb03.evidenceFiles.length > 0;
-  if (!wb03Ready) {
-    missingReasons.push(
-      'WB03: Cần kê khai tóm tắt minh chứng hiệu quả / giải thưởng / chức vụ và đính kèm ít nhất 01 tệp minh chứng hoặc hình ảnh minh họa (Điều 6).'
-    );
+  const isWb03Optional = app.category === 'UOM_MAM';
+  const wb03HasData =
+    Boolean(wb03.awardOrRecognitionSummary?.trim()) ||
+    Boolean(wb03.mediaAndProductLinks?.trim()) ||
+    wb03.evidenceFiles.length > 0;
+
+  let wb03Ready = false;
+  let totalRequired = 3;
+  let readyCount = 0;
+  let canSubmit = false;
+
+  if (isWb03Optional) {
+    // Khoản 6.1 Điều 6: WB03 là hình ảnh, sản phẩm minh họa (nếu có) -> TÙY CHỌN, không chặn nộp
+    totalRequired = 2;
+    readyCount = [wb01Ready, wb02Ready].filter(Boolean).length;
+    canSubmit = wb01Ready && wb02Ready;
+    wb03Ready = wb03HasData;
+  } else {
+    // Khoản 6.2 và 6.3 Điều 6: WB03 là bắt buộc cho Cánh chim truyền lửa & Cánh chim sáng tạo
+    totalRequired = 3;
+    wb03Ready =
+      Boolean(wb03.awardOrRecognitionSummary?.trim()) && wb03.evidenceFiles.length > 0;
+    if (!wb03Ready) {
+      missingReasons.push(
+        app.category === 'TRUYEN_LUA'
+          ? 'WB03: Cần kê khai danh mục chức vụ / thành tích và đính kèm tài liệu minh chứng (Khoản 6.2 Điều 6).'
+          : 'WB03: Cần kê khai tóm tắt giải thưởng đạt được và đính kèm minh chứng từ cấp ĐHĐN trở lên (Khoản 6.3 Điều 6).'
+      );
+    }
+    readyCount = [wb01Ready, wb02Ready, wb03Ready].filter(Boolean).length;
+    canSubmit = wb01Ready && wb02Ready && wb03Ready;
   }
 
-  const readyCount = [wb01Ready, wb02Ready, wb03Ready].filter(Boolean).length;
   return {
     wb01Ready,
     wb02Ready,
     wb03Ready,
+    isWb03Optional,
+    wb03HasData,
     readyCount,
-    canSubmit: readyCount === 3,
+    totalRequired,
+    canSubmit,
     missingReasons,
   };
 }
@@ -432,9 +464,13 @@ export function submitWhiteBirdApplication(appId: string): {
   const current = storeApps[idx];
   const readiness = validateWhiteBirdReadiness(current);
   if (!readiness.canSubmit) {
+    const defaultMsg =
+      current.category === 'UOM_MAM'
+        ? 'Hồ sơ chưa hoàn thiện đủ 2 thành phần bắt buộc (WB01, WB02) theo Điều 6.'
+        : 'Hồ sơ chưa hoàn thiện đủ 3 thành phần theo Điều 6.';
     return {
       success: false,
-      error: readiness.missingReasons[0] || 'Hồ sơ chưa hoàn thiện đủ 3 thành phần theo Điều 6.',
+      error: readiness.missingReasons[0] || defaultMsg,
     };
   }
 

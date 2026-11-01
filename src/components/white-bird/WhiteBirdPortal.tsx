@@ -29,6 +29,7 @@ import {
   AlertCircle,
   FileText,
   Info,
+  Mail,
 } from 'lucide-react';
 import { StudentProfileDto } from '../../entities/application/studentApplicationTypes';
 import { ApplicationEvidence } from '../../demo/fixtures/studentApplication';
@@ -80,12 +81,25 @@ type WhiteBirdPortalTabId = 'overview' | 'workspace' | 'evidence' | 'results';
 
 const getRequirementCompletionStatus = (
   isReady: boolean,
-  appStatus?: WhiteBirdApplicationStatus
+  appStatus?: WhiteBirdApplicationStatus,
+  options?: { isOptional?: boolean; hasOptionalData?: boolean }
 ): { label: string; badgeClass: string } => {
   if (appStatus && appStatus !== 'draft' && appStatus !== 'supplement_returned') {
     return {
       label: 'Đang chờ thẩm định',
       badgeClass: 'bg-[#E0F2FE] text-[#0369A1] border border-[#BAE6FD]',
+    };
+  }
+  if (options?.isOptional) {
+    if (options.hasOptionalData) {
+      return {
+        label: 'Đã bổ sung minh họa',
+        badgeClass: 'bg-[#ECFDF5] text-[#047857] border border-[#A7F3D0]',
+      };
+    }
+    return {
+      label: 'Không bắt buộc',
+      badgeClass: 'bg-[#F1F5F9] text-[#64748B] border border-[#E2E8F0]',
     };
   }
   if (isReady) {
@@ -804,7 +818,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
               },
               {
                 id: 'workspace' as const,
-                label: `Kê khai hồ sơ & Minh chứng (${readiness.readyCount}/3)`,
+                label: `Kê khai hồ sơ & Minh chứng (${readiness.readyCount}/${readiness.totalRequired})`,
                 icon: <FileCheck2 size={15} />,
               },
               {
@@ -854,6 +868,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   desc:
                     activeApp.requirements.wb01.nominatingUnitName ||
                     'Chưa kê khai đơn vị giới thiệu đề cử',
+                  isOptional: false,
+                  hasOptionalData: false,
                 },
                 {
                   id: 'WB02' as const,
@@ -864,56 +880,71 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   desc:
                     activeApp.requirements.wb02.reportTitle ||
                     'Chưa hoàn thiện báo cáo thuyết minh / thành tích',
+                  isOptional: false,
+                  hasOptionalData: false,
                 },
                 {
                   id: 'WB03' as const,
-                  code: 'Thành phần WB03 · Điều 6',
-                  title: categoryMeta.wb03Title,
+                  code: readiness.isWb03Optional
+                    ? 'Thành phần WB03 · Khoản 6.1 Điều 6 (Tùy chọn)'
+                    : 'Thành phần WB03 · Điều 6',
+                  title: readiness.isWb03Optional
+                    ? 'Hình ảnh, sản phẩm minh họa (nếu có)'
+                    : categoryMeta.wb03Title,
                   ready: readiness.wb03Ready,
                   filesCount: activeApp.requirements.wb03.evidenceFiles.length,
                   desc:
                     activeApp.requirements.wb03.awardOrRecognitionSummary ||
-                    'Chưa kê khai tóm tắt minh chứng hiệu quả / giải thưởng',
+                    (readiness.isWb03Optional
+                      ? 'Bạn có thể bổ sung hình ảnh, sản phẩm hoặc tài liệu minh họa (không bắt buộc)'
+                      : 'Chưa kê khai tóm tắt minh chứng hiệu quả / giải thưởng'),
+                  isOptional: readiness.isWb03Optional,
+                  hasOptionalData: readiness.wb03HasData,
                 },
               ]
-            ).map((card) => (
-              <div
-                key={card.id}
-                className="bg-white rounded-[13px] border border-[#DCE7EE] p-4 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-[11px] font-bold text-[#0D78AE] uppercase">
-                      {card.code}
-                    </span>
-                    <span
-                      className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                        getRequirementCompletionStatus(card.ready, activeApp.status).badgeClass
-                      }`}
-                    >
-                      {getRequirementCompletionStatus(card.ready, activeApp.status).label}
-                    </span>
+            ).map((card) => {
+              const status = getRequirementCompletionStatus(
+                card.ready,
+                activeApp.status,
+                card.isOptional ? { isOptional: true, hasOptionalData: card.hasOptionalData } : undefined
+              );
+              return (
+                <div
+                  key={card.id}
+                  className="bg-white rounded-[13px] border border-[#DCE7EE] p-4 flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="text-[11px] font-bold text-[#0D78AE] uppercase">
+                        {card.code}
+                      </span>
+                      <span
+                        className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${status.badgeClass}`}
+                      >
+                        {status.label}
+                      </span>
+                    </div>
+                    <h3 className="text-[14px] font-bold text-[#172A3A]">{card.title}</h3>
+                    <p className="text-[12px] text-[#55697B] mt-1.5 line-clamp-2">{card.desc}</p>
                   </div>
-                  <h3 className="text-[14px] font-bold text-[#172A3A]">{card.title}</h3>
-                  <p className="text-[12px] text-[#55697B] mt-1.5 line-clamp-2">{card.desc}</p>
+                  <div className="mt-4 pt-3 border-t border-[#EDF3F8] flex items-center justify-between">
+                    <span className="text-[11.5px] font-semibold text-[#607483]">
+                      {card.filesCount} tệp đính kèm
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveReqId(card.id);
+                        setActiveTab('workspace');
+                      }}
+                      className="text-[12px] font-bold text-[#0D78AE] hover:underline cursor-pointer"
+                    >
+                      {isReadOnly ? 'Xem chi tiết →' : 'Kê khai ngay →'}
+                    </button>
+                  </div>
                 </div>
-                <div className="mt-4 pt-3 border-t border-[#EDF3F8] flex items-center justify-between">
-                  <span className="text-[11.5px] font-semibold text-[#607483]">
-                    {card.filesCount} tệp đính kèm
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveReqId(card.id);
-                      setActiveTab('workspace');
-                    }}
-                    className="text-[12px] font-bold text-[#0D78AE] hover:underline cursor-pointer"
-                  >
-                    {isReadOnly ? 'Xem chi tiết →' : 'Kê khai ngay →'}
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Readiness & Submission Banner */}
@@ -922,8 +953,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
               <div className="flex items-center gap-2">
                 <ShieldCheck size={18} className="text-[#0D78AE]" />
                 <h3 className="text-[15px] font-bold text-[#172A3A]">
-                  Tiến độ hoàn thiện hồ sơ Giải thưởng “Cánh chim trắng”: {readiness.readyCount}/3
-                  thành phần
+                  {activeApp.category === 'UOM_MAM'
+                    ? `Tiến độ: ${readiness.readyCount}/${readiness.totalRequired} thành phần bắt buộc`
+                    : `Tiến độ hoàn thiện hồ sơ Giải thưởng “Cánh chim trắng”: ${readiness.readyCount}/3 thành phần`}
                 </h3>
               </div>
               {readiness.missingReasons.length > 0 ? (
@@ -934,8 +966,11 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                 </ul>
               ) : (
                 <p className="text-[12.5px] text-[#15803D] font-medium">
-                  Hồ sơ đã đáp ứng đầy đủ 3 thành phần theo Điều 6 Quy chế Giải thưởng Cánh chim
-                  trắng (QĐ 14-QĐ/ĐHĐN-HSV).
+                  {activeApp.category === 'UOM_MAM'
+                    ? (readiness.wb03HasData
+                        ? 'Hồ sơ đã hoàn tất 2/2 thành phần bắt buộc (WB01, WB02) và đã đính kèm tài liệu minh họa (WB03).'
+                        : 'Hồ sơ đã hoàn tất 2/2 thành phần bắt buộc (WB01, WB02). Bạn có thể nộp ngay hoặc bổ sung hình ảnh, sản phẩm minh họa ở WB03 (không bắt buộc).')
+                    : 'Hồ sơ đã đáp ứng đầy đủ 3 thành phần theo Điều 6 Quy chế Giải thưởng Cánh chim trắng (QĐ 14-QĐ/ĐHĐN-HSV).'}
                 </p>
               )}
             </div>
@@ -956,7 +991,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   onClick={handleSubmitDossier}
                 >
                   <Send size={15} className="mr-1.5" />
-                  Nộp về Văn phòng HSV ĐHĐN
+                  Nộp hồ sơ Giải thưởng (${readiness.readyCount}/${readiness.totalRequired})
                 </Button>
               )}
             </div>
@@ -978,6 +1013,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   subtitle: 'Giới thiệu của cấp bộ Hội có thẩm quyền',
                   ready: readiness.wb01Ready,
                   files: activeApp.requirements.wb01.evidenceFiles.length,
+                  isOptional: false,
+                  hasOptionalData: false,
                 },
                 {
                   id: 'WB02' as const,
@@ -986,18 +1023,31 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   subtitle: 'Thuyết minh nội dung & Cam kết quy chế',
                   ready: readiness.wb02Ready,
                   files: activeApp.requirements.wb02.evidenceFiles.length,
+                  isOptional: false,
+                  hasOptionalData: false,
                 },
                 {
                   id: 'WB03' as const,
-                  badge: 'Điều 6 Quy chế',
-                  title: `WB03 · ${categoryMeta.wb03Title}`,
-                  subtitle: 'Bằng khen, giải thưởng & Hình ảnh thực tế',
+                  badge: readiness.isWb03Optional ? 'Khoản 6.1 Điều 6 (Tùy chọn)' : 'Điều 6 Quy chế',
+                  title: readiness.isWb03Optional
+                    ? 'WB03 · Hình ảnh, sản phẩm minh họa'
+                    : `WB03 · ${categoryMeta.wb03Title}`,
+                  subtitle: readiness.isWb03Optional
+                    ? 'Tài liệu, sản phẩm minh họa (nếu có)'
+                    : 'Bằng khen, giải thưởng & Hình ảnh thực tế',
                   ready: readiness.wb03Ready,
                   files: activeApp.requirements.wb03.evidenceFiles.length,
+                  isOptional: readiness.isWb03Optional,
+                  hasOptionalData: readiness.wb03HasData,
                 },
               ]
             ).map((req) => {
               const isSelected = activeReqId === req.id;
+              const status = getRequirementCompletionStatus(
+                req.ready,
+                activeApp.status,
+                req.isOptional ? { isOptional: true, hasOptionalData: req.hasOptionalData } : undefined
+              );
               return (
                 <button
                   key={req.id}
@@ -1014,11 +1064,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       {req.badge}
                     </span>
                     <span
-                      className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full ${
-                        getRequirementCompletionStatus(req.ready, activeApp.status).badgeClass
-                      }`}
+                      className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full ${status.badgeClass}`}
                     >
-                      {getRequirementCompletionStatus(req.ready, activeApp.status).label}
+                      {status.label}
                     </span>
                   </div>
                   <div className="text-[13.5px] font-bold text-[#172A3A]">{req.title}</div>
@@ -1035,8 +1083,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                 Gửi hồ sơ về Cơ quan Thường trực
               </div>
               <p className="text-[11.5px] text-[#607483] leading-relaxed">
-                Sau khi hoàn tất cả 3 mục WB01, WB02, WB03, sinh viên nộp hồ sơ trực tuyến về{' '}
-                <strong>Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng</strong>.
+                {activeApp.category === 'UOM_MAM'
+                  ? 'Sau khi hoàn tất 2 thành phần bắt buộc (WB01, WB02), sinh viên nộp hồ sơ trực tuyến về Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng (WB03 là thành phần tùy chọn nếu có).'
+                  : 'Sau khi hoàn tất cả 3 mục WB01, WB02, WB03, sinh viên nộp hồ sơ trực tuyến về Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng.'}
               </p>
               {!isReadOnly ? (
                 <Button
@@ -1047,7 +1096,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   onClick={handleSubmitDossier}
                 >
                   <Send size={15} className="mr-1.5" />
-                  Nộp hồ sơ Giải thưởng ({readiness.readyCount}/3)
+                  Nộp hồ sơ Giải thưởng ({readiness.readyCount}/{readiness.totalRequired})
                 </Button>
               ) : (
                 <div className="p-2.5 rounded-lg bg-[#E0F2FE] text-[#0369A1] text-[12px] font-bold text-center">
@@ -1243,6 +1292,13 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   ? wb02Data.leadRepresentative
                   : (activeApp.nomineeType === 'COLLECTIVE' ? `${activeApp.preparedByUserName}${activeApp.studentId ? ` (${activeApp.studentId})` : ''}` : '');
 
+                // Kiểm tra 4 tiêu chuẩn để hiển thị khuyến nghị rà soát (không hard-block submission)
+                const missingStandards: { id: string; name: string }[] = [];
+                if (!wb02Data.solutionAndExecution?.trim()) missingStandards.push({ id: 'wb02-sec-solution', name: 'Tính mới, sáng tạo' });
+                if (!wb02Data.impactAndResults?.trim()) missingStandards.push({ id: 'wb02-sec-impact', name: 'Tính hiệu quả' });
+                if (!wb02Data.scalabilityAndSpread?.trim()) missingStandards.push({ id: 'wb02-sec-scalability', name: 'Tính lan tỏa' });
+                if (!wb02Data.exemplaryNature?.trim()) missingStandards.push({ id: 'wb02-sec-exemplary', name: 'Tính điển hình' });
+
                 return (
                   <div className="space-y-5">
                     {/* Header */}
@@ -1257,10 +1313,10 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           </span>
                         </div>
                         <h2 className="text-[16px] font-bold text-[#172A3A] mt-0.5">
-                          Báo cáo thuyết minh mô hình, giải pháp, sáng kiến & Cam kết tính sáng tạo
+                          WB02 · Báo cáo thuyết minh và cam kết tính sáng tạo
                         </h2>
                         <p className="text-[12.5px] text-[#607483] mt-0.5 leading-relaxed">
-                          Thuyết minh chi tiết theo 4 tiêu chuẩn xét trao tại Điểm a khoản 4.2 Điều 4 Quy chế (Tính mới, sáng tạo; Tính hiệu quả; Tính lan tỏa; Tính điển hình) và cam kết tính sáng tạo theo Khoản 6.1 Điều 6.
+                          Thuyết minh chi tiết theo 4 tiêu chuẩn xét trao (Tính mới, sáng tạo; Tính hiệu quả; Tính lan tỏa; Tính điển hình) và cam kết tính sáng tạo theo Quy chế Giải thưởng.
                         </p>
                       </div>
                     </div>
@@ -1281,7 +1337,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         />
                       </div>
                       <Input
-                        label="Thời gian triển khai mô hình *"
+                        label="Thời gian triển khai thực tế *"
                         disabled={isReadOnly}
                         value={wb02Data.implementationPeriod}
                         onChange={(e) =>
@@ -1289,38 +1345,39 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             implementationPeriod: e.target.value,
                           })
                         }
-                        placeholder="VD: Năm học 2024–2025 hoặc 10/2024 – 05/2025"
+                        placeholder="VD: Tháng 10/2024 – Tháng 05/2025"
                       />
                     </div>
 
-                    {/* Bối cảnh, sự cần thiết & mục tiêu */}
-                    <div>
-                      <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1">
-                        Bối cảnh, sự cần thiết và mục tiêu của mô hình, giải pháp, sáng kiến
-                      </label>
-                      <p className="text-[11.5px] text-[#64748B] mb-1.5 leading-snug">
-                        <em>(Nêu rõ bối cảnh công tác Hội và phong trào sinh viên tại cơ sở, sự cần thiết ra đời của mô hình và mục tiêu hướng tới)</em>
-                      </p>
-                      <textarea
-                        rows={3}
-                        disabled={isReadOnly}
-                        value={wb02Data.contextAndObjectives}
-                        onChange={(e) =>
-                          updateWhiteBirdWB02(activeApp.id, {
-                            contextAndObjectives: e.target.value,
-                          })
-                        }
-                        placeholder="Trình bày bối cảnh thực tiễn công tác Hội và phong trào sinh viên tại cơ sở, lý do hình thành và mục tiêu cần giải quyết của mô hình, sáng kiến..."
-                        className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y"
-                      />
+                    {/* Tóm tắt thông tin người phụ trách & Liên hệ */}
+                    <div className="p-3.5 rounded-[12px] bg-[#F8FBFD] border border-[#DCE7EE] flex flex-wrap items-center justify-between gap-3 text-[12px]">
+                      <div className="flex items-center gap-2">
+                        <Building2 size={14} className="text-[#0D78AE]" />
+                        <span className="text-[#64748B]">Đơn vị:</span>
+                        <strong className="text-[#172A3A]">{activeApp.institutionName}</strong>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <User size={14} className="text-[#0D78AE]" />
+                        <span className="text-[#64748B]">Người lập hồ sơ:</span>
+                        <strong className="text-[#172A3A]">
+                          {activeApp.preparedByUserName} {activeApp.studentId ? `(${activeApp.studentId})` : ''}
+                        </strong>
+                      </div>
+                      {(currentEmail || studentProfileSnapshot?.email) && (
+                        <div className="flex items-center gap-2">
+                          <Mail size={14} className="text-[#0D78AE]" />
+                          <span className="text-[#64748B]">Email:</span>
+                          <span className="text-[#334155]">{currentEmail || studentProfileSnapshot?.email}</span>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Section 2: Thông tin Người chịu trách nhiệm chính (Tập thể) */}
-                    {activeApp.nomineeType === 'COLLECTIVE' && (
-                      <div className="p-4 rounded-[12px] bg-[#F8FBFD] border border-[#DCE7EE] space-y-3">
+                    {/* Section Thông tin Người chịu trách nhiệm chính & Thành viên (Tập thể/Nhóm) */}
+                    {activeApp.nomineeType === 'COLLECTIVE' ? (
+                      <div className="p-4 rounded-[12px] bg-[#F8FBFD] border border-[#DCE7EE] space-y-3.5">
                         <div className="flex items-center justify-between">
                           <span className="text-[12px] font-bold uppercase tracking-wider text-[#0D78AE]">
-                            Thông tin phụ trách mô hình tập thể
+                            Thông tin ban điều hành / nhóm tác giả mô hình
                           </span>
                           <span className="text-[11.5px] text-[#64748B]">
                             Tập thể đề cử: <strong className="text-[#172A3A]">{activeApp.nomineeName}</strong>
@@ -1337,15 +1394,18 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                                   leadRepresentative: e.target.value,
                                 })
                               }
-                              placeholder="VD: Nguyễn Văn A (MSSV 102220084, Chi hội trưởng / Chủ nhiệm CLB)"
+                              placeholder="VD: Nguyễn Văn A (MSSV 102220084, Trưởng nhóm / Chủ nhiệm CLB)"
                             />
                             <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
                               Theo Mẫu báo cáo, hồ sơ cần ghi rõ họ tên và vai trò của người trực tiếp chịu trách nhiệm chính điều hành mô hình.
                             </p>
                           </div>
                           <div>
-                            <Input
-                              label="Các thành viên khác trong ban điều hành / nhóm tác giả (nếu có)"
+                            <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1">
+                              Các thành viên khác trong ban điều hành / nhóm tác giả (nếu có)
+                            </label>
+                            <textarea
+                              rows={3}
                               disabled={isReadOnly}
                               value={wb02Data.coAuthorsOrTeamMembers}
                               onChange={(e) =>
@@ -1353,11 +1413,86 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                                   coAuthorsOrTeamMembers: e.target.value,
                                 })
                               }
-                              placeholder="Liệt kê họ tên, vai trò các thành viên tham gia phát triển (không bắt buộc)..."
+                              placeholder="Họ và tên – Vai trò – Đơn vị (mỗi thành viên trên một dòng)&#10;VD:&#10;Nguyễn Văn A – Đồng tác giả – Khoa CNTT, Trường ĐH Bách khoa&#10;Trần Thị B – Kỹ thuật – CLB Học thuật"
+                              className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y min-h-[85px] max-h-[220px]"
                             />
                             <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
-                              Trường thông tin hỗ trợ; không bắt buộc kê khai toàn bộ thành viên nếu không có yêu cầu riêng.
+                              Nhập danh sách các thành viên khác trong ban điều hành / nhóm tác giả (nếu có). Không cần nhập lại người chịu trách nhiệm chính.
                             </p>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1">
+                          Các thành viên khác / Người hỗ trợ (nếu có)
+                        </label>
+                        <textarea
+                          rows={2}
+                          disabled={isReadOnly}
+                          value={wb02Data.coAuthorsOrTeamMembers}
+                          onChange={(e) =>
+                            updateWhiteBirdWB02(activeApp.id, {
+                              coAuthorsOrTeamMembers: e.target.value,
+                            })
+                          }
+                          placeholder="Họ và tên – Vai trò – Đơn vị (nếu có hỗ trợ triển khai mô hình)"
+                          className="w-full px-3.5 py-2 text-[12.5px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y min-h-[65px]"
+                        />
+                      </div>
+                    )}
+
+                    {/* Bối cảnh, sự cần thiết & mục tiêu (Thông tin bổ sung - Giản lược & bảo toàn dữ liệu) */}
+                    <div className="p-3.5 rounded-[11px] bg-[#F8FAFC] border border-[#E2E8F0] space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-[12.5px] font-bold text-[#334155]">
+                          Bối cảnh và mục tiêu hình thành (Thông tin bổ sung)
+                        </label>
+                        <span className="text-[11px] text-[#64748B] italic">Không bắt buộc</span>
+                      </div>
+                      <p className="text-[11.5px] text-[#64748B] leading-snug">
+                        Tóm tắt bối cảnh thực tiễn công tác Hội và phong trào sinh viên tại cơ sở cùng mục tiêu hướng tới để làm rõ hơn tính mới, sáng tạo.
+                      </p>
+                      <textarea
+                        rows={2}
+                        disabled={isReadOnly}
+                        value={wb02Data.contextAndObjectives}
+                        onChange={(e) =>
+                          updateWhiteBirdWB02(activeApp.id, {
+                            contextAndObjectives: e.target.value,
+                          })
+                        }
+                        placeholder="Trình bày ngắn gọn bối cảnh và lý do ra đời của mô hình, sáng kiến..."
+                        className="w-full px-3.5 py-2 text-[12.5px] text-[#172A3A] bg-white border border-[#CBD5E1] rounded-[8px] focus:outline-none focus:border-[#0D78AE] resize-y min-h-[65px]"
+                      />
+                    </div>
+
+                    {/* Banner Khuyến nghị 4 tiêu chuẩn (Khi có tiêu chuẩn chưa có nội dung) */}
+                    {missingStandards.length > 0 && (
+                      <div className="p-3.5 rounded-[10px] bg-[#EFF6FF] border border-[#BFDBFE] text-[#1E40AF] text-[12.5px] flex items-start gap-2.5">
+                        <Info size={16} className="text-[#3B82F6] shrink-0 mt-0.5" />
+                        <div className="space-y-1">
+                          <span className="font-bold">Khuyến nghị hoàn thiện nội dung thuyết minh:</span>
+                          <p className="text-[12px] text-[#1E3A8A]">
+                            Bạn chưa thuyết minh đầy đủ 4 tiêu chuẩn xét trao theo Điểm a khoản 4.2 Điều 4. Vui lòng rà soát các mục còn trống:
+                          </p>
+                          <div className="flex flex-wrap gap-1.5 pt-1">
+                            {missingStandards.map((item) => (
+                              <button
+                                key={item.id}
+                                type="button"
+                                onClick={() => {
+                                  const el = document.getElementById(item.id);
+                                  if (el) {
+                                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    el.focus();
+                                  }
+                                }}
+                                className="px-2.5 py-1 rounded-md bg-white border border-[#93C5FD] text-[11.5px] font-semibold text-[#1D4ED8] hover:bg-[#DBEAFE] cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                              >
+                                <span>→ {item.name}</span>
+                              </button>
+                            ))}
                           </div>
                         </div>
                       </div>
@@ -1365,22 +1500,25 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
 
                     {/* Section 3: 4 Tiêu chuẩn Thuyết minh theo Điểm a khoản 4.2 Điều 4 */}
                     <div className="space-y-4 pt-1">
-                      <div className="p-3 rounded-[9px] bg-[#F0F7FC] border border-[#CDE3F3] text-[12px] text-[#0D5C8C]">
-                        <strong>Tiêu chuẩn xét trao Giải thưởng “Cánh chim ươm mầm” (Điểm a khoản 4.2 Điều 4 Quy chế):</strong>
-                        <p className="text-[11.5px] text-[#334155] mt-0.5">
-                          Kê khai đầy đủ 4 tiêu chuẩn: Tính mới & sáng tạo, Tính hiệu quả, Tính lan tỏa và Tính điển hình.
-                        </p>
+                      <div className="border-b border-[#EDF3F8] pb-1.5">
+                        <h3 className="text-[13.5px] font-extrabold text-[#172A3A] uppercase tracking-wide">
+                          Thuyết minh chi tiết theo 4 tiêu chuẩn xét trao (Điểm a khoản 4.2 Điều 4)
+                        </h3>
                       </div>
 
                       {/* Tiêu chuẩn 1: Tính mới, sáng tạo */}
                       <div className="space-y-1.5">
-                        <label className="block text-[12.5px] font-bold text-[#172A3A]">
+                        <label
+                          htmlFor="wb02-sec-solution"
+                          className="block text-[12.5px] font-bold text-[#172A3A]"
+                        >
                           1. Tính mới, sáng tạo của mô hình, giải pháp, sáng kiến <span className="text-red-500">*</span>
                         </label>
                         <p className="text-[11.5px] text-[#64748B] leading-snug">
                           Mô tả nội dung mới của mô hình, giải pháp, sáng kiến; điểm khác biệt, cải tiến so với các hình thức tương tự đã áp dụng trong công tác Hội và phong trào sinh viên trước ngày nộp hồ sơ.
                         </p>
                         <textarea
+                          id="wb02-sec-solution"
                           rows={4}
                           disabled={isReadOnly}
                           value={wb02Data.solutionAndExecution}
@@ -1390,19 +1528,23 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             })
                           }
                           placeholder="Trình bày chi tiết tính mới của giải pháp, phương thức triển khai mới, ứng dụng chuyển đổi số hoặc sáng kiến nổi bật so với các cách làm trước đây..."
-                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y"
+                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y min-h-[100px]"
                         />
                       </div>
 
                       {/* Tiêu chuẩn 2: Tính hiệu quả */}
                       <div className="space-y-1.5">
-                        <label className="block text-[12.5px] font-bold text-[#172A3A]">
+                        <label
+                          htmlFor="wb02-sec-impact"
+                          className="block text-[12.5px] font-bold text-[#172A3A]"
+                        >
                           2. Quá trình triển khai và tính hiệu quả thực tiễn <span className="text-red-500">*</span>
                         </label>
                         <p className="text-[11.5px] text-[#64748B] leading-snug">
-                          Mô tả quá trình triển khai, kết quả áp dụng vào thực tiễn công tác Hội và phong trào sinh viên; sự ghi nhận của lãnh đạo địa phương hoặc đơn vị cùng cấp; mức độ hưởng ứng tích cực của sinh viên (kèm số liệu thực tế nếu có).
+                          Mô tả quá trình triển khai, kết quả áp dụng vào thực tiễn công tác Hội và phong trào sinh viên; sự ghi nhận của lãnh đạo địa phương hoặc đơn vị cùng cấp; mức độ hưởng ứng tích cực của sinh viên (khuyến khích kèm số liệu thực tế nếu có).
                         </p>
                         <textarea
+                          id="wb02-sec-impact"
                           rows={4}
                           disabled={isReadOnly}
                           value={wb02Data.impactAndResults}
@@ -1412,19 +1554,23 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             })
                           }
                           placeholder="Trình bày kết quả áp dụng cụ thể vào thực tiễn, số lượng hội viên sinh viên tham gia/hưởng ứng, đánh giá và ghi nhận của lãnh đạo đơn vị, tác động tích cực đến phong trào..."
-                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y"
+                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y min-h-[100px]"
                         />
                       </div>
 
                       {/* Tiêu chuẩn 3: Tính lan tỏa */}
                       <div className="space-y-1.5">
-                        <label className="block text-[12.5px] font-bold text-[#172A3A]">
+                        <label
+                          htmlFor="wb02-sec-scalability"
+                          className="block text-[12.5px] font-bold text-[#172A3A]"
+                        >
                           3. Khả năng lan tỏa và nhân rộng
                         </label>
                         <p className="text-[11.5px] text-[#64748B] leading-snug">
                           Trình bày khả năng nghiên cứu triển khai mô hình, giải pháp, sáng kiến trong phạm vi rộng hơn (trong trường thành viên, các liên chi hội, cụm thi đua hoặc toàn ĐHĐN).
                         </p>
                         <textarea
+                          id="wb02-sec-scalability"
                           rows={3}
                           disabled={isReadOnly}
                           value={wb02Data.scalabilityAndSpread || ''}
@@ -1434,19 +1580,23 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             })
                           }
                           placeholder="Nêu rõ tiềm năng, điều kiện và phương án để mô hình có thể được chuyển giao, nhân rộng và áp dụng hiệu quả cho các đơn vị bạn..."
-                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y"
+                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y min-h-[85px]"
                         />
                       </div>
 
                       {/* Tiêu chuẩn 4: Tính điển hình */}
                       <div className="space-y-1.5">
-                        <label className="block text-[12.5px] font-bold text-[#172A3A]">
+                        <label
+                          htmlFor="wb02-sec-exemplary"
+                          className="block text-[12.5px] font-bold text-[#172A3A]"
+                        >
                           4. Tính điển hình, tiêu biểu của mô hình
                         </label>
                         <p className="text-[11.5px] text-[#64748B] leading-snug">
                           Làm rõ tính tiêu biểu của mô hình, giải pháp, sáng kiến so với các mô hình, giải pháp, sáng kiến cùng cấp, cùng nội dung và lĩnh vực áp dụng.
                         </p>
                         <textarea
+                          id="wb02-sec-exemplary"
                           rows={3}
                           disabled={isReadOnly}
                           value={wb02Data.exemplaryNature || ''}
@@ -1456,7 +1606,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             })
                           }
                           placeholder="Phân tích tính tiêu biểu, nổi trội của mô hình so với các hoạt động tương tự trong năm học..."
-                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y"
+                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y min-h-[85px]"
                         />
                       </div>
                     </div>
@@ -1476,7 +1626,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           className="mt-1 w-4 h-4 accent-[#0D78AE]"
                         />
                         <span className="text-[12.5px] font-semibold text-[#172A3A] leading-relaxed">
-                          {categoryMeta.wb02CommitmentLabel}
+                          Tôi/Đại diện tập thể cam kết thông tin trong báo cáo là trung thực, mô hình, giải pháp, sáng kiến được kê khai có tính sáng tạo và chịu trách nhiệm về nội dung cung cấp.
                         </span>
                       </label>
                       <p className="text-[11.5px] text-[#64748B] leading-snug">
@@ -1630,87 +1780,165 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
               );
             })()}
 
-            {activeReqId === 'WB03' && (
-              <div className="space-y-4">
-                <div className="border-b border-[#EDF3F8] pb-3">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D78AE]">
-                    Thành phần WB03 · {categoryMeta.articleRef}
-                  </span>
-                  <h2 className="text-[16px] font-bold text-[#172A3A] mt-0.5">
-                    {categoryMeta.wb03Title}
-                  </h2>
-                </div>
+            {activeReqId === 'WB03' && (() => {
+              const wb03Data = activeApp.requirements.wb03;
+              const statusMeta = getRequirementCompletionStatus(
+                readiness.wb03Ready,
+                activeApp.status,
+                readiness.isWb03Optional ? { isOptional: true, hasOptionalData: readiness.wb03HasData } : undefined
+              );
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              if (activeApp.category === 'UOM_MAM') {
+                return (
+                  <div className="space-y-4">
+                    <div className="border-b border-[#EDF3F8] pb-3 flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D78AE]">
+                            Thành phần WB03 · Khoản 6.1 Điều 6 (QĐ 14-QĐ/ĐHĐN-HSV) · Tùy chọn
+                          </span>
+                          <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full ${statusMeta.badgeClass}`}>
+                            {statusMeta.label}
+                          </span>
+                        </div>
+                        <h2 className="text-[16px] font-bold text-[#172A3A] mt-0.5">
+                          WB03 – Hình ảnh, sản phẩm minh họa (nếu có)
+                        </h2>
+                        <p className="text-[12.5px] text-[#607483] mt-0.5 leading-relaxed">
+                          Bạn có thể bổ sung hình ảnh, sản phẩm hoặc tài liệu minh họa cho mô hình, giải pháp, sáng kiến. Thành phần này không bắt buộc.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
+                        Mô tả hình ảnh, sản phẩm minh họa (nếu có)
+                      </label>
+                      <textarea
+                        rows={3}
+                        disabled={isReadOnly}
+                        value={wb03Data.awardOrRecognitionSummary}
+                        onChange={(e) =>
+                          updateWhiteBirdWB03(activeApp.id, {
+                            awardOrRecognitionSummary: e.target.value,
+                          })
+                        }
+                        placeholder="Mô tả khái quát về các hình ảnh hoạt động, sản phẩm mẫu hoặc bài báo minh họa đính kèm (nếu có)..."
+                        className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE] resize-y min-h-[80px]"
+                      />
+                    </div>
+
+                    <Input
+                      label="Liên kết hình ảnh, video, sản phẩm hoặc tài liệu minh họa (nếu có)"
+                      disabled={isReadOnly}
+                      value={wb03Data.mediaAndProductLinks}
+                      onChange={(e) =>
+                        updateWhiteBirdWB03(activeApp.id, {
+                          mediaAndProductLinks: e.target.value,
+                        })
+                      }
+                      placeholder="https://..."
+                    />
+                  </div>
+                );
+              }
+
+              // Fallback for TRUYEN_LUA and SANG_TAO (Mandatory WB03)
+              return (
+                <div className="space-y-4">
+                  <div className="border-b border-[#EDF3F8] pb-3 flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D78AE]">
+                          Thành phần WB03 · {categoryMeta.articleRef}
+                        </span>
+                        <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full ${statusMeta.badgeClass}`}>
+                          {statusMeta.label}
+                        </span>
+                      </div>
+                      <h2 className="text-[16px] font-bold text-[#172A3A] mt-0.5">
+                        {categoryMeta.wb03Title}
+                      </h2>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <Input
+                      label="Cấp công nhận / giải thưởng cao nhất đạt được *"
+                      disabled={isReadOnly}
+                      value={activeApp.requirements.wb03.highestAwardLevel}
+                      onChange={(e) =>
+                        updateWhiteBirdWB03(activeApp.id, {
+                          highestAwardLevel: e.target.value,
+                        })
+                      }
+                      placeholder="VD: Giải Nhất cấp Đại học Đà Nẵng / Bằng khen HSV ĐHĐN"
+                    />
+                    <Input
+                      label="Số quyết định / Số giấy chứng nhận & Ngày cấp"
+                      disabled={isReadOnly}
+                      value={activeApp.requirements.wb03.decisionNumbersAndDates}
+                      onChange={(e) =>
+                        updateWhiteBirdWB03(activeApp.id, {
+                          decisionNumbersAndDates: e.target.value,
+                        })
+                      }
+                      placeholder="VD: QĐ số 189/QĐ-ĐHĐN ngày 15/05/2026"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
+                      {activeApp.category === 'TRUYEN_LUA'
+                        ? 'Danh mục Quyết định chức vụ Hội, Bằng khen, Giấy khen và thành tích tiêu biểu *'
+                        : 'Tóm tắt giải thưởng đạt được (từ cấp ĐHĐN trở lên) và minh chứng ứng dụng thực tế *'}
+                    </label>
+                    <textarea
+                      rows={4}
+                      disabled={isReadOnly}
+                      value={activeApp.requirements.wb03.awardOrRecognitionSummary}
+                      onChange={(e) =>
+                        updateWhiteBirdWB03(activeApp.id, {
+                          awardOrRecognitionSummary: e.target.value,
+                        })
+                      }
+                      placeholder="Liệt kê rõ tên giải thưởng, bằng khen, quyết định công nhận hoặc kết quả nghiệm thu..."
+                      className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                    />
+                  </div>
+
                   <Input
-                    label="Cấp công nhận / giải thưởng cao nhất đạt được *"
+                    label="Liên kết hình ảnh hoạt động, sản phẩm mẫu, bài báo hoặc video minh họa (nếu có)"
                     disabled={isReadOnly}
-                    value={activeApp.requirements.wb03.highestAwardLevel}
+                    value={activeApp.requirements.wb03.mediaAndProductLinks}
                     onChange={(e) =>
                       updateWhiteBirdWB03(activeApp.id, {
-                        highestAwardLevel: e.target.value,
+                        mediaAndProductLinks: e.target.value,
                       })
                     }
-                    placeholder="VD: Giải Nhất cấp Đại học Đà Nẵng / Bằng khen HSV ĐHĐN"
-                  />
-                  <Input
-                    label="Số quyết định / Số giấy chứng nhận & Ngày cấp"
-                    disabled={isReadOnly}
-                    value={activeApp.requirements.wb03.decisionNumbersAndDates}
-                    onChange={(e) =>
-                      updateWhiteBirdWB03(activeApp.id, {
-                        decisionNumbersAndDates: e.target.value,
-                      })
-                    }
-                    placeholder="VD: QĐ số 189/QĐ-ĐHĐN ngày 15/05/2026"
+                    placeholder="https://..."
                   />
                 </div>
-
-                <div>
-                  <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
-                    {activeApp.category === 'UOM_MAM'
-                      ? 'Tóm tắt minh chứng tính hiệu quả thực tiễn và sản phẩm minh họa của mô hình *'
-                      : activeApp.category === 'TRUYEN_LUA'
-                      ? 'Danh mục Quyết định chức vụ Hội, Bằng khen, Giấy khen và thành tích tiêu biểu *'
-                      : 'Tóm tắt giải thưởng đạt được (từ cấp ĐHĐN trở lên) và minh chứng ứng dụng thực tế *'}
-                  </label>
-                  <textarea
-                    rows={4}
-                    disabled={isReadOnly}
-                    value={activeApp.requirements.wb03.awardOrRecognitionSummary}
-                    onChange={(e) =>
-                      updateWhiteBirdWB03(activeApp.id, {
-                        awardOrRecognitionSummary: e.target.value,
-                      })
-                    }
-                    placeholder="Liệt kê rõ tên giải thưởng, bằng khen, quyết định công nhận hoặc kết quả nghiệm thu..."
-                    className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
-                  />
-                </div>
-
-                <Input
-                  label="Liên kết hình ảnh hoạt động, sản phẩm mẫu, bài báo hoặc video minh họa (nếu có)"
-                  disabled={isReadOnly}
-                  value={activeApp.requirements.wb03.mediaAndProductLinks}
-                  onChange={(e) =>
-                    updateWhiteBirdWB03(activeApp.id, {
-                      mediaAndProductLinks: e.target.value,
-                    })
-                  }
-                  placeholder="https://..."
-                />
-              </div>
-            )}
+              );
+            })()}
 
             {/* Evidence Attachments Section for Current Requirement */}
             <div className="pt-4 border-t border-[#EDF3F8] space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <div>
                   <h3 className="text-[13.5px] font-bold text-[#172A3A]">
-                    Tệp minh chứng đính kèm cho {activeReqId}
+                    {activeReqId === 'WB03' && activeApp.category === 'UOM_MAM'
+                      ? 'Tệp minh họa đính kèm (nếu có)'
+                      : activeReqId === 'WB02' && activeApp.category === 'UOM_MAM'
+                      ? 'Báo cáo thuyết minh theo mẫu và minh chứng về tính hiệu quả'
+                      : `Tệp minh chứng đính kèm cho ${activeReqId}`}
                   </h3>
                   <p className="text-[11.5px] text-[#607483]">
-                    Hỗ trợ PDF, JPG, PNG, DOCX, XLSX (Tối đa 25MB/tệp)
+                    {activeReqId === 'WB03' && activeApp.category === 'UOM_MAM'
+                      ? 'Hỗ trợ hình ảnh, tài liệu minh họa (PDF, JPG, PNG, DOCX, XLSX – Tối đa 25MB/tệp, không bắt buộc)'
+                      : activeReqId === 'WB02' && activeApp.category === 'UOM_MAM'
+                      ? 'Đính kèm Báo cáo thuyết minh theo mẫu (có cam kết tính sáng tạo) cùng các minh chứng về tính hiệu quả thực tiễn (Khoản 6.1 Điều 6).'
+                      : 'Hỗ trợ PDF, JPG, PNG, DOCX, XLSX (Tối đa 25MB/tệp)'}
                   </p>
                 </div>
                 {!isReadOnly && (
@@ -1721,7 +1949,11 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     onClick={() => triggerUploadForReq(activeReqId)}
                   >
                     <Upload size={14} className="mr-1.5" />
-                    {isUploading ? 'Đang tải lên...' : `Tải tệp minh chứng ${activeReqId}`}
+                    {isUploading
+                      ? 'Đang tải lên...'
+                      : activeReqId === 'WB03' && activeApp.category === 'UOM_MAM'
+                      ? 'Tải tệp minh họa WB03 (nếu có)'
+                      : `Tải tệp minh chứng ${activeReqId}`}
                   </Button>
                 )}
               </div>
@@ -1732,8 +1964,18 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                 if (files.length === 0) {
                   return (
                     <div className="p-5 rounded-[10px] border border-dashed border-[#C8D9E6] bg-[#F8FBFD] text-center text-[12.5px] text-[#607483]">
-                      Chưa có tệp minh chứng nào cho {activeReqId}. Nhấn{' '}
-                      <strong>“Tải tệp minh chứng {activeReqId}”</strong> để đính kèm hồ sơ.
+                      {activeReqId === 'WB03' && activeApp.category === 'UOM_MAM' ? (
+                        <span>
+                          Chưa đính kèm hình ảnh hoặc sản phẩm minh họa. Bạn có thể nhấn{' '}
+                          <strong>“Tải tệp minh họa WB03 (nếu có)”</strong> để bổ sung tài liệu minh
+                          họa cho mô hình (thành phần này không bắt buộc).
+                        </span>
+                      ) : (
+                        <span>
+                          Chưa có tệp minh chứng nào cho {activeReqId}. Nhấn{' '}
+                          <strong>“Tải tệp minh chứng {activeReqId}”</strong> để đính kèm hồ sơ.
+                        </span>
+                      )}
                     </div>
                   );
                 }
