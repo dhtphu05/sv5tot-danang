@@ -124,13 +124,13 @@ export const SubmitWhiteBirdModal: React.FC<SubmitWhiteBirdModalProps> = ({
         category === 'UOM_MAM'
           ? 'Báo cáo thuyết minh mô hình, giải pháp, sáng kiến & Cam kết sáng tạo'
           : category === 'TRUYEN_LUA'
-          ? 'Báo cáo thành tích cá nhân theo mẫu'
+          ? 'Báo cáo thành tích cá nhân theo mẫu quy định'
           : 'Báo cáo thuyết minh dự án, đề tài NCKH, khởi nghiệp & Cam kết bản quyền',
       description:
         category === 'UOM_MAM'
           ? 'Thuyết minh theo 4 tiêu chuẩn (Điểm a khoản 4.2 Điều 4) và cam kết tính sáng tạo theo Khoản 6.1 Điều 6'
           : category === 'TRUYEN_LUA'
-          ? 'Quá trình công tác Đoàn - Hội từ 2 năm trở lên và thành tích xuất sắc 2 năm liên tục theo Khoản 6.2 Điều 6'
+          ? 'Lý lịch đồng bộ từ Hồ sơ cá nhân, quá trình giữ chức vụ Đoàn - Hội (≥ 2 năm), thành tích xuất sắc 2 năm liên tục và đính kèm Báo cáo có xác nhận pháp lý (Khoản 6.2 Điều 6)'
           : 'Thuyết minh bối cảnh, tính mới, hiệu quả ứng dụng và cam kết bản quyền theo Mẫu báo cáo & Khoản 6.3 Điều 6',
       isOptional: false,
       isReady: readiness.wb02Ready,
@@ -149,14 +149,14 @@ export const SubmitWhiteBirdModal: React.FC<SubmitWhiteBirdModalProps> = ({
         category === 'UOM_MAM'
           ? 'Hình ảnh hoạt động, sản phẩm mẫu, phóng sự hoặc tài liệu minh họa mô hình theo Khoản 6.1 Điều 6'
           : category === 'TRUYEN_LUA'
-          ? 'Quyết định công nhận chức vụ Hội/Đoàn, Bằng khen, Giấy khen tiêu biểu các cấp theo Khoản 6.2 Điều 6'
+          ? 'Đính kèm quyết định chuẩn y chức vụ Đoàn - Hội, tài liệu minh chứng thành tích xuất sắc 02 năm liên tục và bảng điểm/ĐRL (Khoản 6.2 Điều 6)'
           : 'Bản scan Quyết định khen thưởng hoặc Giấy chứng nhận đạt giải từ cấp Đại học Đà Nẵng trở lên',
       isOptional: readiness.isWb03Optional,
       isReady: readiness.wb03Ready,
       filesCount: application.requirements.wb03.evidenceFiles.length,
       specialNote:
         category === 'TRUYEN_LUA'
-          ? 'Quyết định chức vụ từ Chi hội trưởng / Bí thư Chi đoàn trở lên & khen thưởng từ cấp trường trở lên (Khoản 6.2 Điều 6)'
+          ? 'Tự động tổng hợp danh mục từ tệp đính kèm; yêu cầu tối thiểu 01 tệp minh chứng chức vụ / khen thưởng hợp lệ (Khoản 6.2 Điều 6)'
           : category === 'SANG_TAO'
           ? 'Giải thưởng từ cấp Đại học Đà Nẵng trở lên (không dùng giấy chứng nhận tham gia)'
           : category === 'UOM_MAM'
