@@ -83,6 +83,8 @@ import {
   addWhiteBirdEvidence,
   removeWhiteBirdEvidence,
   updateWhiteBirdEvidenceCategory,
+  updateWhiteBirdEvidenceMetadata,
+  synthesizeTruyenLuaWb03Summary,
   validateWhiteBirdReadiness,
   submitWhiteBirdApplication,
 } from './whiteBirdStore';
@@ -152,6 +154,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
     text: string;
     type: 'success' | 'warn';
   } | null>(null);
+  const [isTruyenLuaGuidanceOpen, setIsTruyenLuaGuidanceOpen] = useState(false);
 
   // Evidence upload & preview state
   const [isUploading, setIsUploading] = useState(false);
@@ -976,7 +979,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   desc:
                     activeApp.category === 'TRUYEN_LUA'
                       ? (activeApp.requirements.wb03.awardOrRecognitionSummary ||
-                        'Minh chứng chức vụ từ Chi hội trưởng / Bí thư Chi đoàn trở lên & Khen thưởng 2 năm liên tục')
+                        'Minh chứng chức vụ từ Chi hội trưởng / Bí thư Chi đoàn trở lên & Thành tích xuất sắc 02 năm liên tục')
                       : (activeApp.requirements.wb03.awardOrRecognitionSummary ||
                         (readiness.isWb03Optional
                           ? 'Bổ sung hình ảnh, video hoặc sản phẩm minh họa (tùy chọn)'
@@ -1138,7 +1141,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   subtitle: readiness.isWb03Optional
                     ? 'Tài liệu, sản phẩm minh họa (nếu có)'
                     : activeApp.category === 'TRUYEN_LUA'
-                    ? 'Quyết định chức vụ & Khen thưởng 2 năm'
+                    ? 'Quyết định chức vụ & Thành tích 02 năm'
                     : 'Bằng khen, giải thưởng & Minh chứng',
                   ready: readiness.wb03Ready,
                   files: activeApp.requirements.wb03.evidenceFiles.length,
@@ -3744,6 +3747,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
 
               // Dedicated WB03 for TRUYEN_LUA
               if (activeApp.category === 'TRUYEN_LUA') {
+                const wb03Files = wb03Data.evidenceFiles || [];
                 return (
                   <div className="space-y-5">
                     {/* Header */}
@@ -3761,21 +3765,231 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           WB03 · Tài liệu minh chứng chức vụ, bằng khen và thành tích tiêu biểu
                         </h2>
                         <p className="text-[12.5px] text-[#607483] mt-0.5 leading-relaxed">
-                          Kê khai danh mục và đính kèm tài liệu minh chứng về thông tin chức vụ, bằng khen, giấy khen và thành tích tiêu biểu theo quy định tại Khoản 6.2 Điều 6.
+                          Tải tệp minh chứng, phân loại nhóm tài liệu và tự động tổng hợp danh mục theo quy định tại Khoản 6.2 Điều 6.
                         </p>
                       </div>
                     </div>
 
+                    {/* Collapsed / Expandable Guidance Drawer */}
+                    <div className="p-3.5 rounded-[10px] bg-[#F8FAFC] border border-[#E2EEF6] text-[12px] space-y-2">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5 font-bold text-[#1E293B]">
+                          <FolderArchive size={15} className="text-[#0D78AE]" />
+                          <span>Hướng dẫn chuẩn bị minh chứng WB03 (Khoản 6.2 Điều 6)</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsTruyenLuaGuidanceOpen(!isTruyenLuaGuidanceOpen)}
+                          className="text-[11.5px] font-semibold text-[#0D78AE] hover:underline cursor-pointer inline-flex items-center gap-1"
+                        >
+                          <span>{isTruyenLuaGuidanceOpen ? 'Thu gọn hướng dẫn ▲' : 'Xem chi tiết 4 nhóm minh chứng ▼'}</span>
+                        </button>
+                      </div>
+                      <p className="text-[11.5px] text-[#475569] leading-relaxed">
+                        Minh chứng bao gồm: <strong>(1) Quyết định chức vụ Đoàn – Hội</strong>; <strong>(2) Thành tích xuất sắc 02 năm liên tục</strong> (Bằng khen/Giấy khen hoặc văn bản xác nhận); <strong>(3) Bảng điểm & Điểm rèn luyện</strong>; <strong>(4) Minh chứng ưu tiên</strong> (nếu có).
+                      </p>
+                      {isTruyenLuaGuidanceOpen && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-[#EDF3F8] text-[11.5px] text-[#334155] animate-in fade-in duration-150">
+                          <div className="p-2.5 rounded bg-white border border-[#E2E8F0]">
+                            <strong className="text-[#0D78AE] block">1. Minh chứng chức vụ & thời gian công tác:</strong>
+                            Quyết định chuẩn y/công nhận chức vụ cán bộ Đoàn – Hội qua các nhiệm kỳ từ 2 năm trở lên.
+                          </div>
+                          <div className="p-2.5 rounded bg-white border border-[#E2E8F0]">
+                            <strong className="text-[#0D78AE] block">2. Thành tích xuất sắc 02 năm liên tục:</strong>
+                            Bằng khen, Giấy khen hoặc văn bản xác nhận thành tích xuất sắc công tác Hội/Đoàn cấp trường trở lên trong 2 năm liền kề (không bắt buộc phải tách 2 bằng khen riêng lẻ).
+                          </div>
+                          <div className="p-2.5 rounded bg-white border border-[#E2E8F0]">
+                            <strong className="text-[#0D78AE] block">3. Bảng điểm học tập & Điểm rèn luyện:</strong>
+                            Bảng điểm GPA và Điểm rèn luyện theo quy định của Mẫu Báo cáo thành tích cá nhân.
+                          </div>
+                          <div className="p-2.5 rounded bg-white border border-[#E2E8F0]">
+                            <strong className="text-[#0D78AE] block">4. Minh chứng ưu tiên:</strong>
+                            Chứng nhận Sinh viên 5 tốt các cấp, hoạt động tình nguyện, giải thưởng NCKH (nếu có kê khai).
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Danh sách tệp minh chứng đã tải lên & phân loại */}
+                    <div className="bg-white rounded-[12px] border border-[#DCE7EE] p-4 sm:p-5 space-y-4">
+                      <div className="flex items-center justify-between gap-2 border-b border-[#EDF3F8] pb-2.5 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          <FileText size={16} className="text-[#0D78AE]" />
+                          <h3 className="text-[14px] font-bold text-[#172A3A]">
+                            Tệp tài liệu minh chứng đã tải lên ({wb03Files.length} tệp)
+                          </h3>
+                        </div>
+                        {!isReadOnly && (
+                          <button
+                            type="button"
+                            onClick={() => triggerUploadForReq('WB03')}
+                            disabled={isUploading}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-[12px] font-bold bg-[#0D78AE] text-white hover:bg-[#0B6594] transition-colors cursor-pointer disabled:opacity-50"
+                          >
+                            <Upload size={14} />
+                            <span>{isUploading ? 'Đang tải lên...' : 'Tải thêm tệp minh chứng'}</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {wb03Files.length === 0 ? (
+                        <div className="p-5 rounded-[10px] border border-dashed border-[#C8D9E6] bg-[#F8FBFD] text-center space-y-2 text-[12.5px] text-[#607483]">
+                          <p>Chưa có tệp minh chứng nào được tải lên cho WB03.</p>
+                          <p className="text-[11.5px] text-[#64748B]">
+                            Quy trình: Tải file trước, sau đó chọn loại minh chứng và ghi chú số hiệu văn bản cho từng file. Hệ thống hỗ trợ nhiều tệp cho cùng 1 loại minh chứng.
+                          </p>
+                          {!isReadOnly && (
+                            <Button
+                              type="button"
+                              variant="primary"
+                              onClick={() => triggerUploadForReq('WB03')}
+                              disabled={isUploading}
+                            >
+                              <Upload size={14} className="mr-1.5" />
+                              <span>Tải tệp minh chứng đầu tiên</span>
+                            </Button>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {wb03Files.map((file, idx) => (
+                            <div
+                              key={file.id}
+                              className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#DCE7EE] space-y-2.5"
+                            >
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                                  <span className="text-[12px] font-bold text-[#0D78AE]">#{idx + 1}</span>
+                                  <span className="text-[13px] font-bold text-[#172A3A] break-words">
+                                    {file.name}
+                                  </span>
+                                  <span className="text-[10.5px] font-semibold text-[#64748B] bg-white px-2 py-0.5 rounded border border-[#DCE7EE]">
+                                    {file.fileType.toUpperCase()} · {file.size}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenPreview(file)}
+                                    className="px-2.5 py-1 rounded text-[11.5px] font-semibold bg-white border border-[#DCE7EE] text-[#0D78AE] hover:bg-[#EBF6FC] inline-flex items-center gap-1 cursor-pointer"
+                                  >
+                                    <Eye size={12} /> Xem
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDownloadFile(file)}
+                                    className="px-2.5 py-1 rounded text-[11.5px] font-semibold bg-white border border-[#DCE7EE] text-[#475569] hover:bg-[#F1F5F9] inline-flex items-center gap-1 cursor-pointer"
+                                  >
+                                    <Download size={12} /> Tải
+                                  </button>
+                                  {!isReadOnly && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteEvidence('WB03', file.id)}
+                                      className="p-1 rounded text-red-600 hover:bg-red-50 cursor-pointer"
+                                      title="Xóa tệp"
+                                    >
+                                      <Trash2 size={13} />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Metadata row: Category, Document Ref, Academic Year */}
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1.5 border-t border-[#EDF3F8]">
+                                <div>
+                                  <label className="block text-[11px] font-semibold text-[#475569] mb-1">
+                                    Loại minh chứng *
+                                  </label>
+                                  <select
+                                    disabled={isReadOnly}
+                                    value={file.evidenceCategory || 'CHUC_VU'}
+                                    onChange={(e) =>
+                                      updateWhiteBirdEvidenceCategory(
+                                        activeApp.id,
+                                        'WB03',
+                                        file.id,
+                                        e.target.value as WhiteBirdTruyenLuaEvidenceCategory
+                                      )
+                                    }
+                                    className="w-full px-2 py-1 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] text-[#172A3A] font-medium focus:outline-none focus:border-[#0D78AE]"
+                                  >
+                                    <option value="CHUC_VU">Chức vụ & Thời gian công tác</option>
+                                    <option value="THANH_TICH_2_NAM">Thành tích xuất sắc 02 năm liên tục</option>
+                                    <option value="HOC_TAP_REN_LUYEN">Bảng điểm & Điểm rèn luyện</option>
+                                    <option value="UU_TIEN">Minh chứng ưu tiên (SV5T, NCKH...)</option>
+                                    <option value="KHAC">Tài liệu minh chứng khác</option>
+                                  </select>
+                                </div>
+
+                                <div>
+                                  <label className="block text-[11px] font-semibold text-[#475569] mb-1">
+                                    Số hiệu / Ngày văn bản (nếu có)
+                                  </label>
+                                  <input
+                                    disabled={isReadOnly}
+                                    value={file.documentReference || ''}
+                                    onChange={(e) =>
+                                      updateWhiteBirdEvidenceMetadata(activeApp.id, 'WB03', file.id, {
+                                        documentReference: e.target.value,
+                                      })
+                                    }
+                                    placeholder="VD: QĐ số 45/QĐ-HSV (19/05/2024)"
+                                    className="w-full px-2 py-1 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] text-[#172A3A] focus:outline-none focus:border-[#0D78AE]"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-[11px] font-semibold text-[#475569] mb-1">
+                                    Năm học liên quan (nếu có)
+                                  </label>
+                                  <input
+                                    disabled={isReadOnly}
+                                    value={file.academicYear || ''}
+                                    onChange={(e) =>
+                                      updateWhiteBirdEvidenceMetadata(activeApp.id, 'WB03', file.id, {
+                                        academicYear: e.target.value,
+                                      })
+                                    }
+                                    placeholder="VD: 2024–2025"
+                                    className="w-full px-2 py-1 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] text-[#172A3A] focus:outline-none focus:border-[#0D78AE]"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
                     {/* Summary of Evidence Documents */}
                     <div>
-                      <label htmlFor="wb03-tl-summary" className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
-                        Danh mục tài liệu minh chứng chức vụ & thành tích đính kèm <span className="text-red-500">*</span>
-                      </label>
+                      <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+                        <label htmlFor="wb03-tl-summary" className="block text-[12.5px] font-bold text-[#172A3A]">
+                          Danh mục tài liệu minh chứng chức vụ & thành tích đính kèm <span className="text-red-500">*</span>
+                        </label>
+                        {!isReadOnly && wb03Files.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const synth = synthesizeTruyenLuaWb03Summary(wb03Files);
+                              updateWhiteBirdWB03(activeApp.id, {
+                                awardOrRecognitionSummary: synth,
+                              });
+                              showToast('Đã tự động tổng hợp danh mục từ các tệp minh chứng đã tải!');
+                            }}
+                            className="text-[11.5px] font-bold text-[#0D78AE] hover:underline cursor-pointer inline-flex items-center gap-1"
+                          >
+                            <Sparkles size={13} />
+                            <span>Tự động tổng hợp danh mục từ tệp đã tải</span>
+                          </button>
+                        )}
+                      </div>
                       <AutoResizeTextarea
                         id="wb03-tl-summary"
                         rows={4}
                         minHeight={90}
-                        maxHeight={320}
+                        maxHeight={220}
                         disabled={isReadOnly}
                         value={wb03Data.awardOrRecognitionSummary}
                         onChange={(e) =>
@@ -3783,24 +3997,23 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             awardOrRecognitionSummary: e.target.value,
                           })
                         }
-                        placeholder={`Kê khai danh mục các tài liệu minh chứng đính kèm, ví dụ:
-1. Quyết định công nhận Ban Chấp hành Chi hội / Ban Chấp hành Liên chi Hội...
-2. Bằng khen / Giấy khen thành tích xuất sắc công tác Hội năm học 2023–2024
-3. Bằng khen / Giấy khen thành tích xuất sắc công tác Hội năm học 2024–2025
-4. Bảng điểm học tập & Điểm rèn luyện có xác nhận của Nhà trường
-5. Giấy chứng nhận Sinh viên 5 tốt các cấp (nếu có)...`}
+                        placeholder={`Danh mục được tự động tổng hợp từ các tệp tải lên hoặc bạn có thể chỉnh sửa tại đây, ví dụ:
+1. [Chức vụ & Thời gian công tác] Quyết định công nhận Ban Chấp hành Chi hội (QĐ số 12/QĐ-HSV)
+2. [Thành tích xuất sắc 02 năm liên tục] Giấy khen Ban Thư ký HSV trường năm học 2023–2024
+3. [Thành tích xuất sắc 02 năm liên tục] Bằng khen Ban Thư ký HSV ĐHĐN năm học 2024–2025
+4. [Bảng điểm & Điểm rèn luyện] Bảng điểm tích lũy và ĐRL có xác nhận của Nhà trường...`}
                       />
                     </div>
 
                     {/* Decision Numbers / Document References */}
                     <div>
                       <label htmlFor="wb03-tl-decisions" className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
-                        Số hiệu văn bản, quyết định công nhận / khen thưởng tiêu biểu
+                        Số hiệu văn bản, quyết định công nhận / khen thưởng tiêu biểu (nếu có)
                       </label>
                       <AutoResizeTextarea
                         id="wb03-tl-decisions"
                         rows={2}
-                        minHeight={58}
+                        minHeight={50}
                         maxHeight={160}
                         disabled={isReadOnly}
                         value={wb03Data.decisionNumbersAndDates || ''}
@@ -3837,34 +4050,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         </p>
                       )}
                     </div>
-
-                    {/* Categorized Evidence Guidance Card */}
-                    <div className="p-3.5 rounded-[10px] bg-[#F8FAFC] border border-[#E2E8F0] space-y-2 text-[12px] leading-relaxed">
-                      <div className="font-bold text-[#1E293B] flex items-center gap-1.5">
-                        <FolderArchive size={15} className="text-[#0D78AE]" />
-                        <span>Hướng dẫn phân loại và đính kèm tài liệu minh chứng:</span>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11.5px] text-[#334155]">
-                        <div className="p-2 rounded bg-white border border-[#E2E8F0]">
-                          <strong className="text-[#0D78AE] block">1. Minh chứng chức vụ & thời gian:</strong>
-                          Quyết định chuẩn y/công nhận chức vụ cán bộ Đoàn – Hội qua các nhiệm kỳ từ 2 năm trở lên.
-                        </div>
-                        <div className="p-2 rounded bg-white border border-[#E2E8F0]">
-                          <strong className="text-[#0D78AE] block">2. Khen thưởng 2 năm liên tục:</strong>
-                          Bằng khen, Giấy khen thành tích xuất sắc công tác Hội/Đoàn cấp trường trở lên trong 2 năm liền kề.
-                        </div>
-                        <div className="p-2 rounded bg-white border border-[#E2E8F0]">
-                          <strong className="text-[#0D78AE] block">3. Học tập & Rèn luyện:</strong>
-                          Bảng điểm GPA và Điểm rèn luyện theo quy định của Mẫu Báo cáo thành tích.
-                        </div>
-                        <div className="p-2 rounded bg-white border border-[#E2E8F0]">
-                          <strong className="text-[#0D78AE] block">4. Minh chứng ưu tiên:</strong>
-                          Chứng nhận Sinh viên 5 tốt các cấp, hoạt động tình nguyện, giải thưởng NCKH (nếu có kê khai).
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 );
+              }
               }
 
               // Generic fallback (if any)
@@ -3994,7 +4182,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     ) : activeReqId === 'WB03' && activeApp.category === 'TRUYEN_LUA' ? (
                       <>
                         <p>
-                          Theo <strong>Khoản 6.2 Điều 6</strong>, đính kèm tài liệu minh chứng về thông tin chức vụ (Quyết định chuẩn y/công nhận chức vụ), Bằng khen/Giấy khen thành tích xuất sắc 2 năm liên tục và các tài liệu minh chứng học tập, rèn luyện, ưu tiên (nếu có).
+                          Theo <strong>Khoản 6.2 Điều 6</strong>, đính kèm tài liệu minh chứng về thông tin chức vụ (Quyết định chuẩn y/công nhận chức vụ), tài liệu minh chứng thành tích xuất sắc 02 năm liên tục và các tài liệu minh chứng học tập, rèn luyện, ưu tiên (nếu có).
                         </p>
                         <p className="text-[11px] text-[#64748B] pt-0.5">
                           Hỗ trợ tệp PDF, JPG, PNG, DOCX (Tối đa 25MB/tệp). Sau khi tải lên, bạn có thể phân loại minh chứng bằng ô lựa chọn bên cạnh từng tệp.
@@ -4053,7 +4241,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       ) : activeReqId === 'WB03' && activeApp.category === 'TRUYEN_LUA' ? (
                         <span>
                           Chưa có tệp minh chứng chức vụ hoặc khen thưởng nào cho WB03. Nhấn{' '}
-                          <strong>“Tải minh chứng chức vụ & thành tích WB03”</strong> để đính kèm quyết định công nhận chức vụ và bằng khen, giấy khen 2 năm liên tục.
+                          <strong>“Tải minh chứng chức vụ & thành tích WB03”</strong> để đính kèm quyết định công nhận chức vụ và tài liệu minh chứng thành tích xuất sắc 02 năm liên tục.
                         </span>
                       ) : activeReqId === 'WB02' && activeApp.category === 'TRUYEN_LUA' ? (
                         <span>
@@ -4112,7 +4300,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                                     className="text-[11px] font-semibold text-[#0D78AE] bg-white border border-[#C8D9E6] rounded px-1.5 py-0.5"
                                   >
                                     <option value="CHUC_VU">Chức vụ & Thời gian</option>
-                                    <option value="THANH_TICH_2_NAM">Khen thưởng 2 năm liên tục</option>
+                                    <option value="THANH_TICH_2_NAM">Thành tích xuất sắc 02 năm liên tục</option>
                                     <option value="HOC_TAP_REN_LUYEN">Học tập & Rèn luyện</option>
                                     <option value="UU_TIEN">Minh chứng ưu tiên</option>
                                     <option value="KHAC">Tài liệu khác</option>
