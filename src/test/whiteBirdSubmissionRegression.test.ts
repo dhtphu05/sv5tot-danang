@@ -933,7 +933,8 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
       {
         id: 'term-overlap-1',
         position: 'Ủy viên Ban Chấp hành Chi hội',
-        unitScope: 'CHI_HOI_LOP',
+        unit: 'Chi hội 21TCLC_DT1',
+        unitType: 'WITH_HOI',
         startMonthYear: '09/2023',
         endMonthYear: '06/2024',
         isCurrent: false,
@@ -941,7 +942,8 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
       {
         id: 'term-overlap-2',
         position: 'Phó Chủ nhiệm CLB Học thuật',
-        unitScope: 'CLB_DOI_NHOM_TRUONG',
+        unit: 'CLB Học thuật DUT',
+        unitType: 'WITH_HOI',
         startMonthYear: '01/2024',
         endMonthYear: '12/2024',
         isCurrent: false,
@@ -963,7 +965,8 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
       {
         id: 'term-short',
         position: 'Chi hội trưởng',
-        unitScope: 'CHI_HOI_LOP',
+        unit: 'Chi hội 21TCLC_DT1',
+        unitType: 'WITH_HOI',
         startMonthYear: '09/2024',
         endMonthYear: '06/2025',
         isCurrent: false,
@@ -981,17 +984,15 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
 
     // Kê khai WB01
     updateWhiteBirdWB01(app.id, {
-      nominatingUnitType: 'BCH_HSV_TRUONG',
-      nominatingUnitName: 'Ban Chấp hành Hội Sinh viên Trường Đại học Bách khoa',
-      signerFullName: 'Phan Văn Hiếu',
-      signerTitle: 'Chủ tịch Hội Sinh viên trường',
+      nominatingUnitType: 'BTK_HSV_TRUONG',
+      nominatingUnitName: 'Ban Thư ký Hội Sinh viên Trường Đại học Bách khoa',
+      nominatorSignerName: 'Phan Văn Hiếu',
       endorsementSummary: 'Ban Chấp hành Hội Sinh viên trường nhất trí đề cử đồng chí Hoàng Văn Nam xét trao Giải thưởng Cánh chim trắng.',
     });
     addWhiteBirdEvidence(app.id, 'WB01', mockEv('ev-wb01-short', 'Van_ban_de_nghi.pdf'));
 
     // Kê khai WB02 với nhiệm kỳ 10 tháng
     updateWhiteBirdWB02(app.id, {
-      nomineeFullName: 'Hoàng Văn Nam',
       officerTerms: terms,
       annualAchievements: [
         {
@@ -1145,22 +1146,21 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
 
     // Hoàn tất WB01
     updateWhiteBirdWB01(app.id, {
-      nominatingUnitType: 'BCH_HSV_TRUONG',
-      nominatingUnitName: 'Ban Chấp hành Hội Sinh viên Đại học Bách khoa',
-      signerFullName: 'Phan Văn Hiếu',
-      signerTitle: 'Chủ tịch HSV',
+      nominatingUnitType: 'BTK_HSV_TRUONG',
+      nominatingUnitName: 'Ban Thư ký Hội Sinh viên Đại học Bách khoa',
+      nominatorSignerName: 'Phan Văn Hiếu',
       endorsementSummary: 'Ban Chấp hành đề cử cá nhân xuất sắc.',
     });
     addWhiteBirdEvidence(app.id, 'WB01', mockEv('wb01-only', 'WB01_De_nghi.pdf'));
 
     // Hoàn tất WB02
     updateWhiteBirdWB02(app.id, {
-      nomineeFullName: 'Lê Văn C',
       officerTerms: [
         {
           id: 'term-sample',
           position: 'Chi hội trưởng',
-          unitScope: 'CHI_HOI_LOP',
+          unit: 'Chi hội 21TCLC_DT1',
+          unitType: 'WITH_HOI',
           startMonthYear: '09/2023',
           endMonthYear: '06/2025',
           isCurrent: false,
@@ -1206,21 +1206,20 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
 
     // Kê khai đủ WB01, WB02, WB03
     updateWhiteBirdWB01(app.id, {
-      nominatingUnitType: 'BCH_HSV_TRUONG',
+      nominatingUnitType: 'BTK_HSV_TRUONG',
       nominatingUnitName: 'BCH HSV Trường',
-      signerFullName: 'Trần Văn Ký',
-      signerTitle: 'Chủ tịch HSV',
+      nominatorSignerName: 'Trần Văn Ký',
       endorsementSummary: 'BCH Hội Sinh viên giới thiệu đồng chí Nguyễn Thị Được Đề Cử.',
     });
     addWhiteBirdEvidence(app.id, 'WB01', mockEv('ev-wb01-full', 'wb01.pdf'));
 
     updateWhiteBirdWB02(app.id, {
-      nomineeFullName: 'Nguyễn Thị Được Đề Cử',
       officerTerms: [
         {
           id: 'term-full-1',
           position: 'Ủy viên BCH Hội Sinh viên Trường',
-          unitScope: 'BCH_HSV_TRUONG',
+          unit: 'Hội Sinh viên Trường Đại học Bách khoa',
+          unitType: 'WITH_HOI',
           startMonthYear: '09/2023',
           endMonthYear: '06/2025',
           isCurrent: false,
@@ -1252,14 +1251,14 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
 
     // Lưu các trường đặc thù Truyền lửa
     updateWhiteBirdWB02(app.id, {
-      nomineeFullName: 'Phan Thị Diễm',
       nomineeYearOfStudy: 'Năm thứ ba',
       nomineePoliticalStatus: 'Đoàn viên TNCS Hồ Chí Minh',
       officerTerms: [
         {
           id: 'term-persist-1',
           position: 'Ủy viên BCH Chi hội',
-          unitScope: 'CHI_HOI_LOP',
+          unit: 'Chi hội 21TCLC_DT1',
+          unitType: 'WITH_HOI',
           startMonthYear: '09/2023',
           endMonthYear: 'Hiện nay',
           isCurrent: true,
@@ -1318,10 +1317,9 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
     // 1. Kiểm tra Ươm mầm: 2/2 bắt buộc (WB01 + WB02), WB03 là tùy chọn
     const uomMam = createTestApplication('UOM_MAM', 'COLLECTIVE');
     updateWhiteBirdWB01(uomMam.id, {
-      nominatingUnitType: 'BCH_HSV_TRUONG',
+      nominatingUnitType: 'BTK_HSV_TRUONG',
       nominatingUnitName: 'BCH HSV Bách khoa',
-      signerFullName: 'Phan Văn Hiếu',
-      signerTitle: 'Chủ tịch HSV',
+      nominatorSignerName: 'Phan Văn Hiếu',
       endorsementSummary: 'Mô hình tiêu biểu được BCH Hội Sinh viên trường giới thiệu.',
     });
     addWhiteBirdEvidence(uomMam.id, 'WB01', mockEv('um-wb01', 'wb01.pdf'));
@@ -1343,10 +1341,9 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
     // 2. Kiểm tra Sáng tạo: Bắt buộc 3/3 (WB01 + WB02 + WB03)
     const sangTao = createTestApplication('SANG_TAO', 'COLLECTIVE');
     updateWhiteBirdWB01(sangTao.id, {
-      nominatingUnitType: 'BCH_HSV_TRUONG',
+      nominatingUnitType: 'BTK_HSV_TRUONG',
       nominatingUnitName: 'BCH HSV Bách khoa',
-      signerFullName: 'Phan Văn Hiếu',
-      signerTitle: 'Chủ tịch HSV',
+      nominatorSignerName: 'Phan Văn Hiếu',
       endorsementSummary: 'Đề tài sáng tạo đạt giải cấp Đại học Đà Nẵng.',
     });
     addWhiteBirdEvidence(sangTao.id, 'WB01', mockEv('st-wb01', 'wb01.pdf'));
@@ -1354,7 +1351,7 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
       reportTitle: 'Giải pháp Sáng tạo IoT',
       solutionAndExecution: 'Thiết kế bo mạch IoT thông minh',
       impactAndResults: 'Triển khai thực tế tại 3 tòa nhà',
-      leadAuthorFullName: 'Trần Văn Kỹ sư',
+      leadRepresentative: 'Trần Văn Kỹ sư',
       commitmentConfirmed: true,
     });
     addWhiteBirdEvidence(sangTao.id, 'WB02', mockEv('st-wb02', 'wb02.pdf'));
