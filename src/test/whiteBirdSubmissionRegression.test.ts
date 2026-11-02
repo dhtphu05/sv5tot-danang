@@ -11,6 +11,8 @@ import {
   addWhiteBirdEvidence,
   removeWhiteBirdEvidence,
   updateWhiteBirdEvidenceCategory,
+  updateWhiteBirdEvidenceMetadata,
+  synthesizeTruyenLuaWb03Summary,
   getAllWhiteBirdApplications,
 } from '../components/white-bird/whiteBirdStore.js';
 import {
@@ -851,5 +853,529 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
     const submitResult = submitWhiteBirdApplication(app.id);
     assert.strictEqual(submitResult.success, true, 'Submission must succeed');
     assert.strictEqual(submitResult.application?.status, 'submitted', 'Status must be updated to submitted');
+  });
+
+  it('21. Section 6.1: Tạo mới hồ sơ Truyền lửa: Lấy đúng tên cá nhân, WB02 mặc định đúng tiêu đề, không dính "DanangBooth"', () => {
+    hydrateWhiteBirdStore();
+    const app = createWhiteBirdApplication({
+      category: 'TRUYEN_LUA',
+      nomineeType: 'INDIVIDUAL',
+      nomineeName: 'Trần Văn Bảo',
+      institutionName: 'Trường Đại học Bách khoa – ĐHĐN',
+    });
+
+    assert.strictEqual(app.category, 'TRUYEN_LUA');
+    assert.strictEqual(app.nomineeType, 'INDIVIDUAL');
+    assert.strictEqual(app.nomineeName, 'Trần Văn Bảo');
+    assert.strictEqual(
+      app.nominationTitle,
+      'Báo cáo thành tích cá nhân – Trần Văn Bảo',
+      'TRUYEN_LUA default title must be Báo cáo thành tích cá nhân – [Họ tên]'
+    );
+    assert.strictEqual(
+      app.requirements.wb02.reportTitle,
+      'Báo cáo thành tích cá nhân – Trần Văn Bảo',
+      'WB02 reportTitle must match nominationTitle'
+    );
+    assert.ok(
+      !app.nominationTitle.includes('DanangBooth'),
+      'Must not contain DanangBooth placeholder'
+    );
+  });
+
+  it('22. Section 6.2: Chuyển đổi giữa Sáng tạo (tập thể/dự án) và Truyền lửa (cá nhân): Dữ liệu phân lập tuyệt đối, không rò rỉ tên', () => {
+    hydrateWhiteBirdStore();
+    // 1. Tạo hồ sơ Sáng tạo với tên dự án
+    const appSt = createWhiteBirdApplication({
+      category: 'SANG_TAO',
+      nomineeType: 'COLLECTIVE',
+      nomineeName: 'Nhóm Sáng tạo Trẻ',
+      nominationTitle: 'Dự án Lọc nước Thông minh DanangBooth',
+    });
+    assert.strictEqual(appSt.nominationTitle, 'Dự án Lọc nước Thông minh DanangBooth');
+
+    // 2. Tạo hồ sơ Truyền lửa cá nhân
+    const appTl = createWhiteBirdApplication({
+      category: 'TRUYEN_LUA',
+      nomineeType: 'INDIVIDUAL',
+      nomineeName: 'Lê Thị Thu Thảo',
+    });
+
+    // Kiểm tra tính phân lập dữ liệu
+    assert.strictEqual(appTl.nomineeName, 'Lê Thị Thu Thảo');
+    assert.strictEqual(appTl.nominationTitle, 'Báo cáo thành tích cá nhân – Lê Thị Thu Thảo');
+    assert.ok(!appTl.nominationTitle.includes('DanangBooth'), 'TRUYEN_LUA must not leak SANG_TAO project title');
+    assert.ok(!appTl.requirements.wb02.reportTitle.includes('DanangBooth'), 'WB02 title must not leak project title');
+
+    // Cập nhật WB02 của Truyền lửa không ảnh hưởng Sáng tạo
+    updateWhiteBirdWB02(appTl.id, {
+      nomineePhone: '0905123456',
+      nomineeYearOfStudy: 'Năm thứ tư',
+      nomineePoliticalStatus: 'Đảng viên Đảng Cộng sản Việt Nam',
+    });
+
+    const allApps = getAllWhiteBirdApplications();
+    const fetchedSt = allApps.find((a) => a.id === appSt.id)!;
+    const fetchedTl = allApps.find((a) => a.id === appTl.id)!;
+
+    assert.strictEqual(fetchedSt.nominationTitle, 'Dự án Lọc nước Thông minh DanangBooth');
+    assert.strictEqual(fetchedTl.requirements.wb02.nomineePhone, '0905123456');
+    assert.strictEqual(fetchedTl.requirements.wb02.nomineeYearOfStudy, 'Năm thứ tư');
+    assert.strictEqual(fetchedTl.requirements.wb02.nomineePoliticalStatus, 'Đảng viên Đảng Cộng sản Việt Nam');
+    assert.strictEqual(fetchedSt.requirements.wb02.nomineeYearOfStudy, undefined);
+  });
+
+  it('23. Section 6.3: Kê khai nhiều chức vụ gối nhau: Tổng tháng không bị cộng trùng (Union calculation)', () => {
+    // Term 1: 09/2023 - 06/2024 (10 months)
+    // Term 2: 01/2024 - 12/2024 (12 months, overlaps from 01/2024 to 06/2024)
+    // Union should span 09/2023 to 12/2024 = 16 months (not 10 + 12 = 22)
+    const terms: WhiteBirdOfficerTerm[] = [
+      {
+        id: 'term-overlap-1',
+        position: 'Ủy viên Ban Chấp hành Chi hội',
+        unitScope: 'CHI_HOI_LOP',
+        startMonthYear: '09/2023',
+        endMonthYear: '06/2024',
+        isCurrent: false,
+      },
+      {
+        id: 'term-overlap-2',
+        position: 'Phó Chủ nhiệm CLB Học thuật',
+        unitScope: 'CLB_DOI_NHOM_TRUONG',
+        startMonthYear: '01/2024',
+        endMonthYear: '12/2024',
+        isCurrent: false,
+      },
+    ];
+
+    const result = calculateOfficerServiceMonths(terms);
+    assert.strictEqual(result.totalMonths, 16, 'Overlapping terms must be unified to 16 months, not 22 months');
+  });
+
+  it('24. Section 6.4: Kê khai chức vụ < 24 tháng: Hệ thống cảnh báo tư vấn, không cản trở nộp hồ sơ', () => {
+    hydrateWhiteBirdStore();
+    const app = createTestApplication('TRUYEN_LUA', 'INDIVIDUAL');
+    app.nomineeName = 'Hoàng Văn Nam';
+    app.nominationTitle = 'Báo cáo thành tích cá nhân – Hoàng Văn Nam';
+
+    // Nhiệm kỳ chỉ có 10 tháng (< 24 tháng)
+    const terms: WhiteBirdOfficerTerm[] = [
+      {
+        id: 'term-short',
+        position: 'Chi hội trưởng',
+        unitScope: 'CHI_HOI_LOP',
+        startMonthYear: '09/2024',
+        endMonthYear: '06/2025',
+        isCurrent: false,
+      },
+    ];
+
+    const serviceResult = calculateOfficerServiceMonths(terms);
+    assert.strictEqual(serviceResult.totalMonths, 10);
+    assert.strictEqual(serviceResult.meetsTwoYearsRequirement, false);
+    assert.ok(
+      serviceResult.recommendation?.includes('Lưu ý hỗ trợ thẩm định') ||
+      serviceResult.recommendation?.includes('Điểm c khoản 4.2 Điều 4'),
+      'Recommendation warning must indicate advisory nature'
+    );
+
+    // Kê khai WB01
+    updateWhiteBirdWB01(app.id, {
+      nominatingUnitType: 'BCH_HSV_TRUONG',
+      nominatingUnitName: 'Ban Chấp hành Hội Sinh viên Trường Đại học Bách khoa',
+      signerFullName: 'Phan Văn Hiếu',
+      signerTitle: 'Chủ tịch Hội Sinh viên trường',
+      endorsementSummary: 'Ban Chấp hành Hội Sinh viên trường nhất trí đề cử đồng chí Hoàng Văn Nam xét trao Giải thưởng Cánh chim trắng.',
+    });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('ev-wb01-short', 'Van_ban_de_nghi.pdf'));
+
+    // Kê khai WB02 với nhiệm kỳ 10 tháng
+    updateWhiteBirdWB02(app.id, {
+      nomineeFullName: 'Hoàng Văn Nam',
+      officerTerms: terms,
+      annualAchievements: [
+        {
+          id: 'ach-1',
+          academicYear: '2023–2024',
+          roleOrPosition: 'Chi hội trưởng',
+          achievementSummary: 'Hoàn thành xuất sắc nhiệm vụ',
+          awardLevel: 'TRUONG',
+          documentReference: 'QĐ số 10/QĐ-HSV',
+        },
+        {
+          id: 'ach-2',
+          academicYear: '2024–2025',
+          roleOrPosition: 'Chi hội trưởng',
+          achievementSummary: 'Hoàn thành xuất sắc nhiệm vụ',
+          awardLevel: 'DHDN',
+          documentReference: 'QĐ số 20/QĐ-HSV-ĐHĐN',
+        },
+      ],
+      commitmentConfirmed: true,
+    });
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('ev-wb02-short', 'Bao_cao_thanh_tich.pdf'));
+
+    // Kê khai WB03
+    updateWhiteBirdWB03(app.id, {
+      awardOrRecognitionSummary: 'Minh chứng chức vụ và thành tích 2 năm',
+    });
+    addWhiteBirdEvidence(app.id, 'WB03', mockEv('ev-wb03-short', 'Minh_chung.pdf'));
+
+    const updatedApp = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    const readiness = validateWhiteBirdReadiness(updatedApp);
+
+    // Báo cáo chức vụ < 24 tháng không cản trở nộp
+    assert.strictEqual(readiness.wb02Ready, true, 'WB02 is ready even if tenure < 24 months (advisory review criteria)');
+    assert.strictEqual(readiness.canSubmit, true, 'canSubmit must be true because 24-month is advisory review guideline');
+  });
+
+  it('25. Section 6.5: Kê khai thành tích 2 năm không liên tục: Hệ thống hiển thị cảnh báo hướng dẫn rõ ràng', () => {
+    // 2 năm cách nhau: 2021–2022 và 2023–2024 (thiếu 2022–2023)
+    const gapAchievements: WhiteBirdAnnualAchievement[] = [
+      {
+        id: 'ach-gap-1',
+        academicYear: '2021–2022',
+        roleOrPosition: 'Chi hội phó',
+        achievementSummary: 'Giấy khen HSV trường',
+        awardLevel: 'TRUONG',
+      },
+      {
+        id: 'ach-gap-2',
+        academicYear: '2023–2024',
+        roleOrPosition: 'Chi hội trưởng',
+        achievementSummary: 'Bằng khen HSV ĐHĐN',
+        awardLevel: 'DHDN',
+      },
+    ];
+
+    const evalResult = checkConsecutiveAnnualAchievements(gapAchievements);
+    assert.strictEqual(evalResult.hasTwoConsecutiveYears, false, 'Must identify non-consecutive academic years');
+    assert.ok(
+      evalResult.explanation.includes('chưa đảm bảo tính liên tục'),
+      'Explanation must explain non-consecutive gap'
+    );
+  });
+
+  it('26. Section 6.6: Kê khai 2 năm bằng 1 Giấy khen + 1 văn bản công nhận khác: Hệ thống chấp nhận và validate thành công', () => {
+    const validConsecutive: WhiteBirdAnnualAchievement[] = [
+      {
+        id: 'ach-v-1',
+        academicYear: '2023–2024',
+        roleOrPosition: 'Ủy viên BCH Hội Sinh viên Trường',
+        achievementSummary: 'Giấy khen Ban Thư ký Hội Sinh viên Trường Đại học Bách khoa',
+        awardLevel: 'TRUONG',
+        documentReference: 'Giấy khen số 45/GK-HSV ngày 15/05/2024',
+      },
+      {
+        id: 'ach-v-2',
+        academicYear: '2024–2025',
+        roleOrPosition: 'Phó Chủ tịch Hội Sinh viên Trường',
+        achievementSummary: 'Quyết định công nhận Hoàn thành xuất sắc nhiệm vụ công tác Hội của Đoàn TNCS Hồ Chí Minh TP Đà Nẵng',
+        awardLevel: 'THANH_PHO',
+        documentReference: 'Quyết định số 118/QĐ-TĐTN ngày 20/06/2025',
+      },
+    ];
+
+    const evalResult = checkConsecutiveAnnualAchievements(validConsecutive);
+    assert.strictEqual(evalResult.hasTwoConsecutiveYears, true, '1 Giấy khen + 1 văn bản công nhận khác ở 2 năm liên tiếp phải hợp lệ');
+    assert.strictEqual(evalResult.consecutiveYears?.length, 2);
+    assert.ok(
+      evalResult.explanation.includes('Đã đáp ứng tiêu chuẩn'),
+      'Must confirm consecutive years requirement is met'
+    );
+  });
+
+  it('27. Section 6.7: Tải file WB03, phân loại thẻ, điền số hiệu và bấm Tự động tổng hợp danh mục: WB03 tóm tắt cập nhật đúng định dạng', () => {
+    hydrateWhiteBirdStore();
+    const app = createTestApplication('TRUYEN_LUA', 'INDIVIDUAL');
+
+    const file1 = mockEv('f-cv', 'Quyet_dinh_chi_dinh_BCH.pdf');
+    const file2 = mockEv('f-ach', 'Giay_khen_HSV_DHDN_2024.pdf');
+    const file3 = mockEv('f-gpa', 'Bang_diem_tich_luy_DRL.pdf');
+
+    addWhiteBirdEvidence(app.id, 'WB03', file1);
+    addWhiteBirdEvidence(app.id, 'WB03', file2);
+    addWhiteBirdEvidence(app.id, 'WB03', file3);
+
+    // Cập nhật metadata từng tệp
+    updateWhiteBirdEvidenceMetadata(app.id, 'WB03', file1.id, {
+      evidenceCategory: 'CHUC_VU',
+      documentReference: 'QĐ số 12/QĐ-HSV',
+    });
+    updateWhiteBirdEvidenceMetadata(app.id, 'WB03', file2.id, {
+      evidenceCategory: 'THANH_TICH_2_NAM',
+      academicYear: '2023–2024',
+      documentReference: 'QĐ số 98/QĐ-ĐHĐN',
+    });
+    updateWhiteBirdEvidenceMetadata(app.id, 'WB03', file3.id, {
+      evidenceCategory: 'HOC_TAP_REN_LUYEN',
+      documentReference: 'Bảng điểm xác nhận ngày 10/06/2025',
+    });
+
+    const updatedApp = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    const files = updatedApp.requirements.wb03.evidenceFiles;
+
+    const synthesized = synthesizeTruyenLuaWb03Summary(files);
+    assert.ok(
+      synthesized.includes('Quyet_dinh_chi_dinh_BCH.pdf — Số hiệu: QĐ số 12/QĐ-HSV'),
+      'Must format file 1 with document reference'
+    );
+    assert.ok(
+      synthesized.includes('Thành tích xuất sắc 02 năm liên tục'),
+      'Must format file 2 with consecutive achievement category label'
+    );
+    assert.ok(
+      synthesized.includes('Năm học: 2023–2024'),
+      'Must format file 2 with academic year'
+    );
+    assert.ok(
+      synthesized.includes('Bang_diem_tich_luy_DRL.pdf'),
+      'Must include file 3'
+    );
+
+    // Lưu vào WB03
+    updateWhiteBirdWB03(app.id, { awardOrRecognitionSummary: synthesized });
+    const finalApp = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    assert.strictEqual(finalApp.requirements.wb03.awardOrRecognitionSummary, synthesized);
+  });
+
+  it('28. Section 6.8: Nộp hồ sơ thiếu WB03: Bị chặn với lý do rõ ràng', () => {
+    hydrateWhiteBirdStore();
+    const app = createTestApplication('TRUYEN_LUA', 'INDIVIDUAL');
+
+    // Hoàn tất WB01
+    updateWhiteBirdWB01(app.id, {
+      nominatingUnitType: 'BCH_HSV_TRUONG',
+      nominatingUnitName: 'Ban Chấp hành Hội Sinh viên Đại học Bách khoa',
+      signerFullName: 'Phan Văn Hiếu',
+      signerTitle: 'Chủ tịch HSV',
+      endorsementSummary: 'Ban Chấp hành đề cử cá nhân xuất sắc.',
+    });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('wb01-only', 'WB01_De_nghi.pdf'));
+
+    // Hoàn tất WB02
+    updateWhiteBirdWB02(app.id, {
+      nomineeFullName: 'Lê Văn C',
+      officerTerms: [
+        {
+          id: 'term-sample',
+          position: 'Chi hội trưởng',
+          unitScope: 'CHI_HOI_LOP',
+          startMonthYear: '09/2023',
+          endMonthYear: '06/2025',
+          isCurrent: false,
+        },
+      ],
+      commitmentConfirmed: true,
+    });
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('wb02-only', 'WB02_Bao_cao.pdf'));
+
+    // WB03 để trống hoàn toàn
+    const currentApp = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    const readiness = validateWhiteBirdReadiness(currentApp);
+
+    assert.strictEqual(readiness.wb01Ready, true);
+    assert.strictEqual(readiness.wb02Ready, true);
+    assert.strictEqual(readiness.wb03Ready, false, 'WB03 must be not ready');
+    assert.strictEqual(readiness.canSubmit, false, 'canSubmit must be false when WB03 is missing');
+    assert.ok(
+      readiness.missingReasons.some((r) => r.includes('WB03')),
+      'Missing reasons must mention WB03'
+    );
+
+    // Thử nộp hồ sơ sẽ bị từ chối
+    const submitRes = submitWhiteBirdApplication(app.id);
+    assert.strictEqual(submitRes.success, false);
+    assert.ok(
+      submitRes.error?.includes('WB03') || submitRes.error?.includes('chưa hoàn thiện'),
+      'Submission error must explain missing requirements'
+    );
+  });
+
+  it('29. Section 6.9: Nộp hồ sơ đủ 3/3: Phân biệt rõ Người nộp và Cá nhân được đề cử, nộp thành công và chuyển trạng thái submitted', () => {
+    hydrateWhiteBirdStore();
+    const app = createTestApplication('TRUYEN_LUA', 'INDIVIDUAL');
+    app.preparedByUserName = 'Trần Văn Nộp Trực Tuyến';
+    app.nomineeName = 'Nguyễn Thị Được Đề Cử';
+
+    assert.notStrictEqual(
+      app.preparedByUserName,
+      app.nomineeName,
+      'Submitter and nominee must be distinct entities'
+    );
+
+    // Kê khai đủ WB01, WB02, WB03
+    updateWhiteBirdWB01(app.id, {
+      nominatingUnitType: 'BCH_HSV_TRUONG',
+      nominatingUnitName: 'BCH HSV Trường',
+      signerFullName: 'Trần Văn Ký',
+      signerTitle: 'Chủ tịch HSV',
+      endorsementSummary: 'BCH Hội Sinh viên giới thiệu đồng chí Nguyễn Thị Được Đề Cử.',
+    });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('ev-wb01-full', 'wb01.pdf'));
+
+    updateWhiteBirdWB02(app.id, {
+      nomineeFullName: 'Nguyễn Thị Được Đề Cử',
+      officerTerms: [
+        {
+          id: 'term-full-1',
+          position: 'Ủy viên BCH Hội Sinh viên Trường',
+          unitScope: 'BCH_HSV_TRUONG',
+          startMonthYear: '09/2023',
+          endMonthYear: '06/2025',
+          isCurrent: false,
+        },
+      ],
+      commitmentConfirmed: true,
+    });
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('ev-wb02-full', 'wb02.pdf'));
+
+    updateWhiteBirdWB03(app.id, {
+      awardOrRecognitionSummary: 'Danh mục minh chứng đầy đủ',
+    });
+    addWhiteBirdEvidence(app.id, 'WB03', mockEv('ev-wb03-full', 'wb03.pdf'));
+
+    const readyApp = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    const readiness = validateWhiteBirdReadiness(readyApp);
+    assert.strictEqual(readiness.canSubmit, true);
+    assert.strictEqual(readiness.readyCount, 3);
+
+    const submitRes = submitWhiteBirdApplication(app.id);
+    assert.strictEqual(submitRes.success, true);
+    assert.strictEqual(submitRes.application?.status, 'submitted');
+    assert.ok(submitRes.application?.submittedAt, 'submittedAt must be set');
+  });
+
+  it('30. Section 6.10: Tải lại trang (F5) / Khởi động lại store: Dữ liệu WB02 và WB03 Truyền lửa giữ nguyên vẹn', async () => {
+    hydrateWhiteBirdStore();
+    const app = createTestApplication('TRUYEN_LUA', 'INDIVIDUAL');
+
+    // Lưu các trường đặc thù Truyền lửa
+    updateWhiteBirdWB02(app.id, {
+      nomineeFullName: 'Phan Thị Diễm',
+      nomineeYearOfStudy: 'Năm thứ ba',
+      nomineePoliticalStatus: 'Đoàn viên TNCS Hồ Chí Minh',
+      officerTerms: [
+        {
+          id: 'term-persist-1',
+          position: 'Ủy viên BCH Chi hội',
+          unitScope: 'CHI_HOI_LOP',
+          startMonthYear: '09/2023',
+          endMonthYear: 'Hiện nay',
+          isCurrent: true,
+        },
+      ],
+      annualAchievements: [
+        {
+          id: 'ach-persist-1',
+          academicYear: '2023–2024',
+          roleOrPosition: 'Ủy viên BCH Chi hội',
+          achievementSummary: 'Hoàn thành tốt công tác Hội',
+          awardLevel: 'TRUONG',
+          documentReference: 'Giấy khen số 15/GK',
+        },
+      ],
+      academicAndPriority: {
+        gpaText: '3.62 / 4.0',
+        trainingScoreText: '92 / 100',
+        sv5tRecognitions: 'Sinh viên 5 tốt cấp Trường',
+        volunteerActivities: 'Tiếp sức mùa thi 2024',
+        scientificResearch: 'Đề tài NCKH sinh viên cấp khoa',
+        otherAwards: 'Giải Khuyến khích Hội thi Tin học trẻ',
+      },
+      commitmentConfirmed: true,
+    });
+
+    const file = mockEv('f-persist-1', 'Minh_chung_chuc_vu.pdf');
+    addWhiteBirdEvidence(app.id, 'WB03', file);
+    updateWhiteBirdEvidenceMetadata(app.id, 'WB03', file.id, {
+      evidenceCategory: 'CHUC_VU',
+      documentReference: 'QĐ 123/QĐ',
+      academicYear: '2023–2024',
+    });
+
+    // Giả lập F5 / rehydrate
+    const rehydratedApps = await hydrateWhiteBirdStore();
+    const rehydrated = rehydratedApps.find((a) => a.id === app.id)!;
+
+    assert.ok(rehydrated, 'Application must exist after rehydration');
+    assert.strictEqual(rehydrated.requirements.wb02.nomineeYearOfStudy, 'Năm thứ ba');
+    assert.strictEqual(rehydrated.requirements.wb02.nomineePoliticalStatus, 'Đoàn viên TNCS Hồ Chí Minh');
+    assert.strictEqual(rehydrated.requirements.wb02.officerTerms?.[0].endMonthYear, 'Hiện nay');
+    assert.strictEqual(rehydrated.requirements.wb02.annualAchievements?.[0].documentReference, 'Giấy khen số 15/GK');
+    assert.strictEqual(rehydrated.requirements.wb02.academicAndPriority?.gpaText, '3.62 / 4.0');
+    assert.strictEqual(rehydrated.requirements.wb02.academicAndPriority?.otherAwards, 'Giải Khuyến khích Hội thi Tin học trẻ');
+
+    const wb03File = rehydrated.requirements.wb03.evidenceFiles.find((f) => f.id === file.id)!;
+    assert.strictEqual(wb03File.evidenceCategory, 'CHUC_VU');
+    assert.strictEqual(wb03File.documentReference, 'QĐ 123/QĐ');
+    assert.strictEqual(wb03File.academicYear, '2023–2024');
+  });
+
+  it('31. Section 6.11: Không ảnh hưởng đến Ươm mầm (2/2) và Sáng tạo (3/3)', () => {
+    hydrateWhiteBirdStore();
+
+    // 1. Kiểm tra Ươm mầm: 2/2 bắt buộc (WB01 + WB02), WB03 là tùy chọn
+    const uomMam = createTestApplication('UOM_MAM', 'COLLECTIVE');
+    updateWhiteBirdWB01(uomMam.id, {
+      nominatingUnitType: 'BCH_HSV_TRUONG',
+      nominatingUnitName: 'BCH HSV Bách khoa',
+      signerFullName: 'Phan Văn Hiếu',
+      signerTitle: 'Chủ tịch HSV',
+      endorsementSummary: 'Mô hình tiêu biểu được BCH Hội Sinh viên trường giới thiệu.',
+    });
+    addWhiteBirdEvidence(uomMam.id, 'WB01', mockEv('um-wb01', 'wb01.pdf'));
+    updateWhiteBirdWB02(uomMam.id, {
+      reportTitle: 'Mô hình Ngân hàng Minh chứng',
+      solutionAndExecution: 'Phát triển mô hình số hóa ngân hàng minh chứng',
+      impactAndResults: 'Tiếp cận hơn 3000 sinh viên tại ĐHĐN',
+      commitmentConfirmed: true,
+    });
+    addWhiteBirdEvidence(uomMam.id, 'WB02', mockEv('um-wb02', 'wb02.pdf'));
+
+    const umUpdated = getAllWhiteBirdApplications().find((a) => a.id === uomMam.id)!;
+    const umReadiness = validateWhiteBirdReadiness(umUpdated);
+    assert.strictEqual(umReadiness.isWb03Optional, true, 'UOM_MAM WB03 must be optional');
+    assert.strictEqual(umReadiness.totalRequired, 2, 'UOM_MAM requires 2 mandatory components');
+    assert.strictEqual(umReadiness.readyCount, 2, 'Ready count is 2/2');
+    assert.strictEqual(umReadiness.canSubmit, true, 'UOM_MAM can submit with 2/2');
+
+    // 2. Kiểm tra Sáng tạo: Bắt buộc 3/3 (WB01 + WB02 + WB03)
+    const sangTao = createTestApplication('SANG_TAO', 'COLLECTIVE');
+    updateWhiteBirdWB01(sangTao.id, {
+      nominatingUnitType: 'BCH_HSV_TRUONG',
+      nominatingUnitName: 'BCH HSV Bách khoa',
+      signerFullName: 'Phan Văn Hiếu',
+      signerTitle: 'Chủ tịch HSV',
+      endorsementSummary: 'Đề tài sáng tạo đạt giải cấp Đại học Đà Nẵng.',
+    });
+    addWhiteBirdEvidence(sangTao.id, 'WB01', mockEv('st-wb01', 'wb01.pdf'));
+    updateWhiteBirdWB02(sangTao.id, {
+      reportTitle: 'Giải pháp Sáng tạo IoT',
+      solutionAndExecution: 'Thiết kế bo mạch IoT thông minh',
+      impactAndResults: 'Triển khai thực tế tại 3 tòa nhà',
+      leadAuthorFullName: 'Trần Văn Kỹ sư',
+      commitmentConfirmed: true,
+    });
+    addWhiteBirdEvidence(sangTao.id, 'WB02', mockEv('st-wb02', 'wb02.pdf'));
+
+    // Sáng tạo mới có WB01 + WB02 -> Chưa đủ 3/3
+    const stPartial = getAllWhiteBirdApplications().find((a) => a.id === sangTao.id)!;
+    const stPartialReadiness = validateWhiteBirdReadiness(stPartial);
+    assert.strictEqual(stPartialReadiness.isWb03Optional, false, 'SANG_TAO WB03 is mandatory');
+    assert.strictEqual(stPartialReadiness.totalRequired, 3, 'SANG_TAO requires 3 components');
+    assert.strictEqual(stPartialReadiness.readyCount, 2);
+    assert.strictEqual(stPartialReadiness.canSubmit, false, 'SANG_TAO cannot submit without WB03');
+
+    // Bổ sung WB03 cho Sáng tạo
+    updateWhiteBirdWB03(sangTao.id, {
+      awardOrRecognitionSummary: 'Giải Nhất Cuộc thi Sáng tạo Khởi nghiệp SV ĐHĐN',
+    });
+    addWhiteBirdEvidence(sangTao.id, 'WB03', mockEv('st-wb03', 'wb03_giai_thuong.pdf'));
+
+    const stComplete = getAllWhiteBirdApplications().find((a) => a.id === sangTao.id)!;
+    const stCompleteReadiness = validateWhiteBirdReadiness(stComplete);
+    assert.strictEqual(stCompleteReadiness.readyCount, 3);
+    assert.strictEqual(stCompleteReadiness.canSubmit, true, 'SANG_TAO can submit with 3/3');
   });
 });
