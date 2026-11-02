@@ -1,11 +1,12 @@
 /**
  * 5TOT Đại học Đà Nẵng — Giải thưởng "Cánh chim trắng" Store & Backend Sync
- * Căn cứ Quyết định số 1720/QĐ-HSV của Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng.
+ * Căn cứ Quyết định số 14-QĐ/ĐHĐN-HSV ngày 04/10/2022 của Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng.
  * Hồ sơ Giải thưởng Cánh chim trắng được nộp thẳng lên Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng.
  */
 
 import { isBackendMode } from '../../shared/config/executionMode';
 import { apiRequest } from '../../shared/api/httpClient';
+import { StudentProfileDto } from '../../entities/application/studentApplicationTypes';
 import {
   WhiteBirdApplication,
   WhiteBirdCategory,
@@ -16,6 +17,9 @@ import {
   WhiteBirdWB01Declaration,
   WhiteBirdWB02Declaration,
   WhiteBirdWB03Declaration,
+  WhiteBirdTruyenLuaEvidenceCategory,
+  WHITE_BIRD_TRUYEN_LUA_CATEGORY_LABELS,
+  isValidOptionalHttpUrl,
 } from './whiteBirdTypes';
 
 const LOCAL_STORAGE_KEY = '5tot_white_bird_applications_store';
@@ -36,8 +40,12 @@ export function subscribeToWhiteBirdStore(listener: StoreListener): () => void {
   };
 }
 
+let nodeMemoryStorage: WhiteBirdApplication[] = [];
+
 function loadFromStorage(): WhiteBirdApplication[] {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === 'undefined') {
+    return JSON.parse(JSON.stringify(nodeMemoryStorage));
+  }
   try {
     const raw = window.localStorage.getItem(LOCAL_STORAGE_KEY);
     if (!raw) return [];
@@ -52,7 +60,9 @@ let storeApps: WhiteBirdApplication[] = loadFromStorage();
 
 function saveToStorage(apps: WhiteBirdApplication[]): void {
   storeApps = apps;
-  if (typeof window !== 'undefined') {
+  if (typeof window === 'undefined') {
+    nodeMemoryStorage = JSON.parse(JSON.stringify(apps));
+  } else {
     try {
       window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(apps));
     } catch {
@@ -106,45 +116,52 @@ export async function hydrateWhiteBirdStore(): Promise<WhiteBirdApplication[]> {
 }
 
 export function createWhiteBirdApplication(payload: {
-  nominationTitle: string;
+  nominationTitle?: string;
   category: WhiteBirdCategory;
   nomineeType: WhiteBirdNomineeType;
   nomineeName: string;
-  studentId: string;
-  institutionId: string;
-  institutionName: string;
-  schoolReviewUnitId: string;
-  schoolReviewUnitName: string;
-  facultyName: string;
-  className: string;
+  studentId?: string;
+  institutionId?: string;
+  institutionName?: string;
+  schoolReviewUnitId?: string;
+  schoolReviewUnitName?: string;
+  facultyName?: string;
+  className?: string;
   academicYear?: string;
-  contactPhone: string;
-  preparedByUserId: string;
-  preparedByUserName: string;
-  preparedByUserEmail: string;
+  contactPhone?: string;
+  preparedByUserId?: string;
+  preparedByUserName?: string;
+  preparedByUserEmail?: string;
 }): WhiteBirdApplication {
   const now = new Date().toISOString();
-  const id = `CCT-2026-DN-${Date.now().toString(36).toUpperCase()}`;
+  const id = `CCT-2026-DN-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
   const academicYear = payload.academicYear || '2025–2026';
+  const resolvedNominationTitle =
+    payload.category === 'TRUYEN_LUA'
+      ? (payload.nominationTitle?.trim() || `Báo cáo thành tích cá nhân – ${payload.nomineeName.trim()}`)
+      : (payload.nominationTitle?.trim() || 'Hồ sơ đề cử Giải thưởng Cánh chim trắng');
+
+  const institutionId = payload.institutionId || 'DUT';
+  const institutionName = payload.institutionName || 'Trường Đại học Bách khoa – ĐHĐN';
 
   const newApp: WhiteBirdApplication = {
     id,
-    nominationTitle: payload.nominationTitle.trim(),
+    nominationTitle: resolvedNominationTitle,
     category: payload.category,
     nomineeType: payload.category === 'TRUYEN_LUA' ? 'INDIVIDUAL' : payload.nomineeType,
     nomineeName: payload.nomineeName.trim(),
-    studentId: payload.studentId.trim(),
-    institutionId: payload.institutionId,
-    institutionName: payload.institutionName,
-    schoolReviewUnitId: payload.schoolReviewUnitId,
-    schoolReviewUnitName: payload.schoolReviewUnitName,
-    facultyName: payload.facultyName.trim(),
-    className: payload.className.trim(),
+    studentId: (payload.studentId || '').trim(),
+    institutionId,
+    institutionName,
+    schoolReviewUnitId: payload.schoolReviewUnitId || `unit-${institutionId.toLowerCase()}`,
+    schoolReviewUnitName: payload.schoolReviewUnitName || `Hội Sinh viên ${institutionName}`,
+    facultyName: (payload.facultyName || '').trim(),
+    className: (payload.className || '').trim(),
     academicYear,
-    contactPhone: payload.contactPhone.trim(),
-    preparedByUserId: payload.preparedByUserId,
-    preparedByUserName: payload.preparedByUserName,
-    preparedByUserEmail: payload.preparedByUserEmail,
+    contactPhone: (payload.contactPhone || '').trim(),
+    preparedByUserId: payload.preparedByUserId || 'std-user',
+    preparedByUserName: payload.preparedByUserName || payload.nomineeName.trim() || 'Sinh viên nộp hồ sơ',
+    preparedByUserEmail: payload.preparedByUserEmail || 'sinhvien@udn.vn',
     status: 'draft',
     createdAt: now,
     updatedAt: now,
@@ -162,22 +179,55 @@ export function createWhiteBirdApplication(payload: {
         evidenceFiles: [],
       },
       wb02: {
-        reportTitle: payload.nominationTitle.trim(),
+        reportTitle:
+          payload.category === 'TRUYEN_LUA'
+            ? `Báo cáo thành tích cá nhân – ${payload.nomineeName.trim()}`
+            : resolvedNominationTitle,
         implementationPeriod: `Năm học ${academicYear}`,
         contextAndObjectives: '',
         solutionAndExecution: '',
         impactAndResults: '',
+        scalabilityAndSpread: '',
+        exemplaryNature: '',
+        leadRepresentative:
+          payload.nomineeType === 'COLLECTIVE'
+            ? `${payload.preparedByUserName}${payload.studentId ? ` (${payload.studentId})` : ''}`
+            : '',
+        leadUnit: payload.facultyName ? `${payload.facultyName} – ${payload.institutionName}` : payload.institutionName,
+        leadPhone: payload.contactPhone || '',
+        leadEmail: payload.preparedByUserEmail || '',
+        presentationLink: '',
         coAuthorsOrTeamMembers:
           payload.nomineeType === 'COLLECTIVE'
             ? `${payload.preparedByUserName} (${payload.studentId}) - Đại diện nhóm tác giả / tập thể`
             : '',
         commitmentConfirmed: false,
         evidenceFiles: [],
+        ...(payload.category === 'TRUYEN_LUA'
+          ? {
+              nomineeFaculty: payload.facultyName || '',
+              nomineeClass: payload.className || '',
+              nomineePhone: payload.contactPhone || '',
+              nomineeEmail: payload.preparedByUserEmail || '',
+              nomineeCurrentRole: '',
+              nomineeYearOfStudy: '',
+              nomineePoliticalStatus: 'DOAN_VIEN',
+              officerTerms: [],
+              annualAchievements: [],
+              academicAndPriority: {
+                gpaText: '',
+                trainingScoreText: '',
+                sv5tRecognitions: '',
+                volunteerActivities: '',
+                scientificResearch: '',
+                otherAwards: '',
+              },
+            }
+          : {}),
       },
       wb03: {
         awardOrRecognitionSummary: '',
-        highestAwardLevel:
-          payload.category === 'SANG_TAO' ? 'Cấp Đại học Đà Nẵng' : 'Cấp Trường thành viên ĐHĐN',
+        highestAwardLevel: '',
         decisionNumbersAndDates: '',
         mediaAndProductLinks: '',
         practicalApplicationNote: '',
@@ -316,6 +366,12 @@ export function addWhiteBirdEvidence(
   const current = storeApps[idx];
   const key = reqId.toLowerCase() as 'wb01' | 'wb02' | 'wb03';
   const existingFiles = current.requirements[key].evidenceFiles || [];
+  const nextFiles = [...existingFiles, evidence];
+  const autoSummary =
+    current.category === 'TRUYEN_LUA' && reqId === 'WB03'
+      ? synthesizeTruyenLuaWb03Summary(nextFiles)
+      : undefined;
+
   const updated: WhiteBirdApplication = {
     ...current,
     updatedAt: new Date().toISOString(),
@@ -323,7 +379,8 @@ export function addWhiteBirdEvidence(
       ...current.requirements,
       [key]: {
         ...current.requirements[key],
-        evidenceFiles: [...existingFiles, evidence],
+        evidenceFiles: nextFiles,
+        ...(autoSummary ? { awardOrRecognitionSummary: autoSummary } : {}),
       },
     },
   };
@@ -344,6 +401,12 @@ export function removeWhiteBirdEvidence(
   const current = storeApps[idx];
   const key = reqId.toLowerCase() as 'wb01' | 'wb02' | 'wb03';
   const existingFiles = current.requirements[key].evidenceFiles || [];
+  const nextFiles = existingFiles.filter((f) => f.id !== evidenceId);
+  const autoSummary =
+    current.category === 'TRUYEN_LUA' && reqId === 'WB03'
+      ? synthesizeTruyenLuaWb03Summary(nextFiles)
+      : undefined;
+
   const updated: WhiteBirdApplication = {
     ...current,
     updatedAt: new Date().toISOString(),
@@ -351,7 +414,8 @@ export function removeWhiteBirdEvidence(
       ...current.requirements,
       [key]: {
         ...current.requirements[key],
-        evidenceFiles: existingFiles.filter((f) => f.id !== evidenceId),
+        evidenceFiles: nextFiles,
+        ...(autoSummary !== undefined ? { awardOrRecognitionSummary: autoSummary } : {}),
       },
     },
   };
@@ -362,16 +426,247 @@ export function removeWhiteBirdEvidence(
   return updated;
 }
 
-export function validateWhiteBirdReadiness(app: WhiteBirdApplication): {
+export function updateWhiteBirdEvidenceCategory(
+  appId: string,
+  reqId: WhiteBirdRequirementId,
+  evidenceId: string,
+  category: WhiteBirdTruyenLuaEvidenceCategory
+): WhiteBirdApplication | null {
+  const idx = storeApps.findIndex((a) => a.id === appId);
+  if (idx < 0) return null;
+  const current = storeApps[idx];
+  const key = reqId.toLowerCase() as 'wb01' | 'wb02' | 'wb03';
+  const existingFiles = current.requirements[key].evidenceFiles || [];
+  const updatedFiles = existingFiles.map((f) =>
+    f.id === evidenceId ? { ...f, evidenceCategory: category } : f
+  );
+  const autoSummary =
+    current.category === 'TRUYEN_LUA' && reqId === 'WB03'
+      ? synthesizeTruyenLuaWb03Summary(updatedFiles)
+      : undefined;
+
+  const updated: WhiteBirdApplication = {
+    ...current,
+    updatedAt: new Date().toISOString(),
+    requirements: {
+      ...current.requirements,
+      [key]: {
+        ...current.requirements[key],
+        evidenceFiles: updatedFiles,
+        ...(autoSummary ? { awardOrRecognitionSummary: autoSummary } : {}),
+      },
+    },
+  };
+  const next = [...storeApps];
+  next[idx] = updated;
+  saveToStorage(next);
+  syncAppToBackend(updated);
+  return updated;
+}
+
+export function updateWhiteBirdEvidenceMetadata(
+  appId: string,
+  reqId: WhiteBirdRequirementId,
+  evidenceId: string,
+  patch: Partial<
+    Pick<
+      WhiteBirdEvidenceItem,
+      'documentReference' | 'academicYear' | 'notes' | 'evidenceCategory' | 'customCategoryLabel'
+    >
+  >
+): WhiteBirdApplication | null {
+  const idx = storeApps.findIndex((a) => a.id === appId);
+  if (idx < 0) return null;
+  const current = storeApps[idx];
+  const key = reqId.toLowerCase() as 'wb01' | 'wb02' | 'wb03';
+  const existingFiles = current.requirements[key].evidenceFiles || [];
+  const updatedFiles = existingFiles.map((f) =>
+    f.id === evidenceId ? { ...f, ...patch } : f
+  );
+  const autoSummary =
+    current.category === 'TRUYEN_LUA' && reqId === 'WB03'
+      ? synthesizeTruyenLuaWb03Summary(updatedFiles)
+      : undefined;
+
+  const updated: WhiteBirdApplication = {
+    ...current,
+    updatedAt: new Date().toISOString(),
+    requirements: {
+      ...current.requirements,
+      [key]: {
+        ...current.requirements[key],
+        evidenceFiles: updatedFiles,
+        ...(autoSummary ? { awardOrRecognitionSummary: autoSummary } : {}),
+      },
+    },
+  };
+  const next = [...storeApps];
+  next[idx] = updated;
+  saveToStorage(next);
+  syncAppToBackend(updated);
+  return updated;
+}
+
+/**
+ * Đồng bộ thông tin cá nhân từ Hồ sơ cá nhân (StudentProfileDto) vào hồ sơ Giải thưởng Cánh chim trắng.
+ * NGUYÊN TẮC BẢO TOÀN DỮ LIỆU & AUDIT SNAPSHOT:
+ * 1. Chỉ áp dụng đồng bộ cho hồ sơ đang ở trạng thái bản nháp ('draft').
+ * 2. Tuyệt đối KHÔNG tự động thay đổi dữ liệu của hồ sơ đã nộp ('submitted', 'under_review', v.v.)
+ *    để bảo toàn snapshot tại thời điểm nộp.
+ * 3. Tuyệt đối KHÔNG ghi đè quá trình công tác (officerTerms), thành tích (annualAchievements),
+ *    các thông tin ưu tiên tự khai (academicAndPriority) hay tiêu đề báo cáo tùy chỉnh.
+ * 4. Không lấy chức vụ hiện tại để thay thế lịch sử chức vụ đã đảm nhiệm.
+ */
+export function syncApplicationWithProfile(
+  appId: string,
+  profile?: StudentProfileDto | null
+): WhiteBirdApplication | null {
+  if (!profile) return null;
+  const idx = storeApps.findIndex((a) => a.id === appId);
+  if (idx < 0) return null;
+  const current = storeApps[idx];
+
+  // Chỉ đồng bộ khi hồ sơ còn là bản nháp
+  if (current.status !== 'draft') {
+    return current;
+  }
+
+  let hasChanges = false;
+  const basicUpdates: Partial<WhiteBirdApplication> = {};
+  const wb02Updates: Partial<WhiteBirdWB02Declaration> = {};
+
+  // Basic info sync
+  if (
+    profile.fullName &&
+    (!current.nomineeName ||
+      current.nomineeName === 'Sinh viên đề cử' ||
+      current.category === 'TRUYEN_LUA') &&
+    current.nomineeName !== profile.fullName
+  ) {
+    basicUpdates.nomineeName = profile.fullName;
+    hasChanges = true;
+  }
+  if (profile.studentCode && (!current.studentId || current.studentId !== profile.studentCode)) {
+    basicUpdates.studentId = profile.studentCode;
+    hasChanges = true;
+  }
+  if (profile.institutionName && (!current.institutionName || current.institutionName === 'Trường Đại học Bách khoa – ĐHĐN')) {
+    basicUpdates.institutionName = profile.institutionName;
+    hasChanges = true;
+  }
+  if (profile.className && (!current.className || current.className !== profile.className)) {
+    basicUpdates.className = profile.className;
+    hasChanges = true;
+  }
+  if (profile.phoneNumber && (!current.contactPhone || current.contactPhone !== profile.phoneNumber)) {
+    basicUpdates.contactPhone = profile.phoneNumber;
+    hasChanges = true;
+  }
+
+  // WB02 Truyen Lua fields sync
+  if (current.category === 'TRUYEN_LUA') {
+    const wb02 = current.requirements.wb02;
+
+    if (profile.dateOfBirth && wb02.nomineeDateOfBirth !== profile.dateOfBirth) {
+      wb02Updates.nomineeDateOfBirth = profile.dateOfBirth;
+      hasChanges = true;
+    }
+    const mappedGender = profile.gender === 'Nam' ? 'NAM' : profile.gender === 'Nữ' ? 'NU' : profile.gender;
+    if (mappedGender && wb02.nomineeGender !== mappedGender) {
+      wb02Updates.nomineeGender = mappedGender;
+      hasChanges = true;
+    }
+    if (profile.ethnicity && wb02.nomineeEthnicity !== profile.ethnicity) {
+      wb02Updates.nomineeEthnicity = profile.ethnicity;
+      hasChanges = true;
+    }
+    if (profile.homeProvince && wb02.nomineeHometown !== profile.homeProvince) {
+      wb02Updates.nomineeHometown = profile.homeProvince;
+      hasChanges = true;
+    }
+    const yearStudyStr = profile.academicYearNumber ? `Năm thứ ${profile.academicYearNumber}` : '';
+    if (yearStudyStr && wb02.nomineeYearOfStudy !== yearStudyStr) {
+      wb02Updates.nomineeYearOfStudy = yearStudyStr;
+      hasChanges = true;
+    }
+    if (profile.className && wb02.nomineeClass !== profile.className) {
+      wb02Updates.nomineeClass = profile.className;
+      hasChanges = true;
+    }
+    if (profile.phoneNumber && wb02.nomineePhone !== profile.phoneNumber) {
+      wb02Updates.nomineePhone = profile.phoneNumber;
+      hasChanges = true;
+    }
+    if (profile.email && wb02.nomineeEmail !== profile.email) {
+      wb02Updates.nomineeEmail = profile.email;
+      hasChanges = true;
+    }
+    if (profile.unionPosition && !wb02.nomineeCurrentRole) {
+      wb02Updates.nomineeCurrentRole = profile.unionPosition;
+      hasChanges = true;
+    }
+    const mappedPolitical = profile.politicalStatus === 'Đảng viên' ? 'DANG_VIEN' : 'DOAN_VIEN';
+    if (profile.politicalStatus && wb02.nomineePoliticalStatus !== mappedPolitical) {
+      wb02Updates.nomineePoliticalStatus = mappedPolitical;
+      hasChanges = true;
+    }
+  }
+
+  if (!hasChanges) {
+    return current;
+  }
+
+  const updated: WhiteBirdApplication = {
+    ...current,
+    ...basicUpdates,
+    updatedAt: new Date().toISOString(),
+    requirements: {
+      ...current.requirements,
+      wb02: {
+        ...current.requirements.wb02,
+        ...wb02Updates,
+      },
+    },
+  };
+
+  const next = [...storeApps];
+  next[idx] = updated;
+  saveToStorage(next);
+  syncAppToBackend(updated);
+  return updated;
+}
+
+export function synthesizeTruyenLuaWb03Summary(files?: WhiteBirdEvidenceItem[]): string {
+  if (!files || files.length === 0) return '';
+  const lines: string[] = [];
+  files.forEach((file, index) => {
+    const catLabel = file.evidenceCategory
+      ? WHITE_BIRD_TRUYEN_LUA_CATEGORY_LABELS[file.evidenceCategory] || file.evidenceCategory
+      : 'Tài liệu minh chứng';
+    const docRef = file.documentReference?.trim() ? ` — Số hiệu: ${file.documentReference.trim()}` : '';
+    const yr = file.academicYear?.trim() ? ` — Năm học: ${file.academicYear.trim()}` : '';
+    lines.push(`${index + 1}. [${catLabel}] ${file.name}${docRef}${yr}`);
+  });
+  return lines.join('\n');
+}
+
+export interface WhiteBirdReadinessResult {
   wb01Ready: boolean;
   wb02Ready: boolean;
   wb03Ready: boolean;
+  isWb03Optional: boolean;
+  wb03HasData: boolean;
   readyCount: number;
+  totalRequired: number;
   canSubmit: boolean;
   missingReasons: string[];
-} {
+}
+
+export function validateWhiteBirdReadiness(app: WhiteBirdApplication): WhiteBirdReadinessResult {
   const missingReasons: string[] = [];
   const { wb01, wb02, wb03 } = app.requirements;
+
+  const isTruyenLua = app.category === 'TRUYEN_LUA';
 
   const wb01Ready =
     Boolean(wb01.nominatingUnitName.trim()) &&
@@ -379,37 +674,107 @@ export function validateWhiteBirdReadiness(app: WhiteBirdApplication): {
     wb01.evidenceFiles.length > 0;
   if (!wb01Ready) {
     missingReasons.push(
-      'WB01: Cần kê khai đơn vị giới thiệu, nhận xét đề nghị và đính kèm ít nhất 01 văn bản đề nghị xét trao (Điều 5).'
+      isTruyenLua
+        ? 'WB01: Cần kê khai tổ chức/cá nhân đề nghị theo Điều 5 và đính kèm ít nhất 01 tệp văn bản đề nghị xét trao (Khoản 6.2 Điều 6).'
+        : 'WB01: Cần kê khai tổ chức/cá nhân đề nghị, nội dung tóm tắt nhận xét và đính kèm ít nhất 01 tệp văn bản đề nghị xét trao (Điều 5, Điều 6).'
     );
   }
+
+  const hasInvalidWb02Url =
+    Boolean(wb02.presentationLink?.trim()) && !isValidOptionalHttpUrl(wb02.presentationLink);
+
+  const hasTruyenLuaContent =
+    isTruyenLua &&
+    ((wb02.officerTerms && wb02.officerTerms.length > 0) ||
+      Boolean(wb02.solutionAndExecution?.trim()) ||
+      Boolean(wb02.contextAndObjectives?.trim()));
+
+  const wb02HasRequiredContent = isTruyenLua
+    ? hasTruyenLuaContent
+    : Boolean(wb02.solutionAndExecution.trim()) && Boolean(wb02.impactAndResults.trim());
 
   const wb02Ready =
     Boolean(wb02.reportTitle.trim()) &&
-    Boolean(wb02.solutionAndExecution.trim()) &&
-    Boolean(wb02.impactAndResults.trim()) &&
+    wb02HasRequiredContent &&
     wb02.commitmentConfirmed &&
-    wb02.evidenceFiles.length > 0;
+    wb02.evidenceFiles.length > 0 &&
+    !hasInvalidWb02Url;
   if (!wb02Ready) {
-    missingReasons.push(
-      'WB02: Cần hoàn thiện nội dung Báo cáo thuyết minh / Báo cáo thành tích, xác nhận lời cam kết và đính kèm tệp báo cáo (Điều 6).'
-    );
+    if (hasInvalidWb02Url) {
+      missingReasons.push(
+        'WB02: Liên kết bài trình bày/video demo không đúng định dạng URL (vui lòng nhập URL bắt đầu bằng http:// hoặc https://, hoặc để trống).'
+      );
+    } else {
+      missingReasons.push(
+        isTruyenLua
+          ? 'WB02: Cần hoàn thiện Báo cáo thành tích cá nhân theo mẫu, kê khai quá trình công tác Đoàn - Hội, xác nhận lời cam kết và đính kèm tệp báo cáo có xác nhận (Khoản 6.2 Điều 6).'
+          : 'WB02: Cần hoàn thiện nội dung Báo cáo thuyết minh / Báo cáo thành tích, xác nhận lời cam kết và đính kèm tệp báo cáo (Điều 6).'
+      );
+    }
   }
 
-  const wb03Ready =
-    Boolean(wb03.awardOrRecognitionSummary.trim()) && wb03.evidenceFiles.length > 0;
-  if (!wb03Ready) {
-    missingReasons.push(
-      'WB03: Cần kê khai tóm tắt minh chứng hiệu quả / giải thưởng / chức vụ và đính kèm ít nhất 01 tệp minh chứng hoặc hình ảnh minh họa (Điều 6).'
-    );
+  const isWb03Optional = app.category === 'UOM_MAM';
+  const hasInvalidWb03Url =
+    Boolean(wb03.mediaAndProductLinks?.trim()) && !isValidOptionalHttpUrl(wb03.mediaAndProductLinks);
+
+  const wb03HasData =
+    Boolean(wb03.awardOrRecognitionSummary?.trim()) ||
+    Boolean(wb03.mediaAndProductLinks?.trim()) ||
+    wb03.evidenceFiles.length > 0;
+
+  let wb03Ready = false;
+  let totalRequired = 3;
+  let readyCount = 0;
+  let canSubmit = false;
+
+  if (isWb03Optional) {
+    // Khoản 6.1 Điều 6: WB03 là hình ảnh, sản phẩm minh họa (nếu có) -> TÙY CHỌN, không chặn nộp
+    totalRequired = 2;
+    readyCount = [wb01Ready, wb02Ready].filter(Boolean).length;
+    canSubmit = wb01Ready && wb02Ready && !hasInvalidWb03Url;
+    wb03Ready = wb03HasData && !hasInvalidWb03Url;
+    if (hasInvalidWb03Url) {
+      missingReasons.push(
+        'WB03: Liên kết tra cứu/minh chứng không đúng định dạng URL (vui lòng nhập URL bắt đầu bằng http:// hoặc https://, hoặc để trống).'
+      );
+    }
+  } else {
+    // Khoản 6.2 và 6.3 Điều 6: WB03 là bắt buộc cho Cánh chim truyền lửa & Cánh chim sáng tạo
+    totalRequired = 3;
+    const hasTruyenLuaEvidenceContent =
+      isTruyenLua &&
+      (Boolean(wb03.awardOrRecognitionSummary?.trim()) || wb03.evidenceFiles.length > 0);
+
+    wb03Ready =
+      (isTruyenLua ? hasTruyenLuaEvidenceContent : Boolean(wb03.awardOrRecognitionSummary?.trim())) &&
+      wb03.evidenceFiles.length > 0 &&
+      !hasInvalidWb03Url;
+    if (!wb03Ready) {
+      if (hasInvalidWb03Url) {
+        missingReasons.push(
+          'WB03: Liên kết tra cứu/minh chứng không đúng định dạng URL (vui lòng nhập URL bắt đầu bằng http:// hoặc https://, hoặc để trống).'
+        );
+      } else {
+        missingReasons.push(
+          app.category === 'TRUYEN_LUA'
+            ? 'WB03: Cần đính kèm tài liệu minh chứng chức vụ / thành tích tiêu biểu (Khoản 6.2 Điều 6).'
+            : 'WB03: Cần kê khai tóm tắt giải thưởng đạt được và đính kèm minh chứng từ cấp ĐHĐN trở lên (Khoản 6.3 Điều 6).'
+        );
+      }
+    }
+    readyCount = [wb01Ready, wb02Ready, wb03Ready].filter(Boolean).length;
+    canSubmit = wb01Ready && wb02Ready && wb03Ready;
   }
 
-  const readyCount = [wb01Ready, wb02Ready, wb03Ready].filter(Boolean).length;
   return {
     wb01Ready,
     wb02Ready,
     wb03Ready,
+    isWb03Optional,
+    wb03HasData,
     readyCount,
-    canSubmit: readyCount === 3,
+    totalRequired,
+    canSubmit,
     missingReasons,
   };
 }
@@ -426,20 +791,38 @@ export function submitWhiteBirdApplication(appId: string): {
   const current = storeApps[idx];
   const readiness = validateWhiteBirdReadiness(current);
   if (!readiness.canSubmit) {
+    const defaultMsg =
+      current.category === 'UOM_MAM'
+        ? 'Hồ sơ chưa hoàn thiện đủ 2 thành phần bắt buộc (WB01, WB02) theo Điều 6.'
+        : 'Hồ sơ chưa hoàn thiện đủ 3 thành phần theo Điều 6.';
     return {
       success: false,
-      error: readiness.missingReasons[0] || 'Hồ sơ chưa hoàn thiện đủ 3 thành phần theo Điều 6.',
+      error: readiness.missingReasons[0] || defaultMsg,
     };
   }
 
   const now = new Date().toISOString();
   const isResubmittingSupplement = current.status === 'supplement_requested';
+  const resolvedWb03Summary =
+    current.category === 'TRUYEN_LUA' &&
+    !current.requirements.wb03.awardOrRecognitionSummary?.trim() &&
+    current.requirements.wb03.evidenceFiles.length > 0
+      ? synthesizeTruyenLuaWb03Summary(current.requirements.wb03.evidenceFiles)
+      : current.requirements.wb03.awardOrRecognitionSummary;
+
   const updated: WhiteBirdApplication = {
     ...current,
     status: isResubmittingSupplement ? 'supplement_returned' : 'submitted',
     submittedAt: current.submittedAt || now,
     ...(isResubmittingSupplement ? { supplementRespondedAt: now } : {}),
     updatedAt: now,
+    requirements: {
+      ...current.requirements,
+      wb03: {
+        ...current.requirements.wb03,
+        awardOrRecognitionSummary: resolvedWb03Summary,
+      },
+    },
   };
   const next = [...storeApps];
   next[idx] = updated;
@@ -579,7 +962,7 @@ export function recordWhiteBirdCommitteeDecision(
     ...current,
     status: outcome,
     decisionNumber:
-      decisionNumber.trim() || (outcome === 'recognized' ? '1720/QĐ-HSV-CCT' : ''),
+      decisionNumber.trim() || (outcome === 'recognized' ? '14-QĐ/ĐHĐN-HSV-CCT' : ''),
     decisionDate: now,
     councilNote: councilNote.trim(),
     decidedByName,

@@ -12,7 +12,7 @@
  */
 
 import { isBackendMode } from '../shared/config/executionMode';
-import { apiRequest } from '../shared/api/httpClient';
+import { apiRequest, hasActiveAuthSession } from '../shared/api/httpClient';
 import {
   MAX_EVIDENCE_SIZE_BYTES,
   resolveCanonicalMimeType,
@@ -362,19 +362,7 @@ export async function getEvidenceBlobUrl(id: string): Promise<string | null> {
   }
 
   if (isBackendMode()) {
-    const targetRemoteId = record?.remoteEvidenceId || remoteEvidenceIdMap.get(id) || id;
-    try {
-      const viewRes = await getCachedEvidenceViewUrl(targetRemoteId);
-      if (
-        viewRes?.viewUrl &&
-        !viewRes.viewUrl.includes('offline-dev.r2.cloudflarestorage.com')
-      ) {
-        return viewRes.viewUrl;
-      }
-    } catch {
-      // Fall through to portal evidence index lookup
-    }
-
+    // 1. Check portal evidence store first (unauthenticated, safe for student & portal users)
     try {
       const portalRes = await apiRequest<{
         success: boolean;
@@ -421,7 +409,23 @@ export async function getEvidenceBlobUrl(id: string): Promise<string | null> {
         return evData.url;
       }
     } catch {
-      // Fall through to null
+      // Fall through
+    }
+
+    // 2. Only query /api/v2/evidence/:id/view-url if an active auth session exists (prevents 401 session-expired logout)
+    if (hasActiveAuthSession()) {
+      const targetRemoteId = record?.remoteEvidenceId || remoteEvidenceIdMap.get(id) || id;
+      try {
+        const viewRes = await getCachedEvidenceViewUrl(targetRemoteId);
+        if (
+          viewRes?.viewUrl &&
+          !viewRes.viewUrl.includes('offline-dev.r2.cloudflarestorage.com')
+        ) {
+          return viewRes.viewUrl;
+        }
+      } catch {
+        // Fall through
+      }
     }
   }
 
@@ -470,6 +474,24 @@ export async function hasEvidenceFile(id: string): Promise<boolean> {
 /**
  * Deletes a stored evidence binary file.
  */
+/**
+ * Safely revokes and evicts a cached Blob URL for an evidence ID so that future previews
+ * can regenerate a fresh live Blob URL from stored data without returning a stale revoked URL.
+ */
+export function revokeEvidenceBlobUrl(id: string): void {
+  if (activeBlobUrls.has(id)) {
+    const url = activeBlobUrls.get(id);
+    if (url && url.startsWith('blob:')) {
+      try {
+        URL.revokeObjectURL(url);
+      } catch {
+        // ignore
+      }
+    }
+    activeBlobUrls.delete(id);
+  }
+}
+
 export async function deleteEvidenceFile(id: string): Promise<void> {
   if (activeBlobUrls.has(id)) {
     try {

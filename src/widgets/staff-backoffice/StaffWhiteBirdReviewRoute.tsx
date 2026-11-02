@@ -29,6 +29,8 @@ import { StaffRouteId, StaffUser } from '../../staff/types';
 import { ApplicationEvidence } from '../../demo/fixtures/studentApplication';
 import {
   getEvidenceBlobUrl,
+  getEvidenceBlobUrlByIdOrName,
+  revokeEvidenceBlobUrl,
   downloadEvidenceFile,
 } from '../../staff/demoEvidenceStorage';
 import { CollectiveDocumentPreviewModal } from '../../features/evidence-upload';
@@ -136,18 +138,24 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
     setPreviewFile(file);
     setIsLoadingPreview(true);
     try {
-      const url = await getEvidenceBlobUrl(file.id);
-      setPreviewBlobUrl(url);
+      const url = await getEvidenceBlobUrlByIdOrName(file.id, file.name);
+      setPreviewBlobUrl(url || file.url || null);
     } catch {
-      setPreviewBlobUrl(null);
+      setPreviewBlobUrl(file.url || null);
     } finally {
       setIsLoadingPreview(false);
     }
   };
 
   const handleClosePreview = () => {
-    if (previewBlobUrl && previewBlobUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(previewBlobUrl);
+    if (previewFile?.id) {
+      revokeEvidenceBlobUrl(previewFile.id);
+    } else if (previewBlobUrl && previewBlobUrl.startsWith('blob:')) {
+      try {
+        URL.revokeObjectURL(previewBlobUrl);
+      } catch {
+        // ignore
+      }
     }
     setPreviewFile(null);
     setPreviewBlobUrl(null);
@@ -383,7 +391,76 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
                 title: `WB02 · ${catMeta.wb02Title}`,
                 judgment: activeApp.wb02Judgment || 'not_reviewed',
                 files: activeApp.requirements.wb02.evidenceFiles,
-                content: (
+                content: activeApp.category === 'TRUYEN_LUA' ? (
+                  <div className="space-y-3 text-[12.5px] text-[#334155]">
+                    <div>
+                      <strong>Tiêu đề báo cáo thành tích:</strong>{' '}
+                      {activeApp.requirements.wb02.reportTitle}
+                    </div>
+
+                    {/* Quá trình công tác */}
+                    <div className="p-3 rounded-lg bg-[#F8FBFD] border border-[#E2EEF6] space-y-2">
+                      <div className="font-bold text-[#172A3A]">
+                        Quá trình công tác Đoàn – Hội ({activeApp.requirements.wb02.officerTerms?.length || 0} giai đoạn):
+                      </div>
+                      {(!activeApp.requirements.wb02.officerTerms || activeApp.requirements.wb02.officerTerms.length === 0) ? (
+                        <div className="text-[12px] text-[#94A3B8] italic">Chưa kê khai giai đoạn công tác.</div>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {activeApp.requirements.wb02.officerTerms.map((t, idx) => (
+                            <div key={t.id || idx} className="text-[12px] bg-white p-2 rounded border border-[#EDF3F8] flex flex-wrap items-center justify-between gap-1.5">
+                              <div>
+                                <strong>#{idx + 1} {t.position}</strong> — {t.unit} ({t.unitType === 'WITH_HOI' ? 'Có cơ sở Hội' : 'Không có cơ sở Hội'})
+                              </div>
+                              <div className="font-medium text-[#0D78AE]">
+                                {t.startMonthYear} – {t.isCurrent ? 'Hiện nay' : t.endMonthYear}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Thành tích xuất sắc 2 năm */}
+                    <div className="p-3 rounded-lg bg-[#F8FBFD] border border-[#E2EEF6] space-y-2">
+                      <div className="font-bold text-[#172A3A]">
+                        Thành tích xuất sắc theo năm học ({activeApp.requirements.wb02.annualAchievements?.length || 0} năm):
+                      </div>
+                      {(!activeApp.requirements.wb02.annualAchievements || activeApp.requirements.wb02.annualAchievements.length === 0) ? (
+                        <div className="text-[12px] text-[#94A3B8] italic">Chưa kê khai thành tích năm học.</div>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {activeApp.requirements.wb02.annualAchievements.map((ach, idx) => (
+                            <div key={ach.id || idx} className="text-[12px] bg-white p-2 rounded border border-[#EDF3F8] space-y-1">
+                              <div className="flex items-center justify-between font-bold text-[#172A3A]">
+                                <span>Năm học {ach.academicYear} — {ach.roleOrPosition}</span>
+                                <span className="text-[#0D78AE]">{ach.awardLevel}</span>
+                              </div>
+                              <p className="text-[11.5px] text-[#475569]">{ach.achievementSummary}</p>
+                              {ach.documentReference && (
+                                <p className="text-[11px] text-[#64748B]">Số hiệu văn bản: {ach.documentReference}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Thông tin ưu tiên */}
+                    {activeApp.requirements.wb02.academicAndPriority && (
+                      <div className="p-3 rounded-lg bg-[#F8FBFD] border border-[#E2EEF6] grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11.5px]">
+                        <div><strong>Điểm GPA:</strong> {activeApp.requirements.wb02.academicAndPriority.gpaText || '—'}</div>
+                        <div><strong>Điểm rèn luyện:</strong> {activeApp.requirements.wb02.academicAndPriority.trainingScoreText || '—'}</div>
+                        <div><strong>Danh hiệu SV5T:</strong> {activeApp.requirements.wb02.academicAndPriority.sv5tRecognitions || '—'}</div>
+                        <div><strong>NCKH / Khác:</strong> {activeApp.requirements.wb02.academicAndPriority.scientificResearch || activeApp.requirements.wb02.academicAndPriority.otherAwards || '—'}</div>
+                      </div>
+                    )}
+
+                    <div className="text-[12px] font-semibold text-[#15803D]">
+                      ✓ Đã xác nhận cam kết trung thực theo Khoản 6.2 Điều 6 Quy chế (QĐ 14-QĐ/ĐHĐN-HSV)
+                    </div>
+                  </div>
+                ) : (
                   <div className="space-y-2.5 text-[12.5px] text-[#334155]">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
@@ -409,9 +486,20 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
                       <strong>Kết quả định lượng & Giá trị ứng dụng thực tế:</strong>{' '}
                       {activeApp.requirements.wb02.impactAndResults}
                     </div>
+                    {activeApp.requirements.wb02.scalabilityAndSpread && (
+                      <div className="p-3 rounded-lg bg-[#F8FBFD] border border-[#E2EEF6]">
+                        <strong>Tính lan tỏa (Khả năng nhân rộng):</strong>{' '}
+                        {activeApp.requirements.wb02.scalabilityAndSpread}
+                      </div>
+                    )}
+                    {activeApp.requirements.wb02.exemplaryNature && (
+                      <div className="p-3 rounded-lg bg-[#F8FBFD] border border-[#E2EEF6]">
+                        <strong>Tính điển hình:</strong>{' '}
+                        {activeApp.requirements.wb02.exemplaryNature}
+                      </div>
+                    )}
                     <div className="text-[12px] font-semibold text-[#15803D]">
-                      ✓ Đã xác nhận cam kết tính sáng tạo / bản quyền / trung thực theo Điều 6 Quy
-                      chế 1720/QĐ-HSV
+                      ✓ Đã xác nhận cam kết tính sáng tạo / trung thực theo Khoản 6.1 Điều 6 Quy chế (QĐ 14-QĐ/ĐHĐN-HSV)
                     </div>
                   </div>
                 ),
