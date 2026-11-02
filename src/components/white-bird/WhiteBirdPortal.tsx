@@ -70,6 +70,7 @@ import {
   calculateOfficerServiceMonths,
   checkConsecutiveAnnualAchievements,
   evaluateTruyenLuaPosition,
+  parseMonthYear,
   isValidOptionalHttpUrl,
 } from './whiteBirdTypes';
 import {
@@ -99,6 +100,8 @@ export interface WhiteBirdPortalProps {
     university: string;
   };
   studentProfileSnapshot?: StudentProfileDto | null;
+  initialTab?: WhiteBirdPortalTabId;
+  initialReqId?: WhiteBirdRequirementId;
 }
 
 type WhiteBirdPortalTabId = 'overview' | 'workspace' | 'evidence' | 'results';
@@ -144,10 +147,12 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
   currentEmail = '',
   studentIdentity,
   studentProfileSnapshot,
+  initialTab = 'overview',
+  initialReqId = 'WB01',
 }) => {
   const [storeTick, setStoreTick] = useState(0);
-  const [activeTab, setActiveTab] = useState<WhiteBirdPortalTabId>('overview');
-  const [activeReqId, setActiveReqId] = useState<WhiteBirdRequirementId>('WB01');
+  const [activeTab, setActiveTab] = useState<WhiteBirdPortalTabId>(initialTab);
+  const [activeReqId, setActiveReqId] = useState<WhiteBirdRequirementId>(initialReqId);
   const [selectedAppId, setSelectedAppId] = useState<string>('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<{
