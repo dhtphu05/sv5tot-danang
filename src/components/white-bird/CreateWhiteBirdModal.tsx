@@ -203,6 +203,18 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
       if (nomineeName.startsWith('Nhóm') || nomineeName.startsWith('Tập thể')) {
         setNomineeName(initialUserName || '');
       }
+      // Khởi tạo/cập nhật tiêu đề hồ sơ cá nhân, không giữ tên dự án/mô hình từ hạng mục khác
+      const candidateName = (nomineeName.startsWith('Nhóm') || nomineeName.startsWith('Tập thể'))
+        ? (initialUserName || 'Cá nhân đề cử')
+        : (nomineeName.trim() || initialUserName || 'Cá nhân đề cử');
+      if (!nominationTitle.trim() || nominationTitle.toLowerCase().includes('danangbooth') || nominationTitle.startsWith('Mô hình') || nominationTitle.startsWith('Dự án')) {
+        setNominationTitle(`Báo cáo thành tích cá nhân – ${candidateName}`);
+      }
+    } else {
+      // Khi chuyển sang Ươm mầm hoặc Sáng tạo, nếu tiêu đề đang mang định dạng báo cáo cá nhân thì làm mới
+      if (nominationTitle.startsWith('Báo cáo thành tích cá nhân –')) {
+        setNominationTitle('');
+      }
     }
   };
 
@@ -241,7 +253,11 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
       hasError = true;
     }
 
-    if (!nominationTitle.trim()) {
+    let finalTitle = nominationTitle.trim();
+    if (category === 'TRUYEN_LUA' && !finalTitle) {
+      finalTitle = `Báo cáo thành tích cá nhân – ${nomineeName.trim() || initialUserName || 'Cá nhân đề cử'}`;
+      setNominationTitle(finalTitle);
+    } else if (!finalTitle) {
       setTitleError('Vui lòng nhập tên đề cử / mô hình / dự án / đề tài.');
       hasError = true;
     }
@@ -265,7 +281,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
 
     try {
       onSubmit({
-        nominationTitle: nominationTitle.trim(),
+        nominationTitle: finalTitle,
         category,
         nomineeType: category === 'TRUYEN_LUA' ? 'INDIVIDUAL' : nomineeType,
         nomineeName: nomineeName.trim() || initialUserName,
@@ -287,7 +303,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
     category === 'UOM_MAM'
       ? 'VD: Mô hình Số hóa Sổ tay Sinh viên 5 tốt & Ngân hàng Minh chứng'
       : category === 'TRUYEN_LUA'
-      ? `VD: Hồ sơ đề cử Cánh chim truyền lửa — ${initialUserName || 'Cán bộ Hội tiêu biểu'}`
+      ? `VD: Báo cáo thành tích cá nhân – ${nomineeName.trim() || initialUserName || 'Nguyễn Văn A'}`
       : category === 'SANG_TAO'
       ? 'VD: Dự án Khởi nghiệp Hệ thống IoT Cảnh báo ngập lụt đô thị thông minh'
       : 'VD: Nhập tên mô hình, giải pháp, dự án hoặc đề tài đề cử...';
@@ -576,8 +592,14 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
                       }
                       value={nomineeName}
                       onChange={(e) => {
-                        setNomineeName(e.target.value);
+                        const newName = e.target.value;
+                        setNomineeName(newName);
                         if (nomineeError) setNomineeError('');
+                        if (category === 'TRUYEN_LUA') {
+                          if (!nominationTitle.trim() || nominationTitle.startsWith('Báo cáo thành tích cá nhân –')) {
+                            setNominationTitle(`Báo cáo thành tích cá nhân – ${newName.trim() || initialUserName || 'Cá nhân đề cử'}`);
+                          }
+                        }
                       }}
                       placeholder={
                         nomineeType === 'INDIVIDUAL'

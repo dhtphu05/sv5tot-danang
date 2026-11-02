@@ -221,7 +221,9 @@ export const SubmitWhiteBirdModal: React.FC<SubmitWhiteBirdModalProps> = ({
 
             {/* Nomination Title (Prominent, natural wrapping, NO ellipsis) */}
             <div className="text-[16px] sm:text-[17.5px] font-bold text-[#172A3A] leading-snug break-words">
-              {application.nominationTitle}
+              {application.category === 'TRUYEN_LUA'
+                ? (application.requirements.wb02.reportTitle || `Báo cáo thành tích cá nhân – ${application.nomineeName}`)
+                : application.nominationTitle}
             </div>
 
             {/* Essential Metadata */}
@@ -232,11 +234,20 @@ export const SubmitWhiteBirdModal: React.FC<SubmitWhiteBirdModalProps> = ({
                 ) : (
                   <Users size={13.5} className="text-[#0D78AE] shrink-0" />
                 )}
-                <span className="text-[#64748B]">Đối tượng:</span>
+                <span className="text-[#64748B]">{category === 'TRUYEN_LUA' ? 'Cá nhân đề cử:' : 'Đối tượng:'}</span>
                 <strong className="text-[#172A3A]">
                   {isIndividual ? 'Cá nhân' : 'Tập thể'} ({application.nomineeName})
                 </strong>
               </div>
+
+              {application.preparedByUserName && (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[#64748B]">Người nộp trực tuyến:</span>
+                  <span className="font-medium text-[#172A3A]">
+                    {application.preparedByUserName}
+                  </span>
+                </div>
+              )}
 
               <div className="flex items-center gap-1.5">
                 <Building2 size={13.5} className="text-[#0D78AE] shrink-0" />

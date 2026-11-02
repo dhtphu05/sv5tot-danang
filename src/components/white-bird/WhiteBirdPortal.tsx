@@ -826,7 +826,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                 </span>
               </div>
               <h1 className="text-[16.5px] font-extrabold text-[#172A3A] break-words mt-1 leading-snug">
-                {activeApp.nominationTitle}
+                {activeApp.category === 'TRUYEN_LUA' ? activeApp.nomineeName : activeApp.nominationTitle}
               </h1>
               <div className="text-[12px] text-[#607483] flex flex-wrap items-center gap-2 mt-0.5">
                 <span className="inline-flex items-center gap-1 font-medium text-[#334155]">
@@ -860,7 +860,10 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
               >
                 {userApps.map((app) => (
                   <option key={app.id} value={app.id}>
-                    {WHITE_BIRD_CATEGORIES[app.category].shortName}: {app.nominationTitle}
+                    {WHITE_BIRD_CATEGORIES[app.category].shortName}:{' '}
+                    {app.category === 'TRUYEN_LUA'
+                      ? `${app.nomineeName} (${app.academicYear})`
+                      : `${app.nominationTitle} (${app.academicYear})`}
                   </option>
                 ))}
               </select>
