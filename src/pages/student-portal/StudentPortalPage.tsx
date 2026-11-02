@@ -277,6 +277,7 @@ export const StudentPortalPage: React.FC<StudentPortalPageProps> = ({
             studentProfileSnapshot={
               activeStoreState.application.applicantProfileSnapshot
             }
+            onNavigateToProfile={() => handleSidebarNavSelect('profile')}
           />
         ) : activeNavId === 'evidence' ? (
           <EvidenceLibraryView

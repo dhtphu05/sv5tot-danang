@@ -6,6 +6,7 @@
 
 import { isBackendMode } from '../../shared/config/executionMode';
 import { apiRequest } from '../../shared/api/httpClient';
+import { StudentProfileDto } from '../../entities/application/studentApplicationTypes';
 import {
   WhiteBirdApplication,
   WhiteBirdCategory,
@@ -365,6 +366,12 @@ export function addWhiteBirdEvidence(
   const current = storeApps[idx];
   const key = reqId.toLowerCase() as 'wb01' | 'wb02' | 'wb03';
   const existingFiles = current.requirements[key].evidenceFiles || [];
+  const nextFiles = [...existingFiles, evidence];
+  const autoSummary =
+    current.category === 'TRUYEN_LUA' && reqId === 'WB03'
+      ? synthesizeTruyenLuaWb03Summary(nextFiles)
+      : undefined;
+
   const updated: WhiteBirdApplication = {
     ...current,
     updatedAt: new Date().toISOString(),
@@ -372,7 +379,8 @@ export function addWhiteBirdEvidence(
       ...current.requirements,
       [key]: {
         ...current.requirements[key],
-        evidenceFiles: [...existingFiles, evidence],
+        evidenceFiles: nextFiles,
+        ...(autoSummary ? { awardOrRecognitionSummary: autoSummary } : {}),
       },
     },
   };
@@ -393,6 +401,12 @@ export function removeWhiteBirdEvidence(
   const current = storeApps[idx];
   const key = reqId.toLowerCase() as 'wb01' | 'wb02' | 'wb03';
   const existingFiles = current.requirements[key].evidenceFiles || [];
+  const nextFiles = existingFiles.filter((f) => f.id !== evidenceId);
+  const autoSummary =
+    current.category === 'TRUYEN_LUA' && reqId === 'WB03'
+      ? synthesizeTruyenLuaWb03Summary(nextFiles)
+      : undefined;
+
   const updated: WhiteBirdApplication = {
     ...current,
     updatedAt: new Date().toISOString(),
@@ -400,7 +414,8 @@ export function removeWhiteBirdEvidence(
       ...current.requirements,
       [key]: {
         ...current.requirements[key],
-        evidenceFiles: existingFiles.filter((f) => f.id !== evidenceId),
+        evidenceFiles: nextFiles,
+        ...(autoSummary !== undefined ? { awardOrRecognitionSummary: autoSummary } : {}),
       },
     },
   };
@@ -425,6 +440,11 @@ export function updateWhiteBirdEvidenceCategory(
   const updatedFiles = existingFiles.map((f) =>
     f.id === evidenceId ? { ...f, evidenceCategory: category } : f
   );
+  const autoSummary =
+    current.category === 'TRUYEN_LUA' && reqId === 'WB03'
+      ? synthesizeTruyenLuaWb03Summary(updatedFiles)
+      : undefined;
+
   const updated: WhiteBirdApplication = {
     ...current,
     updatedAt: new Date().toISOString(),
@@ -433,6 +453,7 @@ export function updateWhiteBirdEvidenceCategory(
       [key]: {
         ...current.requirements[key],
         evidenceFiles: updatedFiles,
+        ...(autoSummary ? { awardOrRecognitionSummary: autoSummary } : {}),
       },
     },
   };
@@ -462,6 +483,11 @@ export function updateWhiteBirdEvidenceMetadata(
   const updatedFiles = existingFiles.map((f) =>
     f.id === evidenceId ? { ...f, ...patch } : f
   );
+  const autoSummary =
+    current.category === 'TRUYEN_LUA' && reqId === 'WB03'
+      ? synthesizeTruyenLuaWb03Summary(updatedFiles)
+      : undefined;
+
   const updated: WhiteBirdApplication = {
     ...current,
     updatedAt: new Date().toISOString(),
@@ -470,9 +496,133 @@ export function updateWhiteBirdEvidenceMetadata(
       [key]: {
         ...current.requirements[key],
         evidenceFiles: updatedFiles,
+        ...(autoSummary ? { awardOrRecognitionSummary: autoSummary } : {}),
       },
     },
   };
+  const next = [...storeApps];
+  next[idx] = updated;
+  saveToStorage(next);
+  syncAppToBackend(updated);
+  return updated;
+}
+
+/**
+ * Đồng bộ thông tin cá nhân từ Hồ sơ cá nhân (StudentProfileDto) vào hồ sơ Giải thưởng Cánh chim trắng.
+ * NGUYÊN TẮC BẢO TOÀN DỮ LIỆU & AUDIT SNAPSHOT:
+ * 1. Chỉ áp dụng đồng bộ cho hồ sơ đang ở trạng thái bản nháp ('draft').
+ * 2. Tuyệt đối KHÔNG tự động thay đổi dữ liệu của hồ sơ đã nộp ('submitted', 'under_review', v.v.)
+ *    để bảo toàn snapshot tại thời điểm nộp.
+ * 3. Tuyệt đối KHÔNG ghi đè quá trình công tác (officerTerms), thành tích (annualAchievements),
+ *    các thông tin ưu tiên tự khai (academicAndPriority) hay tiêu đề báo cáo tùy chỉnh.
+ * 4. Không lấy chức vụ hiện tại để thay thế lịch sử chức vụ đã đảm nhiệm.
+ */
+export function syncApplicationWithProfile(
+  appId: string,
+  profile?: StudentProfileDto | null
+): WhiteBirdApplication | null {
+  if (!profile) return null;
+  const idx = storeApps.findIndex((a) => a.id === appId);
+  if (idx < 0) return null;
+  const current = storeApps[idx];
+
+  // Chỉ đồng bộ khi hồ sơ còn là bản nháp
+  if (current.status !== 'draft') {
+    return current;
+  }
+
+  let hasChanges = false;
+  const basicUpdates: Partial<WhiteBirdApplication> = {};
+  const wb02Updates: Partial<WhiteBirdWB02Declaration> = {};
+
+  // Basic info sync
+  if (profile.fullName && (!current.nomineeName || current.nomineeName === 'Sinh viên đề cử')) {
+    basicUpdates.nomineeName = profile.fullName;
+    hasChanges = true;
+  }
+  if (profile.studentCode && (!current.studentId || current.studentId !== profile.studentCode)) {
+    basicUpdates.studentId = profile.studentCode;
+    hasChanges = true;
+  }
+  if (profile.institutionName && (!current.institutionName || current.institutionName === 'Trường Đại học Bách khoa – ĐHĐN')) {
+    basicUpdates.institutionName = profile.institutionName;
+    hasChanges = true;
+  }
+  if (profile.className && (!current.className || current.className !== profile.className)) {
+    basicUpdates.className = profile.className;
+    hasChanges = true;
+  }
+  if (profile.phoneNumber && (!current.contactPhone || current.contactPhone !== profile.phoneNumber)) {
+    basicUpdates.contactPhone = profile.phoneNumber;
+    hasChanges = true;
+  }
+
+  // WB02 Truyen Lua fields sync
+  if (current.category === 'TRUYEN_LUA') {
+    const wb02 = current.requirements.wb02;
+
+    if (profile.dateOfBirth && wb02.nomineeDateOfBirth !== profile.dateOfBirth) {
+      wb02Updates.nomineeDateOfBirth = profile.dateOfBirth;
+      hasChanges = true;
+    }
+    const mappedGender = profile.gender === 'Nam' ? 'NAM' : profile.gender === 'Nữ' ? 'NU' : profile.gender;
+    if (mappedGender && wb02.nomineeGender !== mappedGender) {
+      wb02Updates.nomineeGender = mappedGender;
+      hasChanges = true;
+    }
+    if (profile.ethnicity && wb02.nomineeEthnicity !== profile.ethnicity) {
+      wb02Updates.nomineeEthnicity = profile.ethnicity;
+      hasChanges = true;
+    }
+    if (profile.homeProvince && wb02.nomineeHometown !== profile.homeProvince) {
+      wb02Updates.nomineeHometown = profile.homeProvince;
+      hasChanges = true;
+    }
+    const yearStudyStr = profile.academicYearNumber ? `Năm thứ ${profile.academicYearNumber}` : '';
+    if (yearStudyStr && wb02.nomineeYearOfStudy !== yearStudyStr) {
+      wb02Updates.nomineeYearOfStudy = yearStudyStr;
+      hasChanges = true;
+    }
+    if (profile.className && wb02.nomineeClass !== profile.className) {
+      wb02Updates.nomineeClass = profile.className;
+      hasChanges = true;
+    }
+    if (profile.phoneNumber && wb02.nomineePhone !== profile.phoneNumber) {
+      wb02Updates.nomineePhone = profile.phoneNumber;
+      hasChanges = true;
+    }
+    if (profile.email && wb02.nomineeEmail !== profile.email) {
+      wb02Updates.nomineeEmail = profile.email;
+      hasChanges = true;
+    }
+    if (profile.unionPosition && !wb02.nomineeCurrentRole) {
+      wb02Updates.nomineeCurrentRole = profile.unionPosition;
+      hasChanges = true;
+    }
+    const mappedPolitical = profile.politicalStatus === 'Đảng viên' ? 'DANG_VIEN' : 'DOAN_VIEN';
+    if (profile.politicalStatus && wb02.nomineePoliticalStatus !== mappedPolitical) {
+      wb02Updates.nomineePoliticalStatus = mappedPolitical;
+      hasChanges = true;
+    }
+  }
+
+  if (!hasChanges) {
+    return current;
+  }
+
+  const updated: WhiteBirdApplication = {
+    ...current,
+    ...basicUpdates,
+    updatedAt: new Date().toISOString(),
+    requirements: {
+      ...current.requirements,
+      wb02: {
+        ...current.requirements.wb02,
+        ...wb02Updates,
+      },
+    },
+  };
+
   const next = [...storeApps];
   next[idx] = updated;
   saveToStorage(next);

@@ -88,6 +88,7 @@ import {
   synthesizeTruyenLuaWb03Summary,
   validateWhiteBirdReadiness,
   submitWhiteBirdApplication,
+  syncApplicationWithProfile,
 } from './whiteBirdStore';
 import { CreateWhiteBirdModal } from './CreateWhiteBirdModal';
 import { SubmitWhiteBirdModal } from './SubmitWhiteBirdModal';
@@ -102,6 +103,7 @@ export interface WhiteBirdPortalProps {
   studentProfileSnapshot?: StudentProfileDto | null;
   initialTab?: WhiteBirdPortalTabId;
   initialReqId?: WhiteBirdRequirementId;
+  onNavigateToProfile?: () => void;
 }
 
 type WhiteBirdPortalTabId = 'overview' | 'workspace' | 'evidence' | 'results';
@@ -149,6 +151,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
   studentProfileSnapshot,
   initialTab = 'overview',
   initialReqId = 'WB01',
+  onNavigateToProfile,
 }) => {
   const [storeTick, setStoreTick] = useState(0);
   const [activeTab, setActiveTab] = useState<WhiteBirdPortalTabId>(initialTab);
@@ -215,6 +218,12 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
     if (userApps.length === 0) return null;
     return userApps.find((a) => a.id === selectedAppId) || userApps[0];
   }, [userApps, selectedAppId]);
+
+  useEffect(() => {
+    if (activeApp && activeApp.status === 'draft' && studentProfileSnapshot) {
+      syncApplicationWithProfile(activeApp.id, studentProfileSnapshot);
+    }
+  }, [activeApp?.id, activeApp?.status, studentProfileSnapshot]);
 
   const handleWB01NominatorTypeChange = (newType: WhiteBirdNominatingUnitType) => {
     if (!activeApp) return;
