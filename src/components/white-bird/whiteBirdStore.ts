@@ -163,7 +163,10 @@ export function createWhiteBirdApplication(payload: {
         evidenceFiles: [],
       },
       wb02: {
-        reportTitle: payload.nominationTitle.trim(),
+        reportTitle:
+          payload.category === 'TRUYEN_LUA' && !payload.nominationTitle.trim()
+            ? `Báo cáo thành tích cá nhân — ${payload.nomineeName.trim()}`
+            : payload.nominationTitle.trim(),
         implementationPeriod: `Năm học ${academicYear}`,
         contextAndObjectives: '',
         solutionAndExecution: '',
@@ -184,6 +187,25 @@ export function createWhiteBirdApplication(payload: {
             : '',
         commitmentConfirmed: false,
         evidenceFiles: [],
+        ...(payload.category === 'TRUYEN_LUA'
+          ? {
+              nomineeFaculty: payload.facultyName || '',
+              nomineeClass: payload.className || '',
+              nomineePhone: payload.contactPhone || '',
+              nomineeEmail: payload.preparedByUserEmail || '',
+              nomineeCurrentRole: '',
+              officerTerms: [],
+              annualAchievements: [],
+              academicAndPriority: {
+                gpaText: '',
+                trainingScoreText: '',
+                sv5tRecognitions: '',
+                volunteerActivities: '',
+                scientificResearch: '',
+                otherAwards: '',
+              },
+            }
+          : {}),
       },
       wb03: {
         awardOrRecognitionSummary: '',
@@ -388,23 +410,36 @@ export function validateWhiteBirdReadiness(app: WhiteBirdApplication): WhiteBird
   const missingReasons: string[] = [];
   const { wb01, wb02, wb03 } = app.requirements;
 
+  const isTruyenLua = app.category === 'TRUYEN_LUA';
+
   const wb01Ready =
     Boolean(wb01.nominatingUnitName.trim()) &&
     Boolean(wb01.endorsementSummary.trim()) &&
     wb01.evidenceFiles.length > 0;
   if (!wb01Ready) {
     missingReasons.push(
-      'WB01: Cần kê khai tổ chức/cá nhân đề nghị, nội dung tóm tắt nhận xét và đính kèm ít nhất 01 tệp văn bản đề nghị xét trao (Điều 5, Điều 6).'
+      isTruyenLua
+        ? 'WB01: Cần kê khai tổ chức/cá nhân đề nghị theo Điều 5 và đính kèm ít nhất 01 tệp văn bản đề nghị xét trao (Khoản 6.2 Điều 6).'
+        : 'WB01: Cần kê khai tổ chức/cá nhân đề nghị, nội dung tóm tắt nhận xét và đính kèm ít nhất 01 tệp văn bản đề nghị xét trao (Điều 5, Điều 6).'
     );
   }
 
   const hasInvalidWb02Url =
     Boolean(wb02.presentationLink?.trim()) && !isValidOptionalHttpUrl(wb02.presentationLink);
 
+  const hasTruyenLuaContent =
+    isTruyenLua &&
+    ((wb02.officerTerms && wb02.officerTerms.length > 0) ||
+      Boolean(wb02.solutionAndExecution?.trim()) ||
+      Boolean(wb02.contextAndObjectives?.trim()));
+
+  const wb02HasRequiredContent = isTruyenLua
+    ? hasTruyenLuaContent
+    : Boolean(wb02.solutionAndExecution.trim()) && Boolean(wb02.impactAndResults.trim());
+
   const wb02Ready =
     Boolean(wb02.reportTitle.trim()) &&
-    Boolean(wb02.solutionAndExecution.trim()) &&
-    Boolean(wb02.impactAndResults.trim()) &&
+    wb02HasRequiredContent &&
     wb02.commitmentConfirmed &&
     wb02.evidenceFiles.length > 0 &&
     !hasInvalidWb02Url;
@@ -415,7 +450,9 @@ export function validateWhiteBirdReadiness(app: WhiteBirdApplication): WhiteBird
       );
     } else {
       missingReasons.push(
-        'WB02: Cần hoàn thiện nội dung Báo cáo thuyết minh / Báo cáo thành tích, xác nhận lời cam kết và đính kèm tệp báo cáo (Điều 6).'
+        isTruyenLua
+          ? 'WB02: Cần hoàn thiện Báo cáo thành tích cá nhân theo mẫu, kê khai quá trình công tác Đoàn - Hội, xác nhận lời cam kết và đính kèm tệp báo cáo có xác nhận (Khoản 6.2 Điều 6).'
+          : 'WB02: Cần hoàn thiện nội dung Báo cáo thuyết minh / Báo cáo thành tích, xác nhận lời cam kết và đính kèm tệp báo cáo (Điều 6).'
       );
     }
   }

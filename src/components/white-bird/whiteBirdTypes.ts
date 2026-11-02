@@ -7,7 +7,10 @@
 
 import { ApplicationEvidence } from '../../demo/fixtures/studentApplication';
 
-export type WhiteBirdEvidenceItem = ApplicationEvidence;
+export type WhiteBirdEvidenceItem = ApplicationEvidence & {
+  evidenceCategory?: WhiteBirdTruyenLuaEvidenceCategory;
+  customCategoryLabel?: string;
+};
 
 export type WhiteBirdCategory = 'UOM_MAM' | 'TRUYEN_LUA' | 'SANG_TAO';
 
@@ -318,6 +321,70 @@ export interface WhiteBirdWB01Declaration {
   evidenceFiles: WhiteBirdEvidenceItem[];
 }
 
+export type WhiteBirdUnitHoiType = 'WITH_HOI' | 'WITHOUT_HOI';
+
+export interface WhiteBirdOfficerTerm {
+  id: string;
+  position: string;
+  unit: string;
+  unitType: WhiteBirdUnitHoiType;
+  startMonthYear: string; // MM/YYYY hoặc YYYY-MM
+  endMonthYear: string; // MM/YYYY hoặc YYYY-MM hoặc "Hiện nay"
+  isCurrent?: boolean;
+  notes?: string;
+}
+
+export type WhiteBirdAnnualAwardLevel =
+  | 'TRUONG'
+  | 'DHDN'
+  | 'THANH_PHO'
+  | 'TRUNG_UONG'
+  | 'KHAC';
+
+export const WHITE_BIRD_ANNUAL_AWARD_LEVEL_LABELS: Record<WhiteBirdAnnualAwardLevel, string> = {
+  TRUONG: 'Cấp Trường thành viên / Đơn vị trực thuộc',
+  DHDN: 'Cấp Đại học Đà Nẵng',
+  THANH_PHO: 'Cấp Thành phố (Thành Đoàn / HSV TP)',
+  TRUNG_UONG: 'Cấp Trung ương (TW Đoàn / TW HSV VN)',
+  KHAC: 'Khác (ghi rõ)',
+};
+
+export interface WhiteBirdAnnualAchievement {
+  id: string;
+  academicYear: string; // VD: "2023–2024", "2024–2025"
+  roleOrPosition: string;
+  achievementSummary: string;
+  awardLevel: WhiteBirdAnnualAwardLevel | string;
+  documentReference?: string;
+}
+
+export interface WhiteBirdAcademicAndPriorityRecord {
+  gpaText?: string;
+  trainingScoreText?: string;
+  sv5tRecognitions?: string;
+  volunteerActivities?: string;
+  scientificResearch?: string;
+  otherAwards?: string;
+}
+
+export type WhiteBirdTruyenLuaEvidenceCategory =
+  | 'CHUC_VU'
+  | 'THANH_TICH_2_NAM'
+  | 'HOC_TAP_REN_LUYEN'
+  | 'UU_TIEN'
+  | 'KHAC';
+
+export const WHITE_BIRD_TRUYEN_LUA_CATEGORY_LABELS: Record<
+  WhiteBirdTruyenLuaEvidenceCategory,
+  string
+> = {
+  CHUC_VU: 'Quyết định / Xác nhận chức vụ & thời gian công tác',
+  THANH_TICH_2_NAM: 'Khen thưởng thành tích xuất sắc 2 năm liên tục',
+  HOC_TAP_REN_LUYEN: 'Bảng điểm học tập & Điểm rèn luyện',
+  UU_TIEN: 'Minh chứng ưu tiên (SV5T, NCKH, Tình nguyện...)',
+  KHAC: 'Tài liệu minh chứng khác',
+};
+
 export interface WhiteBirdWB02Declaration {
   reportTitle: string;
   implementationPeriod: string;
@@ -334,6 +401,21 @@ export interface WhiteBirdWB02Declaration {
   coAuthorsOrTeamMembers: string;
   commitmentConfirmed: boolean;
   evidenceFiles: WhiteBirdEvidenceItem[];
+
+  // Hạng mục Cánh chim truyền lửa (TRUYEN_LUA)
+  nomineeDateOfBirth?: string;
+  nomineeGender?: 'NAM' | 'NU' | 'KHAC' | string;
+  nomineeEthnicity?: string;
+  nomineeReligion?: string;
+  nomineeHometown?: string;
+  nomineeCurrentRole?: string;
+  nomineeFaculty?: string;
+  nomineeClass?: string;
+  nomineePhone?: string;
+  nomineeEmail?: string;
+  officerTerms?: WhiteBirdOfficerTerm[];
+  annualAchievements?: WhiteBirdAnnualAchievement[];
+  academicAndPriority?: WhiteBirdAcademicAndPriorityRecord;
 }
 
 export interface WhiteBirdWB03Declaration {
@@ -343,6 +425,309 @@ export interface WhiteBirdWB03Declaration {
   mediaAndProductLinks: string;
   practicalApplicationNote: string;
   evidenceFiles: WhiteBirdEvidenceItem[];
+}
+
+/**
+ * Phân tích chuỗi tháng/năm sang đối tượng { year, month } (1-12)
+ */
+export function parseMonthYear(val?: string | null): { year: number; month: number } | null {
+  if (!val) return null;
+  const trimmed = val.trim().toLowerCase();
+  if (!trimmed) return null;
+
+  if (
+    trimmed === 'hiện nay' ||
+    trimmed === 'hien nay' ||
+    trimmed === 'nay' ||
+    trimmed === 'present' ||
+    trimmed === 'current'
+  ) {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() + 1 };
+  }
+
+  // Check YYYY-MM (e.g. 2023-09)
+  const yyyyMm = /^(\d{4})[-/.](\d{1,2})$/.exec(trimmed);
+  if (yyyyMm) {
+    const year = parseInt(yyyyMm[1], 10);
+    const month = parseInt(yyyyMm[2], 10);
+    if (year >= 1990 && year <= 2050 && month >= 1 && month <= 12) {
+      return { year, month };
+    }
+  }
+
+  // Check MM/YYYY or M/YYYY (e.g. 09/2023, 9/2023)
+  const mmYyyy = /^(\d{1,2})[-/.](\d{4})$/.exec(trimmed);
+  if (mmYyyy) {
+    const month = parseInt(mmYyyy[1], 10);
+    const year = parseInt(mmYyyy[2], 10);
+    if (year >= 1990 && year <= 2050 && month >= 1 && month <= 12) {
+      return { year, month };
+    }
+  }
+
+  // Check 4-digit year only (e.g. 2023)
+  const yyyyOnly = /^(\d{4})$/.exec(trimmed);
+  if (yyyyOnly) {
+    const year = parseInt(yyyyOnly[1], 10);
+    if (year >= 1990 && year <= 2050) {
+      return { year, month: 1 };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Tính tổng thời gian công tác Đoàn - Hội từ danh sách các nhiệm kỳ,
+ * tự động ghép khoảng thời gian chồng chéo để KHÔNG cộng trùng (Điểm c khoản 4.2 Điều 4).
+ */
+export function calculateOfficerServiceMonths(terms?: WhiteBirdOfficerTerm[]): {
+  totalMonths: number;
+  totalYearsText: string;
+  mergedIntervalsCount: number;
+  meetsTwoYearsRequirement: boolean;
+  recommendation?: string;
+} {
+  if (!terms || terms.length === 0) {
+    return {
+      totalMonths: 0,
+      totalYearsText: '0.0',
+      mergedIntervalsCount: 0,
+      meetsTwoYearsRequirement: false,
+      recommendation:
+        'Chưa kê khai giai đoạn công tác Đoàn – Hội. Điểm c khoản 4.2 Điều 4 yêu cầu có thời gian công tác từ 02 năm trở lên.',
+    };
+  }
+
+  interface MonthInterval {
+    startMonthIndex: number;
+    endMonthIndex: number;
+  }
+
+  const rawIntervals: MonthInterval[] = [];
+
+  for (const term of terms) {
+    const start = parseMonthYear(term.startMonthYear);
+    if (!start) continue;
+
+    let end = term.isCurrent ? parseMonthYear('hiện nay') : parseMonthYear(term.endMonthYear);
+    if (!end) {
+      end = parseMonthYear('hiện nay');
+    }
+    if (!end) continue;
+
+    const startIdx = start.year * 12 + (start.month - 1);
+    const endIdx = end.year * 12 + (end.month - 1);
+
+    if (endIdx >= startIdx) {
+      rawIntervals.push({ startMonthIndex: startIdx, endMonthIndex: endIdx });
+    }
+  }
+
+  if (rawIntervals.length === 0) {
+    return {
+      totalMonths: 0,
+      totalYearsText: '0.0',
+      mergedIntervalsCount: 0,
+      meetsTwoYearsRequirement: false,
+      recommendation:
+        'Vui lòng nhập định dạng tháng/năm hợp lệ (VD: 09/2023 hoặc 2023-09) để tính tổng thời gian công tác.',
+    };
+  }
+
+  rawIntervals.sort((a, b) => a.startMonthIndex - b.startMonthIndex);
+
+  const merged: MonthInterval[] = [];
+  let current = { ...rawIntervals[0] };
+
+  for (let i = 1; i < rawIntervals.length; i++) {
+    const next = rawIntervals[i];
+    if (next.startMonthIndex <= current.endMonthIndex + 1) {
+      current.endMonthIndex = Math.max(current.endMonthIndex, next.endMonthIndex);
+    } else {
+      merged.push(current);
+      current = { ...next };
+    }
+  }
+  merged.push(current);
+
+  let totalMonths = 0;
+  for (const iv of merged) {
+    totalMonths += iv.endMonthIndex - iv.startMonthIndex + 1;
+  }
+
+  const totalYears = totalMonths / 12;
+  const totalYearsText = totalYears.toFixed(1);
+  const meetsTwoYearsRequirement = totalMonths >= 24;
+
+  let recommendation: string | undefined;
+  if (!meetsTwoYearsRequirement) {
+    recommendation = `Tổng thời gian công tác hợp lệ hiện tại là ${totalMonths} tháng (~${totalYearsText} năm). Quy chế yêu cầu tối thiểu 2 năm (24 tháng) công tác Đoàn – Hội không tính trùng lặp (Điểm c khoản 4.2 Điều 4).`;
+  }
+
+  return {
+    totalMonths,
+    totalYearsText,
+    mergedIntervalsCount: merged.length,
+    meetsTwoYearsRequirement,
+    recommendation,
+  };
+}
+
+/**
+ * Kiểm tra thành tích xuất sắc trong 2 năm học liên tục tính đến thời điểm xét trao
+ */
+export function checkConsecutiveAnnualAchievements(
+  achievements?: WhiteBirdAnnualAchievement[]
+): {
+  hasTwoConsecutiveYears: boolean;
+  consecutiveYears: [string, string] | null;
+  explanation: string;
+} {
+  if (!achievements || achievements.length < 2) {
+    return {
+      hasTwoConsecutiveYears: false,
+      consecutiveYears: null,
+      explanation:
+        'Cần kê khai thành tích xuất sắc trong ít nhất 2 năm học để kiểm tra tính liên tục theo Điểm c khoản 4.2 Điều 4.',
+    };
+  }
+
+  const validEntries = achievements.filter(
+    (a) => Boolean(a.achievementSummary?.trim()) && Boolean(a.academicYear?.trim())
+  );
+
+  if (validEntries.length < 2) {
+    return {
+      hasTwoConsecutiveYears: false,
+      consecutiveYears: null,
+      explanation:
+        'Cần có ít nhất 2 năm học có kê khai nội dung thành tích xuất sắc trong công tác Hội hoặc công tác Đoàn.',
+    };
+  }
+
+  const yearEntries: { startYear: number; originalLabel: string; item: WhiteBirdAnnualAchievement }[] = [];
+
+  for (const entry of validEntries) {
+    const match = /(\d{4})/g.exec(entry.academicYear);
+    if (match) {
+      const startYear = parseInt(match[1], 10);
+      yearEntries.push({ startYear, originalLabel: entry.academicYear, item: entry });
+    }
+  }
+
+  yearEntries.sort((a, b) => a.startYear - b.startYear);
+
+  for (let i = 0; i < yearEntries.length - 1; i++) {
+    for (let j = i + 1; j < yearEntries.length; j++) {
+      if (yearEntries[j].startYear === yearEntries[i].startYear + 1) {
+        return {
+          hasTwoConsecutiveYears: true,
+          consecutiveYears: [yearEntries[i].originalLabel, yearEntries[j].originalLabel],
+          explanation: `Đã đáp ứng tiêu chuẩn thành tích 02 năm liên tục: ${yearEntries[i].originalLabel} và ${yearEntries[j].originalLabel} (Điểm c khoản 4.2 Điều 4).`,
+        };
+      }
+    }
+  }
+
+  return {
+    hasTwoConsecutiveYears: false,
+    consecutiveYears: null,
+    explanation:
+      'Các năm học đã kê khai chưa đảm bảo tính liên tục (2 năm liền kề). Quy chế yêu cầu thành tích xuất sắc trong 2 năm liên tục tính đến thời điểm xét trao.',
+  };
+}
+
+/**
+ * Đánh giá chức vụ cán bộ theo Điểm c khoản 4.2 Điều 4:
+ * - Đơn vị có cơ sở Hội: Từ Chi hội trưởng trở lên
+ * - Đơn vị không có cơ sở Hội: Từ Bí thư Chi đoàn trở lên
+ */
+export function evaluateTruyenLuaPosition(terms?: WhiteBirdOfficerTerm[]): {
+  hasEligiblePosition: boolean;
+  eligiblePositionsCount: number;
+  feedback: string;
+} {
+  if (!terms || terms.length === 0) {
+    return {
+      hasEligiblePosition: false,
+      eligiblePositionsCount: 0,
+      feedback:
+        'Chưa kê khai chức vụ cán bộ Đoàn - Hội. Quy chế yêu cầu từ Chi hội trưởng (hoặc tương đương) trở lên đối với đơn vị có Hội; từ Bí thư Chi đoàn (hoặc tương đương) trở lên đối với đơn vị không có Hội.',
+    };
+  }
+
+  const hoiEligibleKeywords = [
+    'chi hội trưởng',
+    'chi hoi truong',
+    'lch',
+    'liên chi',
+    'lien chi',
+    'ủy viên bch',
+    'uy vien bch',
+    'phó chủ tịch',
+    'pho chu tich',
+    'chủ tịch',
+    'chu tich',
+    'trưởng ban',
+    'truong ban',
+    'phó trưởng ban',
+    'pho truong ban',
+    'chủ nhiệm',
+    'chu nhiem',
+    'đội trưởng',
+    'doi truong',
+    'bch',
+  ];
+
+  const doanEligibleKeywords = [
+    'bí thư',
+    'bi thu',
+    'phó bí thư',
+    'pho bi thu',
+    'ủy viên bch',
+    'uy vien bch',
+    'đoàn khoa',
+    'doan khoa',
+    'đoàn trường',
+    'doan truong',
+    'bch',
+  ];
+
+  let eligibleCount = 0;
+  for (const t of terms) {
+    const pos = (t.position || '').toLowerCase();
+    if (!pos.trim()) continue;
+
+    if (t.unitType === 'WITHOUT_HOI') {
+      if (doanEligibleKeywords.some((kw) => pos.includes(kw))) {
+        eligibleCount++;
+      }
+    } else {
+      if (
+        hoiEligibleKeywords.some((kw) => pos.includes(kw)) ||
+        doanEligibleKeywords.some((kw) => pos.includes(kw))
+      ) {
+        eligibleCount++;
+      }
+    }
+  }
+
+  if (eligibleCount > 0) {
+    return {
+      hasEligiblePosition: true,
+      eligiblePositionsCount: eligibleCount,
+      feedback: `Đã kê khai ${eligibleCount} chức vụ cán bộ Đoàn - Hội đáp ứng tiêu chuẩn tối thiểu theo Điểm c khoản 4.2 Điều 4.`,
+    };
+  }
+
+  return {
+    hasEligiblePosition: false,
+    eligiblePositionsCount: 0,
+    feedback:
+      'Chức vụ đã kê khai có thể chưa đạt ngưỡng tối thiểu theo Quy chế (từ Chi hội trưởng/Bí thư Chi đoàn trở lên). Vui lòng đối chiếu với Điểm c khoản 4.2 Điều 4.',
+  };
 }
 
 export interface WhiteBirdRequirementsMap {
