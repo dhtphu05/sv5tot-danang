@@ -165,6 +165,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
     type: 'success' | 'warn';
   } | null>(null);
   const [isTruyenLuaGuidanceOpen, setIsTruyenLuaGuidanceOpen] = useState(false);
+  const [isTruyenLuaSummaryOpen, setIsTruyenLuaSummaryOpen] = useState(false);
 
   // Evidence upload & preview state
   const [isUploading, setIsUploading] = useState(false);
@@ -2560,11 +2561,11 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                 return (
                   <div className="space-y-6">
                     {/* Header WB02 */}
-                    <div className="border-b border-[#EDF3F8] pb-3.5 flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                    <div className="border-b border-[#EDF3F8] pb-3 flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D78AE]">
-                            Thành phần WB02 · Điểm c khoản 4.2 Điều 4 & Khoản 6.2 Điều 6
+                            Thành phần WB02 · Báo cáo thành tích
                           </span>
                           <span className={statusMeta.badgeClass}>
                             {statusMeta.label}
@@ -2573,14 +2574,17 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         <h2 className="text-[16px] font-bold text-[#172A3A] mt-0.5">
                           WB02 · Báo cáo thành tích cá nhân theo mẫu quy định
                         </h2>
-                        <p className="text-[12.5px] text-[#607483] mt-0.5 leading-relaxed">
-                          Kê khai lý lịch trích ngang, quá trình giữ chức vụ Đoàn – Hội (tối thiểu 2 năm), thành tích xuất sắc 2 năm liên tục và đính kèm Báo cáo thành tích có xác nhận theo Mẫu chính thức.
+                        <p className="text-[12px] text-[#607483] mt-0.5 leading-relaxed">
+                          Kê khai lý lịch trích ngang, quá trình giữ chức vụ Đoàn – Hội (tối thiểu 2 năm), thành tích xuất sắc 2 năm liên tục và thông tin hỗ trợ thẩm định.
+                        </p>
+                        <p className="text-[11px] text-[#94A3B8]">
+                          Căn cứ: Điểm c khoản 4.2 Điều 4 và Khoản 6.2 Điều 6 Quy chế Giải thưởng.
                         </p>
                       </div>
                     </div>
 
                     {/* SECTION A: LÝ LỊCH TRÍCH NGANG CỦA CÁ NHÂN ĐƯỢC ĐỀ CỬ */}
-                    <div className="space-y-4">
+                    <div className="space-y-3.5">
                       <div className="flex items-center justify-between gap-3 flex-wrap">
                         <div className="flex items-center gap-2">
                           <User size={16} className="text-[#0D78AE]" />
@@ -2588,51 +2592,44 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             A. Lý lịch trích ngang của cá nhân được đề cử
                           </h3>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-semibold text-[#0D78AE] bg-[#EBF6FC] px-2.5 py-1 rounded-[6px]">
-                            Cá nhân đề cử
-                          </span>
-                          {!isReadOnly && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (onNavigateToProfile) {
-                                  onNavigateToProfile();
-                                } else {
-                                  showToast('Vui lòng chọn mục "Hồ sơ cá nhân" trên thanh điều hướng để cập nhật thông tin.');
-                                }
-                              }}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[11.5px] font-semibold bg-[#F8FAFC] text-[#334155] hover:bg-[#EBF6FC] hover:text-[#0D78AE] transition-colors cursor-pointer border border-[#E2E8F0]"
-                              title="Chuyển đến trang Hồ sơ cá nhân để điều chỉnh thông tin định danh"
-                            >
-                              <ExternalLink size={12} className="text-[#0D78AE]" />
-                              <span>Cập nhật thông tin cá nhân</span>
-                            </button>
-                          )}
-                        </div>
+                        {!isReadOnly && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (onNavigateToProfile) {
+                                onNavigateToProfile();
+                              } else {
+                                showToast('Vui lòng chọn mục "Hồ sơ cá nhân" trên thanh điều hướng để cập nhật thông tin.');
+                              }
+                            }}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[11.5px] font-semibold bg-[#F8FAFC] text-[#334155] hover:bg-[#EBF6FC] hover:text-[#0D78AE] transition-colors cursor-pointer border border-[#E2E8F0]"
+                            title="Chuyển đến trang Hồ sơ cá nhân để điều chỉnh thông tin định danh"
+                          >
+                            <ExternalLink size={12} className="text-[#0D78AE]" />
+                            <span>Cập nhật thông tin cá nhân</span>
+                          </button>
+                        )}
                       </div>
 
-                      {/* Phân định rõ: Cá nhân được đề cử vs Tài khoản nộp trực tuyến (Light bar) */}
-                      <div className="p-3 rounded-[8px] bg-[#F8FBFD] border-l-3 border-[#0D78AE] text-[12px] text-[#475569] leading-relaxed flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[#64748B]">Tài khoản kê khai trực tuyến:</span>
-                          <strong className="text-[#172A3A] font-semibold">{activeApp.preparedByUserName}</strong>
-                          <span className="text-[#64748B]">({activeApp.preparedByUserEmail})</span>
-                        </div>
-                        <span className="text-[11px] text-[#64748B]">
-                          * Dữ liệu tự động đồng bộ từ Hồ sơ cá nhân
-                        </span>
+                      {/* Thông điệp duy nhất về đồng bộ từ Hồ sơ cá nhân */}
+                      <div className="text-[12px] text-[#607483] space-y-0.5">
+                        <p>
+                          Thông tin dưới đây được tự động đồng bộ từ <strong>Hồ sơ cá nhân</strong> trên hệ thống 5TOT ĐHĐN. Để điều chỉnh thông tin chung, vui lòng nhấn &ldquo;Cập nhật thông tin cá nhân&rdquo;.
+                        </p>
+                        <p className="text-[11px] text-[#94A3B8]">
+                          Căn cứ: Mẫu Báo cáo thành tích cá nhân ban hành kèm Quyết định số 14-QĐ/ĐHĐN-HSV.
+                        </p>
                       </div>
 
                       {/* Tiêu đề báo cáo thành tích cá nhân (Full-width) */}
                       <div>
-                        <label htmlFor="wb02-tl-report-title" className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
+                        <label htmlFor="wb02-tl-report-title" className="block text-[12.5px] font-bold text-[#172A3A] mb-1">
                           Tiêu đề báo cáo thành tích cá nhân <span className="text-red-500">*</span>
                         </label>
                         <AutoResizeTextarea
                           id="wb02-tl-report-title"
                           rows={1}
-                          minHeight={42}
+                          minHeight={40}
                           maxHeight={120}
                           disabled={isReadOnly}
                           value={wb02Data.reportTitle || `Báo cáo thành tích cá nhân – ${activeApp.nomineeName}`}
@@ -2645,102 +2642,99 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         />
                       </div>
 
-                      {/* Khối tóm tắt thông tin cá nhân (Light Info Panel, Max 2 columns, No nested box cards) */}
-                      <div className="rounded-[10px] bg-[#FAFCFE] border border-[#E2EEF6] p-4 sm:p-5 space-y-3">
-                        <div className="text-[12px] font-bold text-[#0D78AE] uppercase tracking-wide pb-2 border-b border-[#EDF3F8]">
-                          Thông tin trích ngang đồng bộ từ Hồ sơ cá nhân
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3.5 text-[12.5px]">
+                      {/* Description List 2 cột tinh gọn (No nested cards) */}
+                      <div className="rounded-[9px] bg-[#FAFCFE] border border-[#E2EEF6] p-4 sm:p-5">
+                        <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3.5 text-[12.5px]">
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-[11.5px] font-medium text-[#64748B]">Họ và tên cá nhân đề cử:</span>
-                            <span className="text-[13.5px] font-bold text-[#172A3A] break-words">{activeApp.nomineeName}</span>
+                            <dt className="text-[11.5px] font-medium text-[#64748B]">Họ và tên cá nhân đề cử</dt>
+                            <dd className="text-[13px] font-semibold text-[#172A3A] break-words">{activeApp.nomineeName}</dd>
                           </div>
 
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-[11.5px] font-medium text-[#64748B]">Mã số sinh viên (MSSV):</span>
-                            <span className="text-[13px] font-semibold text-[#172A3A]">{activeApp.studentId || 'Chưa cập nhật'}</span>
+                            <dt className="text-[11.5px] font-medium text-[#64748B]">Mã số sinh viên (MSSV)</dt>
+                            <dd className="text-[13px] font-semibold text-[#172A3A]">{activeApp.studentId || 'Chưa cập nhật'}</dd>
                           </div>
 
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-[11.5px] font-medium text-[#64748B]">Trường thành viên / Đơn vị trực thuộc:</span>
-                            <span className="text-[13px] font-medium text-[#172A3A] break-words">{activeApp.institutionName}</span>
+                            <dt className="text-[11.5px] font-medium text-[#64748B]">Trường thành viên / Đơn vị trực thuộc</dt>
+                            <dd className="text-[13px] font-medium text-[#172A3A] break-words">{activeApp.institutionName}</dd>
                           </div>
 
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-[11.5px] font-medium text-[#64748B]">Khoa / Viện / Phân hiệu:</span>
-                            <span className="text-[13px] font-medium text-[#172A3A] break-words">
+                            <dt className="text-[11.5px] font-medium text-[#64748B]">Khoa / Viện / Phân hiệu</dt>
+                            <dd className="text-[13px] font-medium text-[#172A3A] break-words">
                               {activeApp.facultyName || wb02Data.nomineeFaculty || 'Chưa cập nhật'}
-                            </span>
+                            </dd>
                           </div>
 
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-[11.5px] font-medium text-[#64748B]">Lớp sinh hoạt:</span>
-                            <span className="text-[13px] font-medium text-[#172A3A]">
+                            <dt className="text-[11.5px] font-medium text-[#64748B]">Lớp sinh hoạt</dt>
+                            <dd className="text-[13px] font-medium text-[#172A3A]">
                               {activeApp.className || wb02Data.nomineeClass || 'Chưa cập nhật'}
-                            </span>
+                            </dd>
                           </div>
 
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-[11.5px] font-medium text-[#64748B]">Sinh viên năm thứ / Khóa học:</span>
-                            <span className="text-[13px] font-medium text-[#172A3A]">
+                            <dt className="text-[11.5px] font-medium text-[#64748B]">Sinh viên năm thứ / Khóa học</dt>
+                            <dd className="text-[13px] font-medium text-[#172A3A]">
                               {wb02Data.nomineeYearOfStudy || (studentProfileSnapshot?.academicYearNumber ? `Năm thứ ${studentProfileSnapshot.academicYearNumber}` : 'Chưa cập nhật')}
-                            </span>
+                            </dd>
                           </div>
 
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-[11.5px] font-medium text-[#64748B]">Ngày tháng năm sinh:</span>
-                            <span className="text-[13px] font-medium text-[#172A3A]">
+                            <dt className="text-[11.5px] font-medium text-[#64748B]">Ngày tháng năm sinh</dt>
+                            <dd className="text-[13px] font-medium text-[#172A3A]">
                               {wb02Data.nomineeDateOfBirth || studentProfileSnapshot?.dateOfBirth || 'Chưa cập nhật'}
-                            </span>
+                            </dd>
                           </div>
 
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-[11.5px] font-medium text-[#64748B]">Giới tính & Dân tộc:</span>
-                            <span className="text-[13px] font-medium text-[#172A3A]">
+                            <dt className="text-[11.5px] font-medium text-[#64748B]">Giới tính & Dân tộc</dt>
+                            <dd className="text-[13px] font-medium text-[#172A3A]">
                               {(wb02Data.nomineeGender === 'NAM' ? 'Nam' : wb02Data.nomineeGender === 'NU' ? 'Nữ' : wb02Data.nomineeGender || studentProfileSnapshot?.gender || 'Chưa cập nhật')} · {wb02Data.nomineeEthnicity || studentProfileSnapshot?.ethnicity || 'Kinh'}
-                            </span>
+                            </dd>
                           </div>
 
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-[11.5px] font-medium text-[#64748B]">Quê quán (Tỉnh / Thành phố):</span>
-                            <span className="text-[13px] font-medium text-[#172A3A] break-words">
+                            <dt className="text-[11.5px] font-medium text-[#64748B]">Quê quán (Tỉnh / Thành phố)</dt>
+                            <dd className="text-[13px] font-medium text-[#172A3A] break-words">
                               {wb02Data.nomineeHometown || studentProfileSnapshot?.homeProvince || 'Chưa cập nhật'}
-                            </span>
+                            </dd>
                           </div>
 
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-[11.5px] font-medium text-[#64748B]">Số điện thoại liên hệ:</span>
-                            <span className="text-[13px] font-medium text-[#172A3A]">
+                            <dt className="text-[11.5px] font-medium text-[#64748B]">Số điện thoại liên hệ</dt>
+                            <dd className="text-[13px] font-medium text-[#172A3A]">
                               {wb02Data.nomineePhone || activeApp.contactPhone || studentProfileSnapshot?.phoneNumber || 'Chưa cập nhật'}
-                            </span>
+                            </dd>
                           </div>
 
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-[11.5px] font-medium text-[#64748B]">Tình trạng chính trị:</span>
-                            <span className="text-[13px] font-medium text-[#172A3A]">
+                            <dt className="text-[11.5px] font-medium text-[#64748B]">Email liên hệ</dt>
+                            <dd className="text-[13px] font-medium text-[#172A3A] break-words">
+                              {wb02Data.nomineeEmail || activeApp.preparedByUserEmail || studentProfileSnapshot?.email || 'Chưa cập nhật'}
+                            </dd>
+                          </div>
+
+                          <div className="flex flex-col gap-0.5">
+                            <dt className="text-[11.5px] font-medium text-[#64748B]">Tình trạng chính trị</dt>
+                            <dd className="text-[13px] font-medium text-[#172A3A]">
                               {wb02Data.nomineePoliticalStatus === 'DANG_VIEN'
                                 ? 'Đảng viên Đảng Cộng sản Việt Nam'
                                 : 'Đoàn viên TNCS Hồ Chí Minh'}
-                            </span>
-                          </div>
-
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-[11.5px] font-medium text-[#64748B]">Email liên hệ:</span>
-                            <span className="text-[13px] font-medium text-[#172A3A] break-words">
-                              {wb02Data.nomineeEmail || activeApp.preparedByUserEmail || studentProfileSnapshot?.email || 'Chưa cập nhật'}
-                            </span>
+                            </dd>
                           </div>
 
                           <div className="flex flex-col gap-0.5 md:col-span-2 pt-2 border-t border-[#EDF3F8]">
-                            <span className="text-[11.5px] font-medium text-[#64748B]">Chức vụ Đoàn – Hội hiện tại:</span>
-                            <span className="text-[13px] font-bold text-[#0D78AE] break-words">
+                            <dt className="text-[11.5px] font-medium text-[#64748B]">Chức vụ Đoàn – Hội hiện tại</dt>
+                            <dd className="text-[13px] font-bold text-[#0D78AE] break-words">
                               {wb02Data.nomineeCurrentRole || studentProfileSnapshot?.unionPosition || 'Chưa cập nhật'}
-                            </span>
-                            <span className="text-[11px] text-[#64748B] mt-0.5">
-                              * Quá trình công tác các nhiệm kỳ được kê khai chi tiết tại Mục B bên dưới; chức vụ hiện tại không tự động thay thế lịch sử các chức vụ đã đảm nhiệm.
-                            </span>
+                            </dd>
+                            <p className="text-[11px] text-[#94A3B8] mt-0.5">
+                              * Lịch sử các nhiệm kỳ công tác được kê khai tại Mục B bên dưới; chức vụ hiện tại không tự động thay thế lịch sử chức vụ đã đảm nhiệm.
+                            </p>
                           </div>
-                        </div>
+                        </dl>
                       </div>
                     </div>
 
@@ -2748,7 +2742,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     <div className="border-t border-[#EDF3F8] my-6" />
 
                     {/* SECTION B: QUÁ TRÌNH CÔNG TÁC ĐOÀN – HỘI & CHỨC VỤ */}
-                    <div className="space-y-4">
+                    <div className="space-y-3.5">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                           <Clock size={16} className="text-[#0D78AE]" />
@@ -2768,55 +2762,40 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         )}
                       </div>
 
-                      {/* Standards Guidance & Real-time Evaluation (Light banner) */}
-                      {terms.length === 0 ? (
-                        <div className="p-3.5 rounded-[8px] bg-[#F8FBFD] border-l-3 border-[#0D78AE] text-[12px] text-[#475569] leading-relaxed flex items-start gap-2.5">
-                          <Info size={15} className="text-[#0D78AE] shrink-0 mt-0.5" />
-                          <div>
-                            <span className="font-bold text-[#172A3A] block mb-0.5">
-                              Căn cứ tiêu chuẩn chức vụ & thời gian công tác (Điểm c khoản 4.2 Điều 4 Quy chế):
-                            </span>
-                            <span>
-                              Cán bộ Hội giữ chức vụ từ <strong>Chi hội trưởng</strong> trở lên (đơn vị có cơ sở Hội) hoặc cán bộ Đoàn từ <strong>Bí thư Chi đoàn</strong> trở lên (đơn vị chưa có cơ sở Hội); có tổng thời gian công tác Đoàn – Hội từ <strong>02 năm</strong> (≥ 24 tháng) trở lên.
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className={`p-3.5 rounded-[8px] border-l-3 text-[12px] leading-relaxed space-y-1.5 ${
-                          tenureCalc.meetsTwoYearsRequirement
-                            ? 'bg-[#F0FDF4] border-l-[#16A34A] text-[#166534]'
-                            : 'bg-[#FFFBEB] border-l-[#D97706] text-[#92400E]'
-                        }`}>
-                          <div className="flex items-center justify-between gap-2 flex-wrap">
-                            <span className="font-bold inline-flex items-center gap-1.5">
-                              {tenureCalc.meetsTwoYearsRequirement ? (
-                                <CheckCircle2 size={15} className="text-[#16A34A] shrink-0" />
-                              ) : (
-                                <AlertTriangle size={15} className="text-[#D97706] shrink-0" />
-                              )}
-                              Tổng thời gian công tác hợp lệ: {tenureCalc.totalMonths} tháng (~{tenureCalc.totalYearsText} năm)
+                      {/* Helper text ngắn ngay dưới tiêu đề */}
+                      <div className="text-[12px] text-[#607483] space-y-0.5">
+                        <p>
+                          Yêu cầu: Có tổng thời gian công tác Đoàn – Hội từ <strong>02 năm</strong> (≥ 24 tháng) trở lên với chức vụ từ <strong>Chi hội trưởng</strong> (đơn vị có cơ sở Hội) hoặc từ <strong>Bí thư Chi đoàn</strong> (đơn vị chưa có cơ sở Hội).
+                        </p>
+                        <p className="text-[11px] text-[#94A3B8]">
+                          Căn cứ: Điểm c khoản 4.2 Điều 4 Quy chế Giải thưởng.
+                        </p>
+                      </div>
+
+                      {/* Cụm thông tin trạng thái gộp (Không dùng alert box lớn) */}
+                      {terms.length > 0 && (
+                        <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-[8px] bg-[#F8FAFC] border border-[#E2E8F0] text-[12px]">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-semibold text-[#172A3A]">
+                              Tổng thời gian công tác: <strong>{tenureCalc.totalMonths} tháng</strong> (~{tenureCalc.totalYearsText} năm)
                             </span>
                             <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${
                               tenureCalc.meetsTwoYearsRequirement
-                                ? 'bg-[#DCFCE7] text-[#15803D]'
-                                : 'bg-[#FEF3C7] text-[#B45309]'
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-amber-50 text-amber-700 border border-amber-200'
                             }`}>
-                              {tenureCalc.meetsTwoYearsRequirement ? 'Đạt tiêu chuẩn (≥ 2 năm)' : 'Hỗ trợ thẩm định (< 24 tháng)'}
+                              {tenureCalc.meetsTwoYearsRequirement ? '✓ Đạt điều kiện (≥ 2 năm)' : 'Hỗ trợ thẩm định (< 24 tháng)'}
                             </span>
                           </div>
-                          <p className="text-[11.5px] opacity-90">
-                            {tenureCalc.meetsTwoYearsRequirement
-                              ? 'Thời gian công tác được tự động ghép khoảng không tính trùng lặp, đáp ứng quy định tại Điểm c khoản 4.2 Điều 4.'
-                              : tenureCalc.recommendation}
-                          </p>
-                          <div className="pt-1 border-t border-black/5 text-[11px] flex items-center gap-1.5">
-                            <Info size={12} className="shrink-0" />
-                            <span>{positionEval.feedback}</span>
-                          </div>
+                          {!positionEval.hasEligiblePosition && (
+                            <span className="text-[11.5px] text-[#D97706] font-medium">
+                              {positionEval.feedback}
+                            </span>
+                          )}
                         </div>
                       )}
 
-                      {/* Terms List: Max 2 columns per row, full visibility */}
+                      {/* Terms List: Max 2 columns per row */}
                       {terms.length === 0 ? (
                         <div className="p-5 rounded-[9px] border border-dashed border-[#C8D9E6] text-center text-[12.5px] text-[#607483] space-y-2">
                           <p>Chưa có giai đoạn công tác nào được ghi nhận.</p>
@@ -2832,7 +2811,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           )}
                         </div>
                       ) : (
-                        <div className="space-y-3.5">
+                        <div className="space-y-3">
                           {terms.map((term, idx) => {
                             const sParsed = parseMonthYear(term.startMonthYear);
                             const eParsed = term.isCurrent ? parseMonthYear('hiện nay') : parseMonthYear(term.endMonthYear);
@@ -2845,9 +2824,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             return (
                               <div
                                 key={term.id}
-                                className="p-4 rounded-[10px] bg-[#F8FBFD] border border-[#E2EEF6] space-y-3"
+                                className="p-3.5 rounded-[9px] bg-[#F8FBFD] border border-[#E2EEF6] space-y-3"
                               >
-                                <div className="flex items-center justify-between gap-2 border-b border-[#EDF3F8] pb-2">
+                                <div className="flex items-center justify-between gap-2 border-b border-[#EDF3F8] pb-1.5">
                                   <span className="text-[12px] font-bold text-[#0D78AE]">
                                     Giai đoạn công tác #{idx + 1}
                                   </span>
@@ -2863,7 +2842,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                                   )}
                                 </div>
 
-                                {/* Row 1 (2 cols): Chức vụ & Đơn vị (Full width, no truncation) */}
+                                {/* Hàng 1 (2 cột): Chức vụ đảm nhiệm | Đơn vị công tác */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                                   <div>
                                     <label className="block text-[12px] font-semibold text-[#172A3A] mb-1">
@@ -2896,8 +2875,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                                   </div>
                                 </div>
 
-                                {/* Row 2 (2 cols): Loại hình đơn vị & Thời gian đảm nhiệm */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
+                                {/* Hàng 2 (2 cột): Loại hình đơn vị | Thời gian đảm nhiệm */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-0.5">
                                   <div>
                                     <label className="block text-[12px] font-semibold text-[#172A3A] mb-1">
                                       Loại hình đơn vị công tác (Điều 4)
@@ -2979,7 +2958,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     <div className="border-t border-[#EDF3F8] my-6" />
 
                     {/* SECTION C: THÀNH TÍCH XUẤT SẮC 2 NĂM LIÊN TỤC */}
-                    <div className="space-y-4">
+                    <div className="space-y-3.5">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                           <Award size={16} className="text-[#0D78AE]" />
@@ -2999,38 +2978,30 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         )}
                       </div>
 
-                      {/* Consecutive Years Verification Banner (Light) */}
-                      {achievements.length === 0 ? (
-                        <div className="p-3.5 rounded-[8px] bg-[#F8FBFD] border-l-3 border-[#0D78AE] text-[12px] text-[#475569] leading-relaxed flex items-start gap-2.5">
-                          <Info size={15} className="text-[#0D78AE] shrink-0 mt-0.5" />
-                          <div>
-                            <span className="font-bold text-[#172A3A] block mb-0.5">
-                              Căn cứ tiêu chuẩn thành tích 02 năm liên tục (Điểm c khoản 4.2 Điều 4 Quy chế):
-                            </span>
-                            <span>
-                              Có thành tích xuất sắc trong công tác Hội và phong trào sinh viên (hoặc công tác Đoàn và phong trào thanh niên) cấp trường trở lên trong <strong>02 năm liên tục</strong> tính đến thời điểm xét trao. Kê khai các năm học và văn bản chứng minh bên dưới (không bắt buộc phải có 2 bằng khen riêng biệt).
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className={`p-3.5 rounded-[8px] border-l-3 text-[12px] leading-relaxed flex items-start gap-2.5 ${
-                          consecCheck.hasTwoConsecutiveYears
-                            ? 'bg-[#F0FDF4] border-l-[#16A34A] text-[#166534]'
-                            : 'bg-[#FFFBEB] border-l-[#D97706] text-[#92400E]'
-                        }`}>
+                      {/* Helper text ngắn ngay dưới tiêu đề */}
+                      <div className="text-[12px] text-[#607483] space-y-0.5">
+                        <p>
+                          Yêu cầu: Kê khai thành tích xuất sắc trong công tác Hội hoặc công tác Đoàn cấp trường trở lên trong <strong>02 năm liên tục</strong> tính đến thời điểm xét trao.
+                        </p>
+                        <p className="text-[11px] text-[#94A3B8]">
+                          Căn cứ: Điểm c khoản 4.2 Điều 4 Quy chế Giải thưởng.
+                        </p>
+                      </div>
+
+                      {/* Trạng thái kiểm tra liên tục (Status line nhẹ) */}
+                      {achievements.length > 0 && (
+                        <div className="flex items-center gap-2 text-[12px]">
                           {consecCheck.hasTwoConsecutiveYears ? (
-                            <CheckCircle2 size={16} className="text-[#16A34A] shrink-0 mt-0.5" />
-                          ) : (
-                            <AlertTriangle size={16} className="text-[#D97706] shrink-0 mt-0.5" />
-                          )}
-                          <div>
-                            <span className="font-bold block mb-0.5">
-                              {consecCheck.hasTwoConsecutiveYears
-                                ? 'Đã ghi nhận thành tích xuất sắc 02 năm liên tục:'
-                                : 'Lưu ý hỗ trợ thẩm định (Điểm c khoản 4.2 Điều 4):'}
+                            <span className="text-emerald-700 font-medium inline-flex items-center gap-1.5">
+                              <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                              Đã ghi nhận thành tích 02 năm liên tục: {consecCheck.consecutiveYears?.join(' và ')}
                             </span>
-                            <span className="text-[11.5px]">{consecCheck.explanation}</span>
-                          </div>
+                          ) : (
+                            <span className="text-[#D97706] font-medium inline-flex items-center gap-1.5">
+                              <AlertTriangle size={14} className="text-[#D97706] shrink-0" />
+                              Lưu ý: {consecCheck.explanation}
+                            </span>
+                          )}
                         </div>
                       )}
 
@@ -3050,7 +3021,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           )}
                         </div>
                       ) : (
-                        <div className="space-y-3.5">
+                        <div className="space-y-3">
                           {achievements.map((ach, idx) => {
                             const matchAppYear = /(d{4})/g.exec(activeApp.academicYear || '2025');
                             const baseAppYear = matchAppYear ? parseInt(matchAppYear[1], 10) : 2025;
@@ -3058,9 +3029,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             return (
                               <div
                                 key={ach.id}
-                                className="p-4 rounded-[10px] bg-[#F8FBFD] border border-[#E2EEF6] space-y-3"
+                                className="p-3.5 rounded-[9px] bg-[#F8FBFD] border border-[#E2EEF6] space-y-3"
                               >
-                                <div className="flex items-center justify-between gap-2 border-b border-[#EDF3F8] pb-2">
+                                <div className="flex items-center justify-between gap-2 border-b border-[#EDF3F8] pb-1.5">
                                   <span className="text-[12px] font-bold text-[#0D78AE]">
                                     Thành tích năm học #{idx + 1}
                                   </span>
@@ -3076,7 +3047,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                                   )}
                                 </div>
 
-                                {/* Row 1 (2 cols): Năm học & Cấp ghi nhận khen thưởng */}
+                                {/* Hàng 1 (2 cột): Năm học xét trao | Cấp ghi nhận khen thưởng */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                                   <div>
                                     <label className="block text-[12px] font-semibold text-[#172A3A] mb-1">
@@ -3110,10 +3081,10 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                                   </div>
                                 </div>
 
-                                {/* Row 2 (Full width): Vai trò / Chức vụ trong năm học */}
+                                {/* Hàng 2 (Full width): Vai trò / Chức vụ trong năm học */}
                                 <div>
                                   <label className="block text-[12px] font-semibold text-[#172A3A] mb-1">
-                                    Vai trò / Chức vụ đảm nhiệm trong năm học <span className="text-red-500">*</span>
+                                    Vai trò / Chức vụ trong năm học <span className="text-red-500">*</span>
                                   </label>
                                   <AutoResizeTextarea
                                     rows={1}
@@ -3126,32 +3097,32 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                                   />
                                 </div>
 
-                                {/* Row 3 (2 cols): Tóm tắt thành tích & Quyết định chứng minh */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
+                                {/* Hàng 3 (2 cột rộng): Tóm tắt thành tích | Văn bản / Quyết định */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-0.5">
                                   <div>
                                     <label className="block text-[12px] font-semibold text-[#172A3A] mb-1">
-                                      Tóm tắt thành tích xuất sắc trong công tác Hội / Đoàn <span className="text-red-500">*</span>
+                                      Tóm tắt thành tích xuất sắc <span className="text-red-500">*</span>
                                     </label>
                                     <AutoResizeTextarea
                                       rows={2}
-                                      minHeight={62}
+                                      minHeight={60}
                                       maxHeight={180}
                                       disabled={isReadOnly}
                                       value={ach.achievementSummary}
                                       onChange={(e) =>
                                         handleUpdateAchievement(ach.id, { achievementSummary: e.target.value })
                                       }
-                                      placeholder="Tóm tắt kết quả công tác, phong trào sinh viên tiêu biểu đã triển khai trong năm học..."
+                                      placeholder="Tóm tắt kết quả công tác, phong trào tiêu biểu đã triển khai trong năm học..."
                                     />
                                   </div>
 
                                   <div>
                                     <label className="block text-[12px] font-semibold text-[#172A3A] mb-1">
-                                      Văn bản / Quyết định chứng minh thành tích (nếu có)
+                                      Văn bản / Quyết định chứng minh thành tích
                                     </label>
                                     <AutoResizeTextarea
                                       rows={2}
-                                      minHeight={62}
+                                      minHeight={60}
                                       maxHeight={180}
                                       disabled={isReadOnly}
                                       value={ach.documentReference || ''}
@@ -3173,7 +3144,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     <div className="border-t border-[#EDF3F8] my-6" />
 
                     {/* SECTION D: THÔNG TIN HỖ TRỢ THẨM ĐỊNH & BÁO CÁO CHÍNH THỨC */}
-                    <div className="space-y-4">
+                    <div className="space-y-3.5">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                           <GraduationCap size={16} className="text-[#0D78AE]" />
@@ -3188,62 +3159,65 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-[12px] font-bold bg-[#EBF6FC] text-[#0D78AE] hover:bg-[#D9EFF9] transition-colors self-start sm:self-auto"
                         >
                           <Download size={13} />
-                          <span>Tải mẫu Báo cáo thành tích cá nhân chính thức</span>
+                          <span>Tải mẫu Báo cáo thành tích cá nhân</span>
                         </a>
                       </div>
 
-                      <p className="text-[11.5px] text-[#64748B] leading-relaxed">
-                        <em>(Lưu ý: Các nội dung dưới đây kê khai theo Mẫu Báo cáo thành tích cá nhân để Hội đồng thẩm định toàn diện; là tiêu chí tham khảo và ưu tiên xét giải, không phải điều kiện bắt buộc thay thế tiêu chuẩn công tác Đoàn – Hội tại Điều 4).</em>
-                      </p>
+                      <div className="text-[12px] text-[#607483] space-y-0.5">
+                        <p>
+                          Thông tin dưới đây hỗ trợ Hội đồng thẩm định toàn diện và là tiêu chí ưu tiên xét giải (không thay thế điều kiện bắt buộc về công tác Đoàn – Hội).
+                        </p>
+                        <p className="text-[11px] text-[#94A3B8]">
+                          Căn cứ: Mẫu Báo cáo thành tích cá nhân kèm Quyết định số 14-QĐ/ĐHĐN-HSV.
+                        </p>
+                      </div>
 
-                      {/* Row 1 (2 cols): Học tập & SV5T */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <label htmlFor="wb02-tl-gpa" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
-                              Điểm học tập (GPA)
-                            </label>
-                            <input
-                              id="wb02-tl-gpa"
-                              disabled={isReadOnly}
-                              value={academic.gpaText || ''}
-                              onChange={(e) => handleUpdateAcademic({ gpaText: e.target.value })}
-                              placeholder="VD: 3.52 / 4.0"
-                              className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
-                            />
-                          </div>
+                      {/* Hàng 1 (3 cột cho field ngắn): Điểm học tập | Điểm rèn luyện | Danh hiệu SV5T */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label htmlFor="wb02-tl-gpa" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
+                            Điểm học tập (GPA)
+                          </label>
+                          <input
+                            id="wb02-tl-gpa"
+                            disabled={isReadOnly}
+                            value={academic.gpaText || ''}
+                            onChange={(e) => handleUpdateAcademic({ gpaText: e.target.value })}
+                            placeholder="VD: 3.52 / 4.0"
+                            className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
+                          />
+                        </div>
 
-                          <div>
-                            <label htmlFor="wb02-tl-drl" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
-                              Điểm rèn luyện
-                            </label>
-                            <input
-                              id="wb02-tl-drl"
-                              disabled={isReadOnly}
-                              value={academic.trainingScoreText || ''}
-                              onChange={(e) => handleUpdateAcademic({ trainingScoreText: e.target.value })}
-                              placeholder="VD: 94 / 100"
-                              className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
-                            />
-                          </div>
+                        <div>
+                          <label htmlFor="wb02-tl-drl" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
+                            Điểm rèn luyện
+                          </label>
+                          <input
+                            id="wb02-tl-drl"
+                            disabled={isReadOnly}
+                            value={academic.trainingScoreText || ''}
+                            onChange={(e) => handleUpdateAcademic({ trainingScoreText: e.target.value })}
+                            placeholder="VD: 94 / 100"
+                            className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
+                          />
                         </div>
 
                         <div>
                           <label htmlFor="wb02-tl-sv5t" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
-                            Danh hiệu Sinh viên 5 tốt các cấp (nếu có)
+                            Danh hiệu Sinh viên 5 tốt các cấp
                           </label>
                           <input
                             id="wb02-tl-sv5t"
                             disabled={isReadOnly}
                             value={academic.sv5tRecognitions || ''}
                             onChange={(e) => handleUpdateAcademic({ sv5tRecognitions: e.target.value })}
-                            placeholder="VD: SV5T cấp Trường 2024, cấp ĐHĐN 2025"
+                            placeholder="VD: SV5T cấp Trường 2024..."
                             className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
                           />
                         </div>
                       </div>
 
-                      {/* Row 2 (2 cols): Tình nguyện & NCKH */}
+                      {/* Hàng 2 (2 cột): Tình nguyện | NCKH */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                         <div>
                           <label htmlFor="wb02-tl-volunteer" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
@@ -3257,7 +3231,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             disabled={isReadOnly}
                             value={academic.volunteerActivities || ''}
                             onChange={(e) => handleUpdateAcademic({ volunteerActivities: e.target.value })}
-                            placeholder="VD: Đội trưởng Chiến dịch Mùa hè xanh 2024, tham gia Tiếp sức mùa thi..."
+                            placeholder="VD: Đội trưởng Chiến dịch Mùa hè xanh 2024, Tiếp sức mùa thi..."
                           />
                         </div>
 
@@ -3278,7 +3252,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         </div>
                       </div>
 
-                      {/* Row 3 (Full width): Khen thưởng khác */}
+                      {/* Hàng 3 (Full width): Khen thưởng khác */}
                       <div>
                         <label htmlFor="wb02-tl-other" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
                           Khen thưởng / Thành tích tiêu biểu khác
@@ -3286,7 +3260,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         <AutoResizeTextarea
                           id="wb02-tl-other"
                           rows={2}
-                          minHeight={52}
+                          minHeight={50}
                           maxHeight={180}
                           disabled={isReadOnly}
                           value={academic.otherAwards || ''}
@@ -3294,49 +3268,30 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           placeholder="VD: Cán bộ Đoàn - Hội xuất sắc, Giải thưởng Sao Tháng Giêng..."
                         />
                       </div>
-                    </div>
 
-                    {/* Divider between Section D and Section E */}
-                    <div className="border-t border-[#EDF3F8] my-6" />
-
-                    {/* SECTION E: CAM KẾT TRUNG THỰC & QUY ĐỊNH 3 CHỮ KÝ PHÁP LÝ */}
-                    <div className="space-y-3.5">
-                      <label className="flex items-start gap-3 p-3.5 rounded-[9px] bg-[#F4F9FD] border border-[#CBE4F5] cursor-pointer">
-                        <input
-                          type="checkbox"
-                          disabled={isReadOnly}
-                          checked={Boolean(wb02Data.commitmentConfirmed)}
-                          onChange={(e) =>
-                            updateWhiteBirdWB02(activeApp.id, {
-                              commitmentConfirmed: e.target.checked,
-                            })
-                          }
-                          className="mt-1 w-4 h-4 accent-[#0D78AE]"
-                        />
-                        <div className="text-[12.5px] leading-relaxed">
-                          <span className="font-semibold text-[#172A3A] block">
-                            Tôi cam kết toàn bộ quá trình rèn luyện, giữ chức vụ và thành tích đóng góp cho công tác Hội và phong trào sinh viên Đại học Đà Nẵng kê khai trên là hoàn toàn trung thực theo Điểm c khoản 4.2 Điều 4 và Khoản 6.2 Điều 6 Quy chế Giải thưởng.
-                          </span>
-                          <span className="text-[11.5px] text-[#64748B] block mt-1">
-                            * Lời cam kết điện tử này đồng bộ với chữ ký trong tệp Báo cáo thành tích cá nhân đính kèm.
-                          </span>
-                        </div>
-                      </label>
-
-                      {/* Legal Verification Notice (Light banner) */}
-                      <div className="p-3.5 rounded-[9px] bg-[#F8FAFC] border-l-3 border-[#64748B] text-[12px] text-[#475569] leading-relaxed space-y-1.5">
-                        <div className="font-bold text-[#1E293B] flex items-center gap-1.5">
-                          <ShieldCheck size={15} className="text-[#0D78AE]" />
-                          <span>Quy định xác nhận đối với Báo cáo thành tích cá nhân (Khoản 6.2 Điều 6):</span>
-                        </div>
-                        <ul className="list-disc pl-5 space-y-0.5 text-[11.5px] text-[#334155]">
-                          <li>Có chữ ký và ghi rõ họ tên của cá nhân báo cáo thành tích.</li>
-                          <li>Có xác nhận của Ban Thư ký Hội Sinh viên trường thành viên (hoặc Ban Chấp hành Đoàn trường đối với đơn vị chưa có cơ sở Hội).</li>
-                          <li>Có xác nhận của Ban Thường vụ Đảng ủy hoặc Ban Giám hiệu Trường thành viên / Đơn vị trực thuộc.</li>
-                        </ul>
-                        <p className="text-[11px] text-[#64748B] pt-0.5">
-                          * Việc kê khai thông tin trực tuyến nhằm hỗ trợ số hóa và tổng hợp dữ liệu, <strong>không thay thế cho tệp Báo cáo thành tích có đầy đủ chữ ký và con dấu pháp lý</strong> đính kèm.
-                        </p>
+                      {/* Checkbox cam kết */}
+                      <div className="pt-2">
+                        <label className="flex items-start gap-3 p-3.5 rounded-[8px] bg-[#F4F9FD] border border-[#CBE4F5] cursor-pointer">
+                          <input
+                            type="checkbox"
+                            disabled={isReadOnly}
+                            checked={Boolean(wb02Data.commitmentConfirmed)}
+                            onChange={(e) =>
+                              updateWhiteBirdWB02(activeApp.id, {
+                                commitmentConfirmed: e.target.checked,
+                              })
+                            }
+                            className="mt-1 w-4 h-4 accent-[#0D78AE]"
+                          />
+                          <div className="text-[12.5px] leading-relaxed">
+                            <span className="font-semibold text-[#172A3A] block">
+                              Tôi cam kết toàn bộ quá trình rèn luyện, giữ chức vụ và thành tích kê khai là hoàn toàn trung thực.
+                            </span>
+                            <span className="text-[11px] text-[#64748B] block mt-0.5">
+                              Căn cứ: Điểm c khoản 4.2 Điều 4 và Khoản 6.2 Điều 6 Quy chế Giải thưởng Cánh chim trắng.
+                            </span>
+                          </div>
+                        </label>
                       </div>
                     </div>
                   </div>
@@ -3740,7 +3695,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D78AE]">
-                            Thành phần WB03 · Khoản 6.2 Điều 6 Quy chế
+                            Thành phần WB03 · Minh chứng chức vụ & thành tích
                           </span>
                           <span className={statusMeta.badgeClass}>
                             {statusMeta.label}
@@ -3749,54 +3704,49 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         <h2 className="text-[16px] font-bold text-[#172A3A] mt-0.5">
                           WB03 · Tài liệu minh chứng chức vụ, bằng khen và thành tích tiêu biểu
                         </h2>
-                        <p className="text-[12.5px] text-[#607483] mt-0.5 leading-relaxed">
-                          Tải tệp minh chứng, phân loại nhóm tài liệu và tự động tổng hợp danh mục theo quy định tại Khoản 6.2 Điều 6.
-                        </p>
                       </div>
                     </div>
 
-                    {/* Light Guidance Panel (Expandable) */}
-                    <div className="p-3.5 rounded-[8px] bg-[#F8FAFC] border-l-3 border-[#0D78AE] text-[12px] space-y-2">
+                    {/* Tinh gọn hướng dẫn đầu section: 1 dòng tóm tắt 4 nhóm + link xem chi tiết */}
+                    <div className="text-[12px] text-[#607483] space-y-1">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <div className="flex items-center gap-1.5 font-bold text-[#1E293B]">
-                          <FolderArchive size={15} className="text-[#0D78AE]" />
-                          <span>Hướng dẫn chuẩn bị minh chứng WB03 (Khoản 6.2 Điều 6)</span>
-                        </div>
+                        <p className="leading-relaxed">
+                          Minh chứng gồm 4 nhóm: <strong>(1) Chức vụ Đoàn – Hội</strong>; <strong>(2) Thành tích xuất sắc 02 năm</strong>; <strong>(3) Bảng điểm & Điểm rèn luyện</strong>; <strong>(4) Minh chứng ưu tiên</strong>.
+                        </p>
                         <button
                           type="button"
                           onClick={() => setIsTruyenLuaGuidanceOpen(!isTruyenLuaGuidanceOpen)}
-                          className="text-[11.5px] font-semibold text-[#0D78AE] hover:underline cursor-pointer inline-flex items-center gap-1"
+                          className="text-[11.5px] font-semibold text-[#0D78AE] hover:underline cursor-pointer inline-flex items-center gap-1 shrink-0"
                         >
-                          <span>{isTruyenLuaGuidanceOpen ? 'Thu gọn hướng dẫn ▲' : 'Xem chi tiết 4 nhóm minh chứng ▼'}</span>
+                          <span>{isTruyenLuaGuidanceOpen ? 'Thu gọn yêu cầu ▲' : 'Xem chi tiết yêu cầu từng nhóm ▼'}</span>
                         </button>
                       </div>
-                      <p className="text-[11.5px] text-[#475569] leading-relaxed">
-                        Minh chứng bao gồm: <strong>(1) Quyết định chức vụ Đoàn – Hội</strong>; <strong>(2) Thành tích xuất sắc 02 năm liên tục</strong>; <strong>(3) Bảng điểm & Điểm rèn luyện</strong>; <strong>(4) Minh chứng ưu tiên</strong> (nếu có).
-                      </p>
+                      <p className="text-[11px] text-[#94A3B8]">Căn cứ: Khoản 6.2 Điều 6 Quy chế Giải thưởng.</p>
+
                       {isTruyenLuaGuidanceOpen && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2.5 border-t border-[#EDF3F8] text-[11.5px] text-[#334155]">
-                          <div className="p-3 rounded-[7px] bg-white border border-[#E2EEF6] space-y-0.5">
-                            <strong className="text-[#0D78AE] block">1. Minh chứng chức vụ & thời gian công tác:</strong>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-2 text-[11.5px] text-[#334155] animate-in fade-in duration-150">
+                          <div className="p-2.5 rounded-[7px] bg-[#F8FAFC] border border-[#E2EEF6] space-y-0.5">
+                            <strong className="text-[#0D78AE] block">1. Chức vụ & thời gian công tác:</strong>
                             <span>Quyết định chuẩn y / công nhận chức vụ cán bộ Đoàn – Hội qua các nhiệm kỳ từ 2 năm trở lên.</span>
                           </div>
-                          <div className="p-3 rounded-[7px] bg-white border border-[#E2EEF6] space-y-0.5">
+                          <div className="p-2.5 rounded-[7px] bg-[#F8FAFC] border border-[#E2EEF6] space-y-0.5">
                             <strong className="text-[#0D78AE] block">2. Thành tích xuất sắc 02 năm liên tục:</strong>
-                            <span>Bằng khen, Giấy khen hoặc văn bản xác nhận thành tích xuất sắc công tác Hội/Đoàn cấp trường trở lên trong 2 năm liền kề.</span>
+                            <span>Bằng khen, Giấy khen hoặc văn bản xác nhận thành tích xuất sắc cấp trường trở lên trong 2 năm liền kề.</span>
                           </div>
-                          <div className="p-3 rounded-[7px] bg-white border border-[#E2EEF6] space-y-0.5">
+                          <div className="p-2.5 rounded-[7px] bg-[#F8FAFC] border border-[#E2EEF6] space-y-0.5">
                             <strong className="text-[#0D78AE] block">3. Bảng điểm học tập & Điểm rèn luyện:</strong>
-                            <span>Bảng điểm GPA và Điểm rèn luyện theo quy định của Mẫu Báo cáo thành tích cá nhân.</span>
+                            <span>Bảng điểm GPA và Điểm rèn luyện theo Mẫu Báo cáo thành tích cá nhân.</span>
                           </div>
-                          <div className="p-3 rounded-[7px] bg-white border border-[#E2EEF6] space-y-0.5">
-                            <strong className="text-[#0D78AE] block">4. Minh chứng ưu tiên:</strong>
-                            <span>Chứng nhận Sinh viên 5 tốt các cấp, hoạt động tình nguyện, giải thưởng NCKH (nếu có kê khai).</span>
+                          <div className="p-2.5 rounded-[7px] bg-[#F8FAFC] border border-[#E2EEF6] space-y-0.5">
+                            <strong className="text-[#0D78AE] block">4. Minh chứng ưu tiên (nếu có):</strong>
+                            <span>Chứng nhận SV5T các cấp, hoạt động tình nguyện, giải thưởng NCKH.</span>
                           </div>
                         </div>
                       )}
                     </div>
 
                     {/* Section: Danh sách tệp minh chứng đã tải lên */}
-                    <div className="space-y-4">
+                    <div className="space-y-3.5">
                       <div className="flex items-center justify-between gap-2 border-b border-[#EDF3F8] pb-2.5 flex-wrap">
                         <div className="flex items-center gap-2">
                           <FileText size={16} className="text-[#0D78AE]" />
@@ -3818,10 +3768,10 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       </div>
 
                       {wb03Files.length === 0 ? (
-                        <div className="p-6 rounded-[10px] border border-dashed border-[#C8D9E6] bg-[#F8FBFD] text-center space-y-2 text-[12.5px] text-[#607483]">
+                        <div className="p-6 rounded-[9px] border border-dashed border-[#C8D9E6] bg-[#F8FBFD] text-center space-y-2 text-[12.5px] text-[#607483]">
                           <p>Chưa có tệp minh chứng nào được tải lên cho WB03.</p>
                           <p className="text-[11.5px] text-[#64748B]">
-                            Quy trình: Tải file trước, sau đó chọn loại minh chứng và ghi chú số hiệu văn bản cho từng file. Hệ thống hỗ trợ nhiều tệp cho cùng 1 loại minh chứng.
+                            Tải file trước, sau đó chọn loại minh chứng và ghi chú số hiệu văn bản cho từng file.
                           </p>
                           {!isReadOnly && (
                             <Button
@@ -3837,77 +3787,98 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         </div>
                       ) : (
                         <div className="space-y-3">
-                          {wb03Files.map((file, idx) => (
-                            <div
-                              key={file.id}
-                              className="p-3.5 rounded-[9px] bg-[#F8FBFD] border border-[#E2EEF6] space-y-2.5"
-                            >
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                <div className="flex items-center gap-2 flex-wrap min-w-0">
-                                  <span className="text-[12px] font-bold text-[#0D78AE]">#{idx + 1}</span>
-                                  <span className="text-[13px] font-bold text-[#172A3A] break-words">
-                                    {file.name}
-                                  </span>
-                                  <span className="text-[10.5px] font-semibold text-[#64748B] bg-white px-2 py-0.5 rounded border border-[#DCE7EE]">
-                                    {file.fileType.toUpperCase()} · {file.size}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-1.5 shrink-0">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleOpenPreview(file)}
-                                    className="px-2.5 py-1 rounded text-[11.5px] font-semibold bg-white border border-[#DCE7EE] text-[#0D78AE] hover:bg-[#EBF6FC] inline-flex items-center gap-1 cursor-pointer"
-                                  >
-                                    <Eye size={12} /> Xem
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDownloadFile(file)}
-                                    className="px-2.5 py-1 rounded text-[11.5px] font-semibold bg-white border border-[#DCE7EE] text-[#475569] hover:bg-[#F1F5F9] inline-flex items-center gap-1 cursor-pointer"
-                                  >
-                                    <Download size={12} /> Tải
-                                  </button>
-                                  {!isReadOnly && (
+                          {wb03Files.map((file, idx) => {
+                            const lowerName = file.name.toLowerCase();
+                            const isSuspicious =
+                              lowerName.includes('invoice') ||
+                              lowerName.includes('hoa_don') ||
+                              lowerName.includes('hoadon') ||
+                              lowerName.includes('quy_che') ||
+                              lowerName.includes('quyche') ||
+                              lowerName.includes('file_mau') ||
+                              lowerName.includes('filemau') ||
+                              lowerName.includes('mau_bc') ||
+                              lowerName.includes('template');
+
+                            return (
+                              <div
+                                key={file.id}
+                                className="p-3.5 rounded-[9px] bg-[#F8FBFD] border border-[#E2EEF6] space-y-2.5"
+                              >
+                                {/* Dòng 1: Tên file + Loại file + Action buttons */}
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2 flex-wrap min-w-0">
+                                    <span className="text-[12px] font-bold text-[#0D78AE]">#{idx + 1}</span>
+                                    <span className="text-[13px] font-bold text-[#172A3A] break-words">
+                                      {file.name}
+                                    </span>
+                                    <span className="text-[10.5px] font-semibold text-[#64748B] bg-white px-2 py-0.5 rounded border border-[#DCE7EE]">
+                                      {file.fileType.toUpperCase()} · {file.size}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5 shrink-0">
                                     <button
                                       type="button"
-                                      onClick={() => handleDeleteEvidence('WB03', file.id)}
-                                      className="p-1 rounded text-red-600 hover:bg-red-50 cursor-pointer"
-                                      title="Xóa tệp"
+                                      onClick={() => handleOpenPreview(file)}
+                                      className="px-2.5 py-1 rounded text-[11.5px] font-semibold bg-white border border-[#DCE7EE] text-[#0D78AE] hover:bg-[#EBF6FC] inline-flex items-center gap-1 cursor-pointer"
                                     >
-                                      <Trash2 size={13} />
+                                      <Eye size={12} /> Xem
                                     </button>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Metadata row: Max 2 columns! Col 1: Category, Col 2: Doc Ref & Academic Year */}
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-[#EDF3F8]">
-                                <div>
-                                  <label className="block text-[11px] font-semibold text-[#475569] mb-1">
-                                    Loại tài liệu minh chứng <span className="text-red-500">*</span>
-                                  </label>
-                                  <select
-                                    disabled={isReadOnly}
-                                    value={file.evidenceCategory || 'CHUC_VU'}
-                                    onChange={(e) =>
-                                      updateWhiteBirdEvidenceCategory(
-                                        activeApp.id,
-                                        'WB03',
-                                        file.id,
-                                        e.target.value as WhiteBirdTruyenLuaEvidenceCategory
-                                      )
-                                    }
-                                    className="w-full px-2.5 py-1.5 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] text-[#172A3A] font-medium focus:outline-none focus:border-[#0D78AE]"
-                                  >
-                                    <option value="CHUC_VU">Chức vụ & Thời gian công tác</option>
-                                    <option value="THANH_TICH_2_NAM">Thành tích xuất sắc 02 năm liên tục</option>
-                                    <option value="HOC_TAP_REN_LUYEN">Bảng điểm & Điểm rèn luyện</option>
-                                    <option value="UU_TIEN">Minh chứng ưu tiên (SV5T, NCKH...)</option>
-                                    <option value="KHAC">Tài liệu minh chứng khác</option>
-                                  </select>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDownloadFile(file)}
+                                      className="px-2.5 py-1 rounded text-[11.5px] font-semibold bg-white border border-[#DCE7EE] text-[#475569] hover:bg-[#F1F5F9] inline-flex items-center gap-1 cursor-pointer"
+                                    >
+                                      <Download size={12} /> Tải
+                                    </button>
+                                    {!isReadOnly && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteEvidence('WB03', file.id)}
+                                        className="p-1 rounded text-red-600 hover:bg-red-50 cursor-pointer"
+                                        title="Xóa tệp"
+                                      >
+                                        <Trash2 size={13} />
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {/* Cảnh báo mềm nếu tên file có dấu hiệu không phù hợp */}
+                                {isSuspicious && (
+                                  <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-[6px] flex items-center gap-1.5">
+                                    <AlertTriangle size={13} className="shrink-0 text-amber-600" />
+                                    <span>Tên tệp có dấu hiệu là file mẫu hoặc hóa đơn. Vui lòng kiểm tra lại để tải đúng quyết định/bằng khen chính thức.</span>
+                                  </div>
+                                )}
+
+                                {/* Dòng 2: Loại tài liệu minh chứng | Số hiệu / Ngày văn bản | Năm học liên quan */}
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-[#EDF3F8]">
+                                  <div>
+                                    <label className="block text-[11px] font-semibold text-[#475569] mb-1">
+                                      Loại tài liệu minh chứng <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                      disabled={isReadOnly}
+                                      value={file.evidenceCategory || 'CHUC_VU'}
+                                      onChange={(e) =>
+                                        updateWhiteBirdEvidenceCategory(
+                                          activeApp.id,
+                                          'WB03',
+                                          file.id,
+                                          e.target.value as WhiteBirdTruyenLuaEvidenceCategory
+                                        )
+                                      }
+                                      className="w-full px-2.5 py-1.5 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] text-[#172A3A] font-medium focus:outline-none focus:border-[#0D78AE]"
+                                    >
+                                      <option value="CHUC_VU">1. Chức vụ & Quá trình công tác</option>
+                                      <option value="THANH_TICH_2_NAM">2. Thành tích xuất sắc 02 năm</option>
+                                      <option value="HOC_TAP_REN_LUYEN">3. Bảng điểm & Điểm rèn luyện</option>
+                                      <option value="UU_TIEN">4. Minh chứng ưu tiên (SV5T, NCKH...)</option>
+                                      <option value="KHAC">Tài liệu minh chứng khác</option>
+                                    </select>
+                                  </div>
+
                                   <div>
                                     <label className="block text-[11px] font-semibold text-[#475569] mb-1">
                                       Số hiệu / Ngày văn bản
@@ -3943,29 +3914,43 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>
 
-                    {/* Tự động tổng hợp danh mục từ tệp đã tải (Light info bar) */}
-                    <div className="p-3 rounded-[8px] bg-[#F8FBFD] border border-[#E2EEF6] text-[12px] flex items-center justify-between gap-2.5 flex-wrap">
-                      <div className="flex items-center gap-2">
-                        <Sparkles size={15} className="text-[#0D78AE] shrink-0" />
-                        <div>
+                    {/* Danh mục minh chứng tự động tổng hợp (Collapse/Expand ở cuối) */}
+                    <div className="p-3.5 rounded-[9px] bg-[#F8FAFC] border border-[#E2EEF6] text-[12px] space-y-2">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          <Sparkles size={15} className="text-[#0D78AE] shrink-0" />
                           <span className="font-bold text-[#172A3A]">
-                            Danh mục minh chứng ({wb03Files.length} tệp)
+                            Danh mục minh chứng tự động tổng hợp ({wb03Files.length} tệp)
                           </span>
-                          <span className="text-[11.5px] text-[#64748B] ml-1.5">
-                            — Tự động tổng hợp từ tệp đính kèm theo Khoản 6.2 Điều 6 (không cần nhập thủ công lại).
-                          </span>
+                          {wb03Files.length > 0 && (
+                            <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+                              ✓ Đã tổng hợp
+                            </span>
+                          )}
                         </div>
+                        {wb03Files.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setIsTruyenLuaSummaryOpen(!isTruyenLuaSummaryOpen)}
+                            className="text-[11.5px] font-semibold text-[#0D78AE] hover:underline cursor-pointer"
+                          >
+                            {isTruyenLuaSummaryOpen ? 'Thu gọn danh mục ▲' : 'Xem danh mục chi tiết ▼'}
+                          </button>
+                        )}
                       </div>
-                      {wb03Files.length > 0 && (
-                        <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded shrink-0">
-                          ✓ Đã tổng hợp tự động
-                        </span>
+                      <p className="text-[11px] text-[#64748B]">
+                        Hệ thống tự động trích xuất từ các tệp đính kèm trên để gửi kèm hồ sơ theo Khoản 6.2 Điều 6 (không cần nhập lại thủ công).
+                      </p>
+                      {isTruyenLuaSummaryOpen && wb03Files.length > 0 && (
+                        <div className="p-3 rounded-[7px] bg-white border border-[#E2E8F0] font-mono text-[11px] text-[#334155] whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
+                          {synthesizeTruyenLuaWb03Summary(wb03Files)}
+                        </div>
                       )}
                     </div>
 
@@ -4126,14 +4111,22 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         </p>
                       </>
                     ) : activeReqId === 'WB02' && activeApp.category === 'TRUYEN_LUA' ? (
-                      <>
-                        <p>
-                          Theo <strong>Khoản 6.2 Điều 6</strong>, đính kèm tệp Báo cáo thành tích cá nhân theo Mẫu quy định. Báo cáo thành tích bắt buộc có chữ ký người báo cáo và xác nhận của Ban Thư ký Hội Sinh viên trường (hoặc Đoàn trường) và Đảng ủy / Ban Giám hiệu Trường thành viên / Đơn vị trực thuộc.
-                        </p>
-                        <p className="text-[11px] text-[#64748B] pt-0.5">
-                          Hỗ trợ tệp PDF, DOCX, XLSX (Tối đa 25MB/tệp).
-                        </p>
-                      </>
+                      <div className="space-y-2 text-[12px] text-[#475569]">
+                        <div className="p-3.5 rounded-[9px] bg-[#F8FAFC] border border-[#E2E8F0] space-y-2">
+                          <div className="font-bold text-[#1E293B] flex items-center gap-1.5">
+                            <ShieldCheck size={15} className="text-[#0D78AE]" />
+                            <span>Checklist yêu cầu xác nhận đối với Báo cáo thành tích cá nhân (Khoản 6.2 Điều 6):</span>
+                          </div>
+                          <ul className="list-disc pl-5 space-y-1 text-[11.5px] text-[#334155]">
+                            <li><strong>Chữ ký cá nhân:</strong> Ký và ghi rõ họ tên của cá nhân báo cáo thành tích.</li>
+                            <li><strong>Xác nhận cấp trường:</strong> Xác nhận của Ban Thư ký Hội Sinh viên trường (hoặc Ban Chấp hành Đoàn trường đối với đơn vị chưa có cơ sở Hội).</li>
+                            <li><strong>Xác nhận cấp Đảng ủy / Ban Giám hiệu:</strong> Xác nhận của Ban Thường vụ Đảng ủy hoặc Ban Giám hiệu Trường thành viên / Đơn vị trực thuộc.</li>
+                          </ul>
+                          <p className="text-[11px] text-[#64748B] pt-1 border-t border-[#EDF3F8]">
+                            * Vui lòng tải lên tệp Báo cáo thành tích cá nhân chính thức (khuyên dùng bản PDF đã ký và đóng dấu). Hỗ trợ PDF, DOCX, XLSX (Tối đa 25MB/tệp).
+                          </p>
+                        </div>
+                      </div>
                     ) : activeReqId === 'WB03' && activeApp.category === 'UOM_MAM' ? (
                       <p>
                         Hỗ trợ hình ảnh, sản phẩm, bài báo hoặc tài liệu minh họa (PDF, JPG, PNG, DOCX, XLSX – Tối đa 25MB/tệp, không bắt buộc).
