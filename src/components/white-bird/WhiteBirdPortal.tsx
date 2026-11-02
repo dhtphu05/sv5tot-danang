@@ -66,6 +66,7 @@ import {
   WhiteBirdRequirementId,
   WhiteBirdOfficerTerm,
   WhiteBirdAnnualAchievement,
+  WhiteBirdAnnualAwardLevel,
   WhiteBirdAcademicAndPriorityRecord,
   WhiteBirdTruyenLuaEvidenceCategory,
   calculateOfficerServiceMonths,
@@ -2558,8 +2559,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
 
                 return (
                   <div className="space-y-6">
-                    {/* Header */}
-                    <div className="border-b border-[#EDF3F8] pb-3 flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                    {/* Header WB02 */}
+                    <div className="border-b border-[#EDF3F8] pb-3.5 flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D78AE]">
@@ -2578,17 +2579,17 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       </div>
                     </div>
 
-                    {/* KHỐI A: THÔNG TIN CÁ NHÂN THEO MẪU BÁO CÁO THÀNH TÍCH (TÓM TẮT ĐỒNG BỘ TỪ HỒ SƠ) */}
-                    <div className="bg-white rounded-[12px] border border-[#DCE7EE] p-4 sm:p-5 space-y-4">
-                      <div className="flex items-center justify-between gap-2 border-b border-[#EDF3F8] pb-2.5 flex-wrap">
+                    {/* SECTION A: LÝ LỊCH TRÍCH NGANG CỦA CÁ NHÂN ĐƯỢC ĐỀ CỬ */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between gap-3 flex-wrap">
                         <div className="flex items-center gap-2">
                           <User size={16} className="text-[#0D78AE]" />
-                          <h3 className="text-[14px] font-bold text-[#172A3A]">
-                            A. Lý lịch trích ngang của cá nhân được đề cử (Đồng bộ từ Hồ sơ cá nhân)
+                          <h3 className="text-[13.5px] font-bold text-[#172A3A] uppercase tracking-wider">
+                            A. Lý lịch trích ngang của cá nhân được đề cử
                           </h3>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-semibold text-[#0D78AE] bg-[#EBF6FC] px-2 py-0.5 rounded">
+                          <span className="text-[11px] font-semibold text-[#0D78AE] bg-[#EBF6FC] px-2.5 py-1 rounded-[6px]">
                             Cá nhân đề cử
                           </span>
                           {!isReadOnly && (
@@ -2601,7 +2602,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                                   showToast('Vui lòng chọn mục "Hồ sơ cá nhân" trên thanh điều hướng để cập nhật thông tin.');
                                 }
                               }}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[7px] text-[11.5px] font-bold bg-[#F1F5F9] text-[#334155] hover:bg-[#E2EEF6] hover:text-[#0D78AE] transition-colors cursor-pointer border border-[#DCE7EE]"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[11.5px] font-semibold bg-[#F8FAFC] text-[#334155] hover:bg-[#EBF6FC] hover:text-[#0D78AE] transition-colors cursor-pointer border border-[#E2E8F0]"
                               title="Chuyển đến trang Hồ sơ cá nhân để điều chỉnh thông tin định danh"
                             >
                               <ExternalLink size={12} className="text-[#0D78AE]" />
@@ -2611,32 +2612,21 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         </div>
                       </div>
 
-                      {/* Phân định rõ: Cá nhân được đề cử vs Tài khoản nộp trực tuyến */}
-                      <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#DCE7EE] text-[12px] text-[#475569] leading-relaxed space-y-1.5">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1.5 border-b border-[#EDF3F8]">
-                          <div className="flex items-center gap-1.5 text-[12.5px]">
-                            <span className="text-[#64748B]">Cá nhân được đề cử:</span>
-                            <strong className="text-[#172A3A] font-bold">{activeApp.nomineeName}</strong>
-                            {activeApp.studentId && (
-                              <span className="text-[#0D78AE] font-semibold text-[11.5px] bg-[#EBF6FC] px-1.5 py-0.5 rounded">
-                                MSSV: {activeApp.studentId}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1.5 text-[11.5px] text-[#64748B]">
-                            <span>Tài khoản nộp trực tuyến:</span>
-                            <strong className="text-[#334155]">{activeApp.preparedByUserName}</strong>
-                            <span>({activeApp.preparedByUserEmail})</span>
-                          </div>
+                      {/* Phân định rõ: Cá nhân được đề cử vs Tài khoản nộp trực tuyến (Light bar) */}
+                      <div className="p-3 rounded-[8px] bg-[#F8FBFD] border-l-3 border-[#0D78AE] text-[12px] text-[#475569] leading-relaxed flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[#64748B]">Tài khoản kê khai trực tuyến:</span>
+                          <strong className="text-[#172A3A] font-semibold">{activeApp.preparedByUserName}</strong>
+                          <span className="text-[#64748B]">({activeApp.preparedByUserEmail})</span>
                         </div>
-                        <p className="text-[11px] text-[#64748B]">
-                          * Dữ liệu lý lịch dưới đây được tự động đồng bộ từ <strong>Hồ sơ cá nhân</strong> của hệ thống 5TOT ĐHĐN. Để thay đổi các trường định danh chung, vui lòng cập nhật tại trang Hồ sơ cá nhân (dữ liệu bản nháp sẽ tự động cập nhật khi quay lại, hồ sơ đã nộp sẽ được bảo toàn nguyên vẹn snapshot).
-                        </p>
+                        <span className="text-[11px] text-[#64748B]">
+                          * Dữ liệu tự động đồng bộ từ Hồ sơ cá nhân
+                        </span>
                       </div>
 
-                      {/* Tiêu đề báo cáo thành tích */}
+                      {/* Tiêu đề báo cáo thành tích cá nhân (Full-width) */}
                       <div>
-                        <label htmlFor="wb02-tl-report-title" className="block text-[12.5px] font-bold text-[#172A3A] mb-1">
+                        <label htmlFor="wb02-tl-report-title" className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
                           Tiêu đề báo cáo thành tích cá nhân <span className="text-red-500">*</span>
                         </label>
                         <AutoResizeTextarea
@@ -2655,96 +2645,114 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         />
                       </div>
 
-                      {/* Khối tóm tắt thông tin cá nhân (Read-only Summary Grid) */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 p-3.5 rounded-[10px] bg-[#FAFCFE] border border-[#E2EEF6] text-[12px]">
-                        <div className="p-2 rounded bg-white border border-[#EDF3F8]">
-                          <span className="text-[#64748B] block text-[11px] mb-0.5">Họ và tên cá nhân đề cử:</span>
-                          <strong className="text-[#172A3A] text-[12.5px]">{activeApp.nomineeName}</strong>
+                      {/* Khối tóm tắt thông tin cá nhân (Light Info Panel, Max 2 columns, No nested box cards) */}
+                      <div className="rounded-[10px] bg-[#FAFCFE] border border-[#E2EEF6] p-4 sm:p-5 space-y-3">
+                        <div className="text-[12px] font-bold text-[#0D78AE] uppercase tracking-wide pb-2 border-b border-[#EDF3F8]">
+                          Thông tin trích ngang đồng bộ từ Hồ sơ cá nhân
                         </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3.5 text-[12.5px]">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[11.5px] font-medium text-[#64748B]">Họ và tên cá nhân đề cử:</span>
+                            <span className="text-[13.5px] font-bold text-[#172A3A] break-words">{activeApp.nomineeName}</span>
+                          </div>
 
-                        <div className="p-2 rounded bg-white border border-[#EDF3F8]">
-                          <span className="text-[#64748B] block text-[11px] mb-0.5">Mã số sinh viên (MSSV):</span>
-                          <span className="text-[#172A3A] font-semibold">{activeApp.studentId || 'Chưa cập nhật'}</span>
-                        </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[11.5px] font-medium text-[#64748B]">Mã số sinh viên (MSSV):</span>
+                            <span className="text-[13px] font-semibold text-[#172A3A]">{activeApp.studentId || 'Chưa cập nhật'}</span>
+                          </div>
 
-                        <div className="p-2 rounded bg-white border border-[#EDF3F8]">
-                          <span className="text-[#64748B] block text-[11px] mb-0.5">Trường thành viên / Đơn vị:</span>
-                          <span className="text-[#172A3A] font-medium">{activeApp.institutionName}</span>
-                        </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[11.5px] font-medium text-[#64748B]">Trường thành viên / Đơn vị trực thuộc:</span>
+                            <span className="text-[13px] font-medium text-[#172A3A] break-words">{activeApp.institutionName}</span>
+                          </div>
 
-                        <div className="p-2 rounded bg-white border border-[#EDF3F8]">
-                          <span className="text-[#64748B] block text-[11px] mb-0.5">Khoa / Viện đào tạo:</span>
-                          <span className="text-[#172A3A]">{activeApp.facultyName || wb02Data.nomineeFaculty || 'Chưa cập nhật'}</span>
-                        </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[11.5px] font-medium text-[#64748B]">Khoa / Viện / Phân hiệu:</span>
+                            <span className="text-[13px] font-medium text-[#172A3A] break-words">
+                              {activeApp.facultyName || wb02Data.nomineeFaculty || 'Chưa cập nhật'}
+                            </span>
+                          </div>
 
-                        <div className="p-2 rounded bg-white border border-[#EDF3F8]">
-                          <span className="text-[#64748B] block text-[11px] mb-0.5">Lớp sinh hoạt:</span>
-                          <span className="text-[#172A3A] font-medium">{activeApp.className || wb02Data.nomineeClass || 'Chưa cập nhật'}</span>
-                        </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[11.5px] font-medium text-[#64748B]">Lớp sinh hoạt:</span>
+                            <span className="text-[13px] font-medium text-[#172A3A]">
+                              {activeApp.className || wb02Data.nomineeClass || 'Chưa cập nhật'}
+                            </span>
+                          </div>
 
-                        <div className="p-2 rounded bg-white border border-[#EDF3F8]">
-                          <span className="text-[#64748B] block text-[11px] mb-0.5">Sinh viên năm thứ / Khóa:</span>
-                          <span className="text-[#172A3A]">
-                            {wb02Data.nomineeYearOfStudy || (studentProfileSnapshot?.academicYearNumber ? `Năm thứ ${studentProfileSnapshot.academicYearNumber}` : 'Chưa cập nhật')}
-                          </span>
-                        </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[11.5px] font-medium text-[#64748B]">Sinh viên năm thứ / Khóa học:</span>
+                            <span className="text-[13px] font-medium text-[#172A3A]">
+                              {wb02Data.nomineeYearOfStudy || (studentProfileSnapshot?.academicYearNumber ? `Năm thứ ${studentProfileSnapshot.academicYearNumber}` : 'Chưa cập nhật')}
+                            </span>
+                          </div>
 
-                        <div className="p-2 rounded bg-white border border-[#EDF3F8]">
-                          <span className="text-[#64748B] block text-[11px] mb-0.5">Ngày tháng năm sinh:</span>
-                          <span className="text-[#172A3A]">
-                            {wb02Data.nomineeDateOfBirth || studentProfileSnapshot?.dateOfBirth || 'Chưa cập nhật'}
-                          </span>
-                        </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[11.5px] font-medium text-[#64748B]">Ngày tháng năm sinh:</span>
+                            <span className="text-[13px] font-medium text-[#172A3A]">
+                              {wb02Data.nomineeDateOfBirth || studentProfileSnapshot?.dateOfBirth || 'Chưa cập nhật'}
+                            </span>
+                          </div>
 
-                        <div className="p-2 rounded bg-white border border-[#EDF3F8]">
-                          <span className="text-[#64748B] block text-[11px] mb-0.5">Giới tính:</span>
-                          <span className="text-[#172A3A]">
-                            {wb02Data.nomineeGender === 'NAM' ? 'Nam' : wb02Data.nomineeGender === 'NU' ? 'Nữ' : wb02Data.nomineeGender || studentProfileSnapshot?.gender || 'Chưa cập nhật'}
-                          </span>
-                        </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[11.5px] font-medium text-[#64748B]">Giới tính & Dân tộc:</span>
+                            <span className="text-[13px] font-medium text-[#172A3A]">
+                              {(wb02Data.nomineeGender === 'NAM' ? 'Nam' : wb02Data.nomineeGender === 'NU' ? 'Nữ' : wb02Data.nomineeGender || studentProfileSnapshot?.gender || 'Chưa cập nhật')} · {wb02Data.nomineeEthnicity || studentProfileSnapshot?.ethnicity || 'Kinh'}
+                            </span>
+                          </div>
 
-                        <div className="p-2 rounded bg-white border border-[#EDF3F8]">
-                          <span className="text-[#64748B] block text-[11px] mb-0.5">Dân tộc:</span>
-                          <span className="text-[#172A3A]">{wb02Data.nomineeEthnicity || studentProfileSnapshot?.ethnicity || 'Kinh'}</span>
-                        </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[11.5px] font-medium text-[#64748B]">Quê quán (Tỉnh / Thành phố):</span>
+                            <span className="text-[13px] font-medium text-[#172A3A] break-words">
+                              {wb02Data.nomineeHometown || studentProfileSnapshot?.homeProvince || 'Chưa cập nhật'}
+                            </span>
+                          </div>
 
-                        <div className="p-2 rounded bg-white border border-[#EDF3F8]">
-                          <span className="text-[#64748B] block text-[11px] mb-0.5">Quê quán:</span>
-                          <span className="text-[#172A3A]">{wb02Data.nomineeHometown || studentProfileSnapshot?.homeProvince || 'Chưa cập nhật'}</span>
-                        </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[11.5px] font-medium text-[#64748B]">Số điện thoại liên hệ:</span>
+                            <span className="text-[13px] font-medium text-[#172A3A]">
+                              {wb02Data.nomineePhone || activeApp.contactPhone || studentProfileSnapshot?.phoneNumber || 'Chưa cập nhật'}
+                            </span>
+                          </div>
 
-                        <div className="p-2 rounded bg-white border border-[#EDF3F8]">
-                          <span className="text-[#64748B] block text-[11px] mb-0.5">Số điện thoại liên hệ:</span>
-                          <span className="text-[#172A3A] font-medium">{wb02Data.nomineePhone || activeApp.contactPhone || studentProfileSnapshot?.phoneNumber || 'Chưa cập nhật'}</span>
-                        </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[11.5px] font-medium text-[#64748B]">Tình trạng chính trị:</span>
+                            <span className="text-[13px] font-medium text-[#172A3A]">
+                              {wb02Data.nomineePoliticalStatus === 'DANG_VIEN'
+                                ? 'Đảng viên Đảng Cộng sản Việt Nam'
+                                : 'Đoàn viên TNCS Hồ Chí Minh'}
+                            </span>
+                          </div>
 
-                        <div className="p-2 rounded bg-white border border-[#EDF3F8]">
-                          <span className="text-[#64748B] block text-[11px] mb-0.5">Tình trạng Đoàn viên / Đảng viên:</span>
-                          <span className="text-[#172A3A] font-medium">
-                            {wb02Data.nomineePoliticalStatus === 'DANG_VIEN'
-                              ? 'Đảng viên Đảng Cộng sản Việt Nam'
-                              : 'Đoàn viên TNCS Hồ Chí Minh'}
-                          </span>
-                        </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[11.5px] font-medium text-[#64748B]">Email liên hệ:</span>
+                            <span className="text-[13px] font-medium text-[#172A3A] break-words">
+                              {wb02Data.nomineeEmail || activeApp.preparedByUserEmail || studentProfileSnapshot?.email || 'Chưa cập nhật'}
+                            </span>
+                          </div>
 
-                        <div className="p-2 rounded bg-white border border-[#EDF3F8] sm:col-span-2 md:col-span-3">
-                          <span className="text-[#64748B] block text-[11px] mb-0.5">Chức vụ Đoàn – Hội hiện tại (theo Hồ sơ cá nhân):</span>
-                          <span className="text-[#0D78AE] font-bold">
-                            {wb02Data.nomineeCurrentRole || studentProfileSnapshot?.unionPosition || 'Chưa cập nhật'}
-                          </span>
-                          <span className="text-[11px] text-[#64748B] block mt-0.5">
-                            (Lưu ý: Quá trình công tác các nhiệm kỳ được kê khai chi tiết tại Khối B bên dưới; chức vụ hiện tại không tự động thay thế lịch sử các chức vụ đã đảm nhiệm).
-                          </span>
+                          <div className="flex flex-col gap-0.5 md:col-span-2 pt-2 border-t border-[#EDF3F8]">
+                            <span className="text-[11.5px] font-medium text-[#64748B]">Chức vụ Đoàn – Hội hiện tại:</span>
+                            <span className="text-[13px] font-bold text-[#0D78AE] break-words">
+                              {wb02Data.nomineeCurrentRole || studentProfileSnapshot?.unionPosition || 'Chưa cập nhật'}
+                            </span>
+                            <span className="text-[11px] text-[#64748B] mt-0.5">
+                              * Quá trình công tác các nhiệm kỳ được kê khai chi tiết tại Mục B bên dưới; chức vụ hiện tại không tự động thay thế lịch sử các chức vụ đã đảm nhiệm.
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* KHỐI B: QUÁ TRÌNH CÔNG TÁC ĐOÀN – HỘI (ĐIỂM C KHOẢN 4.2 ĐIỀU 4) */}
-                    <div className="bg-white rounded-[12px] border border-[#DCE7EE] p-4 sm:p-5 space-y-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#EDF3F8] pb-2.5">
+                    {/* Divider between Section A and Section B */}
+                    <div className="border-t border-[#EDF3F8] my-6" />
+
+                    {/* SECTION B: QUÁ TRÌNH CÔNG TÁC ĐOÀN – HỘI & CHỨC VỤ */}
+                    <div className="space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                           <Clock size={16} className="text-[#0D78AE]" />
-                          <h3 className="text-[14px] font-bold text-[#172A3A]">
+                          <h3 className="text-[13.5px] font-bold text-[#172A3A] uppercase tracking-wider">
                             B. Quá trình công tác Đoàn – Hội & Chức vụ (Tối thiểu 2 năm)
                           </h3>
                         </div>
@@ -2752,7 +2760,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           <button
                             type="button"
                             onClick={handleAddTerm}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-[12px] font-bold bg-[#EBF6FC] text-[#0D78AE] hover:bg-[#D9EFF9] transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-[12px] font-bold bg-[#EBF6FC] text-[#0D78AE] hover:bg-[#D9EFF9] transition-colors cursor-pointer self-start sm:self-auto"
                           >
                             <Plus size={14} />
                             <span>Thêm giai đoạn công tác</span>
@@ -2760,24 +2768,24 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         )}
                       </div>
 
-                      {/* Standards Guidance & Real-time Evaluation Box */}
+                      {/* Standards Guidance & Real-time Evaluation (Light banner) */}
                       {terms.length === 0 ? (
-                        <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#C8D9E6] text-[12px] text-[#475569] leading-relaxed flex items-start gap-2.5">
-                          <Info size={16} className="text-[#0D78AE] shrink-0 mt-0.5" />
+                        <div className="p-3.5 rounded-[8px] bg-[#F8FBFD] border-l-3 border-[#0D78AE] text-[12px] text-[#475569] leading-relaxed flex items-start gap-2.5">
+                          <Info size={15} className="text-[#0D78AE] shrink-0 mt-0.5" />
                           <div>
                             <span className="font-bold text-[#172A3A] block mb-0.5">
                               Căn cứ tiêu chuẩn chức vụ & thời gian công tác (Điểm c khoản 4.2 Điều 4 Quy chế):
                             </span>
                             <span>
-                              Cán bộ Hội giữ chức vụ từ <strong>Chi hội trưởng</strong> trở lên (đơn vị có cơ sở Hội) hoặc cán bộ Đoàn từ <strong>Bí thư Chi đoàn</strong> trở lên (đơn vị không có cơ sở Hội); có thời gian công tác Đoàn – Hội từ <strong>02 năm</strong> trở lên. Vui lòng thêm các giai đoạn công tác bên dưới để hệ thống hỗ trợ tính toán và đối chiếu.
+                              Cán bộ Hội giữ chức vụ từ <strong>Chi hội trưởng</strong> trở lên (đơn vị có cơ sở Hội) hoặc cán bộ Đoàn từ <strong>Bí thư Chi đoàn</strong> trở lên (đơn vị chưa có cơ sở Hội); có tổng thời gian công tác Đoàn – Hội từ <strong>02 năm</strong> (≥ 24 tháng) trở lên.
                             </span>
                           </div>
                         </div>
                       ) : (
-                        <div className={`p-3.5 rounded-[10px] border text-[12px] leading-relaxed space-y-2 ${
+                        <div className={`p-3.5 rounded-[8px] border-l-3 text-[12px] leading-relaxed space-y-1.5 ${
                           tenureCalc.meetsTwoYearsRequirement
-                            ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#166534]'
-                            : 'bg-[#FFFBEB] border-[#FDE68A] text-[#92400E]'
+                            ? 'bg-[#F0FDF4] border-l-[#16A34A] text-[#166534]'
+                            : 'bg-[#FFFBEB] border-l-[#D97706] text-[#92400E]'
                         }`}>
                           <div className="flex items-center justify-between gap-2 flex-wrap">
                             <span className="font-bold inline-flex items-center gap-1.5">
@@ -2788,14 +2796,12 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                               )}
                               Tổng thời gian công tác hợp lệ: {tenureCalc.totalMonths} tháng (~{tenureCalc.totalYearsText} năm)
                             </span>
-                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
+                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${
                               tenureCalc.meetsTwoYearsRequirement
-                                ? 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]'
-                                : 'bg-[#FEF3C7] text-[#B45309] border-[#FCD34D]'
+                                ? 'bg-[#DCFCE7] text-[#15803D]'
+                                : 'bg-[#FEF3C7] text-[#B45309]'
                             }`}>
-                              {tenureCalc.meetsTwoYearsRequirement
-                                ? 'Đạt thời gian công tác (≥ 2 năm)'
-                                : 'Hỗ trợ thẩm định (< 24 tháng)'}
+                              {tenureCalc.meetsTwoYearsRequirement ? 'Đạt tiêu chuẩn (≥ 2 năm)' : 'Hỗ trợ thẩm định (< 24 tháng)'}
                             </span>
                           </div>
                           <p className="text-[11.5px] opacity-90">
@@ -2810,9 +2816,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         </div>
                       )}
 
-                      {/* Terms List */}
+                      {/* Terms List: Max 2 columns per row, full visibility */}
                       {terms.length === 0 ? (
-                        <div className="p-4 rounded-[9px] border border-dashed border-[#C8D9E6] text-center text-[12.5px] text-[#607483] space-y-2">
+                        <div className="p-5 rounded-[9px] border border-dashed border-[#C8D9E6] text-center text-[12.5px] text-[#607483] space-y-2">
                           <p>Chưa có giai đoạn công tác nào được ghi nhận.</p>
                           {!isReadOnly && (
                             <button
@@ -2826,151 +2832,158 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           )}
                         </div>
                       ) : (
-                        <div className="space-y-3">
-                          {terms.map((term, idx) => (
-                            <div
-                              key={term.id}
-                              className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#DCE7EE] space-y-3"
-                            >
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="text-[11.5px] font-bold text-[#0D78AE]">
-                                  Giai đoạn công tác #{idx + 1}
-                                </span>
-                                {!isReadOnly && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDeleteTerm(term.id)}
-                                    className="text-[11px] font-semibold text-red-600 hover:text-red-700 hover:underline cursor-pointer inline-flex items-center gap-1"
-                                  >
-                                    <Trash2 size={12} />
-                                    <span>Xóa</span>
-                                  </button>
-                                )}
+                        <div className="space-y-3.5">
+                          {terms.map((term, idx) => {
+                            const sParsed = parseMonthYear(term.startMonthYear);
+                            const eParsed = term.isCurrent ? parseMonthYear('hiện nay') : parseMonthYear(term.endMonthYear);
+                            const isInvalidDate = Boolean(
+                              sParsed &&
+                              eParsed &&
+                              !term.isCurrent &&
+                              (eParsed.year * 12 + eParsed.month < sParsed.year * 12 + sParsed.month)
+                            );
+                            return (
+                              <div
+                                key={term.id}
+                                className="p-4 rounded-[10px] bg-[#F8FBFD] border border-[#E2EEF6] space-y-3"
+                              >
+                                <div className="flex items-center justify-between gap-2 border-b border-[#EDF3F8] pb-2">
+                                  <span className="text-[12px] font-bold text-[#0D78AE]">
+                                    Giai đoạn công tác #{idx + 1}
+                                  </span>
+                                  {!isReadOnly && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteTerm(term.id)}
+                                      className="text-[11.5px] font-medium text-red-600 hover:text-red-700 hover:underline cursor-pointer inline-flex items-center gap-1"
+                                    >
+                                      <Trash2 size={12} />
+                                      <span>Xóa giai đoạn</span>
+                                    </button>
+                                  )}
+                                </div>
+
+                                {/* Row 1 (2 cols): Chức vụ & Đơn vị (Full width, no truncation) */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                                  <div>
+                                    <label className="block text-[12px] font-semibold text-[#172A3A] mb-1">
+                                      Chức vụ đảm nhiệm <span className="text-red-500">*</span>
+                                    </label>
+                                    <AutoResizeTextarea
+                                      rows={1}
+                                      minHeight={38}
+                                      maxHeight={100}
+                                      disabled={isReadOnly}
+                                      value={term.position}
+                                      onChange={(e) => handleUpdateTerm(term.id, { position: e.target.value })}
+                                      placeholder="VD: Chi hội trưởng / Ủy viên BCH Liên chi Hội..."
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <label className="block text-[12px] font-semibold text-[#172A3A] mb-1">
+                                      Đơn vị công tác <span className="text-red-500">*</span>
+                                    </label>
+                                    <AutoResizeTextarea
+                                      rows={1}
+                                      minHeight={38}
+                                      maxHeight={100}
+                                      disabled={isReadOnly}
+                                      value={term.unit}
+                                      onChange={(e) => handleUpdateTerm(term.id, { unit: e.target.value })}
+                                      placeholder="VD: Chi hội 21TCLC_DT1, Khoa Công nghệ Thông tin..."
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Row 2 (2 cols): Loại hình đơn vị & Thời gian đảm nhiệm */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
+                                  <div>
+                                    <label className="block text-[12px] font-semibold text-[#172A3A] mb-1">
+                                      Loại hình đơn vị công tác (Điều 4)
+                                    </label>
+                                    <select
+                                      disabled={isReadOnly}
+                                      value={term.unitType}
+                                      onChange={(e) =>
+                                        handleUpdateTerm(term.id, {
+                                          unitType: e.target.value as 'WITH_HOI' | 'WITHOUT_HOI',
+                                        })
+                                      }
+                                      className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
+                                    >
+                                      <option value="WITH_HOI">Có tổ chức cơ sở Hội (Từ Chi hội trưởng trở lên)</option>
+                                      <option value="WITHOUT_HOI">Chưa có tổ chức cơ sở Hội (Từ Bí thư Chi đoàn trở lên)</option>
+                                    </select>
+                                  </div>
+
+                                  <div>
+                                    <div className="flex items-center justify-between gap-1 mb-1">
+                                      <label className="text-[12px] font-semibold text-[#172A3A]">
+                                        Thời gian đảm nhiệm (Bắt đầu – Kết thúc) <span className="text-red-500">*</span>
+                                      </label>
+                                      <label className="inline-flex items-center gap-1.5 text-[11px] text-[#475569] cursor-pointer">
+                                        <input
+                                          type="checkbox"
+                                          disabled={isReadOnly}
+                                          checked={Boolean(term.isCurrent)}
+                                          onChange={(e) =>
+                                            handleUpdateTerm(term.id, {
+                                              isCurrent: e.target.checked,
+                                              endMonthYear: e.target.checked ? 'Hiện nay' : '',
+                                            })
+                                          }
+                                          className="w-3.5 h-3.5 accent-[#0D78AE]"
+                                        />
+                                        <span>Đang giữ chức vụ</span>
+                                      </label>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        disabled={isReadOnly}
+                                        value={term.startMonthYear}
+                                        onChange={(e) => handleUpdateTerm(term.id, { startMonthYear: e.target.value })}
+                                        placeholder="09/2023"
+                                        className="w-1/2 px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE] text-center"
+                                      />
+                                      <span className="text-[#64748B] text-[13px] font-bold">–</span>
+                                      {term.isCurrent ? (
+                                        <span className="w-1/2 px-3 py-2 text-[12px] bg-[#EBF6FC] text-[#0D78AE] font-semibold border border-[#BAE6FD] rounded-[8px] text-center">
+                                          Hiện nay
+                                        </span>
+                                      ) : (
+                                        <input
+                                          disabled={isReadOnly}
+                                          value={term.endMonthYear}
+                                          onChange={(e) => handleUpdateTerm(term.id, { endMonthYear: e.target.value })}
+                                          placeholder="06/2025"
+                                          className="w-1/2 px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE] text-center"
+                                        />
+                                      )}
+                                    </div>
+                                    {isInvalidDate && (
+                                      <span className="text-[11px] text-red-600 block mt-1">
+                                        Thời điểm kết thúc phải sau hoặc bằng thời điểm bắt đầu.
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
-
-                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                                <div>
-                                  <label className="block text-[11.5px] font-semibold text-[#172A3A] mb-1">
-                                    Chức vụ giữ *
-                                  </label>
-                                  <input
-                                    disabled={isReadOnly}
-                                    value={term.position}
-                                    onChange={(e) => handleUpdateTerm(term.id, { position: e.target.value })}
-                                    placeholder="VD: Chi hội trưởng / UV BCH LCH"
-                                    className="w-full px-2.5 py-1.5 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[7px] focus:outline-none focus:border-[#0D78AE]"
-                                  />
-                                </div>
-
-                                <div>
-                                  <label className="block text-[11.5px] font-semibold text-[#172A3A] mb-1">
-                                    Đơn vị công tác *
-                                  </label>
-                                  <input
-                                    disabled={isReadOnly}
-                                    value={term.unit}
-                                    onChange={(e) => handleUpdateTerm(term.id, { unit: e.target.value })}
-                                    placeholder="VD: Chi hội 21TCLC_DT1"
-                                    className="w-full px-2.5 py-1.5 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[7px] focus:outline-none focus:border-[#0D78AE]"
-                                  />
-                                </div>
-
-                                <div>
-                                  <label className="block text-[11.5px] font-semibold text-[#172A3A] mb-1">
-                                    Loại hình đơn vị (Điều 4)
-                                  </label>
-                                  <select
-                                    disabled={isReadOnly}
-                                    value={term.unitType}
-                                    onChange={(e) =>
-                                      handleUpdateTerm(term.id, {
-                                        unitType: e.target.value as 'WITH_HOI' | 'WITHOUT_HOI',
-                                      })
-                                    }
-                                    className="w-full px-2.5 py-1.5 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] focus:outline-none focus:border-[#0D78AE]"
-                                  >
-                                    <option value="WITH_HOI">Có tổ chức cơ sở Hội</option>
-                                    <option value="WITHOUT_HOI">Không có tổ chức cơ sở Hội</option>
-                                  </select>
-                                </div>
-
-                                <div>
-                                  {(() => {
-                                    const sParsed = parseMonthYear(term.startMonthYear);
-                                    const eParsed = term.isCurrent ? parseMonthYear('hiện nay') : parseMonthYear(term.endMonthYear);
-                                    const isInvalidDate = Boolean(
-                                      sParsed &&
-                                      eParsed &&
-                                      !term.isCurrent &&
-                                      (eParsed.year * 12 + eParsed.month < sParsed.year * 12 + sParsed.month)
-                                    );
-                                    return (
-                                      <>
-                                        <div className="flex items-center justify-between gap-1 mb-1">
-                                          <label className="text-[11.5px] font-semibold text-[#172A3A]">
-                                            Thời gian (Bắt đầu - Kết thúc) *
-                                          </label>
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
-                                          <input
-                                            disabled={isReadOnly}
-                                            value={term.startMonthYear}
-                                            onChange={(e) => handleUpdateTerm(term.id, { startMonthYear: e.target.value })}
-                                            placeholder="09/2023"
-                                            className="w-1/2 px-2 py-1.5 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] focus:outline-none focus:border-[#0D78AE] text-center"
-                                          />
-                                          <span className="text-[#64748B] text-[12px]">-</span>
-                                          {term.isCurrent ? (
-                                            <span className="w-1/2 px-2 py-1.5 text-[11.5px] bg-[#EBF6FC] text-[#0D78AE] font-semibold border border-[#BAE6FD] rounded-[7px] text-center">
-                                              Hiện nay
-                                            </span>
-                                          ) : (
-                                            <input
-                                              disabled={isReadOnly}
-                                              value={term.endMonthYear}
-                                              onChange={(e) => handleUpdateTerm(term.id, { endMonthYear: e.target.value })}
-                                              placeholder="06/2025"
-                                              className="w-1/2 px-2 py-1.5 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] focus:outline-none focus:border-[#0D78AE] text-center"
-                                            />
-                                          )}
-                                        </div>
-                                        {isInvalidDate && (
-                                          <span className="text-[11px] text-red-600 block mt-0.5">
-                                            Thời điểm kết thúc phải sau hoặc bằng thời điểm bắt đầu.
-                                          </span>
-                                        )}
-                                        <label className="inline-flex items-center gap-1.5 mt-1 text-[11px] text-[#475569] cursor-pointer">
-                                          <input
-                                            type="checkbox"
-                                            disabled={isReadOnly}
-                                            checked={Boolean(term.isCurrent)}
-                                            onChange={(e) =>
-                                              handleUpdateTerm(term.id, {
-                                                isCurrent: e.target.checked,
-                                                endMonthYear: e.target.checked ? 'Hiện nay' : '',
-                                              })
-                                            }
-                                            className="w-3.5 h-3.5 accent-[#0D78AE]"
-                                          />
-                                          <span>Đang giữ chức vụ</span>
-                                        </label>
-                                      </>
-                                    );
-                                  })()}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>
 
-                    {/* KHỐI C: THÀNH TÍCH XUẤT SẮC TRONG 2 NĂM LIÊN TỤC (ĐIỂM C KHOẢN 4.2 ĐIỀU 4) */}
-                    <div className="bg-white rounded-[12px] border border-[#DCE7EE] p-4 sm:p-5 space-y-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#EDF3F8] pb-2.5">
+                    {/* Divider between Section B and Section C */}
+                    <div className="border-t border-[#EDF3F8] my-6" />
+
+                    {/* SECTION C: THÀNH TÍCH XUẤT SẮC 2 NĂM LIÊN TỤC */}
+                    <div className="space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                           <Award size={16} className="text-[#0D78AE]" />
-                          <h3 className="text-[14px] font-bold text-[#172A3A]">
+                          <h3 className="text-[13.5px] font-bold text-[#172A3A] uppercase tracking-wider">
                             C. Thành tích xuất sắc trong công tác Hội/Đoàn 2 năm liên tục
                           </h3>
                         </div>
@@ -2978,7 +2991,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           <button
                             type="button"
                             onClick={handleAddAchievement}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-[12px] font-bold bg-[#EBF6FC] text-[#0D78AE] hover:bg-[#D9EFF9] transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-[12px] font-bold bg-[#EBF6FC] text-[#0D78AE] hover:bg-[#D9EFF9] transition-colors cursor-pointer self-start sm:self-auto"
                           >
                             <Plus size={14} />
                             <span>Thêm thành tích năm học</span>
@@ -2986,10 +2999,10 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         )}
                       </div>
 
-                      {/* Consecutive Years Verification Banner */}
+                      {/* Consecutive Years Verification Banner (Light) */}
                       {achievements.length === 0 ? (
-                        <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#C8D9E6] text-[12px] text-[#475569] leading-relaxed flex items-start gap-2.5">
-                          <Info size={16} className="text-[#0D78AE] shrink-0 mt-0.5" />
+                        <div className="p-3.5 rounded-[8px] bg-[#F8FBFD] border-l-3 border-[#0D78AE] text-[12px] text-[#475569] leading-relaxed flex items-start gap-2.5">
+                          <Info size={15} className="text-[#0D78AE] shrink-0 mt-0.5" />
                           <div>
                             <span className="font-bold text-[#172A3A] block mb-0.5">
                               Căn cứ tiêu chuẩn thành tích 02 năm liên tục (Điểm c khoản 4.2 Điều 4 Quy chế):
@@ -3000,10 +3013,10 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           </div>
                         </div>
                       ) : (
-                        <div className={`p-3.5 rounded-[10px] border text-[12px] leading-relaxed flex items-start gap-2.5 ${
+                        <div className={`p-3.5 rounded-[8px] border-l-3 text-[12px] leading-relaxed flex items-start gap-2.5 ${
                           consecCheck.hasTwoConsecutiveYears
-                            ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#166534]'
-                            : 'bg-[#FFFBEB] border-[#FDE68A] text-[#92400E]'
+                            ? 'bg-[#F0FDF4] border-l-[#16A34A] text-[#166534]'
+                            : 'bg-[#FFFBEB] border-l-[#D97706] text-[#92400E]'
                         }`}>
                           {consecCheck.hasTwoConsecutiveYears ? (
                             <CheckCircle2 size={16} className="text-[#16A34A] shrink-0 mt-0.5" />
@@ -3021,9 +3034,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         </div>
                       )}
 
-                      {/* Achievements List */}
+                      {/* Achievements List: Max 2 columns, spacious inputs */}
                       {achievements.length === 0 ? (
-                        <div className="p-4 rounded-[9px] border border-dashed border-[#C8D9E6] text-center text-[12.5px] text-[#607483] space-y-2">
+                        <div className="p-5 rounded-[9px] border border-dashed border-[#C8D9E6] text-center text-[12.5px] text-[#607483] space-y-2">
                           <p>Chưa kê khai thành tích xuất sắc theo năm học.</p>
                           {!isReadOnly && (
                             <button
@@ -3037,68 +3050,56 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           )}
                         </div>
                       ) : (
-                        <div className="space-y-3">
+                        <div className="space-y-3.5">
                           {achievements.map((ach, idx) => {
-                            const matchAppYear = /(\d{4})/g.exec(activeApp.academicYear || '2025');
+                            const matchAppYear = /(d{4})/g.exec(activeApp.academicYear || '2025');
                             const baseAppYear = matchAppYear ? parseInt(matchAppYear[1], 10) : 2025;
                             const dynamicSampleYear = `VD: ${baseAppYear - 2}–${baseAppYear - 1} hoặc ${baseAppYear - 1}–${baseAppYear}`;
                             return (
                               <div
                                 key={ach.id}
-                                className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#DCE7EE] space-y-3"
+                                className="p-4 rounded-[10px] bg-[#F8FBFD] border border-[#E2EEF6] space-y-3"
                               >
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="text-[11.5px] font-bold text-[#0D78AE]">
+                                <div className="flex items-center justify-between gap-2 border-b border-[#EDF3F8] pb-2">
+                                  <span className="text-[12px] font-bold text-[#0D78AE]">
                                     Thành tích năm học #{idx + 1}
                                   </span>
                                   {!isReadOnly && (
                                     <button
                                       type="button"
                                       onClick={() => handleDeleteAchievement(ach.id)}
-                                      className="text-[11px] font-semibold text-red-600 hover:text-red-700 hover:underline cursor-pointer inline-flex items-center gap-1"
+                                      className="text-[11.5px] font-medium text-red-600 hover:text-red-700 hover:underline cursor-pointer inline-flex items-center gap-1"
                                     >
                                       <Trash2 size={12} />
-                                      <span>Xóa</span>
+                                      <span>Xóa thành tích</span>
                                     </button>
                                   )}
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                {/* Row 1 (2 cols): Năm học & Cấp ghi nhận khen thưởng */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                                   <div>
-                                    <label className="block text-[11.5px] font-semibold text-[#172A3A] mb-1">
-                                      Năm học xét trao *
+                                    <label className="block text-[12px] font-semibold text-[#172A3A] mb-1">
+                                      Năm học xét trao <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                       disabled={isReadOnly}
                                       value={ach.academicYear}
                                       onChange={(e) => handleUpdateAchievement(ach.id, { academicYear: e.target.value })}
                                       placeholder={dynamicSampleYear}
-                                      className="w-full px-2.5 py-1.5 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[7px] focus:outline-none focus:border-[#0D78AE]"
+                                      className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
                                     />
                                   </div>
 
                                   <div>
-                                    <label className="block text-[11.5px] font-semibold text-[#172A3A] mb-1">
-                                      Vai trò / Chức vụ trong năm học *
-                                    </label>
-                                    <input
-                                      disabled={isReadOnly}
-                                      value={ach.roleOrPosition}
-                                      onChange={(e) => handleUpdateAchievement(ach.id, { roleOrPosition: e.target.value })}
-                                      placeholder="VD: Chi hội trưởng Chi hội..."
-                                      className="w-full px-2.5 py-1.5 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[7px] focus:outline-none focus:border-[#0D78AE]"
-                                    />
-                                  </div>
-
-                                  <div>
-                                    <label className="block text-[11.5px] font-semibold text-[#172A3A] mb-1">
-                                      Cấp ghi nhận khen thưởng *
+                                    <label className="block text-[12px] font-semibold text-[#172A3A] mb-1">
+                                      Cấp ghi nhận khen thưởng <span className="text-red-500">*</span>
                                     </label>
                                     <select
                                       disabled={isReadOnly}
                                       value={ach.awardLevel}
-                                      onChange={(e) => handleUpdateAchievement(ach.id, { awardLevel: e.target.value })}
-                                      className="w-full px-2.5 py-1.5 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] focus:outline-none focus:border-[#0D78AE]"
+                                      onChange={(e) => handleUpdateAchievement(ach.id, { awardLevel: e.target.value as WhiteBirdAnnualAwardLevel })}
+                                      className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
                                     >
                                       {Object.entries(WHITE_BIRD_ANNUAL_AWARD_LEVEL_LABELS).map(([k, label]) => (
                                         <option key={k} value={k}>
@@ -3109,14 +3110,31 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                                   </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {/* Row 2 (Full width): Vai trò / Chức vụ trong năm học */}
+                                <div>
+                                  <label className="block text-[12px] font-semibold text-[#172A3A] mb-1">
+                                    Vai trò / Chức vụ đảm nhiệm trong năm học <span className="text-red-500">*</span>
+                                  </label>
+                                  <AutoResizeTextarea
+                                    rows={1}
+                                    minHeight={38}
+                                    maxHeight={100}
+                                    disabled={isReadOnly}
+                                    value={ach.roleOrPosition}
+                                    onChange={(e) => handleUpdateAchievement(ach.id, { roleOrPosition: e.target.value })}
+                                    placeholder="VD: Chi hội trưởng Chi hội 21TCLC_DT1, Ủy viên BCH Liên chi Hội..."
+                                  />
+                                </div>
+
+                                {/* Row 3 (2 cols): Tóm tắt thành tích & Quyết định chứng minh */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
                                   <div>
-                                    <label className="block text-[11.5px] font-semibold text-[#172A3A] mb-1">
-                                      Tóm tắt thành tích xuất sắc trong công tác Hội / Đoàn *
+                                    <label className="block text-[12px] font-semibold text-[#172A3A] mb-1">
+                                      Tóm tắt thành tích xuất sắc trong công tác Hội / Đoàn <span className="text-red-500">*</span>
                                     </label>
                                     <AutoResizeTextarea
                                       rows={2}
-                                      minHeight={56}
+                                      minHeight={62}
                                       maxHeight={180}
                                       disabled={isReadOnly}
                                       value={ach.achievementSummary}
@@ -3128,12 +3146,12 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                                   </div>
 
                                   <div>
-                                    <label className="block text-[11.5px] font-semibold text-[#172A3A] mb-1">
+                                    <label className="block text-[12px] font-semibold text-[#172A3A] mb-1">
                                       Văn bản / Quyết định chứng minh thành tích (nếu có)
                                     </label>
                                     <AutoResizeTextarea
                                       rows={2}
-                                      minHeight={56}
+                                      minHeight={62}
                                       maxHeight={180}
                                       disabled={isReadOnly}
                                       value={ach.documentReference || ''}
@@ -3151,20 +3169,23 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       )}
                     </div>
 
-                    {/* KHỐI D: KẾT QUẢ HỌC TẬP, RÈN LUYỆN, THÔNG TIN ƯU TIÊN & BÁO CÁO CHÍNH THỨC */}
-                    <div className="bg-white rounded-[12px] border border-[#DCE7EE] p-4 sm:p-5 space-y-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#EDF3F8] pb-2.5">
+                    {/* Divider between Section C and Section D */}
+                    <div className="border-t border-[#EDF3F8] my-6" />
+
+                    {/* SECTION D: THÔNG TIN HỖ TRỢ THẨM ĐỊNH & BÁO CÁO CHÍNH THỨC */}
+                    <div className="space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                           <GraduationCap size={16} className="text-[#0D78AE]" />
-                          <h3 className="text-[14px] font-bold text-[#172A3A]">
-                            D. Thông tin hỗ trợ thẩm định, Báo cáo chính thức & Cam kết
+                          <h3 className="text-[13.5px] font-bold text-[#172A3A] uppercase tracking-wider">
+                            D. Thông tin hỗ trợ thẩm định & Báo cáo chính thức
                           </h3>
                         </div>
                         <a
                           href="https://docs.google.com/spreadsheets/d/18nh5nNnlAt5YAtQRhnJKA2jF4zB11l6C/edit"
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-[12px] font-bold bg-[#EBF6FC] text-[#0D78AE] hover:bg-[#D9EFF9] transition-colors"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-[12px] font-bold bg-[#EBF6FC] text-[#0D78AE] hover:bg-[#D9EFF9] transition-colors self-start sm:self-auto"
                         >
                           <Download size={13} />
                           <span>Tải mẫu Báo cáo thành tích cá nhân chính thức</span>
@@ -3175,33 +3196,36 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         <em>(Lưu ý: Các nội dung dưới đây kê khai theo Mẫu Báo cáo thành tích cá nhân để Hội đồng thẩm định toàn diện; là tiêu chí tham khảo và ưu tiên xét giải, không phải điều kiện bắt buộc thay thế tiêu chuẩn công tác Đoàn – Hội tại Điều 4).</em>
                       </p>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                        <div>
-                          <label htmlFor="wb02-tl-gpa" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
-                            Điểm học tập (GPA)
-                          </label>
-                          <input
-                            id="wb02-tl-gpa"
-                            disabled={isReadOnly}
-                            value={academic.gpaText || ''}
-                            onChange={(e) => handleUpdateAcademic({ gpaText: e.target.value })}
-                            placeholder="VD: 3.52 / 4.0 hoặc 8.4 / 10"
-                            className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
-                          />
-                        </div>
+                      {/* Row 1 (2 cols): Học tập & SV5T */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label htmlFor="wb02-tl-gpa" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
+                              Điểm học tập (GPA)
+                            </label>
+                            <input
+                              id="wb02-tl-gpa"
+                              disabled={isReadOnly}
+                              value={academic.gpaText || ''}
+                              onChange={(e) => handleUpdateAcademic({ gpaText: e.target.value })}
+                              placeholder="VD: 3.52 / 4.0"
+                              className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
+                            />
+                          </div>
 
-                        <div>
-                          <label htmlFor="wb02-tl-drl" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
-                            Điểm rèn luyện
-                          </label>
-                          <input
-                            id="wb02-tl-drl"
-                            disabled={isReadOnly}
-                            value={academic.trainingScoreText || ''}
-                            onChange={(e) => handleUpdateAcademic({ trainingScoreText: e.target.value })}
-                            placeholder="VD: 94 / 100 (Xuất sắc)"
-                            className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
-                          />
+                          <div>
+                            <label htmlFor="wb02-tl-drl" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
+                              Điểm rèn luyện
+                            </label>
+                            <input
+                              id="wb02-tl-drl"
+                              disabled={isReadOnly}
+                              value={academic.trainingScoreText || ''}
+                              onChange={(e) => handleUpdateAcademic({ trainingScoreText: e.target.value })}
+                              placeholder="VD: 94 / 100"
+                              className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
+                            />
+                          </div>
                         </div>
 
                         <div>
@@ -3219,7 +3243,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {/* Row 2 (2 cols): Tình nguyện & NCKH */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                         <div>
                           <label htmlFor="wb02-tl-volunteer" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
                             Hoạt động tình nguyện & phong trào
@@ -3251,28 +3276,32 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             placeholder="VD: Giải Ba NCKH sinh viên cấp Trường năm học 2024-2025..."
                           />
                         </div>
+                      </div>
 
-                        <div>
-                          <label htmlFor="wb02-tl-other" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
-                            Khen thưởng / Thành tích tiêu biểu khác
-                          </label>
-                          <AutoResizeTextarea
-                            id="wb02-tl-other"
-                            rows={2}
-                            minHeight={58}
-                            maxHeight={180}
-                            disabled={isReadOnly}
-                            value={academic.otherAwards || ''}
-                            onChange={(e) => handleUpdateAcademic({ otherAwards: e.target.value })}
-                            placeholder="VD: Cán bộ Đoàn - Hội xuất sắc, Giải thưởng Sao Tháng Giêng..."
-                          />
-                        </div>
+                      {/* Row 3 (Full width): Khen thưởng khác */}
+                      <div>
+                        <label htmlFor="wb02-tl-other" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
+                          Khen thưởng / Thành tích tiêu biểu khác
+                        </label>
+                        <AutoResizeTextarea
+                          id="wb02-tl-other"
+                          rows={2}
+                          minHeight={52}
+                          maxHeight={180}
+                          disabled={isReadOnly}
+                          value={academic.otherAwards || ''}
+                          onChange={(e) => handleUpdateAcademic({ otherAwards: e.target.value })}
+                          placeholder="VD: Cán bộ Đoàn - Hội xuất sắc, Giải thưởng Sao Tháng Giêng..."
+                        />
                       </div>
                     </div>
 
-                    {/* KHỐI E: LỜI CAM KẾT & HƯỚNG DẪN BÁO CÁO CÓ XÁC NHẬN */}
-                    <div className="space-y-3">
-                      <label className="flex items-start gap-2.5 p-3.5 rounded-[10px] bg-[#F4F9FD] border border-[#CBE4F5] cursor-pointer">
+                    {/* Divider between Section D and Section E */}
+                    <div className="border-t border-[#EDF3F8] my-6" />
+
+                    {/* SECTION E: CAM KẾT TRUNG THỰC & QUY ĐỊNH 3 CHỮ KÝ PHÁP LÝ */}
+                    <div className="space-y-3.5">
+                      <label className="flex items-start gap-3 p-3.5 rounded-[9px] bg-[#F4F9FD] border border-[#CBE4F5] cursor-pointer">
                         <input
                           type="checkbox"
                           disabled={isReadOnly}
@@ -3289,30 +3318,24 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             Tôi cam kết toàn bộ quá trình rèn luyện, giữ chức vụ và thành tích đóng góp cho công tác Hội và phong trào sinh viên Đại học Đà Nẵng kê khai trên là hoàn toàn trung thực theo Điểm c khoản 4.2 Điều 4 và Khoản 6.2 Điều 6 Quy chế Giải thưởng.
                           </span>
                           <span className="text-[11.5px] text-[#64748B] block mt-1">
-                            Lưu ý: Lời cam kết điện tử này đồng bộ với chữ ký trong tệp Báo cáo thành tích cá nhân đính kèm.
+                            * Lời cam kết điện tử này đồng bộ với chữ ký trong tệp Báo cáo thành tích cá nhân đính kèm.
                           </span>
                         </div>
                       </label>
 
-                      {/* Verification Notice */}
-                      <div className="p-3.5 rounded-[10px] bg-[#F8FAFC] border border-[#E2E8F0] text-[12px] text-[#475569] leading-relaxed space-y-1.5">
+                      {/* Legal Verification Notice (Light banner) */}
+                      <div className="p-3.5 rounded-[9px] bg-[#F8FAFC] border-l-3 border-[#64748B] text-[12px] text-[#475569] leading-relaxed space-y-1.5">
                         <div className="font-bold text-[#1E293B] flex items-center gap-1.5">
                           <ShieldCheck size={15} className="text-[#0D78AE]" />
                           <span>Quy định xác nhận đối với Báo cáo thành tích cá nhân (Khoản 6.2 Điều 6):</span>
                         </div>
                         <ul className="list-disc pl-5 space-y-0.5 text-[11.5px] text-[#334155]">
-                          <li>
-                            Có chữ ký và ghi rõ họ tên của cá nhân báo cáo thành tích.
-                          </li>
-                          <li>
-                            Có xác nhận của Ban Thư ký Hội Sinh viên trường thành viên (hoặc Ban Chấp hành Đoàn trường đối với đơn vị không có tổ chức cơ sở Hội).
-                          </li>
-                          <li>
-                            Có xác nhận của Ban Thường vụ Đảng ủy hoặc Ban Giám hiệu Trường thành viên / Đơn vị trực thuộc.
-                          </li>
+                          <li>Có chữ ký và ghi rõ họ tên của cá nhân báo cáo thành tích.</li>
+                          <li>Có xác nhận của Ban Thư ký Hội Sinh viên trường thành viên (hoặc Ban Chấp hành Đoàn trường đối với đơn vị chưa có cơ sở Hội).</li>
+                          <li>Có xác nhận của Ban Thường vụ Đảng ủy hoặc Ban Giám hiệu Trường thành viên / Đơn vị trực thuộc.</li>
                         </ul>
                         <p className="text-[11px] text-[#64748B] pt-0.5">
-                          * Việc kê khai thông tin trực tuyến nhằm hỗ trợ số hóa và tổng hợp dữ liệu, <strong>không thay thế cho tệp Báo cáo thành tích có đầy đủ chữ ký và con dấu pháp lý</strong> đính kèm bên dưới.
+                          * Việc kê khai thông tin trực tuyến nhằm hỗ trợ số hóa và tổng hợp dữ liệu, <strong>không thay thế cho tệp Báo cáo thành tích có đầy đủ chữ ký và con dấu pháp lý</strong> đính kèm.
                         </p>
                       </div>
                     </div>
@@ -3320,7 +3343,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                 );
               }
 
-              // Generic fallback (if any)
+                            // Generic fallback (if any)
               return (
                 <div className="space-y-4">
                   <div className="border-b border-[#EDF3F8] pb-3 flex flex-col sm:flex-row sm:items-start justify-between gap-2">
@@ -3711,9 +3734,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
               if (activeApp.category === 'TRUYEN_LUA') {
                 const wb03Files = wb03Data.evidenceFiles || [];
                 return (
-                  <div className="space-y-5">
+                  <div className="space-y-6">
                     {/* Header */}
-                    <div className="border-b border-[#EDF3F8] pb-3 flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                    <div className="border-b border-[#EDF3F8] pb-3.5 flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D78AE]">
@@ -3732,8 +3755,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       </div>
                     </div>
 
-                    {/* Collapsed / Expandable Guidance Drawer */}
-                    <div className="p-3.5 rounded-[10px] bg-[#F8FAFC] border border-[#E2EEF6] text-[12px] space-y-2">
+                    {/* Light Guidance Panel (Expandable) */}
+                    <div className="p-3.5 rounded-[8px] bg-[#F8FAFC] border-l-3 border-[#0D78AE] text-[12px] space-y-2">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5 font-bold text-[#1E293B]">
                           <FolderArchive size={15} className="text-[#0D78AE]" />
@@ -3748,36 +3771,36 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         </button>
                       </div>
                       <p className="text-[11.5px] text-[#475569] leading-relaxed">
-                        Minh chứng bao gồm: <strong>(1) Quyết định chức vụ Đoàn – Hội</strong>; <strong>(2) Thành tích xuất sắc 02 năm liên tục</strong> (Bằng khen/Giấy khen hoặc văn bản xác nhận); <strong>(3) Bảng điểm & Điểm rèn luyện</strong>; <strong>(4) Minh chứng ưu tiên</strong> (nếu có).
+                        Minh chứng bao gồm: <strong>(1) Quyết định chức vụ Đoàn – Hội</strong>; <strong>(2) Thành tích xuất sắc 02 năm liên tục</strong>; <strong>(3) Bảng điểm & Điểm rèn luyện</strong>; <strong>(4) Minh chứng ưu tiên</strong> (nếu có).
                       </p>
                       {isTruyenLuaGuidanceOpen && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-[#EDF3F8] text-[11.5px] text-[#334155] animate-in fade-in duration-150">
-                          <div className="p-2.5 rounded bg-white border border-[#E2E8F0]">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2.5 border-t border-[#EDF3F8] text-[11.5px] text-[#334155]">
+                          <div className="p-3 rounded-[7px] bg-white border border-[#E2EEF6] space-y-0.5">
                             <strong className="text-[#0D78AE] block">1. Minh chứng chức vụ & thời gian công tác:</strong>
-                            Quyết định chuẩn y/công nhận chức vụ cán bộ Đoàn – Hội qua các nhiệm kỳ từ 2 năm trở lên.
+                            <span>Quyết định chuẩn y / công nhận chức vụ cán bộ Đoàn – Hội qua các nhiệm kỳ từ 2 năm trở lên.</span>
                           </div>
-                          <div className="p-2.5 rounded bg-white border border-[#E2E8F0]">
+                          <div className="p-3 rounded-[7px] bg-white border border-[#E2EEF6] space-y-0.5">
                             <strong className="text-[#0D78AE] block">2. Thành tích xuất sắc 02 năm liên tục:</strong>
-                            Bằng khen, Giấy khen hoặc văn bản xác nhận thành tích xuất sắc công tác Hội/Đoàn cấp trường trở lên trong 2 năm liền kề (không bắt buộc phải tách 2 bằng khen riêng lẻ).
+                            <span>Bằng khen, Giấy khen hoặc văn bản xác nhận thành tích xuất sắc công tác Hội/Đoàn cấp trường trở lên trong 2 năm liền kề.</span>
                           </div>
-                          <div className="p-2.5 rounded bg-white border border-[#E2E8F0]">
+                          <div className="p-3 rounded-[7px] bg-white border border-[#E2EEF6] space-y-0.5">
                             <strong className="text-[#0D78AE] block">3. Bảng điểm học tập & Điểm rèn luyện:</strong>
-                            Bảng điểm GPA và Điểm rèn luyện theo quy định của Mẫu Báo cáo thành tích cá nhân.
+                            <span>Bảng điểm GPA và Điểm rèn luyện theo quy định của Mẫu Báo cáo thành tích cá nhân.</span>
                           </div>
-                          <div className="p-2.5 rounded bg-white border border-[#E2E8F0]">
+                          <div className="p-3 rounded-[7px] bg-white border border-[#E2EEF6] space-y-0.5">
                             <strong className="text-[#0D78AE] block">4. Minh chứng ưu tiên:</strong>
-                            Chứng nhận Sinh viên 5 tốt các cấp, hoạt động tình nguyện, giải thưởng NCKH (nếu có kê khai).
+                            <span>Chứng nhận Sinh viên 5 tốt các cấp, hoạt động tình nguyện, giải thưởng NCKH (nếu có kê khai).</span>
                           </div>
                         </div>
                       )}
                     </div>
 
-                    {/* Danh sách tệp minh chứng đã tải lên & phân loại */}
-                    <div className="bg-white rounded-[12px] border border-[#DCE7EE] p-4 sm:p-5 space-y-4">
+                    {/* Section: Danh sách tệp minh chứng đã tải lên */}
+                    <div className="space-y-4">
                       <div className="flex items-center justify-between gap-2 border-b border-[#EDF3F8] pb-2.5 flex-wrap">
                         <div className="flex items-center gap-2">
                           <FileText size={16} className="text-[#0D78AE]" />
-                          <h3 className="text-[14px] font-bold text-[#172A3A]">
+                          <h3 className="text-[13.5px] font-bold text-[#172A3A] uppercase tracking-wider">
                             Tệp tài liệu minh chứng đã tải lên ({wb03Files.length} tệp)
                           </h3>
                         </div>
@@ -3795,7 +3818,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       </div>
 
                       {wb03Files.length === 0 ? (
-                        <div className="p-5 rounded-[10px] border border-dashed border-[#C8D9E6] bg-[#F8FBFD] text-center space-y-2 text-[12.5px] text-[#607483]">
+                        <div className="p-6 rounded-[10px] border border-dashed border-[#C8D9E6] bg-[#F8FBFD] text-center space-y-2 text-[12.5px] text-[#607483]">
                           <p>Chưa có tệp minh chứng nào được tải lên cho WB03.</p>
                           <p className="text-[11.5px] text-[#64748B]">
                             Quy trình: Tải file trước, sau đó chọn loại minh chứng và ghi chú số hiệu văn bản cho từng file. Hệ thống hỗ trợ nhiều tệp cho cùng 1 loại minh chứng.
@@ -3817,7 +3840,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           {wb03Files.map((file, idx) => (
                             <div
                               key={file.id}
-                              className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#DCE7EE] space-y-2.5"
+                              className="p-3.5 rounded-[9px] bg-[#F8FBFD] border border-[#E2EEF6] space-y-2.5"
                             >
                               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                 <div className="flex items-center gap-2 flex-wrap min-w-0">
@@ -3857,11 +3880,11 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                                 </div>
                               </div>
 
-                              {/* Metadata row: Category, Document Ref, Academic Year */}
-                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1.5 border-t border-[#EDF3F8]">
+                              {/* Metadata row: Max 2 columns! Col 1: Category, Col 2: Doc Ref & Academic Year */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-[#EDF3F8]">
                                 <div>
                                   <label className="block text-[11px] font-semibold text-[#475569] mb-1">
-                                    Loại minh chứng *
+                                    Loại tài liệu minh chứng <span className="text-red-500">*</span>
                                   </label>
                                   <select
                                     disabled={isReadOnly}
@@ -3874,7 +3897,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                                         e.target.value as WhiteBirdTruyenLuaEvidenceCategory
                                       )
                                     }
-                                    className="w-full px-2 py-1 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] text-[#172A3A] font-medium focus:outline-none focus:border-[#0D78AE]"
+                                    className="w-full px-2.5 py-1.5 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] text-[#172A3A] font-medium focus:outline-none focus:border-[#0D78AE]"
                                   >
                                     <option value="CHUC_VU">Chức vụ & Thời gian công tác</option>
                                     <option value="THANH_TICH_2_NAM">Thành tích xuất sắc 02 năm liên tục</option>
@@ -3884,38 +3907,40 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                                   </select>
                                 </div>
 
-                                <div>
-                                  <label className="block text-[11px] font-semibold text-[#475569] mb-1">
-                                    Số hiệu / Ngày văn bản (nếu có)
-                                  </label>
-                                  <input
-                                    disabled={isReadOnly}
-                                    value={file.documentReference || ''}
-                                    onChange={(e) =>
-                                      updateWhiteBirdEvidenceMetadata(activeApp.id, 'WB03', file.id, {
-                                        documentReference: e.target.value,
-                                      })
-                                    }
-                                    placeholder="VD: QĐ số 45/QĐ-HSV (19/05/2024)"
-                                    className="w-full px-2 py-1 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] text-[#172A3A] focus:outline-none focus:border-[#0D78AE]"
-                                  />
-                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                  <div>
+                                    <label className="block text-[11px] font-semibold text-[#475569] mb-1">
+                                      Số hiệu / Ngày văn bản
+                                    </label>
+                                    <input
+                                      disabled={isReadOnly}
+                                      value={file.documentReference || ''}
+                                      onChange={(e) =>
+                                        updateWhiteBirdEvidenceMetadata(activeApp.id, 'WB03', file.id, {
+                                          documentReference: e.target.value,
+                                        })
+                                      }
+                                      placeholder="VD: QĐ 45/QĐ-HSV"
+                                      className="w-full px-2.5 py-1.5 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] text-[#172A3A] focus:outline-none focus:border-[#0D78AE]"
+                                    />
+                                  </div>
 
-                                <div>
-                                  <label className="block text-[11px] font-semibold text-[#475569] mb-1">
-                                    Năm học liên quan (nếu có)
-                                  </label>
-                                  <input
-                                    disabled={isReadOnly}
-                                    value={file.academicYear || ''}
-                                    onChange={(e) =>
-                                      updateWhiteBirdEvidenceMetadata(activeApp.id, 'WB03', file.id, {
-                                        academicYear: e.target.value,
-                                      })
-                                    }
-                                    placeholder="VD: 2024–2025"
-                                    className="w-full px-2 py-1 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] text-[#172A3A] focus:outline-none focus:border-[#0D78AE]"
-                                  />
+                                  <div>
+                                    <label className="block text-[11px] font-semibold text-[#475569] mb-1">
+                                      Năm học liên quan
+                                    </label>
+                                    <input
+                                      disabled={isReadOnly}
+                                      value={file.academicYear || ''}
+                                      onChange={(e) =>
+                                        updateWhiteBirdEvidenceMetadata(activeApp.id, 'WB03', file.id, {
+                                          academicYear: e.target.value,
+                                        })
+                                      }
+                                      placeholder="VD: 2024–2025"
+                                      className="w-full px-2.5 py-1.5 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] text-[#172A3A] focus:outline-none focus:border-[#0D78AE]"
+                                    />
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -3924,76 +3949,80 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       )}
                     </div>
 
-                    {/* Tự động tổng hợp danh mục từ tệp đã tải */}
-                    <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#DCE7EE] text-[12px] flex items-center justify-between gap-2.5 flex-wrap">
+                    {/* Tự động tổng hợp danh mục từ tệp đã tải (Light info bar) */}
+                    <div className="p-3 rounded-[8px] bg-[#F8FBFD] border border-[#E2EEF6] text-[12px] flex items-center justify-between gap-2.5 flex-wrap">
                       <div className="flex items-center gap-2">
-                        <Sparkles size={16} className="text-[#0D78AE] shrink-0" />
+                        <Sparkles size={15} className="text-[#0D78AE] shrink-0" />
                         <div>
-                          <span className="font-bold text-[#172A3A] block">
-                            Danh mục tài liệu minh chứng ({wb03Files.length} tệp)
+                          <span className="font-bold text-[#172A3A]">
+                            Danh mục minh chứng ({wb03Files.length} tệp)
                           </span>
-                          <span className="text-[11.5px] text-[#64748B]">
-                            Được hệ thống tự động tổng hợp từ tên tệp, nhóm phân loại và số hiệu văn bản bên trên theo Khoản 6.2 Điều 6 (không cần nhập thủ công lại).
+                          <span className="text-[11.5px] text-[#64748B] ml-1.5">
+                            — Tự động tổng hợp từ tệp đính kèm theo Khoản 6.2 Điều 6 (không cần nhập thủ công lại).
                           </span>
                         </div>
                       </div>
                       {wb03Files.length > 0 && (
-                        <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full shrink-0">
+                        <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded shrink-0">
                           ✓ Đã tổng hợp tự động
                         </span>
                       )}
                     </div>
 
-                    {/* Decision Numbers / Document References */}
-                    <div>
-                      <label htmlFor="wb03-tl-decisions" className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
-                        Số hiệu văn bản, quyết định công nhận / khen thưởng tiêu biểu (nếu có)
-                      </label>
-                      <AutoResizeTextarea
-                        id="wb03-tl-decisions"
-                        rows={2}
-                        minHeight={50}
-                        maxHeight={160}
-                        disabled={isReadOnly}
-                        value={wb03Data.decisionNumbersAndDates || ''}
-                        onChange={(e) =>
-                          updateWhiteBirdWB03(activeApp.id, {
-                            decisionNumbersAndDates: e.target.value,
-                          })
-                        }
-                        placeholder="VD: QĐ số 45/QĐ-HSV ngày 20/05/2024; QĐ số 112/QĐ-ĐHĐN ngày 10/06/2025..."
-                      />
-                    </div>
+                    {/* Divider */}
+                    <div className="border-t border-[#EDF3F8] my-6" />
 
-                    {/* Media links (optional) */}
-                    <div>
-                      <label htmlFor="wb03-tl-links" className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
-                        Liên kết hình ảnh hoạt động, bài báo hoặc video tư liệu (nếu có)
-                      </label>
-                      <input
-                        id="wb03-tl-links"
-                        disabled={isReadOnly}
-                        value={wb03Data.mediaAndProductLinks || ''}
-                        onChange={(e) =>
-                          updateWhiteBirdWB03(activeApp.id, {
-                            mediaAndProductLinks: e.target.value,
-                          })
-                        }
-                        placeholder="VD: https://baodanang.vn/... hoặc https://drive.google.com/..."
-                        className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
-                      />
-                      {wb03Data.mediaAndProductLinks && !isValidOptionalHttpUrl(wb03Data.mediaAndProductLinks) && (
-                        <p className="text-[11.5px] text-[#E11D48] mt-1 font-medium flex items-center gap-1">
-                          <AlertCircle size={13} className="shrink-0" />
-                          <span>Định dạng liên kết không hợp lệ. Vui lòng nhập URL bắt đầu bằng http:// hoặc https:// (hoặc để trống nếu không có).</span>
-                        </p>
-                      )}
+                    {/* Additional fields: Decision numbers and media links (Full width) */}
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="wb03-tl-decisions" className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
+                          Số hiệu văn bản, quyết định công nhận / khen thưởng tiêu biểu (nếu có)
+                        </label>
+                        <AutoResizeTextarea
+                          id="wb03-tl-decisions"
+                          rows={2}
+                          minHeight={50}
+                          maxHeight={160}
+                          disabled={isReadOnly}
+                          value={wb03Data.decisionNumbersAndDates || ''}
+                          onChange={(e) =>
+                            updateWhiteBirdWB03(activeApp.id, {
+                              decisionNumbersAndDates: e.target.value,
+                            })
+                          }
+                          placeholder="VD: QĐ số 45/QĐ-HSV ngày 20/05/2024; QĐ số 112/QĐ-ĐHĐN ngày 10/06/2025..."
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="wb03-tl-links" className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
+                          Liên kết hình ảnh hoạt động, bài báo hoặc video tư liệu (nếu có)
+                        </label>
+                        <input
+                          id="wb03-tl-links"
+                          disabled={isReadOnly}
+                          value={wb03Data.mediaAndProductLinks || ''}
+                          onChange={(e) =>
+                            updateWhiteBirdWB03(activeApp.id, {
+                              mediaAndProductLinks: e.target.value,
+                            })
+                          }
+                          placeholder="VD: https://baodanang.vn/... hoặc https://drive.google.com/..."
+                          className="w-full px-3.5 py-2.5 text-[13px] text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
+                        />
+                        {wb03Data.mediaAndProductLinks && !isValidOptionalHttpUrl(wb03Data.mediaAndProductLinks) && (
+                          <p className="text-[11.5px] text-[#E11D48] mt-1 font-medium flex items-center gap-1">
+                            <AlertCircle size={13} className="shrink-0" />
+                            <span>Định dạng liên kết không hợp lệ. Vui lòng nhập URL bắt đầu bằng http:// hoặc https:// (hoặc để trống nếu không có).</span>
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
               }
 
-              // Generic fallback (if any)
+                            // Generic fallback (if any)
               return (
                 <div className="space-y-4">
                   <div className="border-b border-[#EDF3F8] pb-3 flex flex-col sm:flex-row sm:items-start justify-between gap-2">
