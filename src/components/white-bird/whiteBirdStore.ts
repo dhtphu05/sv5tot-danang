@@ -39,8 +39,12 @@ export function subscribeToWhiteBirdStore(listener: StoreListener): () => void {
   };
 }
 
+let nodeMemoryStorage: WhiteBirdApplication[] = [];
+
 function loadFromStorage(): WhiteBirdApplication[] {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === 'undefined') {
+    return JSON.parse(JSON.stringify(nodeMemoryStorage));
+  }
   try {
     const raw = window.localStorage.getItem(LOCAL_STORAGE_KEY);
     if (!raw) return [];
@@ -55,7 +59,9 @@ let storeApps: WhiteBirdApplication[] = loadFromStorage();
 
 function saveToStorage(apps: WhiteBirdApplication[]): void {
   storeApps = apps;
-  if (typeof window !== 'undefined') {
+  if (typeof window === 'undefined') {
+    nodeMemoryStorage = JSON.parse(JSON.stringify(apps));
+  } else {
     try {
       window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(apps));
     } catch {
@@ -109,30 +115,33 @@ export async function hydrateWhiteBirdStore(): Promise<WhiteBirdApplication[]> {
 }
 
 export function createWhiteBirdApplication(payload: {
-  nominationTitle: string;
+  nominationTitle?: string;
   category: WhiteBirdCategory;
   nomineeType: WhiteBirdNomineeType;
   nomineeName: string;
-  studentId: string;
-  institutionId: string;
-  institutionName: string;
-  schoolReviewUnitId: string;
-  schoolReviewUnitName: string;
-  facultyName: string;
-  className: string;
+  studentId?: string;
+  institutionId?: string;
+  institutionName?: string;
+  schoolReviewUnitId?: string;
+  schoolReviewUnitName?: string;
+  facultyName?: string;
+  className?: string;
   academicYear?: string;
-  contactPhone: string;
-  preparedByUserId: string;
-  preparedByUserName: string;
-  preparedByUserEmail: string;
+  contactPhone?: string;
+  preparedByUserId?: string;
+  preparedByUserName?: string;
+  preparedByUserEmail?: string;
 }): WhiteBirdApplication {
   const now = new Date().toISOString();
-  const id = `CCT-2026-DN-${Date.now().toString(36).toUpperCase()}`;
+  const id = `CCT-2026-DN-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
   const academicYear = payload.academicYear || '2025–2026';
   const resolvedNominationTitle =
     payload.category === 'TRUYEN_LUA'
       ? (payload.nominationTitle?.trim() || `Báo cáo thành tích cá nhân – ${payload.nomineeName.trim()}`)
-      : payload.nominationTitle.trim();
+      : (payload.nominationTitle?.trim() || 'Hồ sơ đề cử Giải thưởng Cánh chim trắng');
+
+  const institutionId = payload.institutionId || 'DUT';
+  const institutionName = payload.institutionName || 'Trường Đại học Bách khoa – ĐHĐN';
 
   const newApp: WhiteBirdApplication = {
     id,
@@ -141,17 +150,17 @@ export function createWhiteBirdApplication(payload: {
     nomineeType: payload.category === 'TRUYEN_LUA' ? 'INDIVIDUAL' : payload.nomineeType,
     nomineeName: payload.nomineeName.trim(),
     studentId: (payload.studentId || '').trim(),
-    institutionId: payload.institutionId,
-    institutionName: payload.institutionName,
-    schoolReviewUnitId: payload.schoolReviewUnitId || `unit-${payload.institutionId.toLowerCase()}`,
-    schoolReviewUnitName: payload.schoolReviewUnitName || `Hội Sinh viên ${payload.institutionName}`,
+    institutionId,
+    institutionName,
+    schoolReviewUnitId: payload.schoolReviewUnitId || `unit-${institutionId.toLowerCase()}`,
+    schoolReviewUnitName: payload.schoolReviewUnitName || `Hội Sinh viên ${institutionName}`,
     facultyName: (payload.facultyName || '').trim(),
     className: (payload.className || '').trim(),
     academicYear,
     contactPhone: (payload.contactPhone || '').trim(),
-    preparedByUserId: payload.preparedByUserId,
-    preparedByUserName: payload.preparedByUserName,
-    preparedByUserEmail: payload.preparedByUserEmail,
+    preparedByUserId: payload.preparedByUserId || 'std-user',
+    preparedByUserName: payload.preparedByUserName || payload.nomineeName.trim() || 'Sinh viên nộp hồ sơ',
+    preparedByUserEmail: payload.preparedByUserEmail || 'sinhvien@udn.vn',
     status: 'draft',
     createdAt: now,
     updatedAt: now,
