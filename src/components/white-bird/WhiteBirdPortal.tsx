@@ -2542,7 +2542,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         <div className="flex items-center gap-2">
                           <User size={16} className="text-[#0D78AE]" />
                           <h3 className="text-[14px] font-bold text-[#172A3A]">
-                            A. Thông tin lý lịch cá nhân được đề cử (Mẫu Báo cáo thành tích)
+                            A. Lý lịch trích ngang của cá nhân được đề cử (Mẫu Báo cáo thành tích)
                           </h3>
                         </div>
                         <span className="text-[11px] font-semibold text-[#0D78AE] bg-[#EBF6FC] px-2 py-0.5 rounded">
@@ -2554,7 +2554,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       <div className="p-3 rounded-[9px] bg-[#F8FBFD] border border-[#DCE7EE] text-[12px] text-[#475569] leading-relaxed flex items-start gap-2">
                         <Info size={15} className="text-[#0D78AE] shrink-0 mt-0.5" />
                         <div>
-                          <span>Tài khoản kê khai trực tuyến: <strong>{activeApp.preparedByUserName}</strong> ({activeApp.preparedByUserEmail}). Thông tin dưới đây là lý lịch trích ngang của <strong>cá nhân được đề xuất xét trao</strong> theo Mẫu Báo cáo thành tích:</span>
+                          <span>Tài khoản kê khai trực tuyến: <strong>{activeApp.preparedByUserName}</strong> ({activeApp.preparedByUserEmail}). Thông tin dưới đây là lý lịch trích ngang của <strong>cá nhân được đề xuất xét trao</strong> theo Mẫu Báo cáo thành tích cá nhân:</span>
                         </div>
                       </div>
 
@@ -2569,7 +2569,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           minHeight={42}
                           maxHeight={120}
                           disabled={isReadOnly}
-                          value={wb02Data.reportTitle}
+                          value={wb02Data.reportTitle || `Báo cáo thành tích cá nhân – ${activeApp.nomineeName}`}
                           onChange={(e) =>
                             updateWhiteBirdWB02(activeApp.id, {
                               reportTitle: e.target.value,
@@ -2651,6 +2651,24 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         </div>
 
                         <div>
+                          <label htmlFor="wb02-tl-year-study" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
+                            Sinh viên năm thứ
+                          </label>
+                          <input
+                            id="wb02-tl-year-study"
+                            disabled={isReadOnly}
+                            value={wb02Data.nomineeYearOfStudy || ''}
+                            onChange={(e) =>
+                              updateWhiteBirdWB02(activeApp.id, {
+                                nomineeYearOfStudy: e.target.value,
+                              })
+                            }
+                            placeholder="VD: Năm thứ 3 / Khóa 2022"
+                            className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
+                          />
+                        </div>
+
+                        <div>
                           <label htmlFor="wb02-tl-role" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
                             Chức vụ Đoàn - Hội hiện tại
                           </label>
@@ -2669,8 +2687,29 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         </div>
 
                         <div>
+                          <label htmlFor="wb02-tl-political" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
+                            Tình trạng Đoàn viên / Đảng viên
+                          </label>
+                          <select
+                            id="wb02-tl-political"
+                            disabled={isReadOnly}
+                            value={wb02Data.nomineePoliticalStatus || 'DOAN_VIEN'}
+                            onChange={(e) =>
+                              updateWhiteBirdWB02(activeApp.id, {
+                                nomineePoliticalStatus: e.target.value,
+                              })
+                            }
+                            className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
+                          >
+                            <option value="DOAN_VIEN">Đoàn viên TNCS Hồ Chí Minh</option>
+                            <option value="DANG_VIEN">Đảng viên Đảng Cộng sản Việt Nam</option>
+                            <option value="CHUA_KET_NAP">Khác / Chưa kết nạp</option>
+                          </select>
+                        </div>
+
+                        <div>
                           <label htmlFor="wb02-tl-dob" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
-                            Ngày tháng năm sinh
+                            Ngày tháng năm sinh (hoặc Năm sinh)
                           </label>
                           <input
                             id="wb02-tl-dob"
@@ -2681,7 +2720,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                                 nomineeDateOfBirth: e.target.value,
                               })
                             }
-                            placeholder="VD: 15/08/2003"
+                            placeholder="VD: 15/08/2003 hoặc 2003"
                             className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
                           />
                         </div>
@@ -2693,7 +2732,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           <select
                             id="wb02-tl-gender"
                             disabled={isReadOnly}
-                            value={wb02Data.nomineeGender || 'NAM'}
+                            value={wb02Data.nomineeGender || ''}
                             onChange={(e) =>
                               updateWhiteBirdWB02(activeApp.id, {
                                 nomineeGender: e.target.value,
@@ -2701,6 +2740,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             }
                             className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
                           >
+                            <option value="">-- Chọn giới tính --</option>
                             <option value="NAM">Nam</option>
                             <option value="NU">Nữ</option>
                             <option value="KHAC">Khác</option>
@@ -2714,49 +2754,13 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           <input
                             id="wb02-tl-ethnicity"
                             disabled={isReadOnly}
-                            value={wb02Data.nomineeEthnicity || 'Kinh'}
+                            value={wb02Data.nomineeEthnicity !== undefined ? wb02Data.nomineeEthnicity : 'Kinh'}
                             onChange={(e) =>
                               updateWhiteBirdWB02(activeApp.id, {
                                 nomineeEthnicity: e.target.value,
                               })
                             }
                             placeholder="VD: Kinh"
-                            className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
-                          />
-                        </div>
-
-                        <div>
-                          <label htmlFor="wb02-tl-religion" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
-                            Tôn giáo
-                          </label>
-                          <input
-                            id="wb02-tl-religion"
-                            disabled={isReadOnly}
-                            value={wb02Data.nomineeReligion || 'Không'}
-                            onChange={(e) =>
-                              updateWhiteBirdWB02(activeApp.id, {
-                                nomineeReligion: e.target.value,
-                              })
-                            }
-                            placeholder="VD: Không"
-                            className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
-                          />
-                        </div>
-
-                        <div>
-                          <label htmlFor="wb02-tl-hometown" className="block text-[12px] font-semibold text-[#172A3A] mb-1">
-                            Quê quán
-                          </label>
-                          <input
-                            id="wb02-tl-hometown"
-                            disabled={isReadOnly}
-                            value={wb02Data.nomineeHometown || ''}
-                            onChange={(e) =>
-                              updateWhiteBirdWB02(activeApp.id, {
-                                nomineeHometown: e.target.value,
-                              })
-                            }
-                            placeholder="VD: Hải Châu, TP. Đà Nẵng"
                             className="w-full px-3 py-2 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[8px] focus:outline-none focus:border-[#0D78AE]"
                           />
                         </div>
@@ -2803,40 +2807,54 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       </div>
 
                       {/* Standards Guidance & Real-time Evaluation Box */}
-                      <div className={`p-3.5 rounded-[10px] border text-[12px] leading-relaxed space-y-2 ${
-                        tenureCalc.meetsTwoYearsRequirement
-                          ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#166534]'
-                          : 'bg-[#FFFBEB] border-[#FDE68A] text-[#92400E]'
-                      }`}>
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <span className="font-bold inline-flex items-center gap-1.5">
-                            {tenureCalc.meetsTwoYearsRequirement ? (
-                              <CheckCircle2 size={15} className="text-[#16A34A] shrink-0" />
-                            ) : (
-                              <AlertTriangle size={15} className="text-[#D97706] shrink-0" />
-                            )}
-                            Tổng thời gian công tác hợp lệ: {tenureCalc.totalMonths} tháng (~{tenureCalc.totalYearsText} năm)
-                          </span>
-                          <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
-                            tenureCalc.meetsTwoYearsRequirement
-                              ? 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]'
-                              : 'bg-[#FEF3C7] text-[#B45309] border-[#FCD34D]'
-                          }`}>
+                      {terms.length === 0 ? (
+                        <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#C8D9E6] text-[12px] text-[#475569] leading-relaxed flex items-start gap-2.5">
+                          <Info size={16} className="text-[#0D78AE] shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-bold text-[#172A3A] block mb-0.5">
+                              Căn cứ tiêu chuẩn chức vụ & thời gian công tác (Điểm c khoản 4.2 Điều 4 Quy chế):
+                            </span>
+                            <span>
+                              Cán bộ Hội giữ chức vụ từ <strong>Chi hội trưởng</strong> trở lên (đơn vị có cơ sở Hội) hoặc cán bộ Đoàn từ <strong>Bí thư Chi đoàn</strong> trở lên (đơn vị không có cơ sở Hội); có thời gian công tác Đoàn – Hội từ <strong>02 năm</strong> trở lên. Vui lòng thêm các giai đoạn công tác bên dưới để hệ thống hỗ trợ tính toán và đối chiếu.
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className={`p-3.5 rounded-[10px] border text-[12px] leading-relaxed space-y-2 ${
+                          tenureCalc.meetsTwoYearsRequirement
+                            ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#166534]'
+                            : 'bg-[#FFFBEB] border-[#FDE68A] text-[#92400E]'
+                        }`}>
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <span className="font-bold inline-flex items-center gap-1.5">
+                              {tenureCalc.meetsTwoYearsRequirement ? (
+                                <CheckCircle2 size={15} className="text-[#16A34A] shrink-0" />
+                              ) : (
+                                <AlertTriangle size={15} className="text-[#D97706] shrink-0" />
+                              )}
+                              Tổng thời gian công tác hợp lệ: {tenureCalc.totalMonths} tháng (~{tenureCalc.totalYearsText} năm)
+                            </span>
+                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
+                              tenureCalc.meetsTwoYearsRequirement
+                                ? 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]'
+                                : 'bg-[#FEF3C7] text-[#B45309] border-[#FCD34D]'
+                            }`}>
+                              {tenureCalc.meetsTwoYearsRequirement
+                                ? 'Đạt thời gian công tác (≥ 2 năm)'
+                                : 'Hỗ trợ thẩm định (< 24 tháng)'}
+                            </span>
+                          </div>
+                          <p className="text-[11.5px] opacity-90">
                             {tenureCalc.meetsTwoYearsRequirement
-                              ? 'Đạt thời gian công tác (≥ 2 năm)'
-                              : 'Chưa đủ 2 năm (24 tháng)'}
-                          </span>
+                              ? 'Thời gian công tác được tự động ghép khoảng không tính trùng lặp, đáp ứng quy định tại Điểm c khoản 4.2 Điều 4.'
+                              : tenureCalc.recommendation}
+                          </p>
+                          <div className="pt-1 border-t border-black/5 text-[11px] flex items-center gap-1.5">
+                            <Info size={12} className="shrink-0" />
+                            <span>{positionEval.feedback}</span>
+                          </div>
                         </div>
-                        <p className="text-[11.5px] opacity-90">
-                          {tenureCalc.meetsTwoYearsRequirement
-                            ? 'Thời gian công tác được tự động ghép khoảng không tính trùng lặp, đáp ứng quy định tại Điểm c khoản 4.2 Điều 4.'
-                            : tenureCalc.recommendation}
-                        </p>
-                        <div className="pt-1 border-t border-black/5 text-[11px] flex items-center gap-1.5">
-                          <Info size={12} className="shrink-0" />
-                          <span>{positionEval.feedback}</span>
-                        </div>
-                      </div>
+                      )}
 
                       {/* Terms List */}
                       {terms.length === 0 ? (
@@ -2923,44 +2941,68 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                                 </div>
 
                                 <div>
-                                  <div className="flex items-center justify-between gap-1 mb-1">
-                                    <label className="text-[11.5px] font-semibold text-[#172A3A]">
-                                      Thời gian (Bắt đầu - Kết thúc) *
-                                    </label>
-                                  </div>
-                                  <div className="flex items-center gap-1.5">
-                                    <input
-                                      disabled={isReadOnly}
-                                      value={term.startMonthYear}
-                                      onChange={(e) => handleUpdateTerm(term.id, { startMonthYear: e.target.value })}
-                                      placeholder="09/2023"
-                                      className="w-1/2 px-2 py-1.5 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] focus:outline-none focus:border-[#0D78AE] text-center"
-                                    />
-                                    <span className="text-[#64748B] text-[12px]">-</span>
-                                    {term.isCurrent ? (
-                                      <span className="w-1/2 px-2 py-1.5 text-[11.5px] bg-[#EBF6FC] text-[#0D78AE] font-semibold border border-[#BAE6FD] rounded-[7px] text-center">
-                                        Hiện nay
-                                      </span>
-                                    ) : (
-                                      <input
-                                        disabled={isReadOnly}
-                                        value={term.endMonthYear}
-                                        onChange={(e) => handleUpdateTerm(term.id, { endMonthYear: e.target.value })}
-                                        placeholder="06/2025"
-                                        className="w-1/2 px-2 py-1.5 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] focus:outline-none focus:border-[#0D78AE] text-center"
-                                      />
-                                    )}
-                                  </div>
-                                  <label className="inline-flex items-center gap-1.5 mt-1 text-[11px] text-[#475569] cursor-pointer">
-                                    <input
-                                      type="checkbox"
-                                      disabled={isReadOnly}
-                                      checked={Boolean(term.isCurrent)}
-                                      onChange={(e) => handleUpdateTerm(term.id, { isCurrent: e.target.checked })}
-                                      className="w-3.5 h-3.5 accent-[#0D78AE]"
-                                    />
-                                    <span>Đang giữ chức vụ</span>
-                                  </label>
+                                  {(() => {
+                                    const sParsed = parseMonthYear(term.startMonthYear);
+                                    const eParsed = term.isCurrent ? parseMonthYear('hiện nay') : parseMonthYear(term.endMonthYear);
+                                    const isInvalidDate = Boolean(
+                                      sParsed &&
+                                      eParsed &&
+                                      !term.isCurrent &&
+                                      (eParsed.year * 12 + eParsed.month < sParsed.year * 12 + sParsed.month)
+                                    );
+                                    return (
+                                      <>
+                                        <div className="flex items-center justify-between gap-1 mb-1">
+                                          <label className="text-[11.5px] font-semibold text-[#172A3A]">
+                                            Thời gian (Bắt đầu - Kết thúc) *
+                                          </label>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                          <input
+                                            disabled={isReadOnly}
+                                            value={term.startMonthYear}
+                                            onChange={(e) => handleUpdateTerm(term.id, { startMonthYear: e.target.value })}
+                                            placeholder="09/2023"
+                                            className="w-1/2 px-2 py-1.5 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] focus:outline-none focus:border-[#0D78AE] text-center"
+                                          />
+                                          <span className="text-[#64748B] text-[12px]">-</span>
+                                          {term.isCurrent ? (
+                                            <span className="w-1/2 px-2 py-1.5 text-[11.5px] bg-[#EBF6FC] text-[#0D78AE] font-semibold border border-[#BAE6FD] rounded-[7px] text-center">
+                                              Hiện nay
+                                            </span>
+                                          ) : (
+                                            <input
+                                              disabled={isReadOnly}
+                                              value={term.endMonthYear}
+                                              onChange={(e) => handleUpdateTerm(term.id, { endMonthYear: e.target.value })}
+                                              placeholder="06/2025"
+                                              className="w-1/2 px-2 py-1.5 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] focus:outline-none focus:border-[#0D78AE] text-center"
+                                            />
+                                          )}
+                                        </div>
+                                        {isInvalidDate && (
+                                          <span className="text-[11px] text-red-600 block mt-0.5">
+                                            Thời điểm kết thúc phải sau hoặc bằng thời điểm bắt đầu.
+                                          </span>
+                                        )}
+                                        <label className="inline-flex items-center gap-1.5 mt-1 text-[11px] text-[#475569] cursor-pointer">
+                                          <input
+                                            type="checkbox"
+                                            disabled={isReadOnly}
+                                            checked={Boolean(term.isCurrent)}
+                                            onChange={(e) =>
+                                              handleUpdateTerm(term.id, {
+                                                isCurrent: e.target.checked,
+                                                endMonthYear: e.target.checked ? 'Hiện nay' : '',
+                                              })
+                                            }
+                                            className="w-3.5 h-3.5 accent-[#0D78AE]"
+                                          />
+                                          <span>Đang giữ chức vụ</span>
+                                        </label>
+                                      </>
+                                    );
+                                  })()}
                                 </div>
                               </div>
                             </div>
@@ -2991,25 +3033,39 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       </div>
 
                       {/* Consecutive Years Verification Banner */}
-                      <div className={`p-3.5 rounded-[10px] border text-[12px] leading-relaxed flex items-start gap-2.5 ${
-                        consecCheck.hasTwoConsecutiveYears
-                          ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#166534]'
-                          : 'bg-[#FFFBEB] border-[#FDE68A] text-[#92400E]'
-                      }`}>
-                        {consecCheck.hasTwoConsecutiveYears ? (
-                          <CheckCircle2 size={16} className="text-[#16A34A] shrink-0 mt-0.5" />
-                        ) : (
-                          <AlertTriangle size={16} className="text-[#D97706] shrink-0 mt-0.5" />
-                        )}
-                        <div>
-                          <span className="font-bold block mb-0.5">
-                            {consecCheck.hasTwoConsecutiveYears
-                              ? 'Đã ghi nhận thành tích xuất sắc 02 năm liên tục:'
-                              : 'Khuyến nghị rà soát theo Điểm c khoản 4.2 Điều 4:'}
-                          </span>
-                          <span className="text-[11.5px]">{consecCheck.explanation}</span>
+                      {achievements.length === 0 ? (
+                        <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#C8D9E6] text-[12px] text-[#475569] leading-relaxed flex items-start gap-2.5">
+                          <Info size={16} className="text-[#0D78AE] shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-bold text-[#172A3A] block mb-0.5">
+                              Căn cứ tiêu chuẩn thành tích 02 năm liên tục (Điểm c khoản 4.2 Điều 4 Quy chế):
+                            </span>
+                            <span>
+                              Có thành tích xuất sắc trong công tác Hội và phong trào sinh viên (hoặc công tác Đoàn và phong trào thanh niên) cấp trường trở lên trong <strong>02 năm liên tục</strong> tính đến thời điểm xét trao. Kê khai các năm học và văn bản chứng minh bên dưới (không bắt buộc phải có 2 bằng khen riêng biệt).
+                            </span>
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        <div className={`p-3.5 rounded-[10px] border text-[12px] leading-relaxed flex items-start gap-2.5 ${
+                          consecCheck.hasTwoConsecutiveYears
+                            ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#166534]'
+                            : 'bg-[#FFFBEB] border-[#FDE68A] text-[#92400E]'
+                        }`}>
+                          {consecCheck.hasTwoConsecutiveYears ? (
+                            <CheckCircle2 size={16} className="text-[#16A34A] shrink-0 mt-0.5" />
+                          ) : (
+                            <AlertTriangle size={16} className="text-[#D97706] shrink-0 mt-0.5" />
+                          )}
+                          <div>
+                            <span className="font-bold block mb-0.5">
+                              {consecCheck.hasTwoConsecutiveYears
+                                ? 'Đã ghi nhận thành tích xuất sắc 02 năm liên tục:'
+                                : 'Lưu ý hỗ trợ thẩm định (Điểm c khoản 4.2 Điều 4):'}
+                            </span>
+                            <span className="text-[11.5px]">{consecCheck.explanation}</span>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Achievements List */}
                       {achievements.length === 0 ? (
@@ -3028,110 +3084,115 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         </div>
                       ) : (
                         <div className="space-y-3">
-                          {achievements.map((ach, idx) => (
-                            <div
-                              key={ach.id}
-                              className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#DCE7EE] space-y-3"
-                            >
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="text-[11.5px] font-bold text-[#0D78AE]">
-                                  Thành tích năm học #{idx + 1}
-                                </span>
-                                {!isReadOnly && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDeleteAchievement(ach.id)}
-                                    className="text-[11px] font-semibold text-red-600 hover:text-red-700 hover:underline cursor-pointer inline-flex items-center gap-1"
-                                  >
-                                    <Trash2 size={12} />
-                                    <span>Xóa</span>
-                                  </button>
-                                )}
+                          {achievements.map((ach, idx) => {
+                            const matchAppYear = /(\d{4})/g.exec(activeApp.academicYear || '2025');
+                            const baseAppYear = matchAppYear ? parseInt(matchAppYear[1], 10) : 2025;
+                            const dynamicSampleYear = `VD: ${baseAppYear - 2}–${baseAppYear - 1} hoặc ${baseAppYear - 1}–${baseAppYear}`;
+                            return (
+                              <div
+                                key={ach.id}
+                                className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#DCE7EE] space-y-3"
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-[11.5px] font-bold text-[#0D78AE]">
+                                    Thành tích năm học #{idx + 1}
+                                  </span>
+                                  {!isReadOnly && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteAchievement(ach.id)}
+                                      className="text-[11px] font-semibold text-red-600 hover:text-red-700 hover:underline cursor-pointer inline-flex items-center gap-1"
+                                    >
+                                      <Trash2 size={12} />
+                                      <span>Xóa</span>
+                                    </button>
+                                  )}
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                  <div>
+                                    <label className="block text-[11.5px] font-semibold text-[#172A3A] mb-1">
+                                      Năm học xét trao *
+                                    </label>
+                                    <input
+                                      disabled={isReadOnly}
+                                      value={ach.academicYear}
+                                      onChange={(e) => handleUpdateAchievement(ach.id, { academicYear: e.target.value })}
+                                      placeholder={dynamicSampleYear}
+                                      className="w-full px-2.5 py-1.5 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[7px] focus:outline-none focus:border-[#0D78AE]"
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <label className="block text-[11.5px] font-semibold text-[#172A3A] mb-1">
+                                      Vai trò / Chức vụ trong năm học *
+                                    </label>
+                                    <input
+                                      disabled={isReadOnly}
+                                      value={ach.roleOrPosition}
+                                      onChange={(e) => handleUpdateAchievement(ach.id, { roleOrPosition: e.target.value })}
+                                      placeholder="VD: Chi hội trưởng Chi hội..."
+                                      className="w-full px-2.5 py-1.5 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[7px] focus:outline-none focus:border-[#0D78AE]"
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <label className="block text-[11.5px] font-semibold text-[#172A3A] mb-1">
+                                      Cấp ghi nhận khen thưởng *
+                                    </label>
+                                    <select
+                                      disabled={isReadOnly}
+                                      value={ach.awardLevel}
+                                      onChange={(e) => handleUpdateAchievement(ach.id, { awardLevel: e.target.value })}
+                                      className="w-full px-2.5 py-1.5 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] focus:outline-none focus:border-[#0D78AE]"
+                                    >
+                                      {Object.entries(WHITE_BIRD_ANNUAL_AWARD_LEVEL_LABELS).map(([k, label]) => (
+                                        <option key={k} value={k}>
+                                          {label}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                  <div>
+                                    <label className="block text-[11.5px] font-semibold text-[#172A3A] mb-1">
+                                      Tóm tắt thành tích xuất sắc trong công tác Hội / Đoàn *
+                                    </label>
+                                    <AutoResizeTextarea
+                                      rows={2}
+                                      minHeight={56}
+                                      maxHeight={180}
+                                      disabled={isReadOnly}
+                                      value={ach.achievementSummary}
+                                      onChange={(e) =>
+                                        handleUpdateAchievement(ach.id, { achievementSummary: e.target.value })
+                                      }
+                                      placeholder="Tóm tắt kết quả công tác, phong trào sinh viên tiêu biểu đã triển khai trong năm học..."
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <label className="block text-[11.5px] font-semibold text-[#172A3A] mb-1">
+                                      Văn bản / Quyết định chứng minh thành tích (nếu có)
+                                    </label>
+                                    <AutoResizeTextarea
+                                      rows={2}
+                                      minHeight={56}
+                                      maxHeight={180}
+                                      disabled={isReadOnly}
+                                      value={ach.documentReference || ''}
+                                      onChange={(e) =>
+                                        handleUpdateAchievement(ach.id, { documentReference: e.target.value })
+                                      }
+                                      placeholder="VD: Giấy khen / Bằng khen / Quyết định số 38/QĐ-HSV ngày 15/05/2024..."
+                                    />
+                                  </div>
+                                </div>
                               </div>
-
-                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                                <div>
-                                  <label className="block text-[11.5px] font-semibold text-[#172A3A] mb-1">
-                                    Năm học xét trao *
-                                  </label>
-                                  <input
-                                    disabled={isReadOnly}
-                                    value={ach.academicYear}
-                                    onChange={(e) => handleUpdateAchievement(ach.id, { academicYear: e.target.value })}
-                                    placeholder="VD: 2023–2024 hoặc 2024–2025"
-                                    className="w-full px-2.5 py-1.5 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[7px] focus:outline-none focus:border-[#0D78AE]"
-                                  />
-                                </div>
-
-                                <div>
-                                  <label className="block text-[11.5px] font-semibold text-[#172A3A] mb-1">
-                                    Vai trò / Chức vụ trong năm học *
-                                  </label>
-                                  <input
-                                    disabled={isReadOnly}
-                                    value={ach.roleOrPosition}
-                                    onChange={(e) => handleUpdateAchievement(ach.id, { roleOrPosition: e.target.value })}
-                                    placeholder="VD: Chi hội trưởng Chi hội..."
-                                    className="w-full px-2.5 py-1.5 text-[12.5px] bg-white border border-[#C8D9E6] rounded-[7px] focus:outline-none focus:border-[#0D78AE]"
-                                  />
-                                </div>
-
-                                <div>
-                                  <label className="block text-[11.5px] font-semibold text-[#172A3A] mb-1">
-                                    Cấp ghi nhận khen thưởng *
-                                  </label>
-                                  <select
-                                    disabled={isReadOnly}
-                                    value={ach.awardLevel}
-                                    onChange={(e) => handleUpdateAchievement(ach.id, { awardLevel: e.target.value })}
-                                    className="w-full px-2.5 py-1.5 text-[12px] bg-white border border-[#C8D9E6] rounded-[7px] focus:outline-none focus:border-[#0D78AE]"
-                                  >
-                                    {Object.entries(WHITE_BIRD_ANNUAL_AWARD_LEVEL_LABELS).map(([k, label]) => (
-                                      <option key={k} value={k}>
-                                        {label}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div>
-                                  <label className="block text-[11.5px] font-semibold text-[#172A3A] mb-1">
-                                    Tóm tắt thành tích xuất sắc trong công tác Hội / Đoàn *
-                                  </label>
-                                  <AutoResizeTextarea
-                                    rows={2}
-                                    minHeight={56}
-                                    maxHeight={180}
-                                    disabled={isReadOnly}
-                                    value={ach.achievementSummary}
-                                    onChange={(e) =>
-                                      handleUpdateAchievement(ach.id, { achievementSummary: e.target.value })
-                                    }
-                                    placeholder="Tóm tắt kết quả công tác, phong trào sinh viên tiêu biểu đã triển khai trong năm học..."
-                                  />
-                                </div>
-
-                                <div>
-                                  <label className="block text-[11.5px] font-semibold text-[#172A3A] mb-1">
-                                    Số quyết định / Văn bản khen thưởng liên quan
-                                  </label>
-                                  <AutoResizeTextarea
-                                    rows={2}
-                                    minHeight={56}
-                                    maxHeight={180}
-                                    disabled={isReadOnly}
-                                    value={ach.documentReference || ''}
-                                    onChange={(e) =>
-                                      handleUpdateAchievement(ach.id, { documentReference: e.target.value })
-                                    }
-                                    placeholder="VD: Giấy khen Hội Sinh viên trường (QĐ số 38/QĐ-HSV ngày 15/05/2024)"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>
