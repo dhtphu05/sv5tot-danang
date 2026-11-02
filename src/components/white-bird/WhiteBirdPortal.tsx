@@ -1084,10 +1084,22 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   variant="primary"
                   onClick={handleSubmitDossier}
                 >
-                  <Send size={15} className="mr-1.5" />
-                  {readiness.canSubmit
-                    ? `Nộp hồ sơ Giải thưởng (${readiness.readyCount}/${readiness.totalRequired})`
-                    : `Kiểm tra & Nộp hồ sơ (${readiness.readyCount}/${readiness.totalRequired})`}
+                  {readiness.canSubmit ? (
+                    <>
+                      <Send size={15} className="mr-1.5" />
+                      <span>{`Nộp hồ sơ Giải thưởng (${readiness.readyCount}/${readiness.totalRequired})`}</span>
+                    </>
+                  ) : readiness.readyCount === 0 ? (
+                    <>
+                      <FileCheck2 size={15} className="mr-1.5" />
+                      <span>{`Kiểm tra hồ sơ trước nộp (0/${readiness.totalRequired})`}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Clock size={15} className="mr-1.5" />
+                      <span>{`Kiểm tra tiến độ hoàn thiện (${readiness.readyCount}/${readiness.totalRequired})`}</span>
+                    </>
+                  )}
                 </Button>
               )}
             </div>
@@ -1202,10 +1214,22 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   className="w-full justify-center"
                   onClick={handleSubmitDossier}
                 >
-                  <Send size={15} className="mr-1.5" />
-                  {readiness.canSubmit
-                    ? `Nộp hồ sơ Giải thưởng (${readiness.readyCount}/${readiness.totalRequired})`
-                    : `Kiểm tra & Nộp hồ sơ (${readiness.readyCount}/${readiness.totalRequired})`}
+                  {readiness.canSubmit ? (
+                    <>
+                      <Send size={15} className="mr-1.5" />
+                      <span>{`Nộp hồ sơ Giải thưởng (${readiness.readyCount}/${readiness.totalRequired})`}</span>
+                    </>
+                  ) : readiness.readyCount === 0 ? (
+                    <>
+                      <FileCheck2 size={15} className="mr-1.5" />
+                      <span>{`Kiểm tra hồ sơ trước nộp (0/${readiness.totalRequired})`}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Clock size={15} className="mr-1.5" />
+                      <span>{`Kiểm tra tiến độ hoàn thiện (${readiness.readyCount}/${readiness.totalRequired})`}</span>
+                    </>
+                  )}
                 </Button>
               ) : (
                 <div className="p-2.5 rounded-lg bg-[#E0F2FE] text-[#0369A1] text-[12px] font-bold text-center">
@@ -4053,7 +4077,6 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   </div>
                 );
               }
-              }
 
               // Generic fallback (if any)
               return (
@@ -4082,7 +4105,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       id="wb03-summary-generic"
                       rows={4}
                       minHeight={90}
-                      maxHeight={320}
+                      maxHeight={220}
                       disabled={isReadOnly}
                       value={activeApp.requirements.wb03.awardOrRecognitionSummary}
                       onChange={(e) =>
