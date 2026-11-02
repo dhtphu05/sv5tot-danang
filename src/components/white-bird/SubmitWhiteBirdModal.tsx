@@ -155,7 +155,9 @@ export const SubmitWhiteBirdModal: React.FC<SubmitWhiteBirdModalProps> = ({
       isReady: readiness.wb03Ready,
       filesCount: application.requirements.wb03.evidenceFiles.length,
       specialNote:
-        category === 'SANG_TAO'
+        category === 'TRUYEN_LUA'
+          ? 'Quyết định chức vụ từ Chi hội trưởng / Bí thư Chi đoàn trở lên & khen thưởng từ cấp trường trở lên (Khoản 6.2 Điều 6)'
+          : category === 'SANG_TAO'
           ? 'Giải thưởng từ cấp Đại học Đà Nẵng trở lên (không dùng giấy chứng nhận tham gia)'
           : category === 'UOM_MAM'
           ? 'Thành phần tùy chọn (nếu có). Không làm giảm tiến độ xét nộp nếu không có minh họa'
@@ -252,6 +254,16 @@ export const SubmitWhiteBirdModal: React.FC<SubmitWhiteBirdModalProps> = ({
                   {application.academicYear || '2025–2026'}
                 </span>
               </div>
+
+              {application.requirements.wb01.nominatingUnitName && (
+                <div className="flex items-center gap-1.5">
+                  <ShieldCheck size={13.5} className="text-[#0D78AE] shrink-0" />
+                  <span className="text-[#64748B]">Đề xuất (Điều 5):</span>
+                  <span className="font-semibold text-[#172A3A] truncate max-w-[240px]">
+                    {application.requirements.wb01.nominatingUnitName}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 

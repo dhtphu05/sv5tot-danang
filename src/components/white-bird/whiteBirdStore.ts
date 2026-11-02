@@ -16,6 +16,7 @@ import {
   WhiteBirdWB01Declaration,
   WhiteBirdWB02Declaration,
   WhiteBirdWB03Declaration,
+  WhiteBirdTruyenLuaEvidenceCategory,
   isValidOptionalHttpUrl,
 } from './whiteBirdTypes';
 
@@ -384,6 +385,38 @@ export function removeWhiteBirdEvidence(
       [key]: {
         ...current.requirements[key],
         evidenceFiles: existingFiles.filter((f) => f.id !== evidenceId),
+      },
+    },
+  };
+  const next = [...storeApps];
+  next[idx] = updated;
+  saveToStorage(next);
+  syncAppToBackend(updated);
+  return updated;
+}
+
+export function updateWhiteBirdEvidenceCategory(
+  appId: string,
+  reqId: WhiteBirdRequirementId,
+  evidenceId: string,
+  category: WhiteBirdTruyenLuaEvidenceCategory
+): WhiteBirdApplication | null {
+  const idx = storeApps.findIndex((a) => a.id === appId);
+  if (idx < 0) return null;
+  const current = storeApps[idx];
+  const key = reqId.toLowerCase() as 'wb01' | 'wb02' | 'wb03';
+  const existingFiles = current.requirements[key].evidenceFiles || [];
+  const updatedFiles = existingFiles.map((f) =>
+    f.id === evidenceId ? { ...f, evidenceCategory: category } : f
+  );
+  const updated: WhiteBirdApplication = {
+    ...current,
+    updatedAt: new Date().toISOString(),
+    requirements: {
+      ...current.requirements,
+      [key]: {
+        ...current.requirements[key],
+        evidenceFiles: updatedFiles,
       },
     },
   };
