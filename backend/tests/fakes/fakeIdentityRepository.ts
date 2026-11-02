@@ -151,6 +151,7 @@ export class FakeIdentityRepository implements IIdentityRepository {
     if (!user) return null;
     return {
       fullName: user.fullName,
+      studentCode: user.studentCode || '',
       gender: 'Nam',
       dateOfBirth: '01/01/2004',
       ethnicity: 'Kinh',
@@ -159,6 +160,9 @@ export class FakeIdentityRepository implements IIdentityRepository {
       className: '22T_CLC1',
       homeProvince: 'Thành phố Đà Nẵng',
       institutionId: user.institutionId || 'inst-dut',
+      facultyDepartmentId: user.facultyDepartmentId || '',
+      faculty: '',
+      facultyName: '',
       unionPosition: 'Không giữ chức vụ',
       politicalStatus: 'Đoàn viên',
       phoneNumber: user.phone || '0905123456',
@@ -172,6 +176,7 @@ export class FakeIdentityRepository implements IIdentityRepository {
   ): Promise<StudentProfileDto> {
     const current = (await this.getProfile(userId)) || {
       fullName: 'Nguyễn Văn A',
+      studentCode: '102220001',
       gender: 'Nam',
       dateOfBirth: '01/01/2004',
       ethnicity: 'Kinh',
@@ -180,6 +185,9 @@ export class FakeIdentityRepository implements IIdentityRepository {
       className: '22T_CLC1',
       homeProvince: 'Thành phố Đà Nẵng',
       institutionId: 'inst-dut',
+      facultyDepartmentId: '',
+      faculty: '',
+      facultyName: '',
       unionPosition: 'Không giữ chức vụ',
       politicalStatus: 'Đoàn viên',
       phoneNumber: '0905123456',
@@ -188,6 +196,7 @@ export class FakeIdentityRepository implements IIdentityRepository {
 
     const updated: StudentProfileDto = {
       fullName: input.fullName !== undefined ? input.fullName : current.fullName,
+      studentCode: input.studentCode !== undefined ? input.studentCode : current.studentCode,
       gender: input.gender !== undefined ? input.gender : current.gender,
       dateOfBirth: input.dateOfBirth !== undefined ? input.dateOfBirth : current.dateOfBirth,
       ethnicity: input.ethnicity !== undefined ? input.ethnicity : current.ethnicity,
@@ -197,6 +206,9 @@ export class FakeIdentityRepository implements IIdentityRepository {
       homeProvince: input.homeProvince !== undefined ? input.homeProvince : current.homeProvince,
       institutionId: input.institutionId !== undefined ? input.institutionId : current.institutionId,
       institutionName: current.institutionName,
+      facultyDepartmentId: input.facultyDepartmentId !== undefined ? input.facultyDepartmentId : current.facultyDepartmentId,
+      faculty: input.faculty !== undefined ? input.faculty : current.faculty || input.facultyName,
+      facultyName: input.facultyName !== undefined ? input.facultyName : current.facultyName || input.faculty,
       unionPosition: input.unionPosition !== undefined ? input.unionPosition : current.unionPosition,
       politicalStatus: input.politicalStatus !== undefined ? input.politicalStatus : current.politicalStatus,
       phoneNumber: input.phoneNumber !== undefined ? input.phoneNumber : current.phoneNumber,
@@ -209,8 +221,10 @@ export class FakeIdentityRepository implements IIdentityRepository {
     const user = this.users.get(userId);
     if (user) {
       if (input.fullName) user.fullName = input.fullName;
+      if (input.studentCode) user.studentCode = input.studentCode.trim().toUpperCase();
       if (input.phoneNumber) user.phone = input.phoneNumber;
       if (input.institutionId) user.institutionId = input.institutionId;
+      if (input.facultyDepartmentId !== undefined) user.facultyDepartmentId = input.facultyDepartmentId;
       user.updatedAt = new Date();
     }
 

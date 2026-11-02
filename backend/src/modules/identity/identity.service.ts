@@ -194,8 +194,12 @@ export class IdentityService {
       };
     }
 
-    // Always ensure email matches the authenticated user record
+    // Always ensure email and studentCode match the authenticated user record
     profile.email = user.email;
+    profile.studentCode = user.studentCode || profile.studentCode || '';
+    if (user.facultyDepartmentId && !profile.facultyDepartmentId) {
+      profile.facultyDepartmentId = user.facultyDepartmentId;
+    }
 
     const completeness = this.checkProfileCompleteness(profile);
     return { profile, completeness };
@@ -270,6 +274,26 @@ export class IdentityService {
         );
       }
       input.dateOfBirth = dob;
+    }
+
+    // 6. Student code validation & uniqueness enforcement
+    if (input.studentCode !== undefined) {
+      const normalizedCode = input.studentCode.trim().toUpperCase();
+      if (!normalizedCode) {
+        throw ApiError.badRequest('Mã số sinh viên không được để trống.', 'INVALID_STUDENT_CODE');
+      }
+      if (normalizedCode.length < 3 || normalizedCode.length > 30) {
+        throw ApiError.badRequest('Mã số sinh viên phải từ 3 đến 30 ký tự.', 'INVALID_STUDENT_CODE');
+      }
+      // Check if another user owns this studentCode
+      const existingUser = await this.identityRepo.findByStudentCode(normalizedCode);
+      if (existingUser && existingUser.id !== userId) {
+        throw ApiError.conflict(
+          'Mã số sinh viên này đã được sử dụng cho một tài khoản khác.',
+          'STUDENT_CODE_CONFLICT'
+        );
+      }
+      input.studentCode = normalizedCode;
     }
 
     const updatedProfile = await this.identityRepo.updateProfile(userId, input);

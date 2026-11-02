@@ -169,7 +169,7 @@ export class AuthController {
       });
     } catch (err: any) {
       const status = err?.status ?? err?.statusCode;
-      if (status === 400 || status === 401 || status === 403) {
+      if (status && status >= 400 && status < 500) {
         throw err;
       }
       const portalSaved = resolveSavedStudentProfileFromPortalState({
@@ -212,7 +212,7 @@ export class AuthController {
       });
     } catch (err: any) {
       const status = err?.status ?? err?.statusCode;
-      if (status === 400 || status === 401 || status === 403) {
+      if (status && status >= 400 && status < 500) {
         throw err;
       }
       const merged = syncStudentProfileInPortalState(

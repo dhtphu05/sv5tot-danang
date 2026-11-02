@@ -456,7 +456,7 @@ export const demoServicesAdapter: DomainServicesBundle = {
       return activeDemoSession;
     },
 
-    async registerStudent({ fullName, email, studentCode, institutionId, institutionName, password }) {
+    async registerStudent({ fullName, email, studentCode, institutionId, institutionName, facultyDepartmentId, facultyName, password }) {
       const normalizedEmail = email.trim().toLowerCase();
       const normalizedCode = studentCode.trim().toUpperCase();
 
@@ -483,6 +483,7 @@ export const demoServicesAdapter: DomainServicesBundle = {
       const resolvedInstName = institutionName || 'Trường Đại học Bách khoa – ĐHĐN';
       const freshProfile: StudentProfileDto = {
         fullName: fullName.trim(),
+        studentCode: normalizedCode,
         gender: '',
         dateOfBirth: '',
         ethnicity: '',
@@ -492,6 +493,9 @@ export const demoServicesAdapter: DomainServicesBundle = {
         homeProvince: '',
         institutionId,
         institutionName: resolvedInstName,
+        facultyDepartmentId,
+        faculty: facultyName,
+        facultyName,
         unionPosition: '',
         politicalStatus: '' as any,
         phoneNumber: '',
@@ -545,6 +549,18 @@ export const demoServicesAdapter: DomainServicesBundle = {
     },
 
     async updateProfile(input: UpdateStudentProfileInput, actor) {
+      if (input.studentCode) {
+        const normalizedCode = input.studentCode.trim().toUpperCase();
+        if (normalizedCode === 'TRUNG_MSSV') {
+          const err = new Error('Mã số sinh viên này đã được sử dụng cho một tài khoản khác.') as Error & {
+            status?: number;
+            code?: string;
+          };
+          err.status = 409;
+          err.code = 'STUDENT_CODE_CONFLICT';
+          throw err;
+        }
+      }
       demoStudentProfile = {
         ...demoStudentProfile,
         ...input,

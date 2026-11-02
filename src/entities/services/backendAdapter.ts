@@ -79,12 +79,12 @@ export const backendServicesAdapter: DomainServicesBundle = {
       return res.data;
     },
 
-    async registerStudent({ fullName, email, studentCode, institutionId, institutionName, password }) {
+    async registerStudent({ fullName, email, studentCode, institutionId, institutionName, facultyDepartmentId, facultyName, password }) {
       const res = await apiRequest<{ success: boolean; data: AuthSessionPayload }>(
         '/api/v2/portal/auth/register',
         {
           method: 'POST',
-          body: { fullName, email, studentCode, institutionId, institutionName, password },
+          body: { fullName, email, studentCode, institutionId, institutionName, facultyDepartmentId, facultyName, password },
         }
       );
       if (res.data?.user) {

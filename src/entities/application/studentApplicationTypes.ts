@@ -107,6 +107,9 @@ export interface StudentProfileDto {
   homeProvince: string;
   institutionId: string;
   institutionName?: string;
+  facultyDepartmentId?: string;
+  faculty?: string;
+  facultyName?: string;
 
   // Group C — Thông tin Đoàn – Hội
   unionPosition: string;
@@ -119,6 +122,7 @@ export interface StudentProfileDto {
 
 export interface UpdateStudentProfileInput {
   fullName?: string;
+  studentCode?: string;
   gender?: 'Nam' | 'Nữ' | 'Khác' | string;
   dateOfBirth?: string;
   ethnicity?: string;
@@ -128,6 +132,9 @@ export interface UpdateStudentProfileInput {
   homeProvince?: string;
   institutionId?: string;
   institutionName?: string;
+  facultyDepartmentId?: string;
+  faculty?: string;
+  facultyName?: string;
   unionPosition?: string;
   politicalStatus?: string;
   phoneNumber?: string;

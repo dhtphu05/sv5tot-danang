@@ -33,4 +33,6 @@ export interface StudentRegistrationPayload {
   studentId: string;
   institutionId: string;
   institutionName: string;
+  facultyDepartmentId?: string;
+  facultyName?: string;
 }

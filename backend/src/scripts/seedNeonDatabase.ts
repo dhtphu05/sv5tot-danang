@@ -12,6 +12,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { dbManager } from '../shared/database/prismaClient';
 import { defaultPasswordHasher } from '../modules/auth/passwordHasher';
+import { FACULTIES_SEED_2026 } from './seedFaculties2026';
 import {
   CloudflareR2StorageClient,
   verifyEvidenceMagicBytes,
@@ -294,6 +295,32 @@ async function main() {
     });
   }
   console.log(`✅ Seeded ${SCHOOL_REVIEW_UNITS_SEED.length} School Review Units.`);
+
+  // 2.1 Seed 52 Faculties (2026 Structure)
+  for (const fac of FACULTIES_SEED_2026) {
+    await prisma.facultyDepartment.upsert({
+      where: {
+        institutionId_code: {
+          institutionId: fac.institutionId,
+          code: fac.code,
+        },
+      },
+      update: {
+        schoolReviewUnitId: fac.schoolReviewUnitId,
+        name: fac.name,
+        isActive: true,
+      },
+      create: {
+        id: fac.id,
+        institutionId: fac.institutionId,
+        schoolReviewUnitId: fac.schoolReviewUnitId,
+        code: fac.code,
+        name: fac.name,
+        isActive: true,
+      },
+    });
+  }
+  console.log(`✅ Seeded ${FACULTIES_SEED_2026.length} Faculties.`);
 
   // 3. Seed Active AwardSeason
   const season = await prisma.awardSeason.upsert({
