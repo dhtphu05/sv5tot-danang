@@ -797,12 +797,26 @@ export function submitWhiteBirdApplication(appId: string): {
 
   const now = new Date().toISOString();
   const isResubmittingSupplement = current.status === 'supplement_requested';
+  const resolvedWb03Summary =
+    current.category === 'TRUYEN_LUA' &&
+    !current.requirements.wb03.awardOrRecognitionSummary?.trim() &&
+    current.requirements.wb03.evidenceFiles.length > 0
+      ? synthesizeTruyenLuaWb03Summary(current.requirements.wb03.evidenceFiles)
+      : current.requirements.wb03.awardOrRecognitionSummary;
+
   const updated: WhiteBirdApplication = {
     ...current,
     status: isResubmittingSupplement ? 'supplement_returned' : 'submitted',
     submittedAt: current.submittedAt || now,
     ...(isResubmittingSupplement ? { supplementRespondedAt: now } : {}),
     updatedAt: now,
+    requirements: {
+      ...current.requirements,
+      wb03: {
+        ...current.requirements.wb03,
+        awardOrRecognitionSummary: resolvedWb03Summary,
+      },
+    },
   };
   const next = [...storeApps];
   next[idx] = updated;

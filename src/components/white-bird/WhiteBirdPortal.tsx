@@ -3924,47 +3924,24 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       )}
                     </div>
 
-                    {/* Summary of Evidence Documents */}
-                    <div>
-                      <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
-                        <label htmlFor="wb03-tl-summary" className="block text-[12.5px] font-bold text-[#172A3A]">
-                          Danh mục tài liệu minh chứng chức vụ & thành tích đính kèm <span className="text-red-500">*</span>
-                        </label>
-                        {!isReadOnly && wb03Files.length > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const synth = synthesizeTruyenLuaWb03Summary(wb03Files);
-                              updateWhiteBirdWB03(activeApp.id, {
-                                awardOrRecognitionSummary: synth,
-                              });
-                              showToast('Đã tự động tổng hợp danh mục từ các tệp minh chứng đã tải!');
-                            }}
-                            className="text-[11.5px] font-bold text-[#0D78AE] hover:underline cursor-pointer inline-flex items-center gap-1"
-                          >
-                            <Sparkles size={13} />
-                            <span>Tự động tổng hợp danh mục từ tệp đã tải</span>
-                          </button>
-                        )}
+                    {/* Tự động tổng hợp danh mục từ tệp đã tải */}
+                    <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#DCE7EE] text-[12px] flex items-center justify-between gap-2.5 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <Sparkles size={16} className="text-[#0D78AE] shrink-0" />
+                        <div>
+                          <span className="font-bold text-[#172A3A] block">
+                            Danh mục tài liệu minh chứng ({wb03Files.length} tệp)
+                          </span>
+                          <span className="text-[11.5px] text-[#64748B]">
+                            Được hệ thống tự động tổng hợp từ tên tệp, nhóm phân loại và số hiệu văn bản bên trên theo Khoản 6.2 Điều 6 (không cần nhập thủ công lại).
+                          </span>
+                        </div>
                       </div>
-                      <AutoResizeTextarea
-                        id="wb03-tl-summary"
-                        rows={4}
-                        minHeight={90}
-                        maxHeight={220}
-                        disabled={isReadOnly}
-                        value={wb03Data.awardOrRecognitionSummary}
-                        onChange={(e) =>
-                          updateWhiteBirdWB03(activeApp.id, {
-                            awardOrRecognitionSummary: e.target.value,
-                          })
-                        }
-                        placeholder={`Danh mục được tự động tổng hợp từ các tệp tải lên hoặc bạn có thể chỉnh sửa tại đây, ví dụ:
-1. [Chức vụ & Thời gian công tác] Quyết định công nhận Ban Chấp hành Chi hội (QĐ số 12/QĐ-HSV)
-2. [Thành tích xuất sắc 02 năm liên tục] Giấy khen Ban Thư ký HSV trường năm học 2023–2024
-3. [Thành tích xuất sắc 02 năm liên tục] Bằng khen Ban Thư ký HSV ĐHĐN năm học 2024–2025
-4. [Bảng điểm & Điểm rèn luyện] Bảng điểm tích lũy và ĐRL có xác nhận của Nhà trường...`}
-                      />
+                      {wb03Files.length > 0 && (
+                        <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full shrink-0">
+                          ✓ Đã tổng hợp tự động
+                        </span>
+                      )}
                     </div>
 
                     {/* Decision Numbers / Document References */}
@@ -4077,6 +4054,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
             })()}
 
             {/* Evidence Attachments Section for Current Requirement */}
+            {!(activeReqId === 'WB03' && activeApp.category === 'TRUYEN_LUA') && (
             <div className="pt-4 border-t border-[#EDF3F8] space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                 <div className="space-y-1">
@@ -4303,6 +4281,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                 );
               })()}
             </div>
+            )}
           </div>
         </div>
       )}
