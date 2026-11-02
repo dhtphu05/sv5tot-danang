@@ -14,7 +14,10 @@ import {
   updateWhiteBirdEvidenceMetadata,
   synthesizeTruyenLuaWb03Summary,
   getAllWhiteBirdApplications,
+  syncApplicationWithProfile,
+  requestWhiteBirdSupplementFromUdn,
 } from '../components/white-bird/whiteBirdStore.js';
+import { StudentProfileDto } from '../entities/application/studentApplicationTypes.js';
 import {
   WhiteBirdApplication,
   WhiteBirdEvidenceItem,
@@ -1374,5 +1377,760 @@ describe('White Bird Application — WB03 Optional for UOM_MAM & WB02 Refinement
     const stCompleteReadiness = validateWhiteBirdReadiness(stComplete);
     assert.strictEqual(stCompleteReadiness.readyCount, 3);
     assert.strictEqual(stCompleteReadiness.canSubmit, true, 'SANG_TAO can submit with 3/3');
+  });
+  // =========================================================================
+  // SECTION 10 ACCEPTANCE TEST SUITE (15 SCENARIOS)
+  // =========================================================================
+
+  it('32. Scenario 1: Hồ sơ mới chưa có dữ liệu → canSubmit = false, hiển thị rõ các lý do thiếu thành phần', () => {
+    hydrateWhiteBirdStore();
+    const app = createTestApplication('TRUYEN_LUA', 'INDIVIDUAL');
+    const readiness = validateWhiteBirdReadiness(app);
+
+    assert.strictEqual(readiness.canSubmit, false, 'Hồ sơ mới chưa có dữ liệu không thể nộp');
+    assert.strictEqual(readiness.readyCount, 0, 'Chưa có thành phần nào hoàn thiện');
+    assert.strictEqual(readiness.totalRequired, 3, 'Truyền lửa bắt buộc đủ 3 thành phần');
+    assert.ok(readiness.missingReasons.some((r) => r.includes('WB01')), 'Phải báo thiếu WB01');
+    assert.ok(readiness.missingReasons.some((r) => r.includes('WB02')), 'Phải báo thiếu WB02');
+    assert.ok(readiness.missingReasons.some((r) => r.includes('WB03')), 'Phải báo thiếu WB03');
+  });
+
+  it('33. Scenario 2: Hồ sơ cá nhân chưa hoàn thiện → syncApplicationWithProfile đồng bộ an toàn các trường hiện có, không crash', () => {
+    hydrateWhiteBirdStore();
+    const app = createTestApplication('TRUYEN_LUA', 'INDIVIDUAL');
+
+    // Sparse profile with missing fields
+    const partialProfile: StudentProfileDto = {
+      fullName: 'Phan Thị Minh Hằng',
+      studentCode: '102220999',
+      gender: '',
+      dateOfBirth: '',
+      ethnicity: '',
+      academicYearNumber: 0,
+      educationLevel: 'Đại học',
+      className: '',
+      homeProvince: '',
+      institutionId: 'DUT',
+      unionPosition: '',
+      politicalStatus: '',
+      phoneNumber: '',
+      email: '',
+    };
+
+    const synced = syncApplicationWithProfile(app.id, partialProfile);
+    assert.ok(synced, 'Đồng bộ không được trả về null');
+    assert.strictEqual(synced.nomineeName, 'Phan Thị Minh Hằng');
+    assert.strictEqual(synced.studentId, '102220999');
+
+    // Các trường trống không ghi đè dữ liệu rác
+    const updated = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    assert.strictEqual(updated.nomineeName, 'Phan Thị Minh Hằng');
+    assert.strictEqual(updated.requirements.wb02.nomineeDateOfBirth, undefined);
+  });
+
+  it('34. Scenario 3: Hồ sơ cá nhân đã hoàn thiện → syncApplicationWithProfile tự động điền đầy đủ thông tin cá nhân vào WB02', () => {
+    hydrateWhiteBirdStore();
+    const app = createTestApplication('TRUYEN_LUA', 'INDIVIDUAL');
+
+    const fullProfile: StudentProfileDto = {
+      fullName: 'Trần Thị Thu Thảo',
+      studentCode: '102220199',
+      gender: 'Nữ',
+      dateOfBirth: '15/08/2004',
+      ethnicity: 'Kinh',
+      academicYearNumber: 3,
+      educationLevel: 'Đại học chính quy',
+      className: '22T_DT2',
+      homeProvince: 'Đà Nẵng',
+      institutionId: 'DUT',
+      institutionName: 'Trường Đại học Bách khoa – ĐHĐN',
+      unionPosition: 'Ủy viên Ban Chấp hành Liên chi đoàn',
+      politicalStatus: 'Đảng viên',
+      phoneNumber: '0905999888',
+      email: 'thuthao@dut.udn.vn',
+    };
+
+    const synced = syncApplicationWithProfile(app.id, fullProfile);
+    assert.ok(synced);
+    assert.strictEqual(synced.nomineeName, 'Trần Thị Thu Thảo');
+    assert.strictEqual(synced.studentId, '102220199');
+    assert.strictEqual(synced.className, '22T_DT2');
+    assert.strictEqual(synced.contactPhone, '0905999888');
+
+    const wb02 = synced.requirements.wb02;
+    assert.strictEqual(wb02.nomineeDateOfBirth, '15/08/2004');
+    assert.strictEqual(wb02.nomineeGender, 'NU');
+    assert.strictEqual(wb02.nomineeEthnicity, 'Kinh');
+    assert.strictEqual(wb02.nomineeHometown, 'Đà Nẵng');
+    assert.strictEqual(wb02.nomineeYearOfStudy, 'Năm thứ 3');
+    assert.strictEqual(wb02.nomineeClass, '22T_DT2');
+    assert.strictEqual(wb02.nomineePhone, '0905999888');
+    assert.strictEqual(wb02.nomineeEmail, 'thuthao@dut.udn.vn');
+    assert.strictEqual(wb02.nomineeCurrentRole, 'Ủy viên Ban Chấp hành Liên chi đoàn');
+    assert.strictEqual(wb02.nomineePoliticalStatus, 'DANG_VIEN');
+  });
+
+  it('35. Scenario 4: Cập nhật thông tin cá nhân trong giai đoạn bản nháp → hồ sơ nháp tự động cập nhật, bảo toàn lịch sử chức vụ và thành tích', () => {
+    hydrateWhiteBirdStore();
+    const app = createTestApplication('TRUYEN_LUA', 'INDIVIDUAL');
+
+    // Nhập lịch sử chức vụ và thành tích tự kê khai
+    const customTerms: WhiteBirdOfficerTerm[] = [
+      {
+        id: 'term-custom-1',
+        position: 'Bí thư Chi đoàn',
+        unit: 'Chi đoàn 22T_DT2',
+        unitType: 'WITHOUT_HOI',
+        startMonthYear: '09/2023',
+        endMonthYear: '06/2024',
+        isCurrent: false,
+      },
+    ];
+    const customAchs: WhiteBirdAnnualAchievement[] = [
+      {
+        id: 'ach-custom-1',
+        academicYear: '2023–2024',
+        roleOrPosition: 'Bí thư Chi đoàn',
+        achievementSummary: 'Hoàn thành xuất sắc nhiệm vụ',
+        awardLevel: 'CO_SO',
+      },
+    ];
+    updateWhiteBirdWB02(app.id, {
+      officerTerms: customTerms,
+      annualAchievements: customAchs,
+      commitmentConfirmed: true,
+    });
+
+    // Profile được sinh viên chỉnh sửa số điện thoại và xếp loại
+    const updatedProfile: StudentProfileDto = {
+      fullName: 'Trần Thị Thu Thảo',
+      studentCode: '102220199',
+      gender: 'Nữ',
+      dateOfBirth: '15/08/2004',
+      ethnicity: 'Kinh',
+      academicYearNumber: 4, // Lên năm thứ 4
+      educationLevel: 'Đại học chính quy',
+      className: '22T_DT2',
+      homeProvince: 'Đà Nẵng',
+      institutionId: 'DUT',
+      unionPosition: 'Phó Bí thư Liên chi đoàn', // Thăng cấp
+      politicalStatus: 'Đảng viên',
+      phoneNumber: '0905111222', // Đổi số điện thoại mới
+      email: 'thuthao_new@dut.udn.vn',
+    };
+
+    const synced = syncApplicationWithProfile(app.id, updatedProfile)!;
+    assert.strictEqual(synced.requirements.wb02.nomineePhone, '0905111222');
+    assert.strictEqual(synced.requirements.wb02.nomineeEmail, 'thuthao_new@dut.udn.vn');
+    assert.strictEqual(synced.requirements.wb02.nomineeYearOfStudy, 'Năm thứ 4');
+
+    // Lịch sử chức vụ và thành tích xuất sắc không bị ghi đè hay mất
+    assert.strictEqual(synced.requirements.wb02.officerTerms?.length, 1);
+    assert.strictEqual(synced.requirements.wb02.officerTerms?.[0].position, 'Bí thư Chi đoàn');
+    assert.strictEqual(synced.requirements.wb02.annualAchievements?.length, 1);
+    assert.strictEqual(synced.requirements.wb02.commitmentConfirmed, true);
+  });
+
+  it('36. Scenario 5: Thêm, sửa, xóa nhiều giai đoạn công tác trong WB02 → mảng officerTerms phản ánh chính xác', () => {
+    hydrateWhiteBirdStore();
+    const app = createTestApplication('TRUYEN_LUA', 'INDIVIDUAL');
+
+    // 1. Thêm 2 giai đoạn công tác
+    const term1: WhiteBirdOfficerTerm = {
+      id: 'term-step-1',
+      position: 'Ủy viên Ban Chấp hành Chi hội',
+      unit: 'Chi hội 22T_DT2',
+      unitType: 'WITH_HOI',
+      startMonthYear: '09/2022',
+      endMonthYear: '06/2023',
+      isCurrent: false,
+    };
+    const term2: WhiteBirdOfficerTerm = {
+      id: 'term-step-2',
+      position: 'Chi hội trưởng',
+      unit: 'Chi hội 22T_DT2',
+      unitType: 'WITH_HOI',
+      startMonthYear: '09/2023',
+      endMonthYear: '06/2024',
+      isCurrent: false,
+    };
+    updateWhiteBirdWB02(app.id, { officerTerms: [term1, term2] });
+
+    let current = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    assert.strictEqual(current.requirements.wb02.officerTerms?.length, 2);
+
+    // 2. Chỉnh sửa term2 thành đương nhiệm
+    const modifiedTerms = current.requirements.wb02.officerTerms!.map((t) =>
+      t.id === 'term-step-2' ? { ...t, isCurrent: true, endMonthYear: 'Hiện nay' } : t
+    );
+    updateWhiteBirdWB02(app.id, { officerTerms: modifiedTerms });
+
+    current = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    const modifiedTerm2 = current.requirements.wb02.officerTerms!.find((t) => t.id === 'term-step-2')!;
+    assert.strictEqual(modifiedTerm2.isCurrent, true);
+    assert.strictEqual(modifiedTerm2.endMonthYear, 'Hiện nay');
+
+    // 3. Xóa term1
+    const remainingTerms = current.requirements.wb02.officerTerms!.filter((t) => t.id !== 'term-step-1');
+    updateWhiteBirdWB02(app.id, { officerTerms: remainingTerms });
+
+    current = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    assert.strictEqual(current.requirements.wb02.officerTerms?.length, 1);
+    assert.strictEqual(current.requirements.wb02.officerTerms?.[0].id, 'term-step-2');
+  });
+
+  it('37. Scenario 6: calculateOfficerServiceMonths tính tổng thời gian công tác chính xác, hợp nhất các khoảng thời gian chồng lấn', () => {
+    // 2 khoảng chồng lấn: 09/2023 - 06/2024 (10 tháng) và 01/2024 - 12/2024 (12 tháng)
+    // Hợp nhất: 09/2023 -> 12/2024 = 16 tháng (thay vì 22 tháng nếu cộng dồn)
+    const overlappingTerms: WhiteBirdOfficerTerm[] = [
+      {
+        id: 'term-overlap-1',
+        position: 'Chi hội trưởng',
+        unit: 'Chi hội',
+        unitType: 'WITH_HOI',
+        startMonthYear: '09/2023',
+        endMonthYear: '06/2024',
+        isCurrent: false,
+      },
+      {
+        id: 'term-overlap-2',
+        position: 'Ủy viên BCH Hội Sinh viên Trường',
+        unit: 'Hội Sinh viên Trường',
+        unitType: 'WITH_HOI',
+        startMonthYear: '01/2024',
+        endMonthYear: '12/2024',
+        isCurrent: false,
+      },
+    ];
+
+    const result = calculateOfficerServiceMonths(overlappingTerms);
+    assert.strictEqual(result.totalMonths, 16, 'Tổng tháng sau khi hợp nhất phải là 16 tháng');
+    assert.strictEqual(result.mergedIntervalsCount, 1, 'Hệ thống nhận diện hợp nhất thành 1 khoảng');
+
+    // 2 khoảng cách biệt rời nhau: 09/2022 - 06/2023 (10 tháng) và 09/2024 - 06/2025 (10 tháng) = 20 tháng
+    const disjointTerms: WhiteBirdOfficerTerm[] = [
+      {
+        id: 'term-disjoint-1',
+        position: 'Bí thư Chi đoàn',
+        unit: 'Chi đoàn',
+        unitType: 'WITHOUT_HOI',
+        startMonthYear: '09/2022',
+        endMonthYear: '06/2023',
+        isCurrent: false,
+      },
+      {
+        id: 'term-disjoint-2',
+        position: 'Phó Bí thư Đoàn trường',
+        unit: 'Đoàn trường',
+        unitType: 'WITHOUT_HOI',
+        startMonthYear: '09/2024',
+        endMonthYear: '06/2025',
+        isCurrent: false,
+      },
+    ];
+    const disjointResult = calculateOfficerServiceMonths(disjointTerms);
+    assert.strictEqual(disjointResult.totalMonths, 20);
+    assert.strictEqual(disjointResult.mergedIntervalsCount, 2, '2 khoảng rời nhau không bị gộp');
+  });
+
+  it('38. Scenario 7: checkConsecutiveAnnualAchievements kiểm tra tính liên tục của các năm học kê khai (liên tiếp vs không liên tiếp)', () => {
+    // 2 năm liên tiếp: 2023–2024 và 2024–2025
+    const consecutiveAchs: WhiteBirdAnnualAchievement[] = [
+      {
+        id: 'ach-1',
+        academicYear: '2023–2024',
+        roleOrPosition: 'Chi hội trưởng',
+        achievementSummary: 'Hoàn thành xuất sắc nhiệm vụ công tác Hội',
+        awardLevel: 'TRUONG',
+      },
+      {
+        id: 'ach-2',
+        academicYear: '2024–2025',
+        roleOrPosition: 'Ủy viên BCH HSV Trường',
+        achievementSummary: 'Giấy khen Hội Sinh viên trường',
+        awardLevel: 'TRUONG',
+      },
+    ];
+    const consecutiveCheck = checkConsecutiveAnnualAchievements(consecutiveAchs);
+    assert.strictEqual(consecutiveCheck.hasTwoConsecutiveYears, true, 'Phải đạt tiêu chuẩn 2 năm liên tiếp');
+    assert.strictEqual(consecutiveCheck.consecutiveYears?.[0], '2023–2024');
+    assert.strictEqual(consecutiveCheck.consecutiveYears?.[1], '2024–2025');
+
+    // Không liên tiếp: 2022–2023 và 2024–2025 (cách năm 2023–2024)
+    const nonConsecutiveAchs: WhiteBirdAnnualAchievement[] = [
+      {
+        id: 'ach-3',
+        academicYear: '2022–2023',
+        roleOrPosition: 'Chi hội trưởng',
+        achievementSummary: 'Giấy khen Đoàn trường',
+        awardLevel: 'TRUONG',
+      },
+      {
+        id: 'ach-4',
+        academicYear: '2024–2025',
+        roleOrPosition: 'Chi hội trưởng',
+        achievementSummary: 'Giấy khen Hội Sinh viên',
+        awardLevel: 'TRUONG',
+      },
+    ];
+    const nonConsecutiveCheck = checkConsecutiveAnnualAchievements(nonConsecutiveAchs);
+    assert.strictEqual(nonConsecutiveCheck.hasTwoConsecutiveYears, false, 'Không liên tiếp phải trả về false');
+    assert.ok(
+      nonConsecutiveCheck.explanation.includes('chưa đảm bảo tính liên tục') ||
+      nonConsecutiveCheck.explanation.includes('liền kề'),
+      'Phải có cảnh báo giải thích'
+    );
+  });
+
+  it('39. Scenario 8: Bổ sung hoặc bỏ trống các thông tin tham khảo không bắt buộc (academicAndPriority) → đều hợp lệ và cho phép nộp', () => {
+    hydrateWhiteBirdStore();
+    const app = createTestApplication('TRUYEN_LUA', 'INDIVIDUAL');
+
+    // Điền đầy đủ WB01, WB02 bắt buộc và WB03
+    updateWhiteBirdWB01(app.id, {
+      nominatingUnitType: 'BTK_HSV_TRUONG',
+      nominatingUnitName: 'BCH HSV Bách khoa',
+      nominatorSignerName: 'Phan Văn Hiếu',
+      endorsementSummary: 'Giới thiệu đồng chí cán bộ Đoàn - Hội xuất sắc.',
+    });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('wb01-sc8', 'wb01.pdf'));
+
+    updateWhiteBirdWB02(app.id, {
+      officerTerms: [
+        {
+          id: 'term-sc8',
+          position: 'Ủy viên BCH Hội Sinh viên Trường',
+          unit: 'Hội Sinh viên',
+          unitType: 'WITH_HOI',
+          startMonthYear: '09/2023',
+          endMonthYear: '06/2025',
+          isCurrent: false,
+        },
+      ],
+      commitmentConfirmed: true,
+      academicAndPriority: undefined, // Bỏ trống hoàn toàn thông tin tham khảo
+    });
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('wb02-sc8', 'wb02.pdf'));
+
+    updateWhiteBirdWB03(app.id, {
+      awardOrRecognitionSummary: 'Minh chứng công tác 2 năm',
+    });
+    addWhiteBirdEvidence(app.id, 'WB03', mockEv('wb03-sc8', 'wb03.pdf'));
+
+    // Bỏ trống academicAndPriority -> Vẫn canSubmit = true
+    let readyApp = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    let readiness = validateWhiteBirdReadiness(readyApp);
+    assert.strictEqual(readiness.canSubmit, true, 'Bỏ trống academicAndPriority vẫn cho phép nộp');
+
+    // Bổ sung đầy đủ academicAndPriority -> Vẫn canSubmit = true
+    updateWhiteBirdWB02(app.id, {
+      academicAndPriority: {
+        gpaText: '3.75 / 4.0',
+        trainingScoreText: '95 / 100',
+        sv5tRecognitions: 'Sinh viên 5 tốt cấp Trường và cấp Đại học Đà Nẵng',
+        volunteerActivities: 'Chiến dịch Mùa hè xanh 2024',
+        scientificResearch: 'Giải Nhì NCKH Sinh viên cấp Trường',
+        otherAwards: 'Thanh niên tiên tiến làm theo lời Bác',
+      },
+    });
+
+    readyApp = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    readiness = validateWhiteBirdReadiness(readyApp);
+    assert.strictEqual(readiness.canSubmit, true, 'Bổ sung academicAndPriority vẫn nộp hợp lệ');
+    assert.strictEqual(readyApp.requirements.wb02.academicAndPriority?.gpaText, '3.75 / 4.0');
+  });
+
+  it('40. Scenario 9: Tải nhiều tệp minh chứng WB03, phân loại thẻ → synthesizeTruyenLuaWb03Summary tự động tổng hợp danh mục', () => {
+    hydrateWhiteBirdStore();
+    const app = createTestApplication('TRUYEN_LUA', 'INDIVIDUAL');
+
+    const file1 = mockEv('f-tl-1', 'Quyet_dinh_chi_hoi_truong.pdf');
+    const file2 = mockEv('f-tl-2', 'Giay_khen_Hoi_SV_truong.pdf');
+    const file3 = mockEv('f-tl-3', 'Chung_nhan_NCKH.pdf');
+
+    addWhiteBirdEvidence(app.id, 'WB03', file1);
+    addWhiteBirdEvidence(app.id, 'WB03', file2);
+    addWhiteBirdEvidence(app.id, 'WB03', file3);
+
+    updateWhiteBirdEvidenceMetadata(app.id, 'WB03', file1.id, {
+      evidenceCategory: 'CHUC_VU',
+      documentReference: 'QĐ 05/QĐ-HSV',
+      academicYear: '2023–2024',
+    });
+    updateWhiteBirdEvidenceMetadata(app.id, 'WB03', file2.id, {
+      evidenceCategory: 'THANH_TICH_2_NAM',
+      documentReference: 'Giấy khen số 42/GK-HSV',
+      academicYear: '2024–2025',
+    });
+    updateWhiteBirdEvidenceMetadata(app.id, 'WB03', file3.id, {
+      evidenceCategory: 'UU_TIEN',
+      documentReference: 'CN-NCKH-2024',
+      academicYear: '2023–2024',
+    });
+
+    const updated = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    const wb03Files = updated.requirements.wb03.evidenceFiles;
+    const summary = synthesizeTruyenLuaWb03Summary(wb03Files);
+
+    assert.ok(summary.includes('chức vụ') || summary.includes('CHUC_VU'), 'Phải có nhóm Chức vụ');
+    assert.ok(summary.includes('QĐ 05/QĐ-HSV'), 'Phải chứa số hiệu quyết định');
+    assert.ok(summary.includes('Giấy khen số 42/GK-HSV'), 'Phải chứa số hiệu giấy khen');
+    assert.ok(summary.includes('ưu tiên') || summary.includes('UU_TIEN'), 'Phải có nhóm Ưu tiên');
+  });
+
+  it('41. Scenario 10: Đóng trang, tải lại (F5 / hydrateWhiteBirdStore) → toàn bộ dữ liệu Truyền lửa được lưu giữ nguyên vẹn', async () => {
+    hydrateWhiteBirdStore();
+    const app = createTestApplication('TRUYEN_LUA', 'INDIVIDUAL');
+
+    updateWhiteBirdWB02(app.id, {
+      nomineeYearOfStudy: 'Năm thứ tư',
+      nomineePoliticalStatus: 'DANG_VIEN',
+      nomineeCurrentRole: 'Ủy viên Ban Thường vụ Đoàn trường',
+      officerTerms: [
+        {
+          id: 'term-f5-1',
+          position: 'Ủy viên BTV Đoàn trường',
+          unit: 'Đoàn Trường ĐH Bách khoa',
+          unitType: 'WITHOUT_HOI',
+          startMonthYear: '10/2023',
+          endMonthYear: 'Hiện nay',
+          isCurrent: true,
+        },
+      ],
+      annualAchievements: [
+        {
+          id: 'ach-f5-1',
+          academicYear: '2023–2024',
+          roleOrPosition: 'Ủy viên BTV Đoàn trường',
+          achievementSummary: 'Được tặng Bằng khen Thành Đoàn Đà Nẵng',
+          awardLevel: 'THANH_PHO',
+          documentReference: 'Bằng khen số 102/BK-TĐ',
+        },
+      ],
+      academicAndPriority: {
+        gpaText: '3.82',
+        trainingScoreText: '98',
+        sv5tRecognitions: 'Sinh viên 5 tốt cấp Trung ương',
+      },
+      commitmentConfirmed: true,
+    });
+
+    const f5File = mockEv('f-f5-1', 'Bang_khen_Thanh_doan.pdf');
+    addWhiteBirdEvidence(app.id, 'WB03', f5File);
+    updateWhiteBirdEvidenceMetadata(app.id, 'WB03', f5File.id, {
+      evidenceCategory: 'THANH_TICH_2_NAM',
+      documentReference: '102/BK-TĐ',
+      academicYear: '2023–2024',
+    });
+
+    // Giả lập đóng trang, mở lại (F5 / rehydrate)
+    const rehydratedApps = await hydrateWhiteBirdStore();
+    const reloaded = rehydratedApps.find((a) => a.id === app.id)!;
+
+    assert.ok(reloaded, 'Hồ sơ phải tồn tại sau khi rehydrate');
+    assert.strictEqual(reloaded.requirements.wb02.nomineeYearOfStudy, 'Năm thứ tư');
+    assert.strictEqual(reloaded.requirements.wb02.nomineePoliticalStatus, 'DANG_VIEN');
+    assert.strictEqual(reloaded.requirements.wb02.nomineeCurrentRole, 'Ủy viên Ban Thường vụ Đoàn trường');
+    assert.strictEqual(reloaded.requirements.wb02.officerTerms?.[0].position, 'Ủy viên BTV Đoàn trường');
+    assert.strictEqual(reloaded.requirements.wb02.annualAchievements?.[0].documentReference, 'Bằng khen số 102/BK-TĐ');
+    assert.strictEqual(reloaded.requirements.wb02.academicAndPriority?.sv5tRecognitions, 'Sinh viên 5 tốt cấp Trung ương');
+    assert.strictEqual(reloaded.requirements.wb03.evidenceFiles[0].evidenceCategory, 'THANH_TICH_2_NAM');
+  });
+
+  it('42. Scenario 11: Modal kiểm tra trước nộp phản ánh chính xác điều kiện nộp (khi còn thiếu vs khi đã hoàn tất)', () => {
+    hydrateWhiteBirdStore();
+    const app = createTestApplication('TRUYEN_LUA', 'INDIVIDUAL');
+
+    // 1. Khi còn thiếu: WB01 chưa có, WB02 thiếu cam kết, WB03 trống
+    let current = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    let readiness = validateWhiteBirdReadiness(current);
+    assert.strictEqual(readiness.canSubmit, false);
+    assert.strictEqual(readiness.wb01Ready, false);
+    assert.strictEqual(readiness.wb02Ready, false);
+    assert.strictEqual(readiness.wb03Ready, false);
+    assert.ok(readiness.missingReasons.length >= 3);
+
+    // 2. Điền đủ WB01, WB02, WB03
+    updateWhiteBirdWB01(app.id, {
+      nominatingUnitType: 'BTK_HSV_TRUONG',
+      nominatingUnitName: 'BCH HSV Bách khoa',
+      nominatorSignerName: 'Phan Văn Hiếu',
+      endorsementSummary: 'Hồ sơ đủ điều kiện nộp.',
+    });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('wb01-sc11', 'wb01.pdf'));
+
+    updateWhiteBirdWB02(app.id, {
+      officerTerms: [
+        {
+          id: 'term-sc11',
+          position: 'Ủy viên BCH Hội Sinh viên Trường',
+          unit: 'Hội Sinh viên',
+          unitType: 'WITH_HOI',
+          startMonthYear: '09/2023',
+          endMonthYear: '06/2025',
+          isCurrent: false,
+        },
+      ],
+      commitmentConfirmed: true,
+    });
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('wb02-sc11', 'wb02.pdf'));
+
+    updateWhiteBirdWB03(app.id, {
+      awardOrRecognitionSummary: 'Minh chứng đầy đủ',
+    });
+    addWhiteBirdEvidence(app.id, 'WB03', mockEv('wb03-sc11', 'wb03.pdf'));
+
+    current = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    readiness = validateWhiteBirdReadiness(current);
+    assert.strictEqual(readiness.canSubmit, true);
+    assert.strictEqual(readiness.readyCount, 3);
+    assert.strictEqual(readiness.missingReasons.length, 0);
+  });
+
+  it('43. Scenario 12: Xác nhận nộp hồ sơ Truyền lửa → tự động tổng hợp danh mục WB03 nếu còn trống, chuyển trạng thái submitted', () => {
+    hydrateWhiteBirdStore();
+    const app = createTestApplication('TRUYEN_LUA', 'INDIVIDUAL');
+
+    updateWhiteBirdWB01(app.id, {
+      nominatingUnitType: 'BTK_HSV_TRUONG',
+      nominatingUnitName: 'BCH HSV Bách khoa',
+      nominatorSignerName: 'Phan Văn Hiếu',
+      endorsementSummary: 'Đề cử xuất sắc.',
+    });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('wb01-sc12', 'wb01.pdf'));
+
+    updateWhiteBirdWB02(app.id, {
+      officerTerms: [
+        {
+          id: 'term-sc12',
+          position: 'Chi hội trưởng',
+          unit: 'Chi hội 22T_DT2',
+          unitType: 'WITH_HOI',
+          startMonthYear: '09/2023',
+          endMonthYear: '06/2025',
+          isCurrent: false,
+        },
+      ],
+      commitmentConfirmed: true,
+    });
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('wb02-sc12', 'wb02.pdf'));
+
+    // Thêm file WB03 nhưng để trống awardOrRecognitionSummary
+    const file = mockEv('wb03-sc12-file', 'Quyet_dinh.pdf');
+    addWhiteBirdEvidence(app.id, 'WB03', file);
+    updateWhiteBirdEvidenceMetadata(app.id, 'WB03', file.id, {
+      evidenceCategory: 'CHUC_VU',
+      documentReference: 'QĐ 99/QĐ',
+      academicYear: '2023–2024',
+    });
+
+    // Nộp hồ sơ
+    const submitRes = submitWhiteBirdApplication(app.id);
+    assert.strictEqual(submitRes.success, true, 'Nộp hồ sơ thành công');
+    assert.strictEqual(submitRes.application?.status, 'submitted');
+    assert.ok(submitRes.application?.submittedAt);
+
+    // awardOrRecognitionSummary đã được tự động tổng hợp từ tệp
+    assert.ok(
+      submitRes.application?.requirements.wb03.awardOrRecognitionSummary?.includes('QĐ 99/QĐ'),
+      'awardOrRecognitionSummary phải được tự động tổng hợp'
+    );
+  });
+
+  it('44. Scenario 13: Thay đổi hồ sơ cá nhân sau khi nộp (status === submitted) → snapshot hồ sơ đã nộp không bị biến đổi', () => {
+    hydrateWhiteBirdStore();
+    const app = createTestApplication('TRUYEN_LUA', 'INDIVIDUAL');
+
+    // Đồng bộ hồ sơ ban đầu
+    const initialProfile: StudentProfileDto = {
+      fullName: 'Võ Thị Mai Phương',
+      studentCode: '102220555',
+      gender: 'Nữ',
+      dateOfBirth: '20/11/2004',
+      ethnicity: 'Kinh',
+      academicYearNumber: 3,
+      educationLevel: 'Đại học chính quy',
+      className: '22T_DT3',
+      homeProvince: 'Quảng Nam',
+      institutionId: 'DUT',
+      unionPosition: 'Bí thư Chi đoàn',
+      politicalStatus: 'Đoàn viên',
+      phoneNumber: '0905555666',
+      email: 'maiphuong@dut.udn.vn',
+    };
+    syncApplicationWithProfile(app.id, initialProfile);
+
+    // Điền hoàn chỉnh và nộp
+    updateWhiteBirdWB01(app.id, {
+      nominatingUnitType: 'BTK_HSV_TRUONG',
+      nominatingUnitName: 'BCH HSV Bách khoa',
+      nominatorSignerName: 'Phan Văn Hiếu',
+      endorsementSummary: 'Hồ sơ đầy đủ.',
+    });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('wb01-sc13', 'wb01.pdf'));
+
+    updateWhiteBirdWB02(app.id, {
+      officerTerms: [
+        {
+          id: 'term-sc13',
+          position: 'Bí thư Chi đoàn',
+          unit: 'Chi đoàn 22T_DT3',
+          unitType: 'WITHOUT_HOI',
+          startMonthYear: '09/2023',
+          endMonthYear: '06/2025',
+          isCurrent: false,
+        },
+      ],
+      commitmentConfirmed: true,
+    });
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('wb02-sc13', 'wb02.pdf'));
+    addWhiteBirdEvidence(app.id, 'WB03', mockEv('wb03-sc13', 'wb03.pdf'));
+
+    const submitRes = submitWhiteBirdApplication(app.id);
+    assert.strictEqual(submitRes.success, true);
+    assert.strictEqual(submitRes.application?.status, 'submitted');
+
+    // Sau khi nộp, người dùng đổi số điện thoại, tên, và chức vụ trong trang cá nhân
+    const alteredProfile: StudentProfileDto = {
+      ...initialProfile,
+      fullName: 'Võ Thị Mai Phương (Đã sửa sau nộp)',
+      phoneNumber: '0999999999',
+      unionPosition: 'Chức vụ mới sau khi nộp',
+      politicalStatus: 'Đảng viên',
+    };
+
+    // Gọi đồng bộ hồ sơ
+    const resultAfterSync = syncApplicationWithProfile(app.id, alteredProfile);
+    assert.ok(resultAfterSync);
+
+    // Snapshot hồ sơ đã nộp KHÔNG bị biến đổi
+    const storedApp = getAllWhiteBirdApplications().find((a) => a.id === app.id)!;
+    assert.strictEqual(storedApp.nomineeName, 'Võ Thị Mai Phương');
+    assert.strictEqual(storedApp.contactPhone, '0905555666');
+    assert.strictEqual(storedApp.requirements.wb02.nomineePhone, '0905555666');
+    assert.strictEqual(storedApp.requirements.wb02.nomineePoliticalStatus, 'DOAN_VIEN');
+  });
+
+  it('45. Scenario 14: Cán bộ yêu cầu bổ sung (supplement_requested) và sinh viên bổ sung gửi lại (supplement_returned)', () => {
+    hydrateWhiteBirdStore();
+    const app = createTestApplication('TRUYEN_LUA', 'INDIVIDUAL');
+
+    // 1. Hồ sơ ban đầu đã nộp
+    updateWhiteBirdWB01(app.id, {
+      nominatingUnitType: 'BTK_HSV_TRUONG',
+      nominatingUnitName: 'BCH HSV Bách khoa',
+      nominatorSignerName: 'Phan Văn Hiếu',
+      endorsementSummary: 'Hồ sơ đã nộp.',
+    });
+    addWhiteBirdEvidence(app.id, 'WB01', mockEv('wb01-sc14', 'wb01.pdf'));
+
+    updateWhiteBirdWB02(app.id, {
+      officerTerms: [
+        {
+          id: 'term-sc14',
+          position: 'Ủy viên Ban Chấp hành Chi hội',
+          unit: 'Chi hội 22T_DT1',
+          unitType: 'WITH_HOI',
+          startMonthYear: '09/2023',
+          endMonthYear: '06/2025',
+          isCurrent: false,
+        },
+      ],
+      commitmentConfirmed: true,
+    });
+    addWhiteBirdEvidence(app.id, 'WB02', mockEv('wb02-sc14', 'wb02.pdf'));
+    addWhiteBirdEvidence(app.id, 'WB03', mockEv('wb03-sc14', 'wb03.pdf'));
+
+    submitWhiteBirdApplication(app.id);
+
+    // 2. Cán bộ ĐHĐN yêu cầu bổ sung minh chứng
+    const note = 'Đề nghị bổ sung Quyết định chuẩn y chức vụ Chi hội trưởng năm học 2023-2024';
+    const supplementRequestedApp = requestWhiteBirdSupplementFromUdn(app.id, note, 'Cán bộ Nguyễn Văn Thẩm Định');
+    assert.ok(supplementRequestedApp);
+    assert.strictEqual(supplementRequestedApp.status, 'supplement_requested');
+    assert.strictEqual(supplementRequestedApp.supplementRequestNote, note);
+    assert.strictEqual(supplementRequestedApp.reviewedByOfficerName, 'Cán bộ Nguyễn Văn Thẩm Định');
+    assert.ok(supplementRequestedApp.supplementRequestedAt);
+
+    // 3. Sinh viên bổ sung tệp WB03
+    const newEvidence = mockEv('wb03-sc14-bo-sung', 'Quyet_dinh_chuan_y_bo_sung.pdf');
+    addWhiteBirdEvidence(app.id, 'WB03', newEvidence);
+    updateWhiteBirdEvidenceMetadata(app.id, 'WB03', newEvidence.id, {
+      evidenceCategory: 'CHUC_VU',
+      documentReference: 'QĐ 78/QĐ-HSV',
+      academicYear: '2023–2024',
+    });
+
+    // 4. Sinh viên gửi lại hồ sơ
+    const resubmitRes = submitWhiteBirdApplication(app.id);
+    assert.strictEqual(resubmitRes.success, true);
+    assert.strictEqual(resubmitRes.application?.status, 'supplement_returned');
+    assert.ok(resubmitRes.application?.supplementRespondedAt, 'supplementRespondedAt must be recorded');
+  });
+
+  it('46. Scenario 15: Regression test hai hạng mục Cánh chim ươm mầm (2/2) và Cánh chim sáng tạo (3/3)', () => {
+    hydrateWhiteBirdStore();
+
+    // 1. Cánh chim ươm mầm: 2/2 thành phần bắt buộc (WB01 + WB02), WB03 là tùy chọn
+    const umApp = createTestApplication('UOM_MAM', 'COLLECTIVE');
+    updateWhiteBirdWB01(umApp.id, {
+      nominatingUnitType: 'BTK_HSV_TRUONG',
+      nominatingUnitName: 'BCH HSV Sư Phạm',
+      nominatorSignerName: 'Lê Văn A',
+      endorsementSummary: 'Mô hình ươm mầm sinh viên nghiên cứu.',
+    });
+    addWhiteBirdEvidence(umApp.id, 'WB01', mockEv('um-sc15-wb01', 'wb01.pdf'));
+
+    updateWhiteBirdWB02(umApp.id, {
+      reportTitle: 'Mô hình Không gian Sáng tạo Sinh viên',
+      solutionAndExecution: 'Tổ chức không gian maker space cho sinh viên',
+      impactAndResults: 'Hỗ trợ 50 đề tài NCKH sinh viên',
+      commitmentConfirmed: true,
+    });
+    addWhiteBirdEvidence(umApp.id, 'WB02', mockEv('um-sc15-wb02', 'wb02.pdf'));
+
+    const umUpdated = getAllWhiteBirdApplications().find((a) => a.id === umApp.id)!;
+    const umReadiness = validateWhiteBirdReadiness(umUpdated);
+    assert.strictEqual(umReadiness.isWb03Optional, true);
+    assert.strictEqual(umReadiness.totalRequired, 2);
+    assert.strictEqual(umReadiness.readyCount, 2);
+    assert.strictEqual(umReadiness.canSubmit, true, 'UOM_MAM có thể nộp chỉ với WB01 và WB02');
+
+    // 2. Cánh chim sáng tạo: Bắt buộc 3/3 thành phần (WB01 + WB02 + WB03)
+    const stApp = createTestApplication('SANG_TAO', 'INDIVIDUAL');
+    updateWhiteBirdWB01(stApp.id, {
+      nominatingUnitType: 'BTK_HSV_TRUONG',
+      nominatingUnitName: 'BCH HSV Kinh Tế',
+      nominatorSignerName: 'Trần Văn B',
+      endorsementSummary: 'Dự án khởi nghiệp đổi mới sáng tạo.',
+    });
+    addWhiteBirdEvidence(stApp.id, 'WB01', mockEv('st-sc15-wb01', 'wb01.pdf'));
+
+    updateWhiteBirdWB02(stApp.id, {
+      reportTitle: 'Nền tảng Quản lý Tài chính Sinh viên',
+      solutionAndExecution: 'Phát triển ứng dụng AI quản lý chi tiêu',
+      impactAndResults: '10,000 người dùng hoạt động hàng tháng',
+      commitmentConfirmed: true,
+    });
+    addWhiteBirdEvidence(stApp.id, 'WB02', mockEv('st-sc15-wb02', 'wb02.pdf'));
+
+    // Sáng tạo thiếu WB03 -> Không thể nộp
+    let stUpdated = getAllWhiteBirdApplications().find((a) => a.id === stApp.id)!;
+    let stReadiness = validateWhiteBirdReadiness(stUpdated);
+    assert.strictEqual(stReadiness.isWb03Optional, false);
+    assert.strictEqual(stReadiness.totalRequired, 3);
+    assert.strictEqual(stReadiness.readyCount, 2);
+    assert.strictEqual(stReadiness.canSubmit, false, 'SANG_TAO không thể nộp nếu thiếu WB03');
+
+    // Bổ sung WB03 cho Sáng tạo
+    updateWhiteBirdWB03(stApp.id, {
+      awardOrRecognitionSummary: 'Giải Nhì Khởi nghiệp Đổi mới Sáng tạo cấp Thành phố',
+    });
+    addWhiteBirdEvidence(stApp.id, 'WB03', mockEv('st-sc15-wb03', 'wb03.pdf'));
+
+    stUpdated = getAllWhiteBirdApplications().find((a) => a.id === stApp.id)!;
+    stReadiness = validateWhiteBirdReadiness(stUpdated);
+    assert.strictEqual(stReadiness.readyCount, 3);
+    assert.strictEqual(stReadiness.canSubmit, true, 'SANG_TAO nộp thành công với đủ 3/3 thành phần');
   });
 });

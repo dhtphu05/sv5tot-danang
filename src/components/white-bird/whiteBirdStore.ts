@@ -536,7 +536,13 @@ export function syncApplicationWithProfile(
   const wb02Updates: Partial<WhiteBirdWB02Declaration> = {};
 
   // Basic info sync
-  if (profile.fullName && (!current.nomineeName || current.nomineeName === 'Sinh viên đề cử')) {
+  if (
+    profile.fullName &&
+    (!current.nomineeName ||
+      current.nomineeName === 'Sinh viên đề cử' ||
+      current.category === 'TRUYEN_LUA') &&
+    current.nomineeName !== profile.fullName
+  ) {
     basicUpdates.nomineeName = profile.fullName;
     hasChanges = true;
   }
