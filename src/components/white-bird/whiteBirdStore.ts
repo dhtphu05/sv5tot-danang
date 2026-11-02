@@ -17,6 +17,7 @@ import {
   WhiteBirdWB02Declaration,
   WhiteBirdWB03Declaration,
   WhiteBirdTruyenLuaEvidenceCategory,
+  WHITE_BIRD_TRUYEN_LUA_CATEGORY_LABELS,
   isValidOptionalHttpUrl,
 } from './whiteBirdTypes';
 
@@ -128,10 +129,14 @@ export function createWhiteBirdApplication(payload: {
   const now = new Date().toISOString();
   const id = `CCT-2026-DN-${Date.now().toString(36).toUpperCase()}`;
   const academicYear = payload.academicYear || '2025–2026';
+  const resolvedNominationTitle =
+    payload.category === 'TRUYEN_LUA'
+      ? (payload.nominationTitle?.trim() || `Báo cáo thành tích cá nhân – ${payload.nomineeName.trim()}`)
+      : payload.nominationTitle.trim();
 
   const newApp: WhiteBirdApplication = {
     id,
-    nominationTitle: payload.nominationTitle.trim(),
+    nominationTitle: resolvedNominationTitle,
     category: payload.category,
     nomineeType: payload.category === 'TRUYEN_LUA' ? 'INDIVIDUAL' : payload.nomineeType,
     nomineeName: payload.nomineeName.trim(),
@@ -165,9 +170,9 @@ export function createWhiteBirdApplication(payload: {
       },
       wb02: {
         reportTitle:
-          payload.category === 'TRUYEN_LUA' && !payload.nominationTitle.trim()
-            ? `Báo cáo thành tích cá nhân — ${payload.nomineeName.trim()}`
-            : payload.nominationTitle.trim(),
+          payload.category === 'TRUYEN_LUA'
+            ? `Báo cáo thành tích cá nhân – ${payload.nomineeName.trim()}`
+            : resolvedNominationTitle,
         implementationPeriod: `Năm học ${academicYear}`,
         contextAndObjectives: '',
         solutionAndExecution: '',
@@ -195,6 +200,8 @@ export function createWhiteBirdApplication(payload: {
               nomineePhone: payload.contactPhone || '',
               nomineeEmail: payload.preparedByUserEmail || '',
               nomineeCurrentRole: '',
+              nomineeYearOfStudy: '',
+              nomineePoliticalStatus: 'DOAN_VIEN',
               officerTerms: [],
               annualAchievements: [],
               academicAndPriority: {
@@ -427,6 +434,57 @@ export function updateWhiteBirdEvidenceCategory(
   return updated;
 }
 
+export function updateWhiteBirdEvidenceMetadata(
+  appId: string,
+  reqId: WhiteBirdRequirementId,
+  evidenceId: string,
+  patch: Partial<
+    Pick<
+      WhiteBirdEvidenceItem,
+      'documentReference' | 'academicYear' | 'notes' | 'evidenceCategory' | 'customCategoryLabel'
+    >
+  >
+): WhiteBirdApplication | null {
+  const idx = storeApps.findIndex((a) => a.id === appId);
+  if (idx < 0) return null;
+  const current = storeApps[idx];
+  const key = reqId.toLowerCase() as 'wb01' | 'wb02' | 'wb03';
+  const existingFiles = current.requirements[key].evidenceFiles || [];
+  const updatedFiles = existingFiles.map((f) =>
+    f.id === evidenceId ? { ...f, ...patch } : f
+  );
+  const updated: WhiteBirdApplication = {
+    ...current,
+    updatedAt: new Date().toISOString(),
+    requirements: {
+      ...current.requirements,
+      [key]: {
+        ...current.requirements[key],
+        evidenceFiles: updatedFiles,
+      },
+    },
+  };
+  const next = [...storeApps];
+  next[idx] = updated;
+  saveToStorage(next);
+  syncAppToBackend(updated);
+  return updated;
+}
+
+export function synthesizeTruyenLuaWb03Summary(files?: WhiteBirdEvidenceItem[]): string {
+  if (!files || files.length === 0) return '';
+  const lines: string[] = [];
+  files.forEach((file, index) => {
+    const catLabel = file.evidenceCategory
+      ? WHITE_BIRD_TRUYEN_LUA_CATEGORY_LABELS[file.evidenceCategory] || file.evidenceCategory
+      : 'Tài liệu minh chứng';
+    const docRef = file.documentReference?.trim() ? ` — Số hiệu: ${file.documentReference.trim()}` : '';
+    const yr = file.academicYear?.trim() ? ` — Năm học: ${file.academicYear.trim()}` : '';
+    lines.push(`${index + 1}. [${catLabel}] ${file.name}${docRef}${yr}`);
+  });
+  return lines.join('\n');
+}
+
 export interface WhiteBirdReadinessResult {
   wb01Ready: boolean;
   wb02Ready: boolean;
@@ -518,8 +576,12 @@ export function validateWhiteBirdReadiness(app: WhiteBirdApplication): WhiteBird
   } else {
     // Khoản 6.2 và 6.3 Điều 6: WB03 là bắt buộc cho Cánh chim truyền lửa & Cánh chim sáng tạo
     totalRequired = 3;
+    const hasTruyenLuaEvidenceContent =
+      isTruyenLua &&
+      (Boolean(wb03.awardOrRecognitionSummary?.trim()) || wb03.evidenceFiles.length > 0);
+
     wb03Ready =
-      Boolean(wb03.awardOrRecognitionSummary?.trim()) &&
+      (isTruyenLua ? hasTruyenLuaEvidenceContent : Boolean(wb03.awardOrRecognitionSummary?.trim())) &&
       wb03.evidenceFiles.length > 0 &&
       !hasInvalidWb03Url;
     if (!wb03Ready) {
@@ -530,7 +592,7 @@ export function validateWhiteBirdReadiness(app: WhiteBirdApplication): WhiteBird
       } else {
         missingReasons.push(
           app.category === 'TRUYEN_LUA'
-            ? 'WB03: Cần kê khai danh mục chức vụ / thành tích và đính kèm tài liệu minh chứng (Khoản 6.2 Điều 6).'
+            ? 'WB03: Cần đính kèm tài liệu minh chứng chức vụ / thành tích tiêu biểu (Khoản 6.2 Điều 6).'
             : 'WB03: Cần kê khai tóm tắt giải thưởng đạt được và đính kèm minh chứng từ cấp ĐHĐN trở lên (Khoản 6.3 Điều 6).'
         );
       }

@@ -10,6 +10,9 @@ import { ApplicationEvidence } from '../../demo/fixtures/studentApplication';
 export type WhiteBirdEvidenceItem = ApplicationEvidence & {
   evidenceCategory?: WhiteBirdTruyenLuaEvidenceCategory;
   customCategoryLabel?: string;
+  documentReference?: string;
+  academicYear?: string;
+  notes?: string;
 };
 
 export type WhiteBirdCategory = 'UOM_MAM' | 'TRUYEN_LUA' | 'SANG_TAO';
@@ -335,6 +338,7 @@ export interface WhiteBirdOfficerTerm {
 }
 
 export type WhiteBirdAnnualAwardLevel =
+  | 'CO_SO'
   | 'TRUONG'
   | 'DHDN'
   | 'THANH_PHO'
@@ -342,7 +346,8 @@ export type WhiteBirdAnnualAwardLevel =
   | 'KHAC';
 
 export const WHITE_BIRD_ANNUAL_AWARD_LEVEL_LABELS: Record<WhiteBirdAnnualAwardLevel, string> = {
-  TRUONG: 'Cấp Trường thành viên / Đơn vị trực thuộc',
+  CO_SO: 'Cấp Cơ sở (Khoa / Liên chi Đoàn / Liên chi Hội)',
+  TRUONG: 'Cấp Trường thành viên / Đơn vị trực thuộc ĐHĐN (hoặc tương đương)',
   DHDN: 'Cấp Đại học Đà Nẵng',
   THANH_PHO: 'Cấp Thành phố (Thành Đoàn / HSV TP)',
   TRUNG_UONG: 'Cấp Trung ương (TW Đoàn / TW HSV VN)',
@@ -379,7 +384,7 @@ export const WHITE_BIRD_TRUYEN_LUA_CATEGORY_LABELS: Record<
   string
 > = {
   CHUC_VU: 'Quyết định / Xác nhận chức vụ & thời gian công tác',
-  THANH_TICH_2_NAM: 'Khen thưởng thành tích xuất sắc 2 năm liên tục',
+  THANH_TICH_2_NAM: 'Thành tích xuất sắc 02 năm liên tục',
   HOC_TAP_REN_LUYEN: 'Bảng điểm học tập & Điểm rèn luyện',
   UU_TIEN: 'Minh chứng ưu tiên (SV5T, NCKH, Tình nguyện...)',
   KHAC: 'Tài liệu minh chứng khác',
@@ -408,6 +413,8 @@ export interface WhiteBirdWB02Declaration {
   nomineeEthnicity?: string;
   nomineeReligion?: string;
   nomineeHometown?: string;
+  nomineeYearOfStudy?: string;
+  nomineePoliticalStatus?: 'DOAN_VIEN' | 'DANG_VIEN' | 'CHUA_KET_NAP' | string;
   nomineeCurrentRole?: string;
   nomineeFaculty?: string;
   nomineeClass?: string;
@@ -496,7 +503,7 @@ export function calculateOfficerServiceMonths(terms?: WhiteBirdOfficerTerm[]): {
       mergedIntervalsCount: 0,
       meetsTwoYearsRequirement: false,
       recommendation:
-        'Chưa kê khai giai đoạn công tác Đoàn – Hội. Điểm c khoản 4.2 Điều 4 yêu cầu có thời gian công tác từ 02 năm trở lên.',
+        'Căn cứ Điểm c khoản 4.2 Điều 4 Quy chế: Yêu cầu có thời gian công tác Đoàn – Hội từ 02 năm trở lên. Vui lòng thêm các giai đoạn công tác để hệ thống tính toán.',
     };
   }
 
@@ -563,7 +570,7 @@ export function calculateOfficerServiceMonths(terms?: WhiteBirdOfficerTerm[]): {
 
   let recommendation: string | undefined;
   if (!meetsTwoYearsRequirement) {
-    recommendation = `Tổng thời gian công tác hợp lệ hiện tại là ${totalMonths} tháng (~${totalYearsText} năm). Quy chế yêu cầu tối thiểu 2 năm (24 tháng) công tác Đoàn – Hội không tính trùng lặp (Điểm c khoản 4.2 Điều 4).`;
+    recommendation = `Lưu ý hỗ trợ thẩm định: Tổng thời gian công tác hợp lệ hiện tại là ${totalMonths} tháng (~${totalYearsText} năm). Quy chế yêu cầu thời gian công tác Đoàn – Hội từ 02 năm trở lên (24 tháng) không tính trùng lặp (Điểm c khoản 4.2 Điều 4). Hội đồng sẽ đối chiếu văn bản chuẩn y/công nhận khi xét duyệt.`;
   }
 
   return {
@@ -585,7 +592,16 @@ export function checkConsecutiveAnnualAchievements(
   consecutiveYears: [string, string] | null;
   explanation: string;
 } {
-  if (!achievements || achievements.length < 2) {
+  if (!achievements || achievements.length === 0) {
+    return {
+      hasTwoConsecutiveYears: false,
+      consecutiveYears: null,
+      explanation:
+        'Căn cứ Điểm c khoản 4.2 Điều 4 Quy chế: Cần có thành tích xuất sắc trong công tác Hội/Đoàn cấp trường trở lên trong 02 năm liên tục tính đến thời điểm xét trao.',
+    };
+  }
+
+  if (achievements.length < 2) {
     return {
       hasTwoConsecutiveYears: false,
       consecutiveYears: null,
@@ -654,7 +670,7 @@ export function evaluateTruyenLuaPosition(terms?: WhiteBirdOfficerTerm[]): {
       hasEligiblePosition: false,
       eligiblePositionsCount: 0,
       feedback:
-        'Chưa kê khai chức vụ cán bộ Đoàn - Hội. Quy chế yêu cầu từ Chi hội trưởng (hoặc tương đương) trở lên đối với đơn vị có Hội; từ Bí thư Chi đoàn (hoặc tương đương) trở lên đối với đơn vị không có Hội.',
+        'Căn cứ Điểm c khoản 4.2 Điều 4 Quy chế: Tiêu chuẩn chức vụ từ Chi hội trưởng trở lên (đơn vị có Hội) hoặc từ Bí thư Chi đoàn trở lên (đơn vị không có Hội).',
     };
   }
 
