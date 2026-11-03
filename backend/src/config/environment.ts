@@ -135,7 +135,7 @@ export function parseEnvironment(env: Record<string, string | undefined> = proce
     | 'mock'
     | 'safe'
     | 'live';
-  const resendSafeOverride = env.RESEND_SAFE_OVERRIDE_EMAIL?.trim() || 'vanngocnhuy30032006@gmail.com';
+  const resendSafeOverride = env.RESEND_SAFE_OVERRIDE_EMAIL?.trim() || '';
   // Public Frontend URL Configuration (P0 - Production Hardening)
   const defaultPublicUrl = nodeEnv === 'production' ? 'https://sinhvien5tot.udn.vn' : 'http://localhost:5173';
   const rawAppPublicUrl = env.APP_PUBLIC_URL?.trim() || env.APP_URL?.trim() || env.FRONTEND_URL?.trim() || defaultPublicUrl;

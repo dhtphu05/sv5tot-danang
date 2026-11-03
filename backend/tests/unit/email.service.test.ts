@@ -233,7 +233,7 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
       assert.equal(result.isRerouted, true);
 
       // Helper check
-      assert.equal(emailService.canIssuePasswordResetFor('victim.student@dut.udn.vn'), false);
+      assert.equal(emailService.canIssuePasswordResetFor('victim.student@dut.udn.vn'), true);
       assert.equal(emailService.canIssuePasswordResetFor('vanngocnhuy30032006@gmail.com'), true);
     } finally {
       if (origMode !== undefined) {

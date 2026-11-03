@@ -119,6 +119,9 @@ import { AdminApplicationHotfixService } from '../modules/admin/adminApplication
 import { AdminController } from '../modules/admin/admin.controller';
 import { createAdminRouter } from '../modules/admin/admin.routes';
 import { createCopilotRouter } from '../modules/copilot/copilot.routes';
+import { FeedbackService } from '../modules/feedback/feedback.service';
+import { FeedbackController } from '../modules/feedback/feedback.controller';
+import { createFeedbackRouter } from '../modules/feedback/feedback.routes';
 import {
   createDomainPortalRouter,
   resetDomainPortalState,
@@ -282,6 +285,9 @@ export function createApp(dependencies: AppDependencies = {}): Express {
   );
   const adminController = new AdminController(adminService, adminRepo, appHotfixService);
 
+  const feedbackService = new FeedbackService(emailService);
+  const feedbackController = new FeedbackController(feedbackService);
+
   // Public Season Context resolution endpoint
   v2Router.get('/public/season-context', seasonController.getSeasonContext);
 
@@ -300,6 +306,7 @@ export function createApp(dependencies: AppDependencies = {}): Express {
   v2Router.use('/city-workflow', createCityWorkflowRouter(cityWorkflowController, sessionService));
   v2Router.use('/committee', createCommitteeRouter(committeeController, sessionService));
   v2Router.use('/copilot', createCopilotRouter());
+  v2Router.use('/feedback', createFeedbackRouter(feedbackController, sessionService));
   v2Router.use('/portal', createDomainPortalRouter({ sessionService, identityRepo, emailService }));
   v2Router.use('/', createSchoolForwardingBatchRouter(schoolForwardingBatchController, sessionService));
   v2Router.use('/', createAuditAndAnalyticsRouter(auditAndAnalyticsController, sessionService));

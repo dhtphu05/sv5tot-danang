@@ -177,6 +177,7 @@ export function resolveCriterionName(code: string): string {
 
 export interface SharedEmailLayoutOptions {
   title: string;
+  preheaderText?: string;
   badgeHtml?: string;
   greetingName: string;
   introHtml: string;
@@ -190,6 +191,7 @@ export interface SharedEmailLayoutOptions {
 export function renderSharedEmailLayout(options: SharedEmailLayoutOptions): string {
   const {
     title,
+    preheaderText,
     badgeHtml = '',
     greetingName,
     introHtml,
@@ -429,6 +431,10 @@ export function renderSharedEmailLayout(options: SharedEmailLayoutOptions): stri
   </style>
 </head>
 <body>
+  ${preheaderText ? `<!-- Preheader preview text for email clients -->
+  <div style="display:none;font-size:1px;color:#f8fafc;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;mso-hide:all;">
+    ${escapeHtml(preheaderText)}
+  </div>` : ''}
   <div class="wrapper">
     <div class="container">
       <div class="header">
@@ -480,36 +486,71 @@ export function renderSharedEmailLayout(options: SharedEmailLayoutOptions): stri
 
 export interface PasswordResetTemplateParams {
   userName: string;
+  userEmail?: string;
   resetUrl: string;
   expiresInMinutes?: number;
+  requestedAt?: Date | string;
 }
 
 export function buildPasswordResetHtmlTemplate({
   userName,
+  userEmail,
   resetUrl,
   expiresInMinutes = 15,
+  requestedAt,
 }: PasswordResetTemplateParams): string {
+  const formattedTime = formatVietnameseDateTime(requestedAt || new Date());
+  const preheader = `Liên kết đặt lại mật khẩu của bạn có hiệu lực trong ${expiresInMinutes} phút. Vui lòng nhấn để thiết lập mật khẩu mới.`;
+  const accountDisplay = userEmail ? escapeHtml(userEmail) : escapeHtml(userName);
+
+  const contextCardHtml = `
+    <div class="detail-card">
+      <div class="detail-row">
+        <span class="detail-label">Tài khoản:</span>
+        <span class="detail-value" style="font-weight: 600;">${accountDisplay}</span>
+      </div>
+      ${formattedTime ? `
+      <div class="detail-row">
+        <span class="detail-label">Thời gian yêu cầu:</span>
+        <span class="detail-value">${escapeHtml(formattedTime)}</span>
+      </div>` : ''}
+      <div class="detail-row">
+        <span class="detail-label">Thời hạn liên kết:</span>
+        <span class="detail-value deadline-highlight">${expiresInMinutes} phút (chỉ sử dụng một lần)</span>
+      </div>
+    </div>
+  `;
+
+  const noticeHtml = `
+    <div class="notice-box">
+      <p style="margin: 0 0 6px 0;">• Liên kết có hiệu lực trong ${expiresInMinutes} phút và chỉ sử dụng một lần.</p>
+      <p style="margin: 0 0 6px 0;">• Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này. Mật khẩu hiện tại của bạn sẽ không thay đổi.</p>
+      <p style="margin: 0; font-size: 12.5px; color: #b45309;">• Lưu ý: Vì lý do an toàn, tuyệt đối không chuyển tiếp email hoặc chia sẻ liên kết này cho bất kỳ ai khác.</p>
+    </div>
+  `;
+
   return renderSharedEmailLayout({
     title: 'Yêu cầu đặt lại mật khẩu – Sinh viên 5 tốt ĐHĐN',
+    preheaderText: preheader,
     greetingName: userName,
     introHtml: `<p class="main-text">Hệ thống đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Vui lòng nhấn vào nút bên dưới để thiết lập mật khẩu mới.</p>`,
-    contentHtml: '',
+    contentHtml: contextCardHtml,
     ctaText: 'Đặt lại mật khẩu',
     ctaUrl: resetUrl,
-    noticeHtml: `
-      <div class="notice-box">
-        <p style="margin: 0 0 6px 0;">• Liên kết có hiệu lực trong ${expiresInMinutes} phút và chỉ sử dụng một lần.</p>
-        <p style="margin: 0;">• Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này. Mật khẩu hiện tại của bạn sẽ không thay đổi.</p>
-      </div>
-    `,
+    noticeHtml,
   });
 }
 
 export function buildPasswordResetPlainTextTemplate({
   userName,
+  userEmail,
   resetUrl,
   expiresInMinutes = 15,
+  requestedAt,
 }: PasswordResetTemplateParams): string {
+  const formattedTime = formatVietnameseDateTime(requestedAt || new Date());
+  const accountDisplay = userEmail || userName;
+
   return `HỘI SINH VIÊN VIỆT NAM ĐẠI HỌC ĐÀ NẴNG
 Hệ thống xét chọn danh hiệu và giải thưởng sinh viên
 
@@ -521,12 +562,95 @@ Hệ thống đã nhận được yêu cầu đặt lại mật khẩu cho tài 
 
 ${resetUrl}
 
+THÔNG TIN YÊU CẦU:
+• Tài khoản: ${accountDisplay}
+${formattedTime ? `• Thời gian yêu cầu: ${formattedTime}\n` : ''}• Thời hạn liên kết: ${expiresInMinutes} phút và chỉ sử dụng một lần.
+
 LƯU Ý:
 • Liên kết có hiệu lực trong ${expiresInMinutes} phút và chỉ sử dụng một lần.
 • Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này. Mật khẩu hiện tại của bạn sẽ không thay đổi.
 
 Nếu nút trên không hoạt động, vui lòng sao chép liên kết sau và mở trong trình duyệt:
 ${resetUrl}
+
+---
+Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng
+Email hỗ trợ: hoisinhvien@udn.vn
+Đây là email được gửi tự động từ hệ thống. Vui lòng không trả lời trực tiếp.`;
+}
+
+export interface PasswordChangedTemplateParams {
+  userName: string;
+  userEmail?: string;
+  changedAt?: Date | string;
+}
+
+export function buildPasswordChangedHtmlTemplate({
+  userName,
+  userEmail,
+  changedAt,
+}: PasswordChangedTemplateParams): string {
+  const formattedTime = formatVietnameseDateTime(changedAt || new Date());
+  const accountDisplay = userEmail ? escapeHtml(userEmail) : escapeHtml(userName);
+
+  const contextCardHtml = `
+    <div class="detail-card">
+      <div class="detail-row">
+        <span class="detail-label">Tài khoản:</span>
+        <span class="detail-value" style="font-weight: 600;">${accountDisplay}</span>
+      </div>
+      ${formattedTime ? `
+      <div class="detail-row">
+        <span class="detail-label">Thời gian cập nhật:</span>
+        <span class="detail-value">${escapeHtml(formattedTime)}</span>
+      </div>` : ''}
+      <div class="detail-row">
+        <span class="detail-label">Trạng thái:</span>
+        <span class="status-badge status-badge-success" style="margin: 0; padding: 2px 10px; font-size: 12px;">Đã đổi mật khẩu thành công</span>
+      </div>
+    </div>
+  `;
+
+  const noticeHtml = `
+    <div class="reason-box" style="background-color: #fef2f2; border-left-color: #ef4444; color: #991b1b; padding: 14px 16px;">
+      <p style="margin: 0 0 6px 0; font-weight: 700; color: #b91c1c;">CẢNH BÁO BẢO MẬT QUAN TRỌNG:</p>
+      <p style="margin: 0 0 6px 0; line-height: 1.5;">Nếu chính bạn đã thực hiện thay đổi này, bạn có thể an tâm sử dụng mật khẩu mới để đăng nhập.</p>
+      <p style="margin: 0; line-height: 1.5;">Nếu bạn <strong>KHÔNG</strong> thực hiện thay đổi mật khẩu, rất có thể tài khoản của bạn đã bị người khác truy cập trái phép. Vui lòng liên hệ ngay với Ban Thư ký Hội Sinh viên Đại học Đà Nẵng qua email <a href="mailto:hoisinhvien@udn.vn" style="color: #b91c1c; font-weight: 700; text-decoration: underline;">hoisinhvien@udn.vn</a> để được hỗ trợ khóa tài khoản và kiểm tra khẩn cấp.</p>
+    </div>
+  `;
+
+  return renderSharedEmailLayout({
+    title: 'Mật khẩu tài khoản đã được thay đổi – Sinh viên 5 tốt ĐHĐN',
+    preheaderText: 'Mật khẩu tài khoản Sinh viên 5 tốt của bạn đã được cập nhật thành công.',
+    greetingName: userName,
+    introHtml: `<p class="main-text">Thông báo bảo mật: Mật khẩu cho tài khoản Sinh viên 5 tốt của bạn vừa được thay đổi thành công.</p>`,
+    contentHtml: contextCardHtml,
+    noticeHtml,
+    hideFallbackUrl: true,
+  });
+}
+
+export function buildPasswordChangedPlainTextTemplate({
+  userName,
+  userEmail,
+  changedAt,
+}: PasswordChangedTemplateParams): string {
+  const formattedTime = formatVietnameseDateTime(changedAt || new Date());
+  const accountDisplay = userEmail || userName;
+
+  return `HỘI SINH VIÊN VIỆT NAM ĐẠI HỌC ĐÀ NẴNG
+Hệ thống xét chọn danh hiệu và giải thưởng sinh viên
+
+THÔNG BÁO THAY ĐỔI MẬT KHẨU TÀI KHOẢN
+
+Chào ${userName},
+
+Mật khẩu cho tài khoản Sinh viên 5 tốt (${accountDisplay}) đã được thay đổi thành công${formattedTime ? ` vào lúc ${formattedTime}` : ''}.
+
+Nếu chính bạn đã thực hiện thay đổi này, bạn có thể an tâm sử dụng mật khẩu mới để đăng nhập.
+
+CẢNH BÁO BẢO MẬT QUAN TRỌNG:
+Nếu bạn KHÔNG thực hiện thay đổi này, rất có thể tài khoản của bạn đã bị người khác truy cập trái phép. Vui lòng liên hệ ngay với Ban Thư ký Hội Sinh viên Đại học Đà Nẵng qua email hoisinhvien@udn.vn để được hỗ trợ khóa tài khoản khẩn cấp.
 
 ---
 Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng
@@ -766,4 +890,239 @@ ${actionUrl}
 Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng
 Email hỗ trợ: hoisinhvien@udn.vn
 Đây là email được gửi tự động từ hệ thống. Vui lòng không trả lời trực tiếp.`;
+}
+
+// ============================================================================
+// 6. Feedback & Bug Report Notification Templates
+// ============================================================================
+
+export function buildFeedbackNotificationHtmlTemplate(data: {
+  senderName: string;
+  senderEmail: string;
+  senderPhone?: string;
+  studentCode?: string;
+  institutionName?: string;
+  userRole?: string;
+  category: 'BUG' | 'SUGGESTION' | 'OTHER';
+  content: string;
+  pageUrl?: string;
+  deviceSummary?: string;
+  images?: string[];
+  submittedAt?: Date | string;
+}): string {
+  const categoryConfig = {
+    BUG: {
+      label: 'BÁO LỖI KỸ THUẬT',
+      badgeBg: '#FEF2F2',
+      badgeColor: '#991B1B',
+      badgeBorder: '#FCA5A5',
+    },
+    SUGGESTION: {
+      label: 'GÓP Ý TÍNH NĂNG & GIAO DIỆN',
+      badgeBg: '#EFF6FF',
+      badgeColor: '#1D4ED8',
+      badgeBorder: '#BFDBFE',
+    },
+    OTHER: {
+      label: 'Ý KIẾN ĐÓNG GÓP KHÁC',
+      badgeBg: '#F8FAFC',
+      badgeColor: '#334155',
+      badgeBorder: '#CBD5E1',
+    },
+  }[data.category] || {
+    label: 'GÓP Ý NGƯỜI DÙNG',
+    badgeBg: '#F8FAFC',
+    badgeColor: '#334155',
+    badgeBorder: '#CBD5E1',
+  };
+
+  const imagesHtml =
+    data.images && data.images.length > 0
+      ? `
+      <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #E2E8F0;">
+        <div style="margin-bottom: 12px;">
+          <h3 style="margin: 0 0 4px; font-size: 14px; font-weight: 700; color: #172A3A;">
+            Ảnh chụp màn hình đính kèm (${data.images.length} tệp):
+          </h3>
+          <p style="margin: 0; font-size: 12.5px; color: #64748B;">
+            Các ảnh đã được nhúng bên dưới và đính kèm trực tiếp theo thư. Bạn có thể bấm vào ảnh hoặc tải về từ mục tệp đính kèm của email.
+          </p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          ${data.images
+            .map(
+              (_, idx) => `
+            <div style="border: 1px solid #DCE7EE; border-radius: 8px; overflow: hidden; background: #FFFFFF; box-shadow: 0 2px 4px rgba(15,35,53,0.04);">
+              <div style="background: #F8FBFD; padding: 7px 14px; font-size: 11.5px; font-weight: 600; color: #07457E; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between;">
+                <span>Ảnh ${idx + 1}</span>
+                <span style="color: #64748B; font-weight: 400; font-family: monospace;">screenshot-${idx + 1}</span>
+              </div>
+              <div style="padding: 10px; background: #F1F5F9; text-align: center;">
+                <img src="cid:screenshot-${idx + 1}" alt="Ảnh đính kèm ${idx + 1}" style="max-width: 100%; max-height: 520px; object-fit: contain; border-radius: 6px; display: inline-block; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />
+              </div>
+            </div>
+          `
+            )
+            .join('')}
+        </div>
+      </div>
+    `
+      : '';
+
+  const submittedTime = data.submittedAt
+    ? formatVietnameseDateTime(data.submittedAt)
+    : formatVietnameseDateTime(new Date());
+
+  return `
+    <!DOCTYPE html>
+    <html lang="vi">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Thông báo Góp ý & Báo lỗi — SV5T ĐHĐN</title>
+    </head>
+    <body style="margin: 0; padding: 24px 16px; background-color: #F4F7F9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #172A3A; -webkit-font-smoothing: antialiased;">
+      <div style="max-width: 640px; margin: 0 auto; background: #FFFFFF; border-radius: 12px; border: 1px solid #DCE7EE; box-shadow: 0 4px 16px rgba(15, 35, 53, 0.06); overflow: hidden;">
+        
+        <!-- Header: Official UDN Navy -->
+        <div style="background-color: #07457E; padding: 22px 28px; border-bottom: 3px solid #0D78AE;">
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: rgba(255, 255, 255, 0.85); margin-bottom: 4px;">
+            Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
+          </div>
+          <div style="font-size: 17px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.01em;">
+            Hệ thống Xét duyệt Sinh viên 5 tốt · Phản hồi & Báo lỗi Kỹ thuật
+          </div>
+        </div>
+
+        <div style="padding: 26px 28px;">
+          <!-- Category Badge & Timestamp Strip -->
+          <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <span style="display: inline-block; background: ${categoryConfig.badgeBg}; color: ${categoryConfig.badgeColor}; border: 1px solid ${categoryConfig.badgeBorder}; padding: 4px 10px; border-radius: 5px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em;">
+              [${categoryConfig.label}]
+            </span>
+            <span style="font-size: 12px; color: #64748B;">
+              Thời gian gửi: ${submittedTime}
+            </span>
+          </div>
+
+          <!-- Metadata Context Table -->
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 22px; background: #F8FBFD; border: 1px solid #DCE7EE; border-radius: 8px; overflow: hidden;">
+            <tr>
+              <td style="padding: 10px 14px; font-weight: 600; color: #607483; width: 140px; border-bottom: 1px solid #E3EBF1;">Người phản hồi:</td>
+              <td style="padding: 10px 14px; font-weight: 700; color: #172A3A; border-bottom: 1px solid #E3EBF1;">
+                ${escapeHtml(data.senderName)}
+                ${data.userRole ? `<span style="font-size: 11px; background: #EAF2F7; color: #07457E; font-weight: 600; padding: 2px 7px; border-radius: 4px; margin-left: 6px;">${escapeHtml(data.userRole)}</span>` : ''}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 14px; font-weight: 600; color: #607483; border-bottom: 1px solid #E3EBF1;">Email liên hệ:</td>
+              <td style="padding: 10px 14px; color: #07457E; border-bottom: 1px solid #E3EBF1;">
+                <a href="mailto:${escapeHtml(data.senderEmail)}" style="color: #07457E; font-weight: 600; text-decoration: underline;">
+                  ${escapeHtml(data.senderEmail)}
+                </a>
+              </td>
+            </tr>
+            ${data.senderPhone ? `
+            <tr>
+              <td style="padding: 10px 14px; font-weight: 600; color: #607483; border-bottom: 1px solid #E3EBF1;">Số điện thoại:</td>
+              <td style="padding: 10px 14px; color: #172A3A; border-bottom: 1px solid #E3EBF1;">
+                ${escapeHtml(data.senderPhone)}
+              </td>
+            </tr>
+            ` : ''}
+            ${data.studentCode || data.institutionName ? `
+            <tr>
+              <td style="padding: 10px 14px; font-weight: 600; color: #607483; border-bottom: 1px solid #E3EBF1;">Đơn vị / Cơ sở:</td>
+              <td style="padding: 10px 14px; color: #172A3A; border-bottom: 1px solid #E3EBF1;">
+                ${data.studentCode ? `<strong>MSSV:</strong> ${escapeHtml(data.studentCode)} · ` : ''}
+                ${escapeHtml(data.institutionName || '')}
+              </td>
+            </tr>
+            ` : ''}
+            ${data.pageUrl ? `
+            <tr>
+              <td style="padding: 10px 14px; font-weight: 600; color: #607483; border-bottom: 1px solid #E3EBF1;">Trang ghi nhận:</td>
+              <td style="padding: 10px 14px; word-break: break-all; border-bottom: 1px solid #E3EBF1;">
+                <a href="${escapeHtml(data.pageUrl)}" target="_blank" style="color: #0B64A0; text-decoration: underline; font-size: 12.5px;">
+                  ${escapeHtml(data.pageUrl)}
+                </a>
+              </td>
+            </tr>
+            ` : ''}
+            ${data.deviceSummary ? `
+            <tr>
+              <td style="padding: 10px 14px; font-weight: 600; color: #607483;">Thiết bị & Môi trường:</td>
+              <td style="padding: 10px 14px; color: #64748B; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11.5px;">
+                ${escapeHtml(data.deviceSummary)}
+              </td>
+            </tr>
+            ` : ''}
+          </table>
+
+          <!-- Content Body -->
+          <div style="margin-bottom: 20px;">
+            <div style="font-size: 13.5px; font-weight: 700; color: #172A3A; margin-bottom: 8px;">
+              Nội dung chi tiết:
+            </div>
+            <div style="background: #FFFFFF; border: 1px solid #DCE7EE; border-left: 4px solid #07457E; border-radius: 6px; padding: 16px 18px; font-size: 14px; line-height: 1.65; color: #172A3A; white-space: pre-wrap; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${escapeHtml(data.content)}</div>
+          </div>
+
+          <!-- Attached Screenshots -->
+          ${imagesHtml}
+
+          <!-- Direct Reply Action Bar -->
+          <div style="margin-top: 26px; padding-top: 20px; border-top: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <a href="mailto:${escapeHtml(data.senderEmail)}?subject=Re: [SV5T ĐHĐN] Phản hồi góp ý / báo lỗi kỹ thuật" style="display: inline-block; background-color: #07457E; color: #FFFFFF !important; font-size: 13px; font-weight: 700; padding: 10px 18px; border-radius: 6px; text-decoration: none; box-sizing: border-box;">
+              Soạn thư trả lời ${escapeHtml(data.senderName)} →
+            </a>
+            <span style="font-size: 12px; color: #94A3B8;">
+              Đội ngũ Kỹ thuật Hệ thống 5TOT ĐHĐN
+            </span>
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div style="background-color: #F8FBFD; padding: 18px 28px; text-align: center; border-top: 1px solid #E3EBF1; font-size: 11.5px; color: #728391; line-height: 1.5;">
+          Email này được gửi tự động tới Ban Kỹ thuật (vanngocnhuy30032006@gmail.com, dhtphu05@gmail.com).<br>
+          © 2026 Hội Sinh viên Việt Nam Đại học Đà Nẵng · Hệ thống Xét duyệt Sinh viên 5 tốt
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+export function buildFeedbackNotificationPlainTextTemplate(data: {
+  senderName: string;
+  senderEmail: string;
+  senderPhone?: string;
+  studentCode?: string;
+  institutionName?: string;
+  userRole?: string;
+  category: 'BUG' | 'SUGGESTION' | 'OTHER';
+  content: string;
+  pageUrl?: string;
+  deviceSummary?: string;
+  images?: string[];
+  submittedAt?: Date | string;
+}): string {
+  return [
+    '=== [SV5T ĐHĐN] BÁO LỖI & GÓP Ý KỸ THUẬT MỚI ===',
+    `Phân loại: ${data.category}`,
+    `Người gửi: ${data.senderName} (${data.userRole || 'Khách'})`,
+    `Email: ${data.senderEmail}`,
+    data.senderPhone ? `SĐT: ${data.senderPhone}` : '',
+    data.studentCode ? `MSSV: ${data.studentCode}` : '',
+    data.institutionName ? `Trường: ${data.institutionName}` : '',
+    data.pageUrl ? `URL: ${data.pageUrl}` : '',
+    data.deviceSummary ? `Thiết bị: ${data.deviceSummary}` : '',
+    '',
+    '--- NỘI DUNG ---',
+    data.content,
+    '',
+    data.images && data.images.length > 0 ? `[Đính kèm ${data.images.length} ảnh]` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
 }

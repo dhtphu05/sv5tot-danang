@@ -137,5 +137,22 @@ export class PasswordResetService {
 
     // 3. Invalidate all active sessions for this user across all devices
     await this.sessionService.revokeAllUserSessions(user.id, 'PASSWORD_RESET');
+
+    // 4. Dispatch security confirmation email to inform user of password change
+    if (this.emailService && typeof this.emailService.sendPasswordChangedEmail === 'function') {
+      this.emailService
+        .sendPasswordChangedEmail({
+          to: user.email,
+          userName: user.fullName || user.email,
+          userEmail: user.email,
+          changedAt: new Date(),
+        })
+        .catch((err: unknown) => {
+          logger.warn('Failed to dispatch password changed security email', {
+            error: err instanceof Error ? err.message : String(err),
+            userId: user.id,
+          });
+        });
+    }
   }
 }

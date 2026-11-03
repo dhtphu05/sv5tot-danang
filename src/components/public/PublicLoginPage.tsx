@@ -31,7 +31,7 @@ export interface PublicLoginPageProps {
   onNavigateToSignup: () => void;
   onNavigateToLanding: () => void;
   onNavigateToCollectiveLogin?: () => void;
-  onNavigateToForgotPassword?: () => void;
+  onNavigateToForgotPassword?: (prefillEmail?: string) => void;
   sessionExpired?: boolean;
   returnTarget?: SafeInternalReturnTarget | null;
   initialEmail?: string;
@@ -327,7 +327,7 @@ export const PublicLoginPage: React.FC<PublicLoginPageProps> = ({
                 <div className="flex justify-end pt-1">
                   <button
                     type="button"
-                    onClick={onNavigateToForgotPassword}
+                    onClick={() => onNavigateToForgotPassword(email.trim())}
                     className="text-[12.5px] font-medium text-[#0D78AE] hover:text-[#126A9C] hover:underline cursor-pointer"
                   >
                     Quên mật khẩu?

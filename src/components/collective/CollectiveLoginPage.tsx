@@ -13,6 +13,7 @@ import React, { useState } from 'react';
 import { Users, ArrowLeft, ShieldAlert, Lock, Mail } from 'lucide-react';
 import { HsvEmblem } from '../brand/HsvLogo';
 import { Button } from '../buttons/Button';
+import { FeedbackFloatingWidget } from '../feedback/FeedbackFloatingWidget';
 import { resolveDomainServices } from '../../entities/services/modeResolver';
 import { setApiActorContext } from '../../shared/api/httpClient';
 
@@ -179,6 +180,8 @@ export const CollectiveLoginPage: React.FC<CollectiveLoginPageProps> = ({
       <footer className="text-center text-[12px] text-[#728391]">
         Hệ thống xét duyệt Sinh viên 5 tốt cấp Đại học Đà Nẵng · Hội Sinh viên Việt Nam Đại học Đà Nẵng
       </footer>
+
+      <FeedbackFloatingWidget />
     </div>
   );
 };

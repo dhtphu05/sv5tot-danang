@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Menu, X, Bell } from 'lucide-react';
 import { SidebarNav } from './SidebarNav';
 import { UdnEmblem, HsvEmblem } from '../brand/HsvLogo';
+import { FeedbackFloatingWidget } from '../feedback/FeedbackFloatingWidget';
 
 export interface AppShellProps {
   children: React.ReactNode;
@@ -123,6 +124,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 
       {/* Main Viewport Content Area: Scrolls naturally with the single page document */}
       <main className="flex-1 flex flex-col min-w-0 w-full">{children}</main>
+      <FeedbackFloatingWidget />
     </div>
   );
 };

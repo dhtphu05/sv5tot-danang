@@ -15,6 +15,7 @@ import {
   StudentRegistrationPayload,
 } from '../../components/public/publicTypes';
 import { PrototypeDemoToolbar } from '../../components/demo/PrototypeDemoToolbar';
+import { FeedbackFloatingWidget } from '../../components/feedback/FeedbackFloatingWidget';
 import {
   IS_DEMO_MODE_ENABLED,
   PrototypeScenarioId,
@@ -181,7 +182,8 @@ export const PublicEntryPortalPage: React.FC<PublicEntryPortalPageProps> = ({
             syncPublicUrl('landing');
             window.scrollTo({ top: 0, behavior: 'instant' });
           }}
-          onNavigateToForgotPassword={() => {
+          onNavigateToForgotPassword={(prefillEmail?: string) => {
+            if (prefillEmail) setLoginPrefillEmail(prefillEmail);
             setPublicRoute('forgot_password');
             syncPublicUrl('forgot_password');
             window.scrollTo({ top: 0, behavior: 'instant' });
@@ -253,6 +255,7 @@ export const PublicEntryPortalPage: React.FC<PublicEntryPortalPageProps> = ({
         />
       )}
 
+      <FeedbackFloatingWidget />
       <PrototypeDemoToolbar
         isVisible={IS_DEMO_MODE_ENABLED && isDemoActive}
         isHiddenByUser={isToolbarHidden}

@@ -2,10 +2,27 @@
  * 5TOT ĐHĐN — Public Reset Password Page
  * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
  * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ *
+ * Implements high-standard Reset Password UI/UX conforming 100% to common design system:
+ * - Identical institutional lockup header (UdnEmblem + HsvEmblem size 40, exact 3-line title)
+ * - Exact max-w-[436px] container & shadow-elevated card
+ * - In-card h1 (22px font-extrabold text-[#172A3A]) and subtext
+ * - Real-time password strength meter
+ * - Instant match validation for confirm password
+ * - Graceful handling of expired or invalid tokens with single-click resend CTA
+ * - Auto-redirect countdown on success
  */
 
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, AlertCircle, CheckCircle2, Eye, EyeOff, Lock, KeyRound } from 'lucide-react';
+import {
+  ArrowLeft,
+  AlertCircle,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  KeyRound,
+  Clock,
+} from 'lucide-react';
 import { UdnEmblem, HsvEmblem } from '../brand/HsvLogo';
 import { Button } from '../buttons/Button';
 import { apiRequest } from '../../shared/api/httpClient';
@@ -16,6 +33,30 @@ export interface PublicResetPasswordPageProps {
   onNavigateToLanding: () => void;
   initialToken?: string;
   initialEmail?: string;
+}
+
+interface PasswordStrength {
+  score: number; // 0: None, 1: Weak, 2: Medium, 3: Strong
+  label: string;
+  colorClass: string;
+}
+
+function evaluatePasswordStrength(pwd: string): PasswordStrength {
+  if (!pwd) return { score: 0, label: '', colorClass: '' };
+  if (pwd.length < 8) {
+    return { score: 1, label: 'Mật khẩu yếu (cần tối thiểu 8 ký tự)', colorClass: 'bg-[#EF4444]' };
+  }
+  const hasLetter = /[a-zA-Z]/.test(pwd);
+  const hasNumber = /\d/.test(pwd);
+  const hasSpecial = /[^a-zA-Z0-9]/.test(pwd);
+
+  if (hasLetter && hasNumber && hasSpecial) {
+    return { score: 3, label: 'Mật khẩu rất mạnh', colorClass: 'bg-[#10B981]' };
+  }
+  if ((hasLetter && hasNumber) || (hasLetter && hasSpecial)) {
+    return { score: 3, label: 'Mật khẩu mạnh', colorClass: 'bg-[#10B981]' };
+  }
+  return { score: 2, label: 'Mật khẩu trung bình (nên kết hợp thêm số hoặc ký tự)', colorClass: 'bg-[#F59E0B]' };
 }
 
 export const PublicResetPasswordPage: React.FC<PublicResetPasswordPageProps> = ({
@@ -46,17 +87,37 @@ export const PublicResetPasswordPage: React.FC<PublicResetPasswordPageProps> = (
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isTokenExpiredOrInvalid, setIsTokenExpiredOrInvalid] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [redirectCountdown, setRedirectCountdown] = useState<number>(3);
+
+  // Auto redirect timer on success
+  useEffect(() => {
+    if (!isSuccess) return;
+    if (redirectCountdown <= 0) {
+      onNavigateToLogin(email);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setRedirectCountdown((prev) => prev - 1);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [isSuccess, redirectCountdown, email, onNavigateToLogin]);
+
+  const strength = evaluatePasswordStrength(newPassword);
+  const isMatch = confirmPassword.length > 0 && newPassword === confirmPassword;
+  const isMismatch = confirmPassword.length > 0 && newPassword !== confirmPassword;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
 
     setErrorMessage(null);
+    setIsTokenExpiredOrInvalid(false);
 
     const cleanToken = token.trim();
     if (!cleanToken) {
-      setErrorMessage('Mã token khôi phục không hợp lệ hoặc để trống. Vui lòng sử dụng liên kết trong email.');
+      setErrorMessage('Mã liên kết khôi phục không hợp lệ hoặc để trống. Vui lòng sử dụng liên kết trong email.');
       return;
     }
 
@@ -84,11 +145,25 @@ export const PublicResetPasswordPage: React.FC<PublicResetPasswordPageProps> = (
       );
 
       setIsSuccess(true);
+      setRedirectCountdown(3);
     } catch (err: any) {
-      setErrorMessage(
-        err?.message ||
-          'Mã khôi phục đã hết hạn hoặc không hợp lệ. Vui lòng gửi lại yêu cầu mới.'
-      );
+      const msg = err?.message || '';
+      const code = err?.code || '';
+
+      if (
+        code === 'EXPIRED_RESET_TOKEN' ||
+        code === 'INVALID_RESET_TOKEN' ||
+        msg.toLowerCase().includes('hết hạn') ||
+        msg.toLowerCase().includes('không hợp lệ') ||
+        msg.toLowerCase().includes('qua sử dụng')
+      ) {
+        setIsTokenExpiredOrInvalid(true);
+        setErrorMessage(
+          'Liên kết khôi phục đã hết hạn hoặc đã qua sử dụng. Vui lòng gửi lại yêu cầu mới.'
+        );
+      } else {
+        setErrorMessage(msg || 'Không thể đặt lại mật khẩu lúc này. Vui lòng thử lại.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -112,40 +187,44 @@ export const PublicResetPasswordPage: React.FC<PublicResetPasswordPageProps> = (
         </div>
       </div>
 
-      {/* Main Centered Container */}
+      {/* Main Centered Login Container (exact 436px width — common UI contract) */}
       <main className="w-full max-w-[436px] mx-auto my-auto py-3">
-        {/* Institutional Lockup Header */}
+        {/* Institutional Lockup Header (exact identical style as Login & Signup) */}
         <div className="flex flex-col items-center text-center mb-5">
           <div className="flex items-center gap-2.5">
-            <UdnEmblem className="w-10 h-10 shrink-0" />
-            <HsvEmblem className="w-10 h-10 shrink-0" />
+            <UdnEmblem size={40} />
+            <HsvEmblem size={40} />
           </div>
-          <h1 className="text-[20px] font-bold text-[#172A3A] tracking-tight mt-3">
-            Đặt lại mật khẩu mới
-          </h1>
-          <p className="text-[13px] text-[#607483] mt-1 max-w-[340px]">
-            Hệ thống xét chọn Danh hiệu Sinh viên 5 tốt – Đại học Đà Nẵng
-          </p>
+          <div className="mt-2 text-[10.5px] font-bold uppercase tracking-[0.07em] text-[#466474]">
+            HỘI SINH VIÊN VIỆT NAM
+          </div>
+          <div className="text-[11.5px] font-extrabold uppercase tracking-[0.05em] text-[#126A9C]">
+            ĐẠI HỌC ĐÀ NẴNG
+          </div>
+          <div className="text-[14px] font-extrabold text-[#172A3A] mt-1">
+            Cổng xét chọn Danh hiệu & Giải thưởng Sinh viên · ĐHĐN
+          </div>
         </div>
 
-        {/* Card */}
-        <div className="bg-white border border-[#DCE7EE] rounded-[16px] p-6 sm:p-7 shadow-[0_4px_24px_rgba(13,120,174,0.06)]">
+        {/* Card (shadow-elevated rounded-[16px]) */}
+        <div className="bg-white rounded-[16px] border border-[#DCE7EE] shadow-elevated p-6 sm:p-7">
           {isSuccess ? (
+            /* STATE 3: SUCCESS STATE */
             <div className="text-center py-2 space-y-4">
-              <div className="w-12 h-12 rounded-full bg-[#ECFDF5] border border-[#A7F3D0] text-[#059669] flex items-center justify-center mx-auto">
-                <CheckCircle2 size={26} />
+              <div className="w-14 h-14 rounded-full bg-[#ECFDF5] border border-[#A7F3D0] text-[#059669] flex items-center justify-center mx-auto shadow-sm">
+                <CheckCircle2 size={30} />
               </div>
 
               <div>
-                <h3 className="text-[16px] font-bold text-[#065F46]">
-                  Đặt lại mật khẩu thành công!
-                </h3>
+                <h1 className="text-[20px] font-extrabold text-[#065F46] tracking-tight">
+                  Đổi mật khẩu thành công!
+                </h1>
                 <p className="text-[13px] text-[#475569] mt-2 leading-relaxed">
-                  Mật khẩu tài khoản của bạn đã được cập nhật an toàn. Mọi phiên đăng nhập cũ trên các thiết bị đã được thu hồi.
+                  Mật khẩu tài khoản của bạn đã được cập nhật an toàn. Toàn bộ phiên đăng nhập cũ trên các thiết bị khác đã được thu hồi.
                 </p>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 space-y-2">
                 <Button
                   type="button"
                   variant="primary"
@@ -153,17 +232,69 @@ export const PublicResetPasswordPage: React.FC<PublicResetPasswordPageProps> = (
                   className="w-full font-bold justify-center h-[46px]"
                   onClick={() => onNavigateToLogin(email)}
                 >
-                  Đăng nhập ngay với mật khẩu mới
+                  Đăng nhập ngay
                 </Button>
+                <p className="text-[12px] text-[#64748B]">
+                  Tự động chuyển về trang Đăng nhập sau <strong>{redirectCountdown}s</strong>...
+                </p>
+              </div>
+            </div>
+          ) : isTokenExpiredOrInvalid ? (
+            /* STATE 2: EXPIRED / INVALID TOKEN FRIENDLY RECOVERY */
+            <div className="text-center py-2 space-y-4">
+              <div className="w-14 h-14 rounded-full bg-[#FEF2F2] border border-[#FECACA] text-[#DC2626] flex items-center justify-center mx-auto shadow-sm">
+                <Clock size={28} />
+              </div>
+
+              <div>
+                <h1 className="text-[18px] font-extrabold text-[#991B1B] tracking-tight">
+                  Liên kết đã hết hạn hoặc không hợp lệ
+                </h1>
+                <p className="text-[13px] text-[#475569] mt-2 leading-relaxed">
+                  Vì lý do bảo mật, mỗi liên kết đặt lại mật khẩu chỉ có hiệu lực trong thời gian giới hạn và chỉ sử dụng được <strong>một lần</strong>.
+                </p>
+              </div>
+
+              <div className="pt-2 space-y-3">
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="lg"
+                  className="w-full font-bold justify-center h-[46px]"
+                  onClick={onNavigateToForgotPassword}
+                >
+                  Gửi lại yêu cầu đặt mật khẩu mới
+                </Button>
+
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => onNavigateToLogin(email)}
+                    className="font-semibold text-[13px] text-[#0D78AE] hover:text-[#126A9C] hover:underline cursor-pointer inline-flex items-center gap-1.5"
+                  >
+                    <ArrowLeft size={14} />
+                    <span>Quay lại trang Đăng nhập</span>
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
+            /* STATE 1: RESET PASSWORD FORM */
             <>
+              <div className="mb-5">
+                <h1 className="text-[22px] font-extrabold text-[#172A3A] tracking-tight">
+                  Thiết lập mật khẩu mới
+                </h1>
+                <p className="text-[13px] text-[#607483] mt-1 leading-relaxed">
+                  Tạo mật khẩu mới an toàn cho tài khoản của bạn.
+                </p>
+              </div>
+
               {email && (
                 <div className="mb-4 p-3 rounded-[10px] bg-[#F0F8FD] border border-[#CFE3F0] text-[#0D78AE] text-[12.5px] flex items-center gap-2">
-                  <KeyRound size={15} className="shrink-0" />
+                  <KeyRound size={15} className="shrink-0 text-[#0D78AE]" />
                   <span>
-                    Đang đặt lại mật khẩu cho: <strong className="font-bold">{email}</strong>
+                    Thiết lập mật khẩu cho: <strong className="font-bold text-[#0F172A]">{email}</strong>
                   </span>
                 </div>
               )}
@@ -180,7 +311,7 @@ export const PublicResetPasswordPage: React.FC<PublicResetPasswordPageProps> = (
               )}
 
               <form onSubmit={handleSubmit} noValidate className="space-y-4">
-                {/* Token input (if missing in URL) */}
+                {/* Token input (only if missing in URL) */}
                 {!token && (
                   <div className="flex flex-col gap-1.5">
                     <label
@@ -237,6 +368,33 @@ export const PublicResetPasswordPage: React.FC<PublicResetPasswordPageProps> = (
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
+
+                  {/* Password Strength Meter */}
+                  {newPassword.length > 0 && (
+                    <div className="mt-1 space-y-1">
+                      <div className="flex items-center gap-1.5 h-1.5 w-full">
+                        <div
+                          className={`h-full flex-1 rounded-full transition-all ${
+                            strength.score >= 1 ? strength.colorClass : 'bg-[#E2E8F0]'
+                          }`}
+                        />
+                        <div
+                          className={`h-full flex-1 rounded-full transition-all ${
+                            strength.score >= 2 ? strength.colorClass : 'bg-[#E2E8F0]'
+                          }`}
+                        />
+                        <div
+                          className={`h-full flex-1 rounded-full transition-all ${
+                            strength.score >= 3 ? strength.colorClass : 'bg-[#E2E8F0]'
+                          }`}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between text-[11.5px]">
+                        <span className="text-[#64748B]">{strength.label}</span>
+                        <span className="text-[#94A3B8]">Tối thiểu 8 ký tự</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Confirm Password */}
@@ -271,6 +429,20 @@ export const PublicResetPasswordPage: React.FC<PublicResetPasswordPageProps> = (
                       {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
+
+                  {/* Instant Match Feedback */}
+                  {isMatch && (
+                    <p className="text-[12px] font-medium text-[#059669] flex items-center gap-1 mt-0.5">
+                      <CheckCircle2 size={13} />
+                      <span>Mật khẩu xác nhận trùng khớp</span>
+                    </p>
+                  )}
+                  {isMismatch && (
+                    <p className="text-[12px] font-medium text-[#DC2626] flex items-center gap-1 mt-0.5">
+                      <AlertCircle size={13} />
+                      <span>Mật khẩu xác nhận chưa khớp</span>
+                    </p>
+                  )}
                 </div>
 
                 <div className="pt-2">
@@ -278,7 +450,7 @@ export const PublicResetPasswordPage: React.FC<PublicResetPasswordPageProps> = (
                     type="submit"
                     variant="primary"
                     size="lg"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || (confirmPassword.length > 0 && !isMatch)}
                     className="w-full font-bold justify-center h-[46px]"
                   >
                     {isSubmitting ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}

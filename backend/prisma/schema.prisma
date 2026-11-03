@@ -303,6 +303,7 @@ model User {
   individualApps    IndividualApplication[]           @relation("StudentApplicant")
   preparedCollectives CollectiveApplication[]         @relation("CollectivePreparer")
   notifications     Notification[]
+  feedbacks         UserFeedback[]
 
   @@index([institutionId, status])
   @@index([studentCode])
@@ -1108,4 +1109,27 @@ model AuditLogEvent {
   @@index([actorUserId, occurredAt(sort: Desc)])
   @@index([track, actionCode, occurredAt(sort: Desc)])
   @@index([idempotencyKey])
+}
+
+model UserFeedback {
+  id            String    @id @default(cuid())
+  userId        String?
+  senderName    String?
+  senderEmail   String?
+  senderPhone   String?
+  institutionId String?
+  category      String    @default("BUG")
+  content       String    @db.Text
+  pageUrl       String?
+  deviceInfo    Json?
+  images        String[]
+  status        String    @default("PENDING")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
 }
