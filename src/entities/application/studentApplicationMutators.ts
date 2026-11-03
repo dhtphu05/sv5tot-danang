@@ -15,6 +15,7 @@ import {
 import { resolveMultiplicity } from '../../demo/fixtures/criteriaDefinitions';
 import { PreSubmitAdvisoryItem } from '../../components/submission/submissionTypes';
 import { RequirementStatus } from '../../tokens';
+import { StudentProfileDto } from './studentApplicationTypes';
 
 export function syncCriteriaWithUpdate(
   prevCriteria: ApplicationCriterion[],
@@ -511,7 +512,8 @@ export function calculateStudentApplicationSummaryStats(
 
 export function computeDynamicPreSubmitAdvisories(
   criteria: ApplicationCriterion[],
-  manualAdvisories: PreSubmitAdvisoryItem[] = []
+  manualAdvisories: PreSubmitAdvisoryItem[] = [],
+  profile?: StudentProfileDto | null
 ): PreSubmitAdvisoryItem[] {
   const result: PreSubmitAdvisoryItem[] = [];
 
@@ -906,6 +908,20 @@ export function computeDynamicPreSubmitAdvisories(
     }
   }
 
+  // 6. PROFILE 3x4 PORTRAIT PHOTO CHECK (Decision 12/QĐ/ĐHĐN-HSV) - Non-blocking Advisory
+  if (profile && !profile.portraitUrl) {
+    result.push({
+      id: 'adv-suggestion-portrait-photo',
+      criterionId: 'ethics',
+      criterionName: 'Thông tin cá nhân',
+      criterionNumber: 1,
+      requirementId: '',
+      message: 'Hồ sơ chưa có ảnh thẻ 3×4. Bạn nên bổ sung ảnh thẻ chân dung để hoàn thiện thành phần hồ sơ theo Quyết định 12/QĐ/ĐHĐN-HSV.',
+      actionLabel: 'Bổ sung ảnh thẻ',
+      targetType: 'row',
+    });
+  }
+
   return result;
 }
 
@@ -920,7 +936,9 @@ export function computeCriteriaAdvisoryStatuses(
       0
     );
 
-    const criterionAdvisories = (advisories || []).filter((a) => a.criterionId === c.id);
+    const criterionAdvisories = (advisories || []).filter(
+      (a) => a.criterionId === c.id && a.id !== 'adv-suggestion-portrait-photo'
+    );
     const hasMissingMandatory = criterionAdvisories.some((a) => a.id.startsWith('adv-missing-'));
     const hasInsufficientDays = criterionAdvisories.some((a) => a.id === 'adv-volunteer-days-insufficient');
     const hasMissingEvidence = criterionAdvisories.some((a) => a.id.startsWith('adv-no-ev-'));
