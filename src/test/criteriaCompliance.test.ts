@@ -237,18 +237,19 @@ console.log('\n--- 5. INTEGRATION CRITERION AUDIT ---');
 const intDef = CRITERIA_DEFINITIONS.integration;
 assert(
   intDef.groups.length >= 2,
-  'INTEGRATION: Contains Group A (Skills/Union/Activity), Group B (Languages/Intl/Contest), and Priority Group'
+  'INTEGRATION: Contains Group A (Skills/Union), Group B (Activity), Group C (Languages/Intl/Contest), and Priority Group'
 );
 
 const intGroupA = intDef.groups.find((g) => g.id === 'integration-skills-award');
+const intGroupAct = intDef.groups.find((g) => g.id === 'integration-activity-group');
 const intGroupB = intDef.groups.find((g) => g.id === 'integration-languages-intl');
 
 const intSkills = intGroupA?.requirements.find((r) => r.id === 'integration-skills');
 const intUnion = intGroupA?.requirements.find((r) => r.id === 'integration-union-award');
-const intAct = intGroupA?.requirements.find((r) => r.id === 'integration-activity');
+const intAct = intGroupAct?.requirements.find((r) => r.id === 'integration-activity') || intGroupA?.requirements.find((r) => r.id === 'integration-activity');
 assert(
   Boolean(intSkills && intUnion && intAct),
-  'INTEGRATION GROUP A: Social skills course, Union award, and Faculty+ integration activity all supported'
+  'INTEGRATION: Social skills course, Union award, and Faculty+ integration activity all supported in accordance with Decision 12'
 );
 
 const intLang = intGroupB?.requirements.find((r) => r.id === 'integration-lang');
@@ -256,7 +257,7 @@ const intIntl = intGroupB?.requirements.find((r) => r.id === 'integration-intl')
 const intContest = intGroupB?.requirements.find((r) => r.id === 'integration-contest');
 assert(
   Boolean(intLang && intIntl && intContest),
-  'INTEGRATION GROUP B: Language pathway, International activity, and Contest all supported'
+  'INTEGRATION GROUP C: Language pathway, International activity, and Contest all supported'
 );
 
 assert(
