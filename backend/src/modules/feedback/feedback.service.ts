@@ -45,8 +45,8 @@ export class FeedbackService {
 
     // 2. Resolve User Identity
     let userId: string | null = null;
-    let senderName = (input.senderName || '').trim();
-    let senderEmail = (input.senderEmail || '').trim().toLowerCase();
+    let senderName = (input.senderName || input.guestName || '').trim();
+    let senderEmail = (input.senderEmail || input.guestEmail || '').trim().toLowerCase();
     let senderPhone = (input.senderPhone || '').trim() || null;
     let institutionId: string | null = null;
     let studentCode: string | undefined = undefined;

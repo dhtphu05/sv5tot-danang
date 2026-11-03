@@ -172,6 +172,8 @@ export const FeedbackFloatingWidget: React.FC<FeedbackFloatingWidgetProps> = ({
           category,
           content: trimmedContent,
           pageUrl: typeof window !== 'undefined' ? window.location.href : '',
+          senderEmail: !isLoggedIn ? guestEmail.trim() : undefined,
+          senderName: !isLoggedIn ? 'Khách truy cập' : undefined,
           guestEmail: !isLoggedIn ? guestEmail.trim() : undefined,
           guestName: !isLoggedIn ? 'Khách truy cập' : undefined,
           deviceInfo,

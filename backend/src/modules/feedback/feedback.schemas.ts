@@ -18,6 +18,13 @@ export const createFeedbackSchema = z.object({
     .optional()
     .or(z.literal('')),
   senderName: z.string().trim().max(100).optional(),
+  guestEmail: z
+    .string()
+    .trim()
+    .email('Địa chỉ email không đúng định dạng.')
+    .optional()
+    .or(z.literal('')),
+  guestName: z.string().trim().max(100).optional(),
   senderPhone: z.string().trim().max(20).optional(),
   pageUrl: z.string().trim().max(2000).optional(),
   deviceInfo: z.record(z.string(), z.unknown()).optional(),

@@ -9,6 +9,8 @@ export interface CreateFeedbackInput {
   content: string;
   senderEmail?: string;
   senderName?: string;
+  guestEmail?: string;
+  guestName?: string;
   senderPhone?: string;
   pageUrl?: string;
   deviceInfo?: Record<string, unknown>;
