@@ -66,8 +66,8 @@ function mockScope(scopeKey: string, status: StaffItemReviewStatus, note = ''): 
     reviewerId: 'officer-1',
     reviewerName: 'Nguyễn Văn An',
     status,
-    reviewerNote: note,
-    updatedAt: new Date().toISOString(),
+    internalNote: note,
+    reviewedAt: new Date().toISOString(),
   };
 }
 
