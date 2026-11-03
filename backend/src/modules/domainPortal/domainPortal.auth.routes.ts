@@ -125,13 +125,15 @@ export function registerAuthPortalRoutes(router: Router, deps: AuthPortalRouteDe
   // 1. AUTHENTICATION (/api/v2/portal/auth/*)
   // =========================================================================
   router.post('/auth/register', async (req: Request, res: Response): Promise<void> => {
-    const { fullName, email, studentCode, institutionId, institutionName, password } = (req.body || {}) as {
+    const { fullName, email, studentCode, institutionId, institutionName, password, facultyDepartmentId, facultyName } = (req.body || {}) as {
       fullName?: string;
       email?: string;
       studentCode?: string;
       institutionId?: string;
       institutionName?: string;
       password?: string;
+      facultyDepartmentId?: string;
+      facultyName?: string;
     };
 
     if (!fullName || !email || !studentCode || !institutionId) {
@@ -203,8 +205,12 @@ export function registerAuthPortalRoutes(router: Router, deps: AuthPortalRouteDe
     const initialProfile = mergeStudentProfileObjects(null, {
       fullName: fullName.trim(),
       email: normalizedEmail,
+      studentCode: normalizedCode,
       institutionId,
       institutionName: resolvedInstName,
+      facultyDepartmentId,
+      faculty: facultyName,
+      facultyName,
     });
     await deps.identityRepo
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

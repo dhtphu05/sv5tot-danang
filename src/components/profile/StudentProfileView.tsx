@@ -33,6 +33,11 @@ import {
   ProfileCompletenessResult,
 } from '../../entities/application/studentApplicationTypes';
 import {
+  CANONICAL_FACULTIES_2026,
+  getFacultiesByInstitution,
+  CanonicalFaculty,
+} from '../../demo/fixtures/facultyRegistry';
+import {
   CANONICAL_VIETNAMESE_ETHNICITIES,
   CANONICAL_PROVINCES,
   EDUCATION_LEVEL_OPTIONS,
@@ -60,9 +65,13 @@ export interface StudentProfileViewProps {
   fallbackStudent?: {
     fullName?: string;
     studentId?: string;
+    studentCode?: string;
     university?: string;
     email?: string;
     institutionId?: string;
+    facultyDepartmentId?: string;
+    faculty?: string;
+    facultyName?: string;
   };
   className?: string;
 }
@@ -123,6 +132,7 @@ export function mergeStudentProfileSnapshots(
   const matchedInst = CANONICAL_INSTITUTION_OPTIONS.find((opt) => opt.id === instId);
   return {
     fullName: pickStr('fullName'),
+    studentCode: (pickStr('studentCode') || pickStr('studentId') || '').toUpperCase(),
     gender: pickStr('gender') as any,
     dateOfBirth: normalizeDateOfBirthValue(pickStr('dateOfBirth')),
     ethnicity: pickStr('ethnicity'),
@@ -135,6 +145,9 @@ export function mergeStudentProfileSnapshots(
       pickStr('institutionName') ||
       matchedInst?.name ||
       'Trường Đại học Bách khoa - Đại học Đà Nẵng',
+    facultyDepartmentId: pickStr('facultyDepartmentId'),
+    faculty: pickStr('faculty') || pickStr('facultyName'),
+    facultyName: pickStr('facultyName') || pickStr('faculty'),
     unionPosition: pickStr('unionPosition'),
     politicalStatus: pickStr('politicalStatus') as any,
     phoneNumber: pickStr('phoneNumber'),
@@ -215,6 +228,7 @@ function buildFallbackStudentProfile(
   );
   const baseFallback: StudentProfileDto = {
     fullName: fallbackStudent?.fullName || '',
+    studentCode: (fallbackStudent?.studentCode || fallbackStudent?.studentId || '').toUpperCase(),
     gender: '' as any,
     dateOfBirth: '',
     ethnicity: '',
@@ -227,6 +241,9 @@ function buildFallbackStudentProfile(
       matchedInst?.name ||
       fallbackStudent?.university ||
       'Trường Đại học Bách khoa - Đại học Đà Nẵng',
+    facultyDepartmentId: fallbackStudent?.facultyDepartmentId || '',
+    faculty: fallbackStudent?.faculty || '',
+    facultyName: fallbackStudent?.facultyName || fallbackStudent?.faculty || '',
     unionPosition: '',
     politicalStatus: '' as any,
     phoneNumber: '',
@@ -382,6 +399,10 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
     []
   );
 
+  const currentFaculties = useMemo(() => {
+    return getFacultiesByInstitution(profile.institutionId);
+  }, [profile.institutionId]);
+
   const handleInstitutionSelect = useCallback(
     (instId: string) => {
       const found = CANONICAL_INSTITUTION_OPTIONS.find((i) => i.id === instId);
@@ -390,6 +411,9 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
           ...prev,
           institutionId: found.id,
           institutionName: found.name,
+          facultyDepartmentId: '',
+          faculty: '',
+          facultyName: '',
         }));
       }
       setSaveSuccessMsg(null);
@@ -404,10 +428,17 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
       return;
     }
 
+    const normalizedStudentCode = profile.studentCode?.trim().toUpperCase();
+    if (!normalizedStudentCode) {
+      setErrorMsg('Vui lòng nhập Mã số sinh viên (MSSV).');
+      return;
+    }
+
     const normalizedDob = normalizeDateOfBirthValue(profile.dateOfBirth);
     const parsedAcademicYear = Number(profile.academicYearNumber || 0);
     const input: UpdateStudentProfileInput = {
       fullName: profile.fullName?.trim(),
+      studentCode: normalizedStudentCode,
       gender: profile.gender ? profile.gender : undefined,
       dateOfBirth: normalizedDob,
       ethnicity: profile.ethnicity?.trim(),
@@ -417,6 +448,9 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
       homeProvince: profile.homeProvince?.trim(),
       institutionId: profile.institutionId,
       institutionName: profile.institutionName,
+      facultyDepartmentId: profile.facultyDepartmentId,
+      faculty: profile.faculty,
+      facultyName: profile.facultyName,
       unionPosition: profile.unionPosition?.trim(),
       politicalStatus: profile.politicalStatus ? profile.politicalStatus : undefined,
       phoneNumber: profile.phoneNumber?.trim(),
@@ -437,7 +471,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
         : optimisticProfile;
 
       savePersistedStudentProfile(savedProfile, {
-        studentId: fallbackStudent?.studentId,
+        studentId: normalizedStudentCode,
         email: fallbackStudent?.email || savedProfile.email,
       });
       setProfile(savedProfile);
@@ -448,7 +482,11 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
         onProfileUpdated(savedProfile);
       }
     } catch (err: any) {
-      setErrorMsg(err.message || 'Không thể lưu hồ sơ cá nhân lúc này. Vui lòng thử lại.');
+      if (err?.code === 'STUDENT_CODE_CONFLICT' || err?.message?.includes('Mã số sinh viên')) {
+        setErrorMsg('Mã số sinh viên này đã được sử dụng cho một tài khoản khác.');
+      } else {
+        setErrorMsg(err.message || 'Không thể lưu hồ sơ cá nhân lúc này. Vui lòng thử lại.');
+      }
     } finally {
       setIsSaving(false);
     }
@@ -730,18 +768,33 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
               </div>
             </div>
 
-            {/* Lớp, khóa */}
-            <div>
-              <label className="block text-[13px] font-semibold text-[#172A3A] mb-1">
-                Lớp, khóa <span className="text-[#E02424]">*</span>
-              </label>
-              <input
-                type="text"
-                value={profile.className}
-                onChange={(e) => handleFieldChange('className', e.target.value)}
-                placeholder="Ví dụ: 22T_CLC1 - Khóa 2022"
-                className="w-full px-3.5 py-2 rounded-xl border border-[#DCE7EE] bg-white text-[13.5px] text-[#172A3A] focus:outline-hidden focus:border-[#18A6E0] focus:ring-2 focus:ring-[#18A6E0]/20 transition-all font-medium"
-              />
+            {/* Mã số sinh viên & Lớp, khóa */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block text-[13px] font-semibold text-[#172A3A] mb-1">
+                  Mã số sinh viên (MSSV) <span className="text-[#E02424]">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={profile.studentCode || ''}
+                  onChange={(e) => handleFieldChange('studentCode', e.target.value.toUpperCase())}
+                  placeholder="Ví dụ: 102220123"
+                  className="w-full px-3.5 py-2 rounded-xl border border-[#DCE7EE] bg-white text-[13.5px] text-[#172A3A] focus:outline-hidden focus:border-[#18A6E0] focus:ring-2 focus:ring-[#18A6E0]/20 transition-all font-medium uppercase tabular-nums"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-semibold text-[#172A3A] mb-1">
+                  Lớp, khóa <span className="text-[#E02424]">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={profile.className}
+                  onChange={(e) => handleFieldChange('className', e.target.value)}
+                  placeholder="Ví dụ: 22T_CLC1 - Khóa 2022"
+                  className="w-full px-3.5 py-2 rounded-xl border border-[#DCE7EE] bg-white text-[13.5px] text-[#172A3A] focus:outline-hidden focus:border-[#18A6E0] focus:ring-2 focus:ring-[#18A6E0]/20 transition-all font-medium"
+                />
+              </div>
             </div>
 
             {/* Tỉnh/Thành phố */}
@@ -791,6 +844,39 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
                   {routingPreview.unit?.officialName || 'Chưa định tuyến'}
                 </span>
               </div>
+            </div>
+
+            {/* Khoa / Ban đào tạo (Cập nhật 2026) */}
+            <div>
+              <label className="block text-[13px] font-semibold text-[#172A3A] mb-1">
+                Khoa / Ban đào tạo <span className="text-[#E02424]">*</span>
+              </label>
+              <select
+                value={profile.facultyDepartmentId || ''}
+                onChange={(e) => {
+                  const fac = currentFaculties.find((f) => f.id === e.target.value);
+                  setProfile((prev) => ({
+                    ...prev,
+                    facultyDepartmentId: fac?.id || '',
+                    faculty: fac?.name || '',
+                    facultyName: fac?.name || '',
+                  }));
+                  setSaveSuccessMsg(null);
+                  setErrorMsg(null);
+                }}
+                className="w-full px-3 py-2 rounded-xl border border-[#DCE7EE] bg-white text-[13.5px] text-[#172A3A] focus:outline-hidden focus:border-[#18A6E0] focus:ring-2 focus:ring-[#18A6E0]/20 transition-all font-medium cursor-pointer"
+              >
+                <option value="">
+                  {currentFaculties.length === 0
+                    ? '-- Không có khoa trực thuộc hoặc tự do --'
+                    : '-- Chọn Khoa đào tạo --'}
+                </option>
+                {currentFaculties.map((fac) => (
+                  <option key={fac.id} value={fac.id}>
+                    {fac.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>

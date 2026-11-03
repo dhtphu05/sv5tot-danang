@@ -47,6 +47,7 @@ import {
 } from '../../permissions';
 import { Season } from '../../adminTypes';
 import { AwardProgramContextBar } from './AwardProgramContextBar';
+import { FeedbackFloatingWidget } from '../../../components/feedback/FeedbackFloatingWidget';
 
 export interface StaffAppShellProps {
   currentUser: StaffUser;
@@ -605,6 +606,7 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
           <div className="flex-1 min-w-0">{children}</div>
         </div>
       </div>
+      <FeedbackFloatingWidget />
     </div>
   );
 };

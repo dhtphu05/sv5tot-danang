@@ -17,18 +17,24 @@ import { logger } from '../logging/logger';
 import type {
   IEmailService,
   PasswordResetEmailData,
+  PasswordChangedEmailData,
   SupplementRequestEmailData,
   SubmissionConfirmationEmailData,
+  FeedbackNotificationEmailData,
   SendEmailOptions,
   SendEmailResult,
 } from './email.types';
 import {
   buildPasswordResetHtmlTemplate,
   buildPasswordResetPlainTextTemplate,
+  buildPasswordChangedHtmlTemplate,
+  buildPasswordChangedPlainTextTemplate,
   buildSupplementRequestHtmlTemplate,
   buildSupplementRequestPlainTextTemplate,
   buildSubmissionConfirmationHtmlTemplate,
   buildSubmissionConfirmationPlainTextTemplate,
+  buildFeedbackNotificationHtmlTemplate,
+  buildFeedbackNotificationPlainTextTemplate,
   resolveEmailSubjectTag,
 } from './emailTemplates';
 
@@ -48,13 +54,13 @@ export class ResendEmailService implements IEmailService {
     }
   }
 
-  public canIssuePasswordResetFor(accountEmail: string): boolean {
+  public canIssuePasswordResetFor(_accountEmail: string): boolean {
     const env = getEnvironment();
     if (env.RESEND_MODE === 'safe' && this.resendClient) {
-      const allowedOverride = (
-        env.RESEND_SAFE_OVERRIDE_EMAIL || 'vanngocnhuy30032006@gmail.com'
-      ).trim().toLowerCase();
-      return accountEmail.trim().toLowerCase() === allowedOverride;
+      // In safe mode: We require a designated safe override recipient so that all reset emails
+      // are trapped and securely delivered to the tester/developer mailbox without leaking to third parties.
+      const allowedOverrideRaw = (env.RESEND_SAFE_OVERRIDE_EMAIL || '').trim().toLowerCase();
+      return allowedOverrideRaw.length > 0;
     }
     return true;
   }
@@ -81,20 +87,32 @@ export class ResendEmailService implements IEmailService {
     }
 
     // 2. SAFE MODE vs LIVE MODE Resolution
-    let effectiveRecipient = originalRecipient;
+    const rawToList = Array.isArray(options.to) ? options.to : [options.to];
+    const originalRecipients = rawToList.map((t) => (t || '').trim().toLowerCase()).filter(Boolean);
+    let effectiveRecipients = [...originalRecipients];
+    let effectiveRecipient = originalRecipients.join(', ');
     let effectiveSubject = options.subject;
     let effectiveHtml = options.html;
     let effectiveText = options.text;
     let isRerouted = false;
 
     if (env.RESEND_MODE === 'safe') {
-      const overrideEmail = (
-        env.RESEND_SAFE_OVERRIDE_EMAIL || 'vanngocnhuy30032006@gmail.com'
-      ).trim().toLowerCase();
+      const allowedOverrideRaw = (env.RESEND_SAFE_OVERRIDE_EMAIL || '').trim().toLowerCase();
+      const techWhitelisted = ['vanngocnhuy30032006@gmail.com', 'dhtphu05@gmail.com'];
+      const allowedList = Array.from(
+        new Set([
+          ...allowedOverrideRaw.split(',').map((e) => e.trim()).filter(Boolean),
+          ...techWhitelisted,
+        ])
+      );
+      const isRecipientAllowed = originalRecipients.length > 0 && originalRecipients.every((r) => {
+        const baseR = r.replace(/\+[^@]*@/, '@');
+        return allowedList.some((allowed) => r === allowed || baseR === allowed.replace(/\+[^@]*@/, '@'));
+      });
 
-      // In safe mode: all emails are securely redirected to the override address so tests NEVER email unintended users,
-      // while guaranteeing that developers/testers receive actual transactional emails in their inbox.
-      if (originalRecipient !== overrideEmail) {
+      if (!isRecipientAllowed && allowedList.length > 0) {
+        const overrideEmail = allowedList[0];
+        effectiveRecipients = [overrideEmail];
         effectiveRecipient = overrideEmail;
         effectiveSubject = `[SAFE MODE -> ${originalRecipient}] ${options.subject}`;
         effectiveHtml = `
@@ -120,14 +138,36 @@ export class ResendEmailService implements IEmailService {
         `[EmailService] Dispatching email via Resend to ${effectiveRecipient} (Mode: ${env.RESEND_MODE})`
       );
 
-      const emailPayload = {
+      const emailPayload: {
+        from: string;
+        to: string[];
+        subject: string;
+        html: string;
+        text?: string;
+        replyTo?: string;
+        attachments?: Array<{
+          filename: string;
+          content: Buffer | string;
+          contentType?: string;
+          contentId?: string;
+        }>;
+      } = {
         from: env.RESEND_FROM_EMAIL,
-        to: [effectiveRecipient],
+        to: effectiveRecipients,
         subject: effectiveSubject,
         html: effectiveHtml,
         text: effectiveText,
         replyTo: options.replyTo,
       };
+
+      if (options.attachments && options.attachments.length > 0) {
+        emailPayload.attachments = options.attachments.map((att) => ({
+          filename: att.filename,
+          content: att.content,
+          contentType: att.contentType,
+          contentId: att.contentId,
+        }));
+      }
 
       const sendOptions = options.idempotencyKey
         ? { idempotencyKey: options.idempotencyKey }
@@ -194,16 +234,22 @@ export class ResendEmailService implements IEmailService {
       resetUrl = parsedBaseUrl.toString();
     }
 
+    const expiresInMinutes = data.expiresInMinutes || 30;
+
     const html = buildPasswordResetHtmlTemplate({
       userName: data.userName,
+      userEmail: data.to,
       resetUrl,
-      expiresInMinutes: 15,
+      expiresInMinutes,
+      requestedAt: data.requestedAt || new Date(),
     });
 
     const text = buildPasswordResetPlainTextTemplate({
       userName: data.userName,
+      userEmail: data.to,
       resetUrl,
-      expiresInMinutes: 15,
+      expiresInMinutes,
+      requestedAt: data.requestedAt || new Date(),
     });
 
     const tokenDigest = crypto
@@ -217,6 +263,29 @@ export class ResendEmailService implements IEmailService {
       html,
       text,
       idempotencyKey: `password-reset/${tokenDigest}`,
+    });
+  }
+
+  public async sendPasswordChangedEmail(
+    data: PasswordChangedEmailData
+  ): Promise<SendEmailResult> {
+    const html = buildPasswordChangedHtmlTemplate({
+      userName: data.userName,
+      userEmail: data.userEmail || data.to,
+      changedAt: data.changedAt || new Date(),
+    });
+
+    const text = buildPasswordChangedPlainTextTemplate({
+      userName: data.userName,
+      userEmail: data.userEmail || data.to,
+      changedAt: data.changedAt || new Date(),
+    });
+
+    return this.send({
+      to: data.to,
+      subject: '[SV5T ĐHĐN] Mật khẩu tài khoản của bạn đã được thay đổi',
+      html,
+      text,
     });
   }
 
@@ -288,4 +357,53 @@ export class ResendEmailService implements IEmailService {
       idempotencyKey: `submission-confirmation/${tokenDigest}`,
     });
   }
+
+  public async sendFeedbackNotificationEmail(data: FeedbackNotificationEmailData): Promise<SendEmailResult> {
+    const recipients = data.to || ['vanngocnhuy30032006@gmail.com', 'dhtphu05@gmail.com'];
+    const categoryTag = {
+      BUG: 'BÁO LỖI KỸ THUẬT',
+      SUGGESTION: 'GÓP Ý TÍNH NĂNG',
+      OTHER: 'Ý KIẾN KHÁC',
+    }[data.category] || 'GÓP Ý';
+
+    const cleanContent = data.content.trim().replace(/\r?\n/g, ' ');
+    const preview = cleanContent.length > 50 ? cleanContent.slice(0, 50) + '...' : cleanContent;
+    const subject = `[SV5T ĐHĐN - ${categoryTag}] ${preview} (${data.senderName})`;
+
+    const html = buildFeedbackNotificationHtmlTemplate(data);
+    const text = buildFeedbackNotificationPlainTextTemplate(data);
+
+    const attachments = (data.images || [])
+      .map((imgBase64, idx) => {
+        if (!imgBase64 || typeof imgBase64 !== 'string') return null;
+        const match = imgBase64.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
+        if (match) {
+          const rawExt = match[1].toLowerCase();
+          const ext = rawExt === 'jpeg' ? 'jpg' : rawExt;
+          const buffer = Buffer.from(match[2], 'base64');
+          return {
+            filename: `anh-dinh-kem-${idx + 1}.${ext}`,
+            content: buffer,
+            contentType: `image/${rawExt}`,
+            contentId: `screenshot-${idx + 1}`,
+          };
+        }
+        return null;
+      })
+      .filter((att): att is NonNullable<typeof att> => att !== null);
+
+    return this.send({
+      to: recipients,
+      subject,
+      html,
+      text,
+      replyTo: data.senderEmail,
+      attachments,
+      metadata: {
+        type: 'user_feedback',
+        category: data.category,
+      },
+    });
+  }
+
 }

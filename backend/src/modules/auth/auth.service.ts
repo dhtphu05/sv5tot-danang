@@ -59,6 +59,7 @@ export class AuthService {
       institutionId: input.institutionId,
       phone: input.phone,
       facultyDepartmentId: input.facultyDepartmentId,
+      facultyName: input.facultyName,
       academicClassId: input.academicClassId,
     });
 

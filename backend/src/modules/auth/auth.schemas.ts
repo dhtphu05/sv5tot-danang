@@ -43,6 +43,7 @@ export const studentRegistrationSchema = z.object({
     .min(1, 'Vui lòng chọn trường đại học hoặc cao đẳng.'),
   phone: z.string().trim().max(20).optional(),
   facultyDepartmentId: z.string().trim().optional(),
+  facultyName: z.string().trim().optional(),
   academicClassId: z.string().trim().optional(),
 });
 

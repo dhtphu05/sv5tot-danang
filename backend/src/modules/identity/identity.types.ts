@@ -66,6 +66,7 @@ export interface CreateStudentUserDto {
   institutionId: string;
   phone?: string;
   facultyDepartmentId?: string;
+  facultyName?: string;
   academicClassId?: string;
 }
 
@@ -100,6 +101,7 @@ export type SafeUser = Omit<UserEntity, 'passwordHash' | 'ssoSubjectId'> & {
 export interface StudentProfileDto {
   // Group A — Thông tin cá nhân
   fullName: string;
+  studentCode?: string;
   gender: 'Nam' | 'Nữ' | 'Khác' | string;
   dateOfBirth: string; // DD/MM/YYYY
   ethnicity: string;
@@ -111,6 +113,9 @@ export interface StudentProfileDto {
   homeProvince: string;
   institutionId: string;
   institutionName?: string;
+  facultyDepartmentId?: string;
+  faculty?: string;
+  facultyName?: string;
 
   // Group C — Thông tin Đoàn – Hội
   unionPosition: string;
@@ -123,6 +128,7 @@ export interface StudentProfileDto {
 
 export interface UpdateStudentProfileInput {
   fullName?: string;
+  studentCode?: string;
   gender?: 'Nam' | 'Nữ' | 'Khác' | string;
   dateOfBirth?: string;
   ethnicity?: string;
@@ -132,6 +138,9 @@ export interface UpdateStudentProfileInput {
   homeProvince?: string;
   institutionId?: string;
   institutionName?: string;
+  facultyDepartmentId?: string;
+  faculty?: string;
+  facultyName?: string;
   unionPosition?: string;
   politicalStatus?: string;
   phoneNumber?: string;

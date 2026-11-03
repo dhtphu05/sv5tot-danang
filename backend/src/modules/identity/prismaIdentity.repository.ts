@@ -67,6 +67,17 @@ export class PrismaIdentityRepository implements IIdentityRepository {
         }
       }
 
+      const initialProfile = {
+        fullName: dto.fullName.trim(),
+        studentCode: dto.studentCode.trim().toUpperCase(),
+        institutionId: resolvedInstitutionId || '',
+        facultyDepartmentId: dto.facultyDepartmentId || '',
+        faculty: dto.facultyName || '',
+        facultyName: dto.facultyName || '',
+        email: dto.email.toLowerCase().trim(),
+        phoneNumber: dto.phone?.trim() || '',
+      };
+
       const user = await tx.user.create({
         data: {
           email: dto.email.toLowerCase().trim(),
@@ -77,6 +88,7 @@ export class PrismaIdentityRepository implements IIdentityRepository {
           phone: dto.phone?.trim() || null,
           facultyDepartmentId: dto.facultyDepartmentId || null,
           academicClassId: dto.academicClassId || null,
+          profile: initialProfile as any,
           status: 'ACTIVE',
         },
       });
@@ -211,6 +223,7 @@ export class PrismaIdentityRepository implements IIdentityRepository {
       }
       return {
         fullName: saved.fullName || user.fullName,
+        studentCode: user.studentCode || saved.studentCode || '',
         gender: saved.gender || '',
         dateOfBirth: normalizedDob,
         ethnicity: saved.ethnicity || '',
@@ -221,6 +234,9 @@ export class PrismaIdentityRepository implements IIdentityRepository {
         institutionId: saved.institutionId || saved.trainingInstitutionId || user.institutionId || '',
         institutionName:
           saved.institutionName || saved.trainingInstitutionName || user.institution?.officialName,
+        facultyDepartmentId: saved.facultyDepartmentId || user.facultyDepartmentId || '',
+        faculty: saved.faculty || saved.facultyName || '',
+        facultyName: saved.facultyName || saved.faculty || '',
         unionPosition: saved.unionPosition || saved.youthUnionRole || '',
         politicalStatus: (saved.politicalStatus as any) || '',
         phoneNumber: saved.phoneNumber || user.phone || '',
@@ -230,6 +246,7 @@ export class PrismaIdentityRepository implements IIdentityRepository {
 
     return {
       fullName: user.fullName,
+      studentCode: user.studentCode || '',
       gender: '',
       dateOfBirth: '',
       ethnicity: '',
@@ -239,6 +256,9 @@ export class PrismaIdentityRepository implements IIdentityRepository {
       homeProvince: '',
       institutionId: user.institutionId || '',
       institutionName: user.institution?.officialName,
+      facultyDepartmentId: user.facultyDepartmentId || '',
+      faculty: '',
+      facultyName: '',
       unionPosition: '',
       politicalStatus: '' as any,
       phoneNumber: user.phone || '',
@@ -254,6 +274,7 @@ export class PrismaIdentityRepository implements IIdentityRepository {
     const current = await this.getProfile(userId);
     const mergedProfile: StudentProfileDto = {
       fullName: input.fullName !== undefined ? input.fullName : current?.fullName || '',
+      studentCode: input.studentCode !== undefined ? input.studentCode : current?.studentCode || '',
       gender: input.gender !== undefined ? input.gender : current?.gender || '',
       dateOfBirth: input.dateOfBirth !== undefined ? input.dateOfBirth : current?.dateOfBirth || '',
       ethnicity: input.ethnicity !== undefined ? input.ethnicity : current?.ethnicity || '',
@@ -270,6 +291,16 @@ export class PrismaIdentityRepository implements IIdentityRepository {
         input.institutionId !== undefined ? input.institutionId : current?.institutionId || '',
       institutionName:
         input.institutionName !== undefined ? input.institutionName : current?.institutionName,
+      facultyDepartmentId:
+        input.facultyDepartmentId !== undefined
+          ? input.facultyDepartmentId
+          : current?.facultyDepartmentId || '',
+      faculty:
+        input.faculty !== undefined ? input.faculty : current?.faculty || input.facultyName || '',
+      facultyName:
+        input.facultyName !== undefined
+          ? input.facultyName
+          : current?.facultyName || input.faculty || '',
       unionPosition:
         input.unionPosition !== undefined ? input.unionPosition : current?.unionPosition || '',
       politicalStatus:
@@ -285,6 +316,8 @@ export class PrismaIdentityRepository implements IIdentityRepository {
       profile: mergedProfile as any,
     };
     if (input.fullName) updateData.fullName = input.fullName;
+    if (input.studentCode) updateData.studentCode = input.studentCode.trim().toUpperCase();
+    if (input.facultyDepartmentId !== undefined) updateData.facultyDepartmentId = input.facultyDepartmentId || null;
     if (input.phoneNumber !== undefined) updateData.phone = input.phoneNumber || null;
     if (input.institutionId) {
       const existingInst = await (prisma as any).institution

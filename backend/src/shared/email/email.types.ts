@@ -4,6 +4,13 @@
  * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
  */
 
+export interface EmailAttachment {
+  filename: string;
+  content: Buffer | string;
+  contentType?: string;
+  contentId?: string;
+}
+
 export interface SendEmailOptions {
   to: string | string[];
   subject: string;
@@ -12,6 +19,7 @@ export interface SendEmailOptions {
   replyTo?: string;
   idempotencyKey?: string;
   metadata?: Record<string, string>;
+  attachments?: EmailAttachment[];
 }
 
 export interface SendEmailResult {
@@ -29,6 +37,15 @@ export interface PasswordResetEmailData {
   userName: string;
   resetToken: string;
   resetUrl?: string;
+  expiresInMinutes?: number;
+  requestedAt?: Date | string;
+}
+
+export interface PasswordChangedEmailData {
+  to: string;
+  userName: string;
+  userEmail?: string;
+  changedAt?: Date | string;
 }
 
 export interface SupplementRequestEmailData {
@@ -63,10 +80,29 @@ export interface SubmissionConfirmationEmailData {
   actionUrl?: string;
 }
 
+
+export interface FeedbackNotificationEmailData {
+  to?: string | string[];
+  senderName: string;
+  senderEmail: string;
+  senderPhone?: string;
+  studentCode?: string;
+  institutionName?: string;
+  userRole?: string;
+  category: 'BUG' | 'SUGGESTION' | 'OTHER';
+  content: string;
+  pageUrl?: string;
+  deviceSummary?: string;
+  images?: string[];
+  submittedAt?: Date | string;
+}
+
 export interface IEmailService {
   send(options: SendEmailOptions): Promise<SendEmailResult>;
   sendPasswordResetEmail(data: PasswordResetEmailData): Promise<SendEmailResult>;
+  sendPasswordChangedEmail?(data: PasswordChangedEmailData): Promise<SendEmailResult>;
   sendSupplementRequestEmail(data: SupplementRequestEmailData): Promise<SendEmailResult>;
   sendSubmissionConfirmationEmail?(data: SubmissionConfirmationEmailData): Promise<SendEmailResult>;
   canIssuePasswordResetFor?(accountEmail: string): boolean;
+  sendFeedbackNotificationEmail?(data: FeedbackNotificationEmailData): Promise<SendEmailResult>;
 }

@@ -25,6 +25,7 @@ import { UdnEmblem, HsvEmblem } from '../brand/HsvLogo';
 import { Button } from '../buttons/Button';
 import { InstitutionCombobox } from './InstitutionCombobox';
 import { ParticipatingInstitution } from '../../demo/fixtures/institutionRegistry';
+import { CanonicalFaculty, getFacultiesByInstitution } from '../../demo/fixtures/facultyRegistry';
 import { StudentRegistrationPayload } from './publicTypes';
 import { resolveDomainServices } from '../../entities/services/modeResolver';
 import { setApiActorContext } from '../../shared/api/httpClient';
@@ -52,6 +53,9 @@ export const PublicSignupPage: React.FC<PublicSignupPageProps> = ({
   const [studentCode, setStudentCode] = useState<string>('');
   const [selectedInstitution, setSelectedInstitution] =
     useState<ParticipatingInstitution | null>(null);
+  const [availableFaculties, setAvailableFaculties] = useState<CanonicalFaculty[]>([]);
+  const [selectedFaculty, setSelectedFaculty] = useState<CanonicalFaculty | null>(null);
+  const [facultyError, setFacultyError] = useState<string | null>(null);
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
 
@@ -89,6 +93,7 @@ export const PublicSignupPage: React.FC<PublicSignupPageProps> = ({
     setStudentCodeError(null);
     setPasswordError(null);
     setConfirmPasswordError(null);
+    setFacultyError(null);
     setForceComboboxOpen(false);
     setComboboxInitQuery('');
     setForceInstLoadError(false);
@@ -131,6 +136,26 @@ export const PublicSignupPage: React.FC<PublicSignupPageProps> = ({
       setForceInstLoadError(true);
     }
   }, [presetMode]);
+
+  // Load and update faculties when selectedInstitution changes
+  useEffect(() => {
+    if (selectedInstitution?.id) {
+      const staticFacs = getFacultiesByInstitution(selectedInstitution.id);
+      setAvailableFaculties(staticFacs);
+      fetch(`/api/v2/institutions/${encodeURIComponent(selectedInstitution.id)}/faculties`)
+        .then((r) => r.json())
+        .then((res) => {
+          if (res?.success && Array.isArray(res.data?.faculties) && res.data.faculties.length > 0) {
+            setAvailableFaculties(res.data.faculties);
+          }
+        })
+        .catch(() => {});
+    } else {
+      setAvailableFaculties([]);
+    }
+    setSelectedFaculty(null);
+    setFacultyError(null);
+  }, [selectedInstitution?.id]);
 
   const handleConfirmBlur = () => {
     if (confirmPassword.length > 0) {
@@ -179,6 +204,13 @@ export const PublicSignupPage: React.FC<PublicSignupPageProps> = ({
       setInstitutionError(null);
     }
 
+    if (availableFaculties.length > 0 && !selectedFaculty) {
+      setFacultyError('Vui lòng chọn Khoa hoặc đơn vị đào tạo.');
+      hasError = true;
+    } else {
+      setFacultyError(null);
+    }
+
     const trimmedCode = studentCode.trim();
     if (!trimmedCode) {
       setStudentCodeError('Vui lòng nhập mã số sinh viên.');
@@ -214,6 +246,8 @@ export const PublicSignupPage: React.FC<PublicSignupPageProps> = ({
           studentCode: trimmedCode,
           institutionId: selectedInstitution!.id,
           institutionName: selectedInstitution!.officialName,
+          facultyDepartmentId: selectedFaculty?.id,
+          facultyName: selectedFaculty?.name,
           password,
         });
         if (session?.user) {
@@ -256,6 +290,8 @@ export const PublicSignupPage: React.FC<PublicSignupPageProps> = ({
         studentId: trimmedCode,
         institutionId: selectedInstitution!.id,
         institutionName: selectedInstitution!.officialName,
+        facultyDepartmentId: selectedFaculty?.id,
+        facultyName: selectedFaculty?.name,
       });
     }, 650);
   };
@@ -439,6 +475,66 @@ export const PublicSignupPage: React.FC<PublicSignupPageProps> = ({
                 forceLoadError={forceInstLoadError}
                 onRetryLoadError={() => setForceInstLoadError(false)}
               />
+
+              {/* 3b. Khoa / Đơn vị đào tạo (Cập nhật 2026) */}
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="signup-faculty"
+                    className="text-[13px] font-bold text-[#172A3A]"
+                  >
+                    Khoa / Ban đào tạo <span className="text-[#DC2626]">*</span>
+                  </label>
+                  {selectedInstitution && availableFaculties.length > 0 && (
+                    <span className="text-[11px] font-medium text-[#607483]">
+                      {availableFaculties.length} khoa
+                    </span>
+                  )}
+                </div>
+                <select
+                  id="signup-faculty"
+                  name="faculty"
+                  disabled={isSubmitting || !selectedInstitution}
+                  value={selectedFaculty?.id || ''}
+                  onChange={(e) => {
+                    const fac = availableFaculties.find((f) => f.id === e.target.value) || null;
+                    setSelectedFaculty(fac);
+                    if (facultyError) setFacultyError(null);
+                  }}
+                  aria-invalid={!!facultyError}
+                  aria-describedby={facultyError ? 'signup-faculty-error' : undefined}
+                  className={`w-full h-[46px] px-3.5 text-[13.5px] text-[#172A3A] bg-white border rounded-[10px] outline-none transition-all cursor-pointer ${
+                    !selectedInstitution ? 'bg-[#F8FBFD] text-[#8EA2B0] cursor-not-allowed' : ''
+                  } ${
+                    facultyError
+                      ? 'border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/15'
+                      : 'border-[#DCE7EE] hover:border-[#B8CEDC] focus:border-[#18A6E0] focus:ring-2 focus:ring-[#18A6E0]/20'
+                  }`}
+                >
+                  <option value="">
+                    {!selectedInstitution
+                      ? '-- Vui lòng chọn trường trước --'
+                      : availableFaculties.length === 0
+                      ? '-- Không có khoa trực thuộc --'
+                      : '-- Chọn Khoa đào tạo --'}
+                  </option>
+                  {availableFaculties.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.name}
+                    </option>
+                  ))}
+                </select>
+                {facultyError && (
+                  <p
+                    id="signup-faculty-error"
+                    role="alert"
+                    className="text-[12.5px] font-medium text-[#DC2626] flex items-center gap-1.5 mt-0.5"
+                  >
+                    <AlertCircle size={13.5} className="shrink-0" />
+                    <span>{facultyError}</span>
+                  </p>
+                )}
+              </div>
 
               {/* 4. Mã số sinh viên (Sections 31 & 45) */}
               <div className="flex flex-col gap-1.5">

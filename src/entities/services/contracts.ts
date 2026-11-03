@@ -138,6 +138,8 @@ export interface AuthServiceContract {
     studentCode: string;
     institutionId: string;
     institutionName?: string;
+    facultyDepartmentId?: string;
+    facultyName?: string;
     password?: string;
   }): Promise<AuthSessionPayload>;
   getCurrentSession(): Promise<AuthSessionPayload | null>;

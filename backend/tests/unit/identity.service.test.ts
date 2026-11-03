@@ -174,4 +174,55 @@ describe('Backend V2: Identity Domain Service Unit Tests', () => {
       (err: any) => err.status === 403 && err.code === 'ACCOUNT_PENDING_VERIFICATION'
     );
   });
+
+  it('updates studentCode successfully when valid and not in conflict', async () => {
+    const student = await identityService.registerStudent({
+      email: 'student.editcode@dut.udn.vn',
+      passwordHash: 'hash-pw',
+      fullName: 'Trần Thị Thu Trang',
+      studentCode: '102220999',
+      institutionId: 'inst-dut',
+    });
+
+    const res = await identityService.updateProfile(student.id, {
+      studentCode: '102220888',
+    });
+
+    assert.equal(res.profile.studentCode, '102220888');
+    const updatedUser = await identityService.getById(student.id);
+    assert.equal(updatedUser.studentCode, '102220888');
+  });
+
+  it('rejects updateProfile when studentCode is already taken by another user', async () => {
+    const student1 = await identityService.registerStudent({
+      email: 'student.one@dut.udn.vn',
+      passwordHash: 'hash-pw',
+      fullName: 'Học viên Một',
+      studentCode: 'CODE-EXISTING-1',
+      institutionId: 'inst-dut',
+    });
+
+    const student2 = await identityService.registerStudent({
+      email: 'student.two@dut.udn.vn',
+      passwordHash: 'hash-pw',
+      fullName: 'Học viên Hai',
+      studentCode: 'CODE-EXISTING-2',
+      institutionId: 'inst-dut',
+    });
+
+    await assert.rejects(
+      async () => {
+        await identityService.updateProfile(student2.id, {
+          studentCode: 'CODE-EXISTING-1',
+        });
+      },
+      (err: any) => {
+        assert.ok(err instanceof ApiError);
+        assert.equal(err.status, 409);
+        assert.equal(err.code, 'STUDENT_CODE_CONFLICT');
+        assert.ok(err.message.includes('Mã số sinh viên này đã được sử dụng'));
+        return true;
+      }
+    );
+  });
 });
