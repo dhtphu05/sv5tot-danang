@@ -542,10 +542,15 @@ export const ExpandedRequirement: React.FC<ExpandedRequirementProps> = ({
               Yêu cầu xét chọn
             </span>
           </div>
-          <p className="text-[13px] text-[#172A3A] leading-relaxed">
-            {requirement.ruleHelper ||
-              'Kiểm tra kỹ các tiêu chuẩn theo hướng dẫn của Ban Thư ký.'}
-          </p>
+          {requirement.ruleHelper && requirement.ruleHelper.trim().toLowerCase() !== requirement.title.trim().toLowerCase() ? (
+            <p className="text-[13px] text-[#172A3A] leading-relaxed">
+              {requirement.ruleHelper}
+            </p>
+          ) : (
+            <p className="text-[12.5px] text-[#607483] leading-relaxed italic">
+              Kiểm tra chi tiết điều kiện và hình thức xác nhận theo quy chế.
+            </p>
+          )}
           <div>
             <button
               type="button"
