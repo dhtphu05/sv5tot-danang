@@ -936,29 +936,129 @@ export function buildFeedbackNotificationHtmlTemplate(data: {
     badgeBorder: '#CBD5E1',
   };
 
+  const roleLabelMap: Record<string, string> = {
+    GUEST: 'Khách (Chưa đăng nhập)',
+    STUDENT: 'Sinh viên',
+    STAFF: 'Cán bộ / Chuyên viên',
+    ADMIN: 'Quản trị viên',
+    MANAGER: 'Cán bộ quản lý',
+  };
+  const roleLabel = data.userRole ? (roleLabelMap[data.userRole] || data.userRole) : '';
+
+  const submittedTime = data.submittedAt
+    ? formatVietnameseDateTime(data.submittedAt)
+    : formatVietnameseDateTime(new Date());
+
+  const cleanPreview = data.content.trim().replace(/\r?\n/g, ' ').slice(0, 80);
+
+  // Build context rows cleanly
+  const rows: { label: string; valueHtml: string }[] = [];
+  rows.push({
+    label: 'Người phản hồi:',
+    valueHtml: `<strong>${escapeHtml(data.senderName)}</strong>${
+      roleLabel
+        ? ` <span style="display: inline-block; font-size: 11px; background-color: #EAF2F7; color: #07457E; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-left: 6px; vertical-align: middle;">${escapeHtml(
+            roleLabel
+          )}</span>`
+        : ''
+    }`,
+  });
+  rows.push({
+    label: 'Email liên hệ:',
+    valueHtml: `<a href="mailto:${escapeHtml(
+      data.senderEmail
+    )}" style="color: #07457E; font-weight: 600; text-decoration: underline;">${escapeHtml(
+      data.senderEmail
+    )}</a>`,
+  });
+
+  if (data.senderPhone) {
+    rows.push({
+      label: 'Số điện thoại:',
+      valueHtml: `<span style="color: #172A3A; font-weight: 500;">${escapeHtml(data.senderPhone)}</span>`,
+    });
+  }
+
+  if (data.studentCode || data.institutionName) {
+    const instParts: string[] = [];
+    if (data.studentCode) {
+      instParts.push(`<strong>MSSV:</strong> ${escapeHtml(data.studentCode)}`);
+    }
+    if (data.institutionName) {
+      instParts.push(escapeHtml(data.institutionName));
+    }
+    rows.push({
+      label: 'Đơn vị / Cơ sở:',
+      valueHtml: instParts.join(' &bull; '),
+    });
+  }
+
+  if (data.pageUrl) {
+    rows.push({
+      label: 'Trang ghi nhận:',
+      valueHtml: `<a href="${escapeHtml(
+        data.pageUrl
+      )}" target="_blank" rel="noopener noreferrer" style="color: #0D78AE; text-decoration: underline; font-size: 12.5px; word-break: break-all;">${escapeHtml(
+        data.pageUrl
+      )}</a>`,
+    });
+  }
+
+  if (data.deviceSummary) {
+    rows.push({
+      label: 'Môi trường thiết bị:',
+      valueHtml: `<span style="color: #64748B; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11.5px;">${escapeHtml(
+        data.deviceSummary
+      )}</span>`,
+    });
+  }
+
+  const tableRowsHtml = rows
+    .map((row, index) => {
+      const isLast = index === rows.length - 1;
+      const borderStyle = isLast ? '' : 'border-bottom: 1px solid #E2E8F0;';
+      return `
+        <tr>
+          <td style="padding: 10px 14px; font-weight: 600; color: #64748B; width: 145px; vertical-align: top; ${borderStyle}">
+            ${row.label}
+          </td>
+          <td style="padding: 10px 14px; color: #172A3A; vertical-align: top; ${borderStyle}">
+            ${row.valueHtml}
+          </td>
+        </tr>
+      `;
+    })
+    .join('');
+
   const imagesHtml =
     data.images && data.images.length > 0
       ? `
       <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #E2E8F0;">
-        <div style="margin-bottom: 12px;">
-          <h3 style="margin: 0 0 4px; font-size: 14px; font-weight: 700; color: #172A3A;">
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 13px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 4px;">
             Ảnh chụp màn hình đính kèm (${data.images.length} tệp):
-          </h3>
-          <p style="margin: 0; font-size: 12.5px; color: #64748B;">
-            Các ảnh đã được nhúng bên dưới và đính kèm trực tiếp theo thư. Bạn có thể bấm vào ảnh hoặc tải về từ mục tệp đính kèm của email.
+          </div>
+          <p style="margin: 0; font-size: 12.5px; color: #64748B; line-height: 1.5;">
+            Hình ảnh đã được đính kèm trực tiếp theo thư và hiển thị bên dưới. Bạn có thể bấm vào ảnh để xem hoặc tải về từ mục tệp đính kèm.
           </p>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div>
           ${data.images
             .map(
               (_, idx) => `
-            <div style="border: 1px solid #DCE7EE; border-radius: 8px; overflow: hidden; background: #FFFFFF; box-shadow: 0 2px 4px rgba(15,35,53,0.04);">
-              <div style="background: #F8FBFD; padding: 7px 14px; font-size: 11.5px; font-weight: 600; color: #07457E; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between;">
-                <span>Ảnh ${idx + 1}</span>
-                <span style="color: #64748B; font-weight: 400; font-family: monospace;">screenshot-${idx + 1}</span>
-              </div>
-              <div style="padding: 10px; background: #F1F5F9; text-align: center;">
-                <img src="cid:screenshot-${idx + 1}" alt="Ảnh đính kèm ${idx + 1}" style="max-width: 100%; max-height: 520px; object-fit: contain; border-radius: 6px; display: inline-block; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />
+            <div style="border: 1px solid #DCE7EE; border-radius: 8px; overflow: hidden; background-color: #FFFFFF; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(15,35,53,0.04);">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F8FBFD; border-bottom: 1px solid #E2E8F0;">
+                <tr>
+                  <td align="left" style="padding: 8px 14px; font-size: 12px; font-weight: 700; color: #07457E;">
+                    Ảnh ${idx + 1}
+                  </td>
+                  <td align="right" style="padding: 8px 14px; font-size: 11.5px; color: #64748B; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;">
+                    screenshot-${idx + 1}
+                  </td>
+                </tr>
+              </table>
+              <div style="padding: 12px; background-color: #F1F5F9; text-align: center;">
+                <img src="cid:screenshot-${idx + 1}" alt="Ảnh đính kèm ${idx + 1}" style="max-width: 100%; height: auto; max-height: 520px; object-fit: contain; border-radius: 4px; display: inline-block; box-shadow: 0 1px 3px rgba(0,0,0,0.08);" />
               </div>
             </div>
           `
@@ -969,128 +1069,115 @@ export function buildFeedbackNotificationHtmlTemplate(data: {
     `
       : '';
 
-  const submittedTime = data.submittedAt
-    ? formatVietnameseDateTime(data.submittedAt)
-    : formatVietnameseDateTime(new Date());
+  return `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Thông báo Góp ý & Báo lỗi — SV5T ĐHĐN</title>
+  <style>
+    body { margin: 0; padding: 0; background-color: #F4F7F9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #172A3A; -webkit-font-smoothing: antialiased; }
+    table { border-collapse: collapse; }
+    img { border: 0; outline: none; text-decoration: none; }
+    @media only screen and (max-width: 600px) {
+      .email-wrapper { padding: 12px 8px !important; }
+      .email-card { border-radius: 6px !important; }
+      .email-content { padding: 18px 16px !important; }
+      .header-box { padding: 18px 16px !important; }
+      .action-table td { display: block !important; width: 100% !important; text-align: left !important; }
+      .action-table td.action-note { margin-top: 12px !important; text-align: left !important; }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 24px 16px; background-color: #F4F7F9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #172A3A; -webkit-font-smoothing: antialiased;">
+  <!-- Hidden Preheader -->
+  <div style="display:none;font-size:1px;color:#F4F7F9;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;mso-hide:all;">
+    [${escapeHtml(categoryConfig.label)}] Phản hồi từ ${escapeHtml(data.senderName)}: ${escapeHtml(cleanPreview)}
+  </div>
 
-  return `
-    <!DOCTYPE html>
-    <html lang="vi">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Thông báo Góp ý & Báo lỗi — SV5T ĐHĐN</title>
-    </head>
-    <body style="margin: 0; padding: 24px 16px; background-color: #F4F7F9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #172A3A; -webkit-font-smoothing: antialiased;">
-      <div style="max-width: 640px; margin: 0 auto; background: #FFFFFF; border-radius: 12px; border: 1px solid #DCE7EE; box-shadow: 0 4px 16px rgba(15, 35, 53, 0.06); overflow: hidden;">
-        
-        <!-- Header: Official UDN Navy -->
-        <div style="background-color: #07457E; padding: 22px 28px; border-bottom: 3px solid #0D78AE;">
-          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: rgba(255, 255, 255, 0.85); margin-bottom: 4px;">
-            Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
-          </div>
-          <div style="font-size: 17px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.01em;">
-            Hệ thống Xét duyệt Sinh viên 5 tốt · Phản hồi & Báo lỗi Kỹ thuật
-          </div>
+  <div class="email-wrapper" style="width: 100%; box-sizing: border-box;">
+    <div class="email-card" style="max-width: 640px; margin: 0 auto; background-color: #FFFFFF; border-radius: 12px; border: 1px solid #DCE7EE; box-shadow: 0 4px 16px rgba(15, 35, 53, 0.06); overflow: hidden;">
+      
+      <!-- Header: Official UDN Navy -->
+      <div class="header-box" style="background-color: #07457E; padding: 22px 28px; border-bottom: 3px solid #0D78AE;">
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: rgba(255, 255, 255, 0.85); margin-bottom: 4px;">
+          Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
         </div>
-
-        <div style="padding: 26px 28px;">
-          <!-- Category Badge & Timestamp Strip -->
-          <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-            <span style="display: inline-block; background: ${categoryConfig.badgeBg}; color: ${categoryConfig.badgeColor}; border: 1px solid ${categoryConfig.badgeBorder}; padding: 4px 10px; border-radius: 5px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em;">
-              [${categoryConfig.label}]
-            </span>
-            <span style="font-size: 12px; color: #64748B;">
-              Thời gian gửi: ${submittedTime}
-            </span>
-          </div>
-
-          <!-- Metadata Context Table -->
-          <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 22px; background: #F8FBFD; border: 1px solid #DCE7EE; border-radius: 8px; overflow: hidden;">
-            <tr>
-              <td style="padding: 10px 14px; font-weight: 600; color: #607483; width: 140px; border-bottom: 1px solid #E3EBF1;">Người phản hồi:</td>
-              <td style="padding: 10px 14px; font-weight: 700; color: #172A3A; border-bottom: 1px solid #E3EBF1;">
-                ${escapeHtml(data.senderName)}
-                ${data.userRole ? `<span style="font-size: 11px; background: #EAF2F7; color: #07457E; font-weight: 600; padding: 2px 7px; border-radius: 4px; margin-left: 6px;">${escapeHtml(data.userRole)}</span>` : ''}
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 10px 14px; font-weight: 600; color: #607483; border-bottom: 1px solid #E3EBF1;">Email liên hệ:</td>
-              <td style="padding: 10px 14px; color: #07457E; border-bottom: 1px solid #E3EBF1;">
-                <a href="mailto:${escapeHtml(data.senderEmail)}" style="color: #07457E; font-weight: 600; text-decoration: underline;">
-                  ${escapeHtml(data.senderEmail)}
-                </a>
-              </td>
-            </tr>
-            ${data.senderPhone ? `
-            <tr>
-              <td style="padding: 10px 14px; font-weight: 600; color: #607483; border-bottom: 1px solid #E3EBF1;">Số điện thoại:</td>
-              <td style="padding: 10px 14px; color: #172A3A; border-bottom: 1px solid #E3EBF1;">
-                ${escapeHtml(data.senderPhone)}
-              </td>
-            </tr>
-            ` : ''}
-            ${data.studentCode || data.institutionName ? `
-            <tr>
-              <td style="padding: 10px 14px; font-weight: 600; color: #607483; border-bottom: 1px solid #E3EBF1;">Đơn vị / Cơ sở:</td>
-              <td style="padding: 10px 14px; color: #172A3A; border-bottom: 1px solid #E3EBF1;">
-                ${data.studentCode ? `<strong>MSSV:</strong> ${escapeHtml(data.studentCode)} · ` : ''}
-                ${escapeHtml(data.institutionName || '')}
-              </td>
-            </tr>
-            ` : ''}
-            ${data.pageUrl ? `
-            <tr>
-              <td style="padding: 10px 14px; font-weight: 600; color: #607483; border-bottom: 1px solid #E3EBF1;">Trang ghi nhận:</td>
-              <td style="padding: 10px 14px; word-break: break-all; border-bottom: 1px solid #E3EBF1;">
-                <a href="${escapeHtml(data.pageUrl)}" target="_blank" style="color: #0B64A0; text-decoration: underline; font-size: 12.5px;">
-                  ${escapeHtml(data.pageUrl)}
-                </a>
-              </td>
-            </tr>
-            ` : ''}
-            ${data.deviceSummary ? `
-            <tr>
-              <td style="padding: 10px 14px; font-weight: 600; color: #607483;">Thiết bị & Môi trường:</td>
-              <td style="padding: 10px 14px; color: #64748B; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11.5px;">
-                ${escapeHtml(data.deviceSummary)}
-              </td>
-            </tr>
-            ` : ''}
-          </table>
-
-          <!-- Content Body -->
-          <div style="margin-bottom: 20px;">
-            <div style="font-size: 13.5px; font-weight: 700; color: #172A3A; margin-bottom: 8px;">
-              Nội dung chi tiết:
-            </div>
-            <div style="background: #FFFFFF; border: 1px solid #DCE7EE; border-left: 4px solid #07457E; border-radius: 6px; padding: 16px 18px; font-size: 14px; line-height: 1.65; color: #172A3A; white-space: pre-wrap; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${escapeHtml(data.content)}</div>
-          </div>
-
-          <!-- Attached Screenshots -->
-          ${imagesHtml}
-
-          <!-- Direct Reply Action Bar -->
-          <div style="margin-top: 26px; padding-top: 20px; border-top: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-            <a href="mailto:${escapeHtml(data.senderEmail)}?subject=Re: [SV5T ĐHĐN] Phản hồi góp ý / báo lỗi kỹ thuật" style="display: inline-block; background-color: #07457E; color: #FFFFFF !important; font-size: 13px; font-weight: 700; padding: 10px 18px; border-radius: 6px; text-decoration: none; box-sizing: border-box;">
-              Soạn thư trả lời ${escapeHtml(data.senderName)} →
-            </a>
-            <span style="font-size: 12px; color: #94A3B8;">
-              Đội ngũ Kỹ thuật Hệ thống 5TOT ĐHĐN
-            </span>
-          </div>
-
-        </div>
-
-        <!-- Footer -->
-        <div style="background-color: #F8FBFD; padding: 18px 28px; text-align: center; border-top: 1px solid #E3EBF1; font-size: 11.5px; color: #728391; line-height: 1.5;">
-          Email này được gửi tự động tới Ban Kỹ thuật (vanngocnhuy30032006@gmail.com, dhtphu05@gmail.com).<br>
-          © 2026 Hội Sinh viên Việt Nam Đại học Đà Nẵng · Hệ thống Xét duyệt Sinh viên 5 tốt
+        <div style="font-size: 17px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.01em;">
+          Hệ thống Xét duyệt Sinh viên 5 tốt · Phản hồi & Báo lỗi Kỹ thuật
         </div>
       </div>
-    </body>
-    </html>
-  `;
+
+      <div class="email-content" style="padding: 26px 28px;">
+        
+        <!-- Category Badge & Timestamp Strip (Bulletproof Table) -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 20px;">
+          <tr>
+            <td align="left" style="vertical-align: middle;">
+              <span style="display: inline-block; background-color: ${categoryConfig.badgeBg}; color: ${categoryConfig.badgeColor}; border: 1px solid ${categoryConfig.badgeBorder}; padding: 4px 10px; border-radius: 4px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em;">
+                ${categoryConfig.label}
+              </span>
+            </td>
+            <td align="right" style="vertical-align: middle; font-size: 12px; color: #64748B;">
+              Thời gian gửi: <span style="color: #334155; font-weight: 600;">${submittedTime}</span>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Metadata Context Table -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: separate; border-spacing: 0; font-size: 13px; margin-bottom: 22px; background-color: #F8FBFD; border: 1px solid #DCE7EE; border-radius: 8px; overflow: hidden;">
+          ${tableRowsHtml}
+        </table>
+
+        <!-- Content Body -->
+        <div style="margin-bottom: 20px;">
+          <div style="font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.03em;">
+            Nội dung chi tiết:
+          </div>
+          <div style="background-color: #FFFFFF; border: 1px solid #DCE7EE; border-left: 4px solid #07457E; border-radius: 6px; padding: 16px 18px; font-size: 14px; line-height: 1.65; color: #172A3A; white-space: pre-wrap; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${escapeHtml(data.content)}</div>
+        </div>
+
+        <!-- Attached Screenshots -->
+        ${imagesHtml}
+
+        <!-- Direct Reply Action Bar (Bulletproof Table) -->
+        <div style="margin-top: 26px; padding-top: 20px; border-top: 1px solid #E2E8F0;">
+          <table role="presentation" class="action-table" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td align="left" style="vertical-align: middle;">
+                <a href="mailto:${escapeHtml(data.senderEmail)}?subject=Re: [SV5T ĐHĐN] Phản hồi góp ý / báo lỗi kỹ thuật" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #07457E; color: #FFFFFF !important; font-size: 13px; font-weight: 700; padding: 11px 20px; border-radius: 6px; text-decoration: none; box-sizing: border-box;">
+                  Soạn thư trả lời ${escapeHtml(data.senderName)} &rarr;
+                </a>
+              </td>
+              <td class="action-note" align="right" style="vertical-align: middle; font-size: 12px; color: #64748B; line-height: 1.4;">
+                <span style="display: block; font-weight: 600; color: #334155;">Đội ngũ Kỹ thuật Hệ thống 5TOT ĐHĐN</span>
+                <span style="font-size: 11px; color: #94A3B8;">Nhấn nút để mở ứng dụng email phản hồi</span>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div style="background-color: #F8FBFD; padding: 20px 28px; text-align: center; border-top: 1px solid #E3EBF1; font-size: 12px; color: #64748B; line-height: 1.6;">
+        <p style="margin: 0 0 6px 0;">
+          Email thông báo tự động được chuyển tiếp tới Ban Kỹ thuật:
+          <br>
+          <a href="mailto:vanngocnhuy30032006@gmail.com" style="color: #07457E; font-weight: 600; text-decoration: none;">vanngocnhuy30032006@gmail.com</a>
+          <span style="color: #CBD5E1; margin: 0 6px;">&bull;</span>
+          <a href="mailto:dhtphu05@gmail.com" style="color: #07457E; font-weight: 600; text-decoration: none;">dhtphu05@gmail.com</a>
+        </p>
+        <p style="margin: 0; font-size: 11px; color: #94A3B8;">
+          &copy; 2026 Hội Sinh viên Việt Nam Đại học Đà Nẵng &middot; Hệ thống Xét duyệt Sinh viên 5 tốt
+        </p>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>`;
 }
 
 export function buildFeedbackNotificationPlainTextTemplate(data: {
@@ -1107,21 +1194,46 @@ export function buildFeedbackNotificationPlainTextTemplate(data: {
   images?: string[];
   submittedAt?: Date | string;
 }): string {
+  const categoryLabel = {
+    BUG: 'BÁO LỖI KỸ THUẬT',
+    SUGGESTION: 'GÓP Ý TÍNH NĂNG & GIAO DIỆN',
+    OTHER: 'Ý KIẾN ĐÓNG GÓP KHÁC',
+  }[data.category] || 'GÓP Ý';
+
+  const roleLabelMap: Record<string, string> = {
+    GUEST: 'Khách (Chưa đăng nhập)',
+    STUDENT: 'Sinh viên',
+    STAFF: 'Cán bộ / Chuyên viên',
+    ADMIN: 'Quản trị viên',
+    MANAGER: 'Cán bộ quản lý',
+  };
+  const roleLabel = data.userRole ? (roleLabelMap[data.userRole] || data.userRole) : 'Khách';
+
+  const submittedTime = data.submittedAt
+    ? formatVietnameseDateTime(data.submittedAt)
+    : formatVietnameseDateTime(new Date());
+
   return [
-    '=== [SV5T ĐHĐN] BÁO LỖI & GÓP Ý KỸ THUẬT MỚI ===',
-    `Phân loại: ${data.category}`,
-    `Người gửi: ${data.senderName} (${data.userRole || 'Khách'})`,
-    `Email: ${data.senderEmail}`,
-    data.senderPhone ? `SĐT: ${data.senderPhone}` : '',
+    '=== [SV5T ĐHĐN] THÔNG BÁO GÓP Ý & BÁO LỖI KỸ THUẬT ===',
+    `Thời gian gửi: ${submittedTime}`,
+    `Phân loại: ${categoryLabel}`,
+    `Người gửi: ${data.senderName} (${roleLabel})`,
+    `Email liên hệ: ${data.senderEmail}`,
+    data.senderPhone ? `Số điện thoại: ${data.senderPhone}` : '',
     data.studentCode ? `MSSV: ${data.studentCode}` : '',
-    data.institutionName ? `Trường: ${data.institutionName}` : '',
-    data.pageUrl ? `URL: ${data.pageUrl}` : '',
-    data.deviceSummary ? `Thiết bị: ${data.deviceSummary}` : '',
+    data.institutionName ? `Đơn vị / Cơ sở: ${data.institutionName}` : '',
+    data.pageUrl ? `Trang ghi nhận: ${data.pageUrl}` : '',
+    data.deviceSummary ? `Thiết bị & Môi trường: ${data.deviceSummary}` : '',
     '',
-    '--- NỘI DUNG ---',
+    '--- NỘI DUNG PHẢN ÁNH ---',
     data.content,
     '',
-    data.images && data.images.length > 0 ? `[Đính kèm ${data.images.length} ảnh]` : '',
+    data.images && data.images.length > 0 ? `[Đính kèm ${data.images.length} tệp ảnh chụp màn hình]` : '',
+    '',
+    '---',
+    'Email thông báo tự động được chuyển tiếp tới Ban Kỹ thuật:',
+    'vanngocnhuy30032006@gmail.com · dhtphu05@gmail.com',
+    '© 2026 Hội Sinh viên Việt Nam Đại học Đà Nẵng · Hệ thống Xét duyệt Sinh viên 5 tốt',
   ]
     .filter(Boolean)
     .join('\n');

@@ -7,6 +7,8 @@ import {
   buildSupplementRequestPlainTextTemplate,
   buildSubmissionConfirmationHtmlTemplate,
   buildSubmissionConfirmationPlainTextTemplate,
+  buildFeedbackNotificationHtmlTemplate,
+  buildFeedbackNotificationPlainTextTemplate,
   resolveCriterionName,
 } from '../../src/shared/email/emailTemplates';
 import { ResendEmailService } from '../../src/shared/email/resendEmail.service';
@@ -490,5 +492,54 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
     });
 
     assert.equal(capturedConfirm.subject, '[Tập thể 5TOT ĐHĐN] Xác nhận nộp hồ sơ – TT-2026-001');
+  });
+
+  it('builds bulletproof feedback email HTML without flexbox and cleanly separates metadata & tech team emails', () => {
+    const html = buildFeedbackNotificationHtmlTemplate({
+      senderName: 'Văn Ngọc Như Ý',
+      senderEmail: 'vanngocnhuy30032006@gmail.com',
+      userRole: 'GUEST',
+      category: 'BUG',
+      content: 'Kiểm tra gửi email đồng thời cho cả 2 thành viên Ban Kỹ thuật (Như Ý và Phú)',
+      submittedAt: new Date('2026-11-03T03:10:00Z'),
+    });
+
+    // 1. Institutional header
+    assert.ok(html.includes('Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng'));
+    assert.ok(html.includes('Phản hồi & Báo lỗi Kỹ thuật'));
+
+    // 2. Preheader is present
+    assert.ok(html.includes('BÁO LỖI KỸ THUẬT'));
+
+    // 3. Category & timestamp strip uses standard HTML table without display: flex
+    assert.ok(html.includes('<table role="presentation" width="100%"'));
+    assert.ok(!html.includes('display: flex; align-items: center; justify-content: space-between;'));
+
+    // 4. Role label maps friendly Vietnamese display
+    assert.ok(html.includes('Khách (Chưa đăng nhập)'));
+
+    // 5. Action bar uses table with button on left and subtitle on right
+    assert.ok(html.includes('Soạn thư trả lời Văn Ngọc Như Ý &rarr;'));
+    assert.ok(html.includes('Đội ngũ Kỹ thuật Hệ thống 5TOT ĐHĐN'));
+
+    // 6. Footer separates the two emails with a clean bullet
+    assert.ok(html.includes('vanngocnhuy30032006@gmail.com'));
+    assert.ok(html.includes('dhtphu05@gmail.com'));
+    assert.ok(html.includes('&bull;'));
+
+    // Plain text verification
+    const text = buildFeedbackNotificationPlainTextTemplate({
+      senderName: 'Văn Ngọc Như Ý',
+      senderEmail: 'vanngocnhuy30032006@gmail.com',
+      userRole: 'GUEST',
+      category: 'BUG',
+      content: 'Kiểm tra nội dung plain text',
+      submittedAt: new Date('2026-11-03T03:10:00Z'),
+    });
+
+    assert.ok(text.includes('=== [SV5T ĐHĐN] THÔNG BÁO GÓP Ý & BÁO LỖI KỸ THUẬT ==='));
+    assert.ok(text.includes('BÁO LỖI KỸ THUẬT'));
+    assert.ok(text.includes('Khách (Chưa đăng nhập)'));
+    assert.ok(text.includes('vanngocnhuy30032006@gmail.com · dhtphu05@gmail.com'));
   });
 });
