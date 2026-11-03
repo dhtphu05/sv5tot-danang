@@ -7,7 +7,7 @@
  * 4. Delete declaration support when editing an existing declaration.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   X,
   FolderArchive,
@@ -166,6 +166,7 @@ export const AddEditDeclarationModal: React.FC<AddEditDeclarationModalProps> = (
 
   // Single primary declaration name/content
   const [content, setContent] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Evidence files attached
   const [attachedFiles, setAttachedFiles] = useState<ApplicationEvidence[]>([]);
@@ -246,6 +247,14 @@ export const AddEditDeclarationModal: React.FC<AddEditDeclarationModalProps> = (
     setLibraryFilter('all');
     setShowDiscardConfirm(false);
   }, [isOpen, declaration, reqId, draftStorageKey]);
+
+  // Adjust textarea height on open or content change
+  useEffect(() => {
+    if (isOpen && textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 180)}px`;
+    }
+  }, [isOpen, content]);
 
   // Auto-save modal draft to sessionStorage whenever user edits content or attaches files
   useEffect(() => {
@@ -539,21 +548,33 @@ export const AddEditDeclarationModal: React.FC<AddEditDeclarationModalProps> = (
             <label className="block text-[13px] font-bold text-[#172A3A] mb-1.5">
               Tên kê khai <span className="text-[#DC2626]">*</span>
             </label>
-            <input
-              type="text"
+            <textarea
+              ref={textareaRef}
+              rows={2}
               value={content}
               onChange={(e) => {
                 setContent(e.target.value);
                 setIsDirty(true);
                 setValidationError(null);
+                e.target.style.height = 'auto';
+                e.target.style.height = `${Math.min(e.target.scrollHeight, 180)}px`;
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }
               }}
               placeholder={
                 (requirement as any).fieldConfig?.valuePlaceholder ||
                 'Nhập tên kê khai, danh hiệu, thành tích hoặc hoạt động...'
               }
-              className="w-full px-3.5 py-2.5 bg-white border border-[#C8D8E3] focus:border-[#18A6E0] rounded-[9px] text-[13.5px] text-[#172A3A] placeholder-[#94A3B8] leading-relaxed outline-hidden transition-colors"
+              className="w-full px-3.5 py-2 bg-white border border-[#C8D8E3] focus:border-[#18A6E0] rounded-[9px] text-[13.5px] text-[#172A3A] placeholder-[#94A3B8] leading-relaxed outline-hidden transition-colors resize-none min-h-[68px] max-h-[180px]"
               autoFocus
             />
+            <span className="text-[11px] text-[#728391] mt-1 block">
+              Nhấn <kbd className="px-1.5 py-0.5 bg-[#F1F5F8] border border-[#DCE6ED] rounded text-[10.5px] font-mono">Enter</kbd> để xuống dòng, <kbd className="px-1.5 py-0.5 bg-[#F1F5F8] border border-[#DCE6ED] rounded text-[10.5px] font-mono">Ctrl + Enter</kbd> để lưu nhanh
+            </span>
           </div>
 
           {/* INLINE EVIDENCE ATTACHMENT */}
