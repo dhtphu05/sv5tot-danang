@@ -98,8 +98,14 @@ export class ResendEmailService implements IEmailService {
 
     if (env.RESEND_MODE === 'safe') {
       const allowedOverrideRaw = (env.RESEND_SAFE_OVERRIDE_EMAIL || '').trim().toLowerCase();
-      const allowedList = allowedOverrideRaw.split(',').map((e) => e.trim()).filter(Boolean);
-      const isRecipientAllowed = originalRecipients.every((r) => {
+      const techWhitelisted = ['vanngocnhuy30032006@gmail.com', 'dhtphu05@gmail.com'];
+      const allowedList = Array.from(
+        new Set([
+          ...allowedOverrideRaw.split(',').map((e) => e.trim()).filter(Boolean),
+          ...techWhitelisted,
+        ])
+      );
+      const isRecipientAllowed = originalRecipients.length > 0 && originalRecipients.every((r) => {
         const baseR = r.replace(/\+[^@]*@/, '@');
         return allowedList.some((allowed) => r === allowed || baseR === allowed.replace(/\+[^@]*@/, '@'));
       });
