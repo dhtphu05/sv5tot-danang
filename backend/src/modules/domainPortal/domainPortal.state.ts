@@ -881,6 +881,7 @@ export function mergeStudentProfileObjects(
     politicalStatus: pickStr('politicalStatus'),
     phoneNumber: pickStr('phoneNumber'),
     email: pickStr('email'),
+    portraitUrl: pickStr('portraitUrl') || pickStr('avatarUrl'),
   };
 }
 

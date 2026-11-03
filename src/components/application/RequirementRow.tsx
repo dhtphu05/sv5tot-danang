@@ -93,13 +93,8 @@ export const RequirementRow: React.FC<RequirementRowProps> = ({
   let displayDetail = '';
 
   if (declarationCount === 0) {
-    if (isAlternativeOption && isGroupSatisfied) {
-      displayValue = 'Phương án khác';
-      displayDetail = '';
-    } else {
-      displayValue = 'Chưa kê khai';
-      displayDetail = '';
-    }
+    displayValue = '';
+    displayDetail = '';
   } else if (declarationCount > 1) {
     const unitLabel =
       requirement.id === 'other-achievements-general'
@@ -179,6 +174,9 @@ export const RequirementRow: React.FC<RequirementRowProps> = ({
     if (requirement.status === 'needs_verification' || hasFlaggedEvidence) {
       return { status: 'needs_verification', customLabel: 'Cần kiểm tra' };
     }
+    if (allEvidenceFiles.length > 0) {
+      return { status: 'has_evidence', customLabel: 'Có minh chứng' };
+    }
     return { status: 'declared', customLabel: 'Đã kê khai' };
   };
 
@@ -240,7 +238,7 @@ export const RequirementRow: React.FC<RequirementRowProps> = ({
             )}
           </div>
           <div className="text-[13px] font-bold text-[#172A3A] tabular-nums">
-            {displayValue || <span className="text-[#728391] italic font-normal">Chưa khai báo</span>}
+            {displayValue || <span className="text-[#8DA0AD] font-normal tracking-wide">—</span>}
           </div>
           {displayDetail && (
             <div className="text-[11.5px] text-[#607483] mt-0.5">
@@ -342,14 +340,8 @@ export const RequirementRow: React.FC<RequirementRowProps> = ({
           {declarationCount === 0 ? (
             <div className="flex items-center justify-between gap-2 min-w-0">
               <div className="flex flex-col min-w-0">
-                <span
-                  className={`text-[13px] leading-snug ${
-                    isAlternativeOption && isGroupSatisfied
-                      ? 'font-medium text-[#607483]'
-                      : 'font-bold text-[#172A3A]'
-                  }`}
-                >
-                  {isAlternativeOption && isGroupSatisfied ? 'Phương án khác' : 'Chưa kê khai'}
+                <span className="text-[13.5px] text-[#8DA0AD] font-medium tracking-wide select-none" title="Chưa có dữ liệu kê khai">
+                  —
                 </span>
               </div>
               {(!readOnly || hasActiveSupplementForRow) && (
@@ -371,7 +363,7 @@ export const RequirementRow: React.FC<RequirementRowProps> = ({
                   title="Kê khai nội dung này"
                 >
                   <Plus size={11} strokeWidth={2.4} />
-                  <span>{isAlternativeOption && isGroupSatisfied ? 'Thêm' : 'Kê khai'}</span>
+                  <span>{isAlternativeOption && isGroupSatisfied ? 'Khai thêm' : 'Kê khai'}</span>
                 </button>
               )}
             </div>

@@ -54,10 +54,10 @@ export const StatusChip: React.FC<StatusChipProps> = ({
         };
       case 'declared':
         return {
-          bg: 'bg-[#EDF9F1]',
-          text: 'text-[#1B7C49]',
-          border: 'border-[#C6EED5]',
-          dot: 'bg-[#1A934E]',
+          bg: 'bg-[#EBF5FA]',
+          text: 'text-[#0D78AE]',
+          border: 'border-[#D0E8F5]',
+          dot: 'bg-[#18A6E0]',
         };
       case 'needs_verification':
       case 'requires_supplement':

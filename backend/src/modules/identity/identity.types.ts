@@ -105,6 +105,7 @@ export interface StudentProfileDto {
   gender: 'Nam' | 'Nữ' | 'Khác' | string;
   dateOfBirth: string; // DD/MM/YYYY
   ethnicity: string;
+  portraitUrl?: string; // 3x4 Portrait Photo URL (Decision 12/QĐ/ĐHĐN-HSV)
 
   // Group B — Thông tin học tập
   academicYearNumber: number;
@@ -144,6 +145,7 @@ export interface UpdateStudentProfileInput {
   unionPosition?: string;
   politicalStatus?: string;
   phoneNumber?: string;
+  portraitUrl?: string;
 }
 
 export interface ProfileCompletenessResult {

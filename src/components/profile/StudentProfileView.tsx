@@ -11,7 +11,7 @@
  * - Dual-mode persistence (Backend REST API / Demo Isolated Store).
  */
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   UserCircle2,
   GraduationCap,
@@ -26,6 +26,11 @@ import {
   Calendar,
   AlertCircle,
   Check,
+  Camera,
+  UploadCloud,
+  Maximize2,
+  Trash2,
+  X,
 } from 'lucide-react';
 import {
   StudentProfileDto,
@@ -152,6 +157,7 @@ export function mergeStudentProfileSnapshots(
     politicalStatus: pickStr('politicalStatus') as any,
     phoneNumber: pickStr('phoneNumber'),
     email: pickStr('email'),
+    portraitUrl: pickStr('portraitUrl') || pickStr('avatarUrl'),
   };
 }
 
@@ -292,6 +298,12 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
   // Field validation states
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [dobError, setDobError] = useState<string | null>(null);
+
+  // 3x4 Portrait Photo State (Decision 12/QĐ/ĐHĐN-HSV)
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState<boolean>(false);
+  const [photoUploadError, setPhotoUploadError] = useState<string | null>(null);
+  const [previewModalUrl, setPreviewModalUrl] = useState<string | null>(null);
 
   const isDirty = useMemo(() => {
     return JSON.stringify(profile) !== JSON.stringify(initialProfile);
@@ -454,6 +466,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
       unionPosition: profile.unionPosition?.trim(),
       politicalStatus: profile.politicalStatus ? profile.politicalStatus : undefined,
       phoneNumber: profile.phoneNumber?.trim(),
+      portraitUrl: profile.portraitUrl,
     };
 
     const optimisticProfile: StudentProfileDto = mergeStudentProfileSnapshots(profile, {
@@ -490,6 +503,132 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const triggerPhotoFileInput = () => {
+    setPhotoUploadError(null);
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    setPhotoUploadError(null);
+
+    // Format validation (JPG, PNG, WEBP)
+    const validMimes = ['image/jpeg', 'image/png', 'image/webp'];
+    const validExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+
+    if (!validMimes.includes(file.type) && !validExtensions.includes(ext)) {
+      setPhotoUploadError('Định dạng tệp không hợp lệ. Vui lòng chọn ảnh JPG, PNG hoặc WEBP.');
+      return;
+    }
+
+    // Size validation: max 5 MB
+    const maxSizeBytes = 5 * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      setPhotoUploadError('Dung lượng tệp vượt quá 5MB. Vui lòng nén hoặc chọn tệp nhỏ hơn.');
+      return;
+    }
+
+    try {
+      setIsUploadingPhoto(true);
+      let resolvedUrl: string;
+
+      if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+        resolvedUrl = URL.createObjectURL(file);
+      } else {
+        resolvedUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      // Upload via domain storage if available
+      try {
+        const services = resolveDomainServices();
+        if (typeof services?.evidenceStorage?.uploadEvidence === 'function') {
+          const uploaded = await services.evidenceStorage.uploadEvidence({
+            ownerTrack: 'INDIVIDUAL',
+            applicationId: fallbackStudent?.studentId || 'profile',
+            requirementOrCriterionId: 'profile-portrait',
+            fileName: file.name,
+            fileSizeBytes: file.size,
+            fileType: ext,
+            file,
+            actor: {
+              id: fallbackStudent?.studentId || 'student',
+              name: fallbackStudent?.fullName || profile.fullName || 'Sinh viên',
+              email: fallbackStudent?.email || profile.email || '',
+              role: 'STUDENT',
+            },
+          });
+          if (uploaded?.url) {
+            resolvedUrl = uploaded.url;
+          }
+        }
+      } catch (uploadErr) {
+        console.warn('Backend photo upload fallback to local URL:', uploadErr);
+      }
+
+      const updatedProfile: StudentProfileDto = {
+        ...profile,
+        portraitUrl: resolvedUrl,
+      };
+
+      setProfile(updatedProfile);
+      setInitialProfile((prev) => ({ ...prev, portraitUrl: resolvedUrl }));
+
+      savePersistedStudentProfile(updatedProfile, {
+        studentId: fallbackStudent?.studentId,
+        email: fallbackStudent?.email || updatedProfile.email,
+      });
+
+      try {
+        const services = resolveDomainServices();
+        await services.profile.updateProfile({ portraitUrl: resolvedUrl });
+      } catch {
+        // ignore offline/demo mode error
+      }
+
+      onProfileUpdated?.(updatedProfile);
+      setSaveSuccessMsg('Đã cập nhật ảnh thẻ 3×4 thành công!');
+      setTimeout(() => setSaveSuccessMsg(null), 4000);
+    } catch (err: any) {
+      setPhotoUploadError(err?.message || 'Không thể tải lên ảnh thẻ lúc này. Vui lòng thử lại.');
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    setPhotoUploadError(null);
+    const updatedProfile: StudentProfileDto = {
+      ...profile,
+      portraitUrl: '',
+    };
+    setProfile(updatedProfile);
+    setInitialProfile((prev) => ({ ...prev, portraitUrl: '' }));
+
+    savePersistedStudentProfile(updatedProfile, {
+      studentId: fallbackStudent?.studentId,
+      email: fallbackStudent?.email || updatedProfile.email,
+    });
+
+    try {
+      const services = resolveDomainServices();
+      await services.profile.updateProfile({ portraitUrl: '' });
+    } catch {
+      // ignore
+    }
+
+    onProfileUpdated?.(updatedProfile);
+    setSaveSuccessMsg('Đã xóa ảnh thẻ 3×4.');
+    setTimeout(() => setSaveSuccessMsg(null), 3000);
   };
 
   const handleReset = () => {
@@ -634,6 +773,145 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
           </div>
 
           <div className="space-y-4">
+            {/* Hidden file input for 3x4 portrait photo */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handlePhotoFileChange}
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              aria-label="Tải lên ảnh thẻ 3x4"
+            />
+
+            {/* 3x4 Portrait Photo Card */}
+            <div className="p-3.5 rounded-xl bg-[#F8FBFD] border border-[#E2EDF3] flex flex-col sm:flex-row items-center sm:items-start gap-4">
+              {/* 3:4 Aspect Ratio Frame (Strictly preserved, never stretched) */}
+              <div
+                className={`relative w-28 sm:w-32 aspect-[3/4] shrink-0 rounded-lg border-2 border-dashed ${
+                  profile.portraitUrl
+                    ? 'border-[#B9D9EB] bg-white'
+                    : 'border-[#CBDCE6] bg-[#F4F9FC]'
+                } overflow-hidden flex flex-col items-center justify-center group shadow-2xs`}
+              >
+                {profile.portraitUrl ? (
+                  <>
+                    <img
+                      src={profile.portraitUrl}
+                      alt={`Ảnh thẻ 3×4 - ${profile.fullName || 'Sinh viên'}`}
+                      className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-102"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-1">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewModalUrl(profile.portraitUrl || null)}
+                        className="p-1.5 rounded-md bg-white/90 hover:bg-white text-[#172A3A] transition-colors shadow-xs cursor-pointer"
+                        title="Xem ảnh lớn"
+                      >
+                        <Maximize2 size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={triggerPhotoFileInput}
+                        className="p-1.5 rounded-md bg-white/90 hover:bg-white text-[#0D78AE] transition-colors shadow-xs cursor-pointer"
+                        title="Thay ảnh khác"
+                      >
+                        <UploadCloud size={13} />
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div
+                    onClick={triggerPhotoFileInput}
+                    className="flex flex-col items-center justify-center p-2 text-center cursor-pointer hover:bg-[#EAF4FB] transition-colors w-full h-full"
+                    title="Nhấp để tải lên ảnh thẻ 3×4"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-[#E5F5FC] text-[#0D78AE] flex items-center justify-center mb-1">
+                      <Camera size={18} />
+                    </div>
+                    <span className="text-[11px] font-bold text-[#0D78AE]">
+                      Tải ảnh 3×4
+                    </span>
+                    <span className="text-[9.5px] text-[#7A8E9B]">
+                      Tỷ lệ 3:4 chuẩn
+                    </span>
+                  </div>
+                )}
+
+                {isUploadingPhoto && (
+                  <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center gap-1 z-10">
+                    <span className="inline-block w-5 h-5 border-2 border-[#18A6E0] border-t-transparent rounded-full animate-spin" />
+                    <span className="text-[10px] font-semibold text-[#0D78AE]">Đang tải...</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Description & Action Controls */}
+              <div className="flex-1 min-w-0 text-center sm:text-left space-y-2">
+                <div>
+                  <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                    <span className="text-[13px] font-bold text-[#172A3A]">
+                      Ảnh thẻ chân dung 3×4
+                    </span>
+                    {profile.portraitUrl ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-[#EDF9F0] text-[#136F3A] border border-[#BDE8C8]">
+                        <CheckCircle2 size={11} className="text-[#16A34A]" />
+                        Đã có ảnh thẻ
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A]">
+                        Chưa tải ảnh thẻ
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[12px] text-[#607483] mt-1 leading-relaxed">
+                    Chuẩn ảnh thẻ: Chụp chân dung nghiêm túc, rõ mặt, phông nền sáng màu. Hỗ trợ JPG, PNG, WEBP (tối đa 5MB).
+                  </p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-center sm:justify-start gap-2 pt-1 flex-wrap">
+                  <button
+                    type="button"
+                    disabled={isUploadingPhoto}
+                    onClick={triggerPhotoFileInput}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#D0E8F5] text-[#0D78AE] hover:bg-[#EAF4FB] font-semibold text-xs transition-colors shadow-2xs cursor-pointer"
+                  >
+                    <UploadCloud size={13} />
+                    <span>{profile.portraitUrl ? 'Thay đổi ảnh' : 'Tải lên ảnh thẻ'}</span>
+                  </button>
+
+                  {profile.portraitUrl && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewModalUrl(profile.portraitUrl || null)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#DCE7EE] text-[#526B7C] hover:bg-[#F0F4F8] font-semibold text-xs transition-colors shadow-2xs cursor-pointer"
+                      >
+                        <Maximize2 size={13} />
+                        <span>Xem lớn</span>
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isUploadingPhoto}
+                        onClick={handleRemovePhoto}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#FCA5A5]/60 text-[#DC2626] hover:bg-[#FEF2F2] font-semibold text-xs transition-colors shadow-2xs cursor-pointer"
+                      >
+                        <Trash2 size={13} />
+                        <span>Xóa</span>
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {photoUploadError && (
+                  <div className="text-[11.5px] font-medium text-[#DC2626] flex items-center gap-1 mt-1 justify-center sm:justify-start">
+                    <AlertCircle size={12} className="shrink-0" />
+                    <span>{photoUploadError}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Họ và tên */}
             <div>
               <label className="block text-[13px] font-semibold text-[#172A3A] mb-1">
@@ -1035,6 +1313,45 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
             )}
             <span>Lưu ngay</span>
           </button>
+        </div>
+      )}
+      {/* Lightbox Preview Modal */}
+      {previewModalUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setPreviewModalUrl(null)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl border border-[#DCE7EE] animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-4 py-3 bg-[#F8FBFD] border-b border-[#E8EFF5] flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-[#172A3A]">Ảnh thẻ chân dung 3×4</h3>
+                <p className="text-[11px] text-[#607483]">{profile.fullName || 'Sinh viên'}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewModalUrl(null)}
+                className="w-7 h-7 rounded-lg hover:bg-[#EAF4FB] text-[#607483] hover:text-[#172A3A] flex items-center justify-center transition-colors cursor-pointer"
+                title="Đóng"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="p-4 flex flex-col items-center justify-center bg-[#F4F9FC]">
+              <div className="w-56 aspect-[3/4] rounded-xl overflow-hidden border border-[#DCE7EE] shadow-md bg-white">
+                <img
+                  src={previewModalUrl}
+                  alt="Ảnh thẻ xem trước"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <span className="text-[11.5px] font-medium text-[#728391] mt-2.5">
+                Tỷ lệ chuẩn 3:4 · Quyết định 12/QĐ/ĐHĐN-HSV
+              </span>
+            </div>
+          </div>
         </div>
       )}
     </div>

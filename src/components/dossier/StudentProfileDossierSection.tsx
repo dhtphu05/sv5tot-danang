@@ -31,6 +31,9 @@ import {
   Building2,
   GraduationCap,
   Sparkles,
+  Camera,
+  Maximize2,
+  X,
 } from 'lucide-react';
 import { StudentProfileDto } from '../../entities/application/studentApplicationTypes';
 import { evaluateProfileCompleteness } from '../../demo/fixtures/studentProfileFixtures';
@@ -68,6 +71,7 @@ export const SubmittedStudentInformationCard: React.FC<SubmittedStudentInformati
   userRole,
 }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultExpanded);
+  const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
 
   const hasSuppliedData = Boolean(profile || fallbackStudent);
 
@@ -94,6 +98,7 @@ export const SubmittedStudentInformationCard: React.FC<SubmittedStudentInformati
         politicalStatus: resolveVal(profile?.politicalStatus, undefined, '—'),
         phoneNumber: resolveVal(profile?.phoneNumber, undefined, '—'),
         email: resolveVal(profile?.email, fallbackStudent?.email, '—'),
+        portraitUrl: profile?.portraitUrl || (fallbackStudent as any)?.portraitUrl || '',
       }
     : {
         fullName: 'Nguyễn Minh Anh',
@@ -110,6 +115,7 @@ export const SubmittedStudentInformationCard: React.FC<SubmittedStudentInformati
         politicalStatus: 'Đoàn viên',
         phoneNumber: '0905123456',
         email: 'minhanh.nguyen@dut.udn.vn',
+        portraitUrl: '',
       };
 
   const studentIdCode =
@@ -184,93 +190,131 @@ export const SubmittedStudentInformationCard: React.FC<SubmittedStudentInformati
         </div>
       </div>
 
-      {/* --- DEFAULT COLLAPSED VIEW: 8 ESSENTIAL REVIEWER FIELDS (NO BORDERED SUB-CARDS) --- */}
-      <div className="p-3.5 sm:p-4.5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 sm:gap-x-5 gap-y-2.5 sm:gap-y-3">
-        {/* Field 1: Họ và tên */}
-        <div className="min-w-0">
-          <span className="text-[10.5px] font-semibold text-[#728391] uppercase tracking-wider block">
-            Họ và tên
-          </span>
-          <div className="text-[13.5px] font-bold text-[#172A3A] truncate mt-0.5">
-            {effectiveProfile.fullName}
-          </div>
-        </div>
-
-        {/* Field 2: MSSV */}
-        <div className="min-w-0">
-          <span className="text-[10.5px] font-semibold text-[#728391] uppercase tracking-wider block">
-            MSSV
-          </span>
-          <div className="text-[13px] font-bold font-mono text-[#0D78AE] truncate mt-0.5">
-            {studentIdCode}
-          </div>
-        </div>
-
-        {/* Field 3: Giới tính */}
-        <div className="min-w-0">
-          <span className="text-[10.5px] font-semibold text-[#728391] uppercase tracking-wider block">
-            Giới tính
-          </span>
-          <div className="text-[13px] font-medium text-[#172A3A] truncate mt-0.5">
-            {effectiveProfile.gender || '—'}
-          </div>
-        </div>
-
-        {/* Field 4: Ngày sinh */}
-        <div className="min-w-0">
-          <span className="text-[10.5px] font-semibold text-[#728391] uppercase tracking-wider block">
-            Ngày sinh
-          </span>
-          <div className="text-[13px] font-medium text-[#172A3A] truncate mt-0.5">
-            {effectiveProfile.dateOfBirth || '—'}
-          </div>
-        </div>
-
-        {/* Field 5: Trường đào tạo (Spans 2 columns on wide screens, allows natural Vietnamese wrapping) */}
-        <div className="col-span-2 sm:col-span-2 min-w-0">
-          <span className="text-[10.5px] font-semibold text-[#728391] uppercase tracking-wider block">
-            Trường đào tạo
-          </span>
+      {/* --- DEFAULT COLLAPSED VIEW: 8 ESSENTIAL REVIEWER FIELDS WITH 3:4 PORTRAIT PHOTO --- */}
+      <div className="p-3.5 sm:p-4.5 flex flex-col sm:flex-row gap-4 sm:gap-5 items-start">
+        {/* 3:4 Portrait Photo Column (Decision 12/QĐ/ĐHĐN-HSV) */}
+        <div className="shrink-0 flex flex-col items-center mx-auto sm:mx-0">
           <div
-            className="text-[13px] font-semibold text-[#172A3A] leading-snug break-words mt-0.5"
-            title={effectiveProfile.institutionName}
+            className={`relative w-20 sm:w-24 aspect-[3/4] rounded-lg border ${
+              effectiveProfile.portraitUrl
+                ? 'border-[#B9D9EB] bg-white cursor-pointer hover:ring-2 hover:ring-[#18A6E0]/40 transition-all'
+                : 'border-[#DCE7EE] bg-[#F8FBFD]'
+            } overflow-hidden flex flex-col items-center justify-center shadow-2xs group`}
+            onClick={() => effectiveProfile.portraitUrl && setIsLightboxOpen(true)}
+            title={effectiveProfile.portraitUrl ? 'Nhấp để xem ảnh lớn' : 'Chưa có ảnh thẻ 3×4'}
           >
-            {effectiveProfile.institutionName || '—'}
-            {effectiveProfile.institutionId?.startsWith('inst-d') && (
-              <span className="inline-block text-[11px] text-[#0D78AE] font-normal ml-1.5">
-                (Sơ tuyển: ĐH Đà Nẵng)
-              </span>
+            {effectiveProfile.portraitUrl ? (
+              <>
+                <img
+                  src={effectiveProfile.portraitUrl}
+                  alt={`Ảnh thẻ 3×4 - ${effectiveProfile.fullName}`}
+                  className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-102"
+                />
+                <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                  <Maximize2 size={15} />
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center p-1.5 text-center text-[#8EA2B0]">
+                <Camera size={20} className="mb-0.5 opacity-60 text-[#728391]" />
+                <span className="text-[10px] font-semibold text-[#607483] leading-tight">Chưa có ảnh</span>
+                <span className="text-[9px] text-[#8EA2B0]">3×4</span>
+              </div>
             )}
           </div>
+          <span className="text-[10px] font-medium text-[#728391] mt-1 text-center">
+            Ảnh thẻ 3×4
+          </span>
         </div>
 
-        {/* Field 6: Sinh viên năm thứ & Trình độ */}
-        <div className="min-w-0">
-          <span className="text-[10.5px] font-semibold text-[#728391] uppercase tracking-wider block">
-            Năm thứ &amp; Trình độ
-          </span>
-          <div className="text-[13px] font-medium text-[#172A3A] truncate mt-0.5">
-            Năm {effectiveProfile.academicYearNumber || 1} · {effectiveProfile.educationLevel || 'Đại học'}
+        {/* 8 Essential Reviewer Fields Grid */}
+        <div className="flex-1 min-w-0 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 sm:gap-x-5 gap-y-2.5 sm:gap-y-3 w-full">
+          {/* Field 1: Họ và tên */}
+          <div className="min-w-0">
+            <span className="text-[10.5px] font-semibold text-[#728391] uppercase tracking-wider block">
+              Họ và tên
+            </span>
+            <div className="text-[13.5px] font-bold text-[#172A3A] truncate mt-0.5">
+              {effectiveProfile.fullName}
+            </div>
           </div>
-        </div>
 
-        {/* Field 7: Lớp, khóa */}
-        <div className="min-w-0">
-          <span className="text-[10.5px] font-semibold text-[#728391] uppercase tracking-wider block">
-            Lớp, khóa
-          </span>
-          <div className="text-[13px] font-medium text-[#172A3A] truncate mt-0.5">
-            {effectiveProfile.className || '—'}
+          {/* Field 2: MSSV */}
+          <div className="min-w-0">
+            <span className="text-[10.5px] font-semibold text-[#728391] uppercase tracking-wider block">
+              MSSV
+            </span>
+            <div className="text-[13px] font-bold font-mono text-[#0D78AE] truncate mt-0.5">
+              {studentIdCode}
+            </div>
           </div>
-        </div>
 
-        {/* Field 8: Chức vụ Đoàn, Hội */}
-        <div className="min-w-0 col-span-2 sm:col-span-1">
-          <span className="text-[10.5px] font-semibold text-[#728391] uppercase tracking-wider block">
-            Chức vụ Đoàn, Hội
-          </span>
-          <div className="text-[13px] font-medium text-[#172A3A] truncate mt-0.5">
-            {effectiveProfile.unionPosition || '—'}
+          {/* Field 3: Giới tính */}
+          <div className="min-w-0">
+            <span className="text-[10.5px] font-semibold text-[#728391] uppercase tracking-wider block">
+              Giới tính
+            </span>
+            <div className="text-[13px] font-medium text-[#172A3A] truncate mt-0.5">
+              {effectiveProfile.gender || '—'}
+            </div>
+          </div>
+
+          {/* Field 4: Ngày sinh */}
+          <div className="min-w-0">
+            <span className="text-[10.5px] font-semibold text-[#728391] uppercase tracking-wider block">
+              Ngày sinh
+            </span>
+            <div className="text-[13px] font-medium text-[#172A3A] truncate mt-0.5">
+              {effectiveProfile.dateOfBirth || '—'}
+            </div>
+          </div>
+
+          {/* Field 5: Trường đào tạo (Spans 2 columns on wide screens, allows natural Vietnamese wrapping) */}
+          <div className="col-span-2 sm:col-span-2 min-w-0">
+            <span className="text-[10.5px] font-semibold text-[#728391] uppercase tracking-wider block">
+              Trường đào tạo
+            </span>
+            <div
+              className="text-[13px] font-semibold text-[#172A3A] leading-snug break-words mt-0.5"
+              title={effectiveProfile.institutionName}
+            >
+              {effectiveProfile.institutionName || '—'}
+              {effectiveProfile.institutionId?.startsWith('inst-d') && (
+                <span className="inline-block text-[11px] text-[#0D78AE] font-normal ml-1.5">
+                  (Sơ tuyển: ĐH Đà Nẵng)
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Field 6: Sinh viên năm thứ & Trình độ */}
+          <div className="min-w-0">
+            <span className="text-[10.5px] font-semibold text-[#728391] uppercase tracking-wider block">
+              Năm thứ &amp; Trình độ
+            </span>
+            <div className="text-[13px] font-medium text-[#172A3A] truncate mt-0.5">
+              Năm {effectiveProfile.academicYearNumber || 1} · {effectiveProfile.educationLevel || 'Đại học'}
+            </div>
+          </div>
+
+          {/* Field 7: Lớp, khóa */}
+          <div className="min-w-0">
+            <span className="text-[10.5px] font-semibold text-[#728391] uppercase tracking-wider block">
+              Lớp, khóa
+            </span>
+            <div className="text-[13px] font-medium text-[#172A3A] truncate mt-0.5">
+              {effectiveProfile.className || '—'}
+            </div>
+          </div>
+
+          {/* Field 8: Chức vụ Đoàn, Hội */}
+          <div className="min-w-0 col-span-2 sm:col-span-1">
+            <span className="text-[10.5px] font-semibold text-[#728391] uppercase tracking-wider block">
+              Chức vụ Đoàn, Hội
+            </span>
+            <div className="text-[13px] font-medium text-[#172A3A] truncate mt-0.5">
+              {effectiveProfile.unionPosition || '—'}
+            </div>
           </div>
         </div>
       </div>
@@ -391,6 +435,55 @@ export const SubmittedStudentInformationCard: React.FC<SubmittedStudentInformati
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Lightbox Preview Modal for Officer and Student */}
+      {isLightboxOpen && effectiveProfile.portraitUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setIsLightboxOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl border border-[#DCE7EE] animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-4 py-3 bg-[#F8FBFD] border-b border-[#E8EFF5] flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-[#172A3A]">Ảnh thẻ chân dung 3×4</h3>
+                <p className="text-[11.5px] text-[#607483] font-medium">
+                  {effectiveProfile.fullName} {studentIdCode !== '—' ? `· MSSV: ${studentIdCode}` : ''}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsLightboxOpen(false)}
+                className="w-7 h-7 rounded-lg hover:bg-[#EAF4FB] text-[#607483] hover:text-[#172A3A] flex items-center justify-center transition-colors cursor-pointer"
+                title="Đóng"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="p-4 flex flex-col items-center justify-center bg-[#F4F9FC]">
+              <div className="w-56 aspect-[3/4] rounded-xl overflow-hidden border border-[#DCE7EE] shadow-md bg-white">
+                <img
+                  src={effectiveProfile.portraitUrl}
+                  alt={`Ảnh thẻ 3×4 - ${effectiveProfile.fullName}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="text-center mt-2.5 space-y-0.5">
+                <span className="text-[11.5px] font-medium text-[#728391] block">
+                  Tỷ lệ chuẩn 3:4 · Quyết định 12/QĐ/ĐHĐN-HSV
+                </span>
+                {effectiveProfile.institutionName && (
+                  <span className="text-[11px] text-[#8EA2B0] block truncate max-w-xs">
+                    {effectiveProfile.institutionName}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </section>

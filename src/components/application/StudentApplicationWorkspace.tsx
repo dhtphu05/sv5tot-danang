@@ -582,6 +582,12 @@ export const StudentApplicationWorkspace: React.FC<
   const handleInspectAdvisoryFromReview = (advisory: PreSubmitAdvisoryItem) => {
     setInspectorMode('none');
     setIsReviewPaused(true);
+
+    if (advisory.id === 'adv-suggestion-portrait-photo') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     setExpandedCriteria((prev) => ({
       ...prev,
       [advisory.criterionId]: true,
@@ -639,8 +645,13 @@ export const StudentApplicationWorkspace: React.FC<
     submissionState === 'supplement_sent';
 
   const effectiveAdvisories = useMemo(
-    () => computeDynamicPreSubmitAdvisories(application.criteria, advisories),
-    [application.criteria, advisories]
+    () =>
+      computeDynamicPreSubmitAdvisories(
+        application.criteria,
+        advisories,
+        application.applicantProfileSnapshot
+      ),
+    [application.criteria, advisories, application.applicantProfileSnapshot]
   );
 
   const criteriaStatuses = useMemo(

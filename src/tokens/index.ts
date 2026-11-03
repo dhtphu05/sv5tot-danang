@@ -123,9 +123,9 @@ export type RequirementStatus =
 export const REQUIREMENT_STATUS_MAP: Record<RequirementStatus, { label: string; dotColor: string; bgSoft: string; textColor: string }> = {
   declared: {
     label: 'Đã kê khai',
-    dotColor: '#1A934E',
-    bgSoft: 'rgba(26, 147, 78, 0.08)',
-    textColor: '#15733D',
+    dotColor: '#18A6E0',
+    bgSoft: 'rgba(24, 166, 224, 0.08)',
+    textColor: '#0D78AE',
   },
   undeclared: {
     label: 'Chưa kê khai',

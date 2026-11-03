@@ -231,6 +231,7 @@ describe('5TOT ĐHĐN — LEAN-2 Direct Inline Review & Decoupled Assessment (IR
 
     // Criterion 5 (integration): pass
     ws.scopeRecords[getScopeKey('integration-skills', 'decl-skills-1')] = mockScope(getScopeKey('integration-skills', 'decl-skills-1'), 'suitable');
+    ws.scopeRecords[getScopeKey('integration-activity', 'decl-int-act-1')] = mockScope(getScopeKey('integration-activity', 'decl-int-act-1'), 'suitable');
     ws.scopeRecords[getScopeKey('integration-lang', 'decl-lang')] = mockScope(getScopeKey('integration-lang', 'decl-lang'), 'suitable');
 
     const dossier = evaluateApplicationDossierReview(ws, INITIAL_STUDENT_APPLICATION);
@@ -265,6 +266,7 @@ describe('5TOT ĐHĐN — LEAN-2 Direct Inline Review & Decoupled Assessment (IR
     ws.scopeRecords[getScopeKey('volunteer-activities', 'decl-vol-3')] = mockScope(getScopeKey('volunteer-activities', 'decl-vol-3'), 'suitable');
 
     ws.scopeRecords[getScopeKey('integration-skills', 'decl-skills-1')] = mockScope(getScopeKey('integration-skills', 'decl-skills-1'), 'suitable');
+    ws.scopeRecords[getScopeKey('integration-activity', 'decl-int-act-1')] = mockScope(getScopeKey('integration-activity', 'decl-int-act-1'), 'suitable');
     ws.scopeRecords[getScopeKey('integration-lang', 'decl-lang')] = mockScope(getScopeKey('integration-lang', 'decl-lang'), 'suitable');
 
     const check = canCompleteApplicationReview(ws, INITIAL_STUDENT_APPLICATION);
@@ -297,6 +299,7 @@ describe('5TOT ĐHĐN — LEAN-2 Direct Inline Review & Decoupled Assessment (IR
     ws.scopeRecords[getScopeKey('volunteer-activities', 'decl-vol-3')] = mockScope(getScopeKey('volunteer-activities', 'decl-vol-3'), 'suitable');
 
     ws.scopeRecords[getScopeKey('integration-skills', 'decl-skills-1')] = mockScope(getScopeKey('integration-skills', 'decl-skills-1'), 'suitable');
+    ws.scopeRecords[getScopeKey('integration-activity', 'decl-int-act-1')] = mockScope(getScopeKey('integration-activity', 'decl-int-act-1'), 'suitable');
     ws.scopeRecords[getScopeKey('integration-lang', 'decl-lang')] = mockScope(getScopeKey('integration-lang', 'decl-lang'), 'suitable');
 
     const dossier = evaluateApplicationDossierReview(ws, INITIAL_STUDENT_APPLICATION);
@@ -330,6 +333,7 @@ describe('5TOT ĐHĐN — LEAN-2 Direct Inline Review & Decoupled Assessment (IR
     ws.scopeRecords[getScopeKey('volunteer-activities', 'decl-vol-3')] = mockScope(getScopeKey('volunteer-activities', 'decl-vol-3'), 'suitable');
 
     ws.scopeRecords[getScopeKey('integration-skills', 'decl-skills-1')] = mockScope(getScopeKey('integration-skills', 'decl-skills-1'), 'suitable');
+    ws.scopeRecords[getScopeKey('integration-activity', 'decl-int-act-1')] = mockScope(getScopeKey('integration-activity', 'decl-int-act-1'), 'suitable');
     ws.scopeRecords[getScopeKey('integration-lang', 'decl-lang')] = mockScope(getScopeKey('integration-lang', 'decl-lang'), 'suitable');
 
     const check = canCompleteApplicationReview(ws, INITIAL_STUDENT_APPLICATION);
@@ -468,12 +472,14 @@ describe('5TOT ĐHĐN — LEAN-2 Direct Inline Review & Decoupled Assessment (IR
     assert.equal(assessment.eligibilityResult, 'pass');
   });
 
-  // IR27: Integration criterion satisfies when skills + language pass
-  test('IR27: Integration criterion satisfies when skills + language pass', () => {
+  // IR27: Integration criterion satisfies when skills + activity + language pass
+  test('IR27: Integration criterion satisfies when skills + activity + language pass', () => {
     const ws = createCleanWorkspaceState();
     const keySkills = getScopeKey('integration-skills', 'decl-skills-1');
+    const keyAct = getScopeKey('integration-activity', 'decl-int-act-1');
     const keyLang = getScopeKey('integration-lang', 'decl-lang');
     ws.scopeRecords[keySkills] = mockScope(keySkills, 'suitable');
+    ws.scopeRecords[keyAct] = mockScope(keyAct, 'suitable');
     ws.scopeRecords[keyLang] = mockScope(keyLang, 'suitable');
 
     const assessment = evaluateCriterionAssessment(ws, 'integration', INITIAL_STUDENT_APPLICATION);
@@ -501,6 +507,7 @@ describe('5TOT ĐHĐN — LEAN-2 Direct Inline Review & Decoupled Assessment (IR
     ws.scopeRecords[getScopeKey('volunteer-activities', 'decl-vol-3')] = mockScope(getScopeKey('volunteer-activities', 'decl-vol-3'), 'suitable');
 
     ws.scopeRecords[getScopeKey('integration-skills', 'decl-skills-1')] = mockScope(getScopeKey('integration-skills', 'decl-skills-1'), 'suitable');
+    ws.scopeRecords[getScopeKey('integration-activity', 'decl-int-act-1')] = mockScope(getScopeKey('integration-activity', 'decl-int-act-1'), 'suitable');
     ws.scopeRecords[getScopeKey('integration-lang', 'decl-lang')] = mockScope(getScopeKey('integration-lang', 'decl-lang'), 'suitable');
 
     const dossier = evaluateApplicationDossierReview(ws, INITIAL_STUDENT_APPLICATION);
@@ -531,6 +538,7 @@ describe('5TOT ĐHĐN — LEAN-2 Direct Inline Review & Decoupled Assessment (IR
     ws.scopeRecords[getScopeKey('volunteer-activities', 'decl-vol-3')] = mockScope(getScopeKey('volunteer-activities', 'decl-vol-3'), 'suitable');
 
     ws.scopeRecords[getScopeKey('integration-skills', 'decl-skills-1')] = mockScope(getScopeKey('integration-skills', 'decl-skills-1'), 'suitable');
+    ws.scopeRecords[getScopeKey('integration-activity', 'decl-int-act-1')] = mockScope(getScopeKey('integration-activity', 'decl-int-act-1'), 'suitable');
     ws.scopeRecords[getScopeKey('integration-lang', 'decl-lang')] = mockScope(getScopeKey('integration-lang', 'decl-lang'), 'suitable');
 
     const dossier = evaluateApplicationDossierReview(ws, INITIAL_STUDENT_APPLICATION);

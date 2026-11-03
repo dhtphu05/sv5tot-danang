@@ -164,11 +164,25 @@ export const CriterionSection: React.FC<CriterionSectionProps> = ({
         : 'Chưa có thành tích bổ sung (không bắt buộc · ngoài 5 tiêu chí)';
     }
     if (criterion.id === 'volunteer') {
-      const allDecls = criterion.requirements.flatMap((r) => r.declarations || []);
-      const totalActivities = allDecls.length;
+      const volActReq = criterion.requirements.find((r) => r.id === 'volunteer-activities');
+      const volCampReq = criterion.requirements.find((r) => r.id === 'volunteer-campaign');
+      const volAwardReq = criterion.requirements.find((r) => r.id === 'volunteer-award');
+
+      const campCount = volCampReq?.declarations?.length || 0;
+      const awardCount = volAwardReq?.declarations?.length || 0;
+      const actDecls = volActReq?.declarations || [];
+
+      if (campCount > 0 && actDecls.length === 0 && awardCount === 0) {
+        return `${campCount} chứng nhận chiến dịch tình nguyện đã kê khai`;
+      }
+      if (awardCount > 0 && actDecls.length === 0 && campCount === 0) {
+        return `${awardCount} giấy khen hoạt động tình nguyện đã kê khai`;
+      }
+
+      const totalActivities = actDecls.length;
       let totalDays = 0;
       let bloodDonations = 0;
-      for (const d of allDecls) {
+      for (const d of actDecls) {
         const text = `${d.value} ${d.detail || ''} ${d.metadata?.duration || ''}`.toLowerCase();
         if (
           d.metadata?.volActivityType === 'blood_donation' ||
@@ -182,16 +196,18 @@ export const CriterionSection: React.FC<CriterionSectionProps> = ({
           totalDays += isNaN(parsed) ? 1 : parsed;
         } else {
           const match = text.match(/(\d+)\s*ngày/);
-          if (match) {
-            totalDays += parseInt(match[1], 10);
-          } else {
-            totalDays += 1;
-          }
+          totalDays += match ? parseInt(match[1], 10) : 1;
         }
       }
+
+      const otherForms: string[] = [];
+      if (campCount > 0) otherForms.push(`${campCount} chiến dịch`);
+      if (awardCount > 0) otherForms.push(`${awardCount} giấy khen`);
+      const otherStr = otherForms.length > 0 ? ` + ${otherForms.join(', ')}` : '';
+
       return `${totalActivities} hoạt động · ${totalDays}/3 ngày tình nguyện${
         bloodDonations > 0 ? ` (${bloodDonations} lần hiến máu)` : ''
-      }`;
+      }${otherStr}`;
     }
     const declaredCount = criterion.requirements.filter(
       (r) => r.declarations && r.declarations.length > 0
@@ -296,11 +312,7 @@ export const CriterionSection: React.FC<CriterionSectionProps> = ({
             </div>
             {/* Secondary line: Factual declaration count with evidence summary */}
             <span className="text-[11.5px] text-[#607483] font-medium whitespace-normal break-words mt-0.5 tabular-nums">
-              {hasDeclaredItems &&
-              criterion.shortSummary &&
-              criterion.shortSummary.startsWith('0 ')
-                ? progressSummary
-                : criterion.shortSummary || progressSummary}
+              {hasDeclaredItems ? progressSummary : criterion.shortSummary || progressSummary}
             </span>
           </div>
         </div>
