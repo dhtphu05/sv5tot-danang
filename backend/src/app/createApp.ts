@@ -169,6 +169,7 @@ export function createApp(dependencies: AppDependencies = {}): Express {
   // 3. Body Parsing with Bounded Limits (35MB for Portal evidence/application sync and school forwarding PDFs, env limit for core V2)
   app.use('/api/v2/portal', express.json({ limit: '35mb' }));
   app.use('/api/v2/school-forwarding-batch', express.json({ limit: '35mb' }));
+  app.use('/api/v2/feedback', express.json({ limit: '25mb' }));
   app.use(express.json({ limit: env.MAX_BODY_SIZE_BYTES }));
   app.use(express.urlencoded({ extended: true, limit: env.MAX_BODY_SIZE_BYTES }));
 

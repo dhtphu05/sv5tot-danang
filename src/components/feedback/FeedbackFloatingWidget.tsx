@@ -29,6 +29,69 @@ export interface FeedbackFloatingWidgetProps {
   defaultCategory?: FeedbackCategory;
 }
 
+/**
+ * Automatically compress and scale images client-side before sending.
+ * Compresses large PNGs (from clipboard or file) to ~150-300KB JPEG,
+ * avoiding payload size issues and speeding up submission dramatically.
+ */
+export async function compressImageForFeedback(
+  file: File | Blob,
+  maxDimension = 1920,
+  quality = 0.82
+): Promise<string> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onerror = () => resolve('');
+    reader.onload = (uploadEvent) => {
+      const rawDataUrl = uploadEvent.target?.result as string;
+      if (!rawDataUrl) {
+        resolve('');
+        return;
+      }
+
+      // If tiny (< 60KB), no need to compress
+      if (file.size < 60 * 1024) {
+        resolve(rawDataUrl);
+        return;
+      }
+
+      const img = new Image();
+      img.onerror = () => resolve(rawDataUrl);
+      img.onload = () => {
+        try {
+          let { width, height } = img;
+          if (width > maxDimension || height > maxDimension) {
+            const scale = Math.min(maxDimension / width, maxDimension / height);
+            width = Math.round(width * scale);
+            height = Math.round(height * scale);
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(rawDataUrl);
+            return;
+          }
+
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // 0.82 quality JPEG: crystal clear for screenshots and UI text, but 90%+ smaller
+          const compressed = canvas.toDataURL('image/jpeg', quality);
+          resolve(compressed);
+        } catch {
+          resolve(rawDataUrl);
+        }
+      };
+      img.src = rawDataUrl;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 export const FeedbackFloatingWidget: React.FC<FeedbackFloatingWidgetProps> = ({
   className = '',
   defaultCategory = 'BUG',
@@ -60,42 +123,45 @@ export const FeedbackFloatingWidget: React.FC<FeedbackFloatingWidgetProps> = ({
   }, [isOpen]);
 
   // Handle Ctrl+V (paste screenshot directly into textarea or modal)
-  const handlePaste = useCallback((e: React.ClipboardEvent) => {
-    const clipboardItems = e.clipboardData?.items;
-    if (!clipboardItems) return;
+  const handlePaste = useCallback(
+    async (e: React.ClipboardEvent) => {
+      const clipboardItems = e.clipboardData?.items;
+      if (!clipboardItems) return;
 
-    for (let i = 0; i < clipboardItems.length; i++) {
-      const item = clipboardItems[i];
-      if (item && item.type.startsWith('image/')) {
-        const file = item.getAsFile();
-        if (file) {
-          e.preventDefault();
-          if (images.length >= 3) {
-            setErrorMessage('Chỉ được đính kèm tối đa 3 ảnh màn hình.');
-            return;
-          }
-          if (file.size > 5 * 1024 * 1024) {
-            setErrorMessage('Dung lượng mỗi ảnh không được vượt quá 5MB.');
-            return;
-          }
-
-          const reader = new FileReader();
-          reader.onload = (uploadEvent) => {
-            const base64 = uploadEvent.target?.result as string;
-            if (base64) {
-              setImages((prev) => (prev.length < 3 ? [...prev, base64] : prev));
-              setErrorMessage(null);
+      for (let i = 0; i < clipboardItems.length; i++) {
+        const item = clipboardItems[i];
+        if (item && item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) {
+            e.preventDefault();
+            if (images.length >= 3) {
+              setErrorMessage('Chỉ được đính kèm tối đa 3 ảnh màn hình.');
+              return;
             }
-          };
-          reader.readAsDataURL(file);
-          return;
+            if (file.size > 10 * 1024 * 1024) {
+              setErrorMessage('Dung lượng mỗi ảnh không được vượt quá 10MB.');
+              return;
+            }
+
+            try {
+              const compressed = await compressImageForFeedback(file);
+              if (compressed) {
+                setImages((prev) => (prev.length < 3 ? [...prev, compressed] : prev));
+                setErrorMessage(null);
+              }
+            } catch {
+              setErrorMessage('Không thể xử lý ảnh vừa dán. Vui lòng thử lại.');
+            }
+            return;
+          }
         }
       }
-    }
-  }, [images.length]);
+    },
+    [images.length]
+  );
 
   // Handle file input upload
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -107,18 +173,19 @@ export const FeedbackFloatingWidget: React.FC<FeedbackFloatingWidgetProps> = ({
 
     const filesToProcess = Array.from(files).slice(0, remainingSlots);
     for (const file of filesToProcess) {
-      if (file.size > 5 * 1024 * 1024) {
-        setErrorMessage(`Tệp "${file.name}" vượt quá 5MB.`);
+      if (file.size > 10 * 1024 * 1024) {
+        setErrorMessage(`Tệp "${file.name}" vượt quá 10MB.`);
         continue;
       }
-      const reader = new FileReader();
-      reader.onload = (uploadEvent) => {
-        const base64 = uploadEvent.target?.result as string;
-        if (base64) {
-          setImages((prev) => (prev.length < 3 ? [...prev, base64] : prev));
+      try {
+        const compressed = await compressImageForFeedback(file);
+        if (compressed) {
+          setImages((prev) => (prev.length < 3 ? [...prev, compressed] : prev));
+          setErrorMessage(null);
         }
-      };
-      reader.readAsDataURL(file);
+      } catch {
+        // ignore single failed file
+      }
     }
 
     // Reset file input so re-selecting same file triggers change
