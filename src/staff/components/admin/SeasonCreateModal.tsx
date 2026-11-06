@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Create Season Modal with Copy Previous Season & 1-Click Auto-Schedule
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Create Season Modal with Copy Previous Season & 1-Click Auto-Schedule
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  */
 
 import React, { useState } from 'react';
@@ -45,7 +45,7 @@ export const SeasonCreateModal: React.FC<SeasonCreateModalProps> = ({
     return {
       schoolYear: '2026–2027',
       title:
-        'Đợt xét chọn Danh hiệu "Sinh viên 5 Tốt" cấp Đại học Đà Nẵng Năm học 2026–2027',
+        'Đợt xét chọn Danh hiệu "Sinh viên 5 Tốt" cấp Thành phố Đà Nẵng Năm học 2026–2027',
       copyFromSeasonId: defaultCopyFromSeasonId || 'season-2025-2026',
       ...autoDates,
       criteriaVersionId: 'crit-ver-2026-2027-draft',
@@ -144,7 +144,7 @@ export const SeasonCreateModal: React.FC<SeasonCreateModalProps> = ({
                   setCreateForm({
                     ...createForm,
                     schoolYear: yr,
-                    title: `Đợt xét chọn Danh hiệu "Sinh viên 5 Tốt" cấp Đại học Đà Nẵng ${formatAcademicYearLabel(yr)}`,
+                    title: `Đợt xét chọn Danh hiệu "Sinh viên 5 Tốt" cấp Thành phố Đà Nẵng ${formatAcademicYearLabel(yr)}`,
                   });
                 }}
                 placeholder="2026–2027"
@@ -198,7 +198,7 @@ export const SeasonCreateModal: React.FC<SeasonCreateModalProps> = ({
             <div className="text-[12px] text-[#0F2335]">
               <strong>Lập lịch nhanh:</strong> Chọn{' '}
               <strong>Ngày mở cổng (T01)</strong> rồi bấm nút bên phải để tự
-              động tính toàn bộ hạn nộp Cá nhân, Trường gửi ĐHĐN và Tập thể.
+              động tính toàn bộ hạn nộp Cá nhân, Đơn vị gửi Thành phố và Tập thể.
             </div>
             <Button
               variant="secondary"
@@ -240,8 +240,8 @@ export const SeasonCreateModal: React.FC<SeasonCreateModalProps> = ({
               showQuickShifts
             />
             <VietnameseDateTimePicker
-              stageBadge="T03 · Cấp Trường"
-              label="Hạn Trường gửi danh sách lên ĐHĐN"
+              stageBadge="T03 · Cấp Đơn vị"
+              label="Hạn Đơn vị gửi danh sách lên Thành phố"
               value={createForm.schoolForwardingDeadline}
               onChange={(val) =>
                 setCreateForm({
@@ -253,7 +253,7 @@ export const SeasonCreateModal: React.FC<SeasonCreateModalProps> = ({
             />
             <VietnameseDateTimePicker
               stageBadge="T04 · Tập thể"
-              label="Hạn nộp Tập thể trực tiếp lên ĐHĐN"
+              label="Hạn nộp Tập thể trực tiếp lên Thành phố"
               value={createForm.collectiveSubmissionDeadline}
               onChange={(val) =>
                 setCreateForm({

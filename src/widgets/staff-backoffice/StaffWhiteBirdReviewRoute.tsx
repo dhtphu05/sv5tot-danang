@@ -1,16 +1,15 @@
 /**
- * 5TOT Đại học Đà Nẵng — Staff White Bird Award ("Giải thưởng Cánh chim trắng") Review & Decision Route
- * Căn cứ Quy chế Giải thưởng "Cánh chim trắng" (Quyết định số 1720/QĐ-HSV)
- * Cơ quan Thường trực Giải thưởng: Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng.
+ * 5TOT Đà Nẵng — Staff Award ("Giải thưởng 9/1") Review & Decision Route
+ * Căn cứ Quy chế Giải thưởng "9/1" của Ban Chấp hành Hội Sinh viên Việt Nam Thành phố Đà Nẵng
+ * Cơ quan Thường trực Giải thưởng: Văn phòng Hội Sinh viên Việt Nam Thành phố Đà Nẵng.
  *
- * Hồ sơ Giải thưởng Cánh chim trắng do sinh viên nộp thẳng lên cấp Đại học Đà Nẵng
- * (không qua sơ tuyển cấp trường), được Cán bộ / Quản lý cấp ĐHĐN thẩm định, yêu cầu bổ sung
- * trực tiếp và trình Hội đồng xét duyệt Giải thưởng Cánh chim trắng cấp ĐHĐN quyết định.
+ * Hồ sơ Giải thưởng 9/1 do sinh viên nộp thẳng lên cấp Thành phố
+ * (không qua sơ tuyển cấp trường), được Cán bộ / Quản lý cấp Thành phố thẩm định, yêu cầu bổ sung
+ * trực tiếp và trình Hội đồng xét duyệt Giải thưởng 9/1 cấp Thành phố quyết định.
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Feather,
   Search,
   ArrowRight,
   CheckCircle2,
@@ -74,7 +73,7 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
   // Review form state
   const [supplementNoteInput, setSupplementNoteInput] = useState<string>('');
   const [councilNoteInput, setCouncilNoteInput] = useState<string>('');
-  const [decisionNumberInput, setDecisionNumberInput] = useState<string>('1720/QĐ-HSV-CCT');
+  const [decisionNumberInput, setDecisionNumberInput] = useState<string>('09/QĐ-HSVTP');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Preview modal state
@@ -130,7 +129,7 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
     if (activeApp) {
       setSupplementNoteInput(activeApp.supplementRequestNote || '');
       setCouncilNoteInput(activeApp.councilNote || '');
-      setDecisionNumberInput(activeApp.decisionNumber || '1720/QĐ-HSV-CCT');
+      setDecisionNumberInput(activeApp.decisionNumber || '09/QĐ-HSVTP');
     }
   }, [activeApp?.id]);
 
@@ -169,12 +168,12 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
     switch (status) {
       case 'submitted':
         return {
-          label: 'Mới nộp thẳng lên ĐHĐN',
+          label: 'Mới nộp thẳng lên Thành phố',
           cls: 'bg-[#E0F2FE] text-[#0369A1] border-[#BAE6FD]',
         };
       case 'under_review':
         return {
-          label: 'Đang thẩm định cấp ĐHĐN',
+          label: 'Đang thẩm định cấp Thành phố',
           cls: 'bg-[#EBF6FC] text-[#0D78AE] border-[#CBE4F5]',
         };
       case 'supplement_requested':
@@ -189,12 +188,12 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
         };
       case 'awaiting_committee':
         return {
-          label: 'Chờ Hội đồng ĐHĐN quyết định',
+          label: 'Chờ Hội đồng Thành phố quyết định',
           cls: 'bg-[#F3E8FF] text-[#6B21A8] border-[#E9D5FF]',
         };
       case 'recognized':
         return {
-          label: 'Đạt Giải thưởng Cánh chim trắng',
+          label: 'Đạt Giải thưởng 9/1',
           cls: 'bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]',
         };
       case 'not_recognized':
@@ -252,7 +251,7 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
       councilNoteInput,
       currentUser.fullName
     );
-    showToast('Đã hoàn tất thẩm định và trình Hội đồng xét duyệt Giải thưởng Cánh chim trắng ĐHĐN!');
+    showToast('Đã hoàn tất thẩm định và trình Hội đồng xét duyệt Giải thưởng 9/1 cấp Thành phố!');
   };
 
   const handleCommitteeDecision = (outcome: 'recognized' | 'not_recognized') => {
@@ -266,7 +265,7 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
     );
     showToast(
       outcome === 'recognized'
-        ? `Đã công nhận đạt Giải thưởng Cánh chim trắng cho đề cử: ${activeApp.nominationTitle}`
+        ? `Đã công nhận đạt Giải thưởng 9/1 cho đề cử: ${activeApp.nominationTitle}`
         : `Đã ghi nhận kết quả chưa đạt Giải thưởng cho đề cử: ${activeApp.nominationTitle}`
     );
   };
@@ -327,7 +326,7 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
         {/* Nominee Header Card */}
         <div className="bg-white rounded-[14px] border border-[#DCE7EE] p-5 space-y-2">
           <div className="text-[11.5px] font-bold text-[#0D78AE] uppercase tracking-wider">
-            Hồ sơ nộp thẳng lên Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng · Mã hồ sơ: {activeApp.id}
+            Hồ sơ nộp thẳng lên Văn phòng Hội Sinh viên Việt Nam Thành phố Đà Nẵng · Mã hồ sơ: {activeApp.id}
           </div>
           <h1 className="text-[19px] font-extrabold text-[#172A3A]">
             {activeApp.nominationTitle}
@@ -353,7 +352,7 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
             [
               {
                 id: 'WB01' as const,
-                title: 'WB01 · Văn bản đề nghị xét trao Giải thưởng (Điều 5 Quy chế 1720/QĐ-HSV)',
+                title: 'WB01 · Văn bản đề nghị xét trao Giải thưởng 9/1 cấp Thành phố',
                 judgment: activeApp.wb01Judgment || 'not_reviewed',
                 files: activeApp.requirements.wb01.evidenceFiles,
                 content: (
@@ -457,7 +456,7 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
                     )}
 
                     <div className="text-[12px] font-semibold text-[#15803D]">
-                      ✓ Đã xác nhận cam kết trung thực theo Khoản 6.2 Điều 6 Quy chế (QĐ 14-QĐ/ĐHĐN-HSV)
+                      ✓ Đã xác nhận cam kết trung thực theo Quy chế Giải thưởng 9/1 cấp Thành phố
                     </div>
                   </div>
                 ) : (
@@ -499,7 +498,7 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
                       </div>
                     )}
                     <div className="text-[12px] font-semibold text-[#15803D]">
-                      ✓ Đã xác nhận cam kết tính sáng tạo / trung thực theo Khoản 6.1 Điều 6 Quy chế (QĐ 14-QĐ/ĐHĐN-HSV)
+                      ✓ Đã xác nhận cam kết tính sáng tạo / trung thực theo Quy chế Giải thưởng 9/1 cấp Thành phố
                     </div>
                   </div>
                 ),
@@ -549,41 +548,63 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
             >
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EDF3F8] pb-3">
                 <h2 className="text-[15px] font-bold text-[#172A3A]">{sec.title}</h2>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => handleSetRequirementJudgment(sec.id, 'approved')}
-                    className={`px-3 py-1 rounded-lg text-[12px] font-bold border transition-colors cursor-pointer inline-flex items-center gap-1 ${
+                {currentUser.primaryRole === 'CITY_COMMITTEE' ? (
+                  <span
+                    className={`px-3 py-1 rounded-lg text-[12px] font-bold border inline-flex items-center gap-1 ${
                       sec.judgment === 'approved'
                         ? 'bg-[#DCFCE7] border-[#16A34A] text-[#15803D]'
-                        : 'bg-white border-[#DCE7EE] text-[#475569] hover:bg-[#F8FAFC]'
-                    }`}
-                  >
-                    <CheckCircle2 size={13} /> Đạt
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSetRequirementJudgment(sec.id, 'needs_supplement')}
-                    className={`px-3 py-1 rounded-lg text-[12px] font-bold border transition-colors cursor-pointer inline-flex items-center gap-1 ${
-                      sec.judgment === 'needs_supplement'
+                        : sec.judgment === 'needs_supplement'
                         ? 'bg-[#FEF3C7] border-[#D97706] text-[#B45309]'
-                        : 'bg-white border-[#DCE7EE] text-[#475569] hover:bg-[#F8FAFC]'
-                    }`}
-                  >
-                    <AlertCircle size={13} /> Cần bổ sung
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSetRequirementJudgment(sec.id, 'rejected')}
-                    className={`px-3 py-1 rounded-lg text-[12px] font-bold border transition-colors cursor-pointer inline-flex items-center gap-1 ${
-                      sec.judgment === 'rejected'
+                        : sec.judgment === 'rejected'
                         ? 'bg-[#FEE2E2] border-[#DC2626] text-[#B91C1C]'
-                        : 'bg-white border-[#DCE7EE] text-[#475569] hover:bg-[#F8FAFC]'
+                        : 'bg-[#F8FAFC] border-[#DCE7EE] text-[#64748B]'
                     }`}
                   >
-                    <XCircle size={13} /> Không đạt
-                  </button>
-                </div>
+                    {sec.judgment === 'approved'
+                      ? 'Thẩm định: Đạt'
+                      : sec.judgment === 'needs_supplement'
+                      ? 'Thẩm định: Cần bổ sung'
+                      : sec.judgment === 'rejected'
+                      ? 'Thẩm định: Không đạt'
+                      : 'Chưa thẩm định'}
+                  </span>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleSetRequirementJudgment(sec.id, 'approved')}
+                      className={`px-3 py-1 rounded-lg text-[12px] font-bold border transition-colors cursor-pointer inline-flex items-center gap-1 ${
+                        sec.judgment === 'approved'
+                          ? 'bg-[#DCFCE7] border-[#16A34A] text-[#15803D]'
+                          : 'bg-white border-[#DCE7EE] text-[#475569] hover:bg-[#F8FAFC]'
+                      }`}
+                    >
+                      <CheckCircle2 size={13} /> Đạt
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSetRequirementJudgment(sec.id, 'needs_supplement')}
+                      className={`px-3 py-1 rounded-lg text-[12px] font-bold border transition-colors cursor-pointer inline-flex items-center gap-1 ${
+                        sec.judgment === 'needs_supplement'
+                          ? 'bg-[#FEF3C7] border-[#D97706] text-[#B45309]'
+                          : 'bg-white border-[#DCE7EE] text-[#475569] hover:bg-[#F8FAFC]'
+                      }`}
+                    >
+                      <AlertCircle size={13} /> Cần bổ sung
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSetRequirementJudgment(sec.id, 'rejected')}
+                      className={`px-3 py-1 rounded-lg text-[12px] font-bold border transition-colors cursor-pointer inline-flex items-center gap-1 ${
+                        sec.judgment === 'rejected'
+                          ? 'bg-[#FEE2E2] border-[#DC2626] text-[#B91C1C]'
+                          : 'bg-white border-[#DCE7EE] text-[#475569] hover:bg-[#F8FAFC]'
+                      }`}
+                    >
+                      <XCircle size={13} /> Không đạt
+                    </button>
+                  </div>
+                )}
               </div>
 
               {sec.content}
@@ -639,77 +660,109 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
 
         {/* Action Panel: Supplement Request + Forward to Committee + Committee Final Decision */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Box 1: Request Supplement or Forward to Committee */}
+          {/* Box 1: Request Supplement or Forward to Committee (City Officer / Manager) */}
           <div className="bg-white rounded-[14px] border border-[#DCE7EE] p-5 space-y-3">
             <h3 className="text-[14.5px] font-bold text-[#172A3A] flex items-center gap-2">
               <MessageSquareWarning size={17} className="text-[#D97706]" />
-              <span>Thẩm định cấp Đại học Đà Nẵng & Yêu cầu bổ sung</span>
+              <span>Thẩm định cấp Thành phố & Yêu cầu bổ sung</span>
             </h3>
-            <textarea
-              rows={3}
-              value={supplementNoteInput}
-              onChange={(e) => setSupplementNoteInput(e.target.value)}
-              placeholder="Nhập nội dung yêu cầu sinh viên bổ sung minh chứng / thuyết minh (nếu cần)..."
-              className="w-full px-3 py-2 text-[12.5px] border border-[#C8D9E6] rounded-lg"
-            />
-            <div className="flex flex-wrap items-center gap-2.5">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={handleRequestSupplement}
-              >
-                Gửi yêu cầu bổ sung cho Sinh viên
-              </Button>
-              <Button
-                type="button"
-                variant="primary"
-                onClick={handleForwardToCommittee}
-              >
-                <Send size={14} className="mr-1.5" />
-                Hoàn tất thẩm định & Trình Hội đồng ĐHĐN
-              </Button>
-            </div>
+            {currentUser.primaryRole === 'CITY_COMMITTEE' ? (
+              <div className="text-[12.5px] text-[#475569] bg-[#F8FBFD] border border-[#DCE7EE] rounded-lg p-3.5 space-y-1.5">
+                <div>
+                  <strong>Kết quả rà soát của Tổ thẩm định Thành phố:</strong>{' '}
+                  {activeApp.status === 'awaiting_committee' ||
+                  activeApp.status === 'recognized' ||
+                  activeApp.status === 'not_recognized'
+                    ? 'Đã hoàn tất thẩm định hồ sơ và trình Hội đồng xét chọn.'
+                    : 'Đang trong giai đoạn thẩm định của Cán bộ cấp Thành phố.'}
+                </div>
+                {activeApp.supplementRequestNote && (
+                  <div>
+                    <strong>Lịch sử yêu cầu bổ sung:</strong> {activeApp.supplementRequestNote}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <textarea
+                  rows={3}
+                  value={supplementNoteInput}
+                  onChange={(e) => setSupplementNoteInput(e.target.value)}
+                  placeholder="Nhập nội dung yêu cầu sinh viên bổ sung minh chứng / thuyết minh (nếu cần)..."
+                  className="w-full px-3 py-2 text-[12.5px] border border-[#C8D9E6] rounded-lg"
+                />
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <Button type="button" variant="secondary" onClick={handleRequestSupplement}>
+                    Gửi yêu cầu bổ sung cho Sinh viên
+                  </Button>
+                  <Button type="button" variant="primary" onClick={handleForwardToCommittee}>
+                    <Send size={14} className="mr-1.5" />
+                    Hoàn tất thẩm định & Trình Hội đồng Thành phố
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Box 2: Council Decision (Hội đồng xét duyệt Giải thưởng Cánh chim trắng ĐHĐN) */}
+          {/* Box 2: Council Decision (Hội đồng xét duyệt Giải thưởng 9/1 cấp Thành phố) */}
           <div className="bg-white rounded-[14px] border border-[#DCE7EE] p-5 space-y-3">
             <h3 className="text-[14.5px] font-bold text-[#172A3A] flex items-center gap-2">
               <Award size={17} className="text-[#0D78AE]" />
-              <span>Quyết định của Hội đồng xét duyệt Giải thưởng “Cánh chim trắng” ĐHĐN</span>
+              <span>Quyết định của Hội đồng xét duyệt Giải thưởng “9/1” cấp Thành phố</span>
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-              <input
-                type="text"
-                value={decisionNumberInput}
-                onChange={(e) => setDecisionNumberInput(e.target.value)}
-                placeholder="Số Quyết định (VD: 1720/QĐ-HSV-CCT)"
-                className="px-3 py-2 text-[12.5px] border border-[#C8D9E6] rounded-lg font-semibold"
-              />
-              <input
-                type="text"
-                value={councilNoteInput}
-                onChange={(e) => setCouncilNoteInput(e.target.value)}
-                placeholder="Nhận xét / Kết luận của Hội đồng xét duyệt..."
-                className="px-3 py-2 text-[12.5px] border border-[#C8D9E6] rounded-lg"
-              />
-            </div>
-            <div className="flex flex-wrap items-center gap-2.5 pt-1">
-              <Button
-                type="button"
-                variant="primary"
-                onClick={() => handleCommitteeDecision('recognized')}
-              >
-                <Award size={14} className="mr-1.5" />
-                Công nhận đạt Giải thưởng Cánh chim trắng
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => handleCommitteeDecision('not_recognized')}
-              >
-                Không công nhận kỳ này
-              </Button>
-            </div>
+            {currentUser.primaryRole === 'CITY_COMMITTEE' || currentUser.primaryRole === 'ADMIN' ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                  <input
+                    type="text"
+                    value={decisionNumberInput}
+                    onChange={(e) => setDecisionNumberInput(e.target.value)}
+                    placeholder="Số Quyết định (VD: 09/QĐ-HSVTP)"
+                    className="px-3 py-2 text-[12.5px] border border-[#C8D9E6] rounded-lg font-semibold"
+                  />
+                  <input
+                    type="text"
+                    value={councilNoteInput}
+                    onChange={(e) => setCouncilNoteInput(e.target.value)}
+                    placeholder="Nhận xét / Kết luận của Hội đồng xét duyệt..."
+                    className="px-3 py-2 text-[12.5px] border border-[#C8D9E6] rounded-lg"
+                  />
+                </div>
+                <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                  <Button
+                    type="button"
+                    variant="primary"
+                    onClick={() => handleCommitteeDecision('recognized')}
+                  >
+                    <Award size={14} className="mr-1.5" />
+                    Công nhận đạt Giải thưởng 9/1
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => handleCommitteeDecision('not_recognized')}
+                  >
+                    Không công nhận kỳ này
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="text-[12.5px] text-[#475569] bg-[#F8FBFD] border border-[#DCE7EE] rounded-lg p-3.5 space-y-1.5">
+                <div>
+                  <strong>Trạng thái Hội đồng:</strong>{' '}
+                  {activeApp.status === 'recognized'
+                    ? `Đã công nhận đạt Giải thưởng 9/1 (${activeApp.decisionNumber || '09/QĐ-HSVTP'})`
+                    : activeApp.status === 'not_recognized'
+                    ? 'Hội đồng kết luận chưa đạt kỳ này'
+                    : 'Chỉ Thành viên Hội đồng xét chọn mới có quyền ra quyết định công nhận.'}
+                </div>
+                {activeApp.councilNote && (
+                  <div>
+                    <strong>Nhận xét Hội đồng:</strong> {activeApp.councilNote}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -732,13 +785,13 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#DCE7EE] pb-4">
         <div>
           <div className="text-[12px] font-semibold text-[#526B7C]">
-            {activeSeasonLabel} · Cơ quan Thường trực: Văn phòng Hội Sinh viên Việt Nam Đại học Đà
+            {activeSeasonLabel} · Cơ quan Thường trực: Văn phòng Hội Sinh viên Việt Nam Thành phố Đà
             Nẵng · <strong className="text-[#172A3A]">{currentUser.fullName}</strong>
           </div>
           <h1 className="text-[20px] font-extrabold text-[#0F2335] mt-0.5 flex items-center gap-2">
-            <Feather size={20} className="text-[#0D78AE]" />
+            <Award size={20} className="text-[#0D78AE]" />
             <span>
-              Xét duyệt Giải thưởng “Cánh chim trắng” cấp Đại học Đà Nẵng (QĐ 1720/QĐ-HSV)
+              Xét duyệt Giải thưởng “9/1” cấp Thành phố Đà Nẵng
             </span>
           </h1>
         </div>
@@ -766,7 +819,7 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Tìm tên đề cử, cá nhân/tập thể, MSSV, trường thành viên..."
+            placeholder="Tìm tên đề cử, cá nhân/tập thể, MSSV, cơ sở đào tạo..."
             className="w-full h-[36px] pl-9 pr-3 text-[13px] bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px] outline-none focus:border-[#0D78AE] focus:bg-white"
           />
         </div>
@@ -777,10 +830,9 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
             onChange={(e) => setCategoryFilter(e.target.value as 'ALL' | WhiteBirdCategory)}
             className="h-[36px] px-3 text-[12.5px] font-semibold text-[#172A3A] bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px]"
           >
-            <option value="ALL">Tất cả 3 hạng mục Cánh chim trắng</option>
-            <option value="UOM_MAM">Hạng mục: Cánh chim ươm mầm</option>
-            <option value="TRUYEN_LUA">Hạng mục: Cánh chim truyền lửa</option>
-            <option value="SANG_TAO">Hạng mục: Cánh chim sáng tạo</option>
+            <option value="ALL">Tất cả 2 hạng mục Giải thưởng 9/1</option>
+            <option value="TRUYEN_LUA">Hạng mục: Cán bộ Hội – Đoàn tiêu biểu</option>
+            <option value="UOM_MAM">Hạng mục: Mô hình, giải pháp, sáng kiến công tác Hội hiệu quả</option>
           </select>
 
           <select
@@ -789,12 +841,12 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
             className="h-[36px] px-3 text-[12.5px] font-semibold text-[#172A3A] bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px]"
           >
             <option value="ALL">Tất cả trạng thái ({submittedApps.length})</option>
-            <option value="submitted">Mới nộp thẳng lên ĐHĐN</option>
+            <option value="submitted">Mới nộp thẳng lên Thành phố</option>
             <option value="under_review">Đang thẩm định</option>
             <option value="supplement_requested">Đã yêu cầu bổ sung</option>
             <option value="supplement_returned">SV đã gửi bổ sung</option>
-            <option value="awaiting_committee">Chờ Hội đồng ĐHĐN quyết định</option>
-            <option value="recognized">Đạt Giải thưởng Cánh chim trắng</option>
+            <option value="awaiting_committee">Chờ Hội đồng Thành phố quyết định</option>
+            <option value="recognized">Đạt Giải thưởng 9/1</option>
             <option value="not_recognized">Chưa đạt Giải thưởng</option>
           </select>
         </div>
@@ -804,13 +856,13 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
       <div className="bg-white rounded-[13px] border border-[#DCE7EE] overflow-hidden shadow-2xs">
         {filteredApps.length === 0 ? (
           <div className="p-10 text-center space-y-2">
-            <Feather size={28} className="text-[#94A3B8] mx-auto" />
+            <Award size={28} className="text-[#94A3B8] mx-auto" />
             <div className="text-[14.5px] font-bold text-[#172A3A]">
-              Chưa có hồ sơ Giải thưởng “Cánh chim trắng” nào được nộp lên cấp Đại học Đà Nẵng
+              Chưa có hồ sơ Giải thưởng “9/1” nào được nộp lên cấp Thành phố Đà Nẵng
             </div>
             <p className="text-[12.5px] text-[#607483] max-w-[540px] mx-auto">
-              Khi sinh viên hoàn tất kê khai 3 mục WB01–WB03 trong Tài khoản Sinh viên và nhấn “Nộp
-              về Văn phòng HSV ĐHĐN”, hồ sơ sẽ hiển thị trực tiếp tại đây để thẩm định và xét trao.
+              Khi sinh viên hoàn tất kê khai các mục WB01–WB03 trong Tài khoản Sinh viên và nhấn “Nộp
+              về Văn phòng HSV TP. Đà Nẵng”, hồ sơ sẽ hiển thị trực tiếp tại đây để thẩm định và xét trao.
             </p>
           </div>
         ) : (
@@ -821,7 +873,7 @@ export const StaffWhiteBirdReviewRoute: React.FC<StaffWhiteBirdReviewRouteProps>
                   <th className="py-3 px-4">Mã hồ sơ & Đề cử</th>
                   <th className="py-3 px-4">Hạng mục</th>
                   <th className="py-3 px-4">Cá nhân / Tập thể</th>
-                  <th className="py-3 px-4">Đơn vị thuộc ĐHĐN</th>
+                  <th className="py-3 px-4">Đơn vị đào tạo</th>
                   <th className="py-3 px-4">Trạng thái</th>
                   <th className="py-3 px-4 text-right">Thao tác</th>
                 </tr>

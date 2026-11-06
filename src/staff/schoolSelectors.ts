@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — School Preliminary Review Domain Selectors & Scope Engine (Prompt S2)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — School Preliminary Review Domain Selectors & Scope Engine (Prompt S2)
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements Prompt S2 Sections 1–17, 53–62, 84–97:
  * - Strict School Review Unit isolation (Đại học Đà Nẵng vs ĐH Duy Tân vs ĐH Đông Á, v.v.).
@@ -35,26 +35,39 @@ import {
 // 1. INSTITUTION & REVIEW UNIT SCOPE RESOLUTION
 // =============================================================================
 
+const LEGACY_UDN_MEMBER_UNIT_IDS = new Set<string>([
+  'unit-dut',
+  'unit-due',
+  'unit-ued',
+  'unit-ufl',
+  'unit-ute',
+  'unit-vku',
+  'unit-smp',
+  'unit-vnuk',
+]);
+
+function normalizeSchoolUnitId(
+  unitId?: SchoolReviewUnitId | null
+): SchoolReviewUnitId {
+  if (!unitId) return 'unit-udn';
+  if (LEGACY_UDN_MEMBER_UNIT_IDS.has(unitId)) return 'unit-udn';
+  return unitId;
+}
+
 /**
  * Resolves the School Review Unit ID for an application.
  */
 export function getApplicationSchoolReviewUnitId(
   app: StaffApplicationRecord
 ): SchoolReviewUnitId | null {
-  if (app.schoolReviewUnitId && app.schoolReviewUnitId !== 'unit-udn') {
-    return app.schoolReviewUnitId;
-  }
   const resolution = resolveSchoolReviewUnit(app.institution.id);
-  return resolution.resolved && resolution.unit
-    ? resolution.unit.id
-    : app.schoolReviewUnitId === 'unit-udn'
-    ? 'unit-dut'
-    : app.schoolReviewUnitId || null;
-}
-
-function normalizeUserSchoolUnitId(unitId?: SchoolReviewUnitId): SchoolReviewUnitId {
-  if (!unitId || unitId === 'unit-udn') return 'unit-dut';
-  return unitId;
+  if (resolution.resolved && resolution.unit) {
+    return resolution.unit.id;
+  }
+  if (app.schoolReviewUnitId) {
+    return normalizeSchoolUnitId(app.schoolReviewUnitId);
+  }
+  return null;
 }
 
 /**
@@ -67,7 +80,7 @@ export function isApplicationInSchoolScope(
   if (user.primaryRole !== 'SCHOOL_OFFICER') {
     return false;
   }
-  const userUnitId = normalizeUserSchoolUnitId(user.schoolReviewUnitId);
+  const userUnitId = normalizeSchoolUnitId(user.schoolReviewUnitId);
   const appUnitId = getApplicationSchoolReviewUnitId(app);
   return appUnitId === userUnitId;
 }
@@ -79,7 +92,7 @@ export function getApplicationsForSchoolOfficer(
   applications: StaffApplicationRecord[],
   user: StaffUser
 ): StaffApplicationRecord[] {
-  const userUnitId = normalizeUserSchoolUnitId(user.schoolReviewUnitId);
+  const userUnitId = normalizeSchoolUnitId(user.schoolReviewUnitId);
   return applications.filter((app) => {
     const appUnitId = getApplicationSchoolReviewUnitId(app);
     return appUnitId === userUnitId;
@@ -117,7 +130,7 @@ export function canSchoolOfficerReviewApplication(
     };
   }
 
-  const userUnitId = normalizeUserSchoolUnitId(user.schoolReviewUnitId);
+  const userUnitId = normalizeSchoolUnitId(user.schoolReviewUnitId);
   const appUnitId = getApplicationSchoolReviewUnitId(appRecord);
 
   if (appUnitId !== userUnitId) {
@@ -140,7 +153,7 @@ export function canSchoolOfficerReviewApplication(
       canMutate: false,
       isReadOnly: true,
       reason: 'already_forwarded',
-      message: 'Hồ sơ đã được chuyển lên cấp Đại học Đà Nẵng. Dữ liệu xét sơ cấp Trường chỉ dùng để tra cứu lịch sử.',
+      message: 'Hồ sơ đã được chuyển lên cấp Thành phố Đà Nẵng. Dữ liệu xét sơ cấp Trường chỉ dùng để tra cứu lịch sử.',
     };
   }
 
@@ -197,9 +210,9 @@ export function resolveSchoolPreliminaryStatus(
 
 export function getSchoolOperationalMetrics(
   applications: StaffApplicationRecord[],
-  userUnitId: SchoolReviewUnitId = 'unit-dut'
+  userUnitId: SchoolReviewUnitId = 'unit-udn'
 ): SchoolOperationalMetrics {
-  const effectiveUnitId = normalizeUserSchoolUnitId(userUnitId);
+  const effectiveUnitId = normalizeSchoolUnitId(userUnitId);
   const scopedApps = applications.filter((app) => {
     const appUnitId = getApplicationSchoolReviewUnitId(app);
     return appUnitId === effectiveUnitId;
@@ -277,9 +290,9 @@ export interface SchoolPriorityQueueItem {
 export function getSchoolPriorityQueue(
   applications: StaffApplicationRecord[],
   workspaces: Record<string, ApplicationReviewWorkspaceState>,
-  userUnitId: SchoolReviewUnitId = 'unit-dut'
+  userUnitId: SchoolReviewUnitId = 'unit-udn'
 ): SchoolPriorityQueueItem[] {
-  const effectiveUnitId = normalizeUserSchoolUnitId(userUnitId);
+  const effectiveUnitId = normalizeSchoolUnitId(userUnitId);
   const scopedApps = applications.filter((app) => {
     const appUnitId = getApplicationSchoolReviewUnitId(app);
     return appUnitId === effectiveUnitId;
@@ -506,7 +519,7 @@ export function validateSchoolRecommendationEligibility(
   // 1. Cross-unit protection
   if (currentUser && currentUser.schoolReviewUnitId) {
     const appUnitId = getApplicationSchoolReviewUnitId(application);
-    const userUnitId = normalizeUserSchoolUnitId(currentUser.schoolReviewUnitId);
+    const userUnitId = normalizeSchoolUnitId(currentUser.schoolReviewUnitId);
     if (appUnitId !== userUnitId) {
       blockingReasons.push(
         `Hồ sơ thuộc đơn vị khác (${application.institution.officialName}), bạn không có thẩm quyền ra kết luận đề xuất.`
@@ -519,7 +532,7 @@ export function validateSchoolRecommendationEligibility(
     application.schoolPreliminaryStatus === 'forwarded_to_city' ||
     application.schoolReviewSummary?.isForwardedToCity === true;
   if (isAlreadyForwarded) {
-    blockingReasons.push('Hồ sơ đã được chuyển lên cấp Đại học Đà Nẵng. Không thể thay đổi kết luận đề xuất.');
+    blockingReasons.push('Hồ sơ đã được chuyển lên cấp Thành phố Đà Nẵng. Không thể thay đổi kết luận đề xuất.');
   }
 
   // 3. Must have completed preliminary review on 5 criteria
@@ -571,9 +584,9 @@ export function validateSchoolForwardingEligibility(
   // 1. Unit permission check
   if (currentUser && currentUser.schoolReviewUnitId) {
     const appUnitId = getApplicationSchoolReviewUnitId(application);
-    const userUnitId = normalizeUserSchoolUnitId(currentUser.schoolReviewUnitId);
+    const userUnitId = normalizeSchoolUnitId(currentUser.schoolReviewUnitId);
     if (appUnitId !== userUnitId) {
-      blockingReasons.push('Bạn không có thẩm quyền chuyển giao hồ sơ của đơn vị này lên cấp Đại học Đà Nẵng.');
+      blockingReasons.push('Bạn không có thẩm quyền chuyển giao hồ sơ của đơn vị này lên cấp Thành phố Đà Nẵng.');
     }
   }
 
@@ -582,7 +595,7 @@ export function validateSchoolForwardingEligibility(
     application.schoolPreliminaryStatus === 'forwarded_to_city' ||
     application.schoolReviewSummary?.isForwardedToCity === true;
   if (isAlreadyForwarded) {
-    blockingReasons.push('Hồ sơ đã được chuyển lên cấp Đại học Đà Nẵng.');
+    blockingReasons.push('Hồ sơ đã được chuyển lên cấp Thành phố Đà Nẵng.');
   }
 
   // 3. Must be recommended
@@ -590,7 +603,7 @@ export function validateSchoolForwardingEligibility(
   const isRecommended = rec === 'recommended';
 
   if (rec === 'not_recommended') {
-    blockingReasons.push('Hồ sơ có kết luận "Không đề xuất", không đủ điều kiện chuyển giao lên Đại học Đà Nẵng.');
+    blockingReasons.push('Hồ sơ có kết luận "Không đề xuất", không đủ điều kiện chuyển giao lên cấp Thành phố Đà Nẵng.');
   } else if (!isRecommended) {
     blockingReasons.push('Hồ sơ chưa có kết luận đề xuất chuyển giao từ Cán bộ xét sơ.');
   }
@@ -616,7 +629,7 @@ export function getSchoolRecommendationQueue(
   applications: StaffApplicationRecord[],
   userUnitId: SchoolReviewUnitId
 ): SchoolRecommendationQueue {
-  const effectiveUnitId = normalizeUserSchoolUnitId(userUnitId);
+  const effectiveUnitId = normalizeSchoolUnitId(userUnitId);
   const unitApps = applications.filter((app) => {
     const assignedUnitId = getApplicationSchoolReviewUnitId(app);
     return assignedUnitId === effectiveUnitId;

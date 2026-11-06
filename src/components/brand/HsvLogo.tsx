@@ -114,8 +114,8 @@ export const InstitutionLockup: React.FC<
   size = 38,
   className = '',
   orientation = 'horizontal',
-  primaryTitle = 'ĐẠI HỌC ĐÀ NẴNG',
-  subtitle = 'HỘI SINH VIÊN VIỆT NAM',
+  primaryTitle = 'HỘI SINH VIÊN VIỆT NAM TP. ĐÀ NẴNG',
+  subtitle = 'THÀNH ĐOÀN ĐÀ NẴNG',
 }) => {
   return (
     <div
@@ -124,7 +124,6 @@ export const InstitutionLockup: React.FC<
       } ${className}`}
     >
       <div className="flex items-center gap-2 shrink-0">
-        <UdnEmblem size={size} />
         <HsvEmblem size={size} />
       </div>
       <div className="flex flex-col leading-tight min-w-0">
@@ -146,15 +145,14 @@ export const UdnInstitutionLockup: React.FC<{
   return (
     <div className={`flex items-center gap-3 select-none min-w-0 ${className}`}>
       <div className="flex items-center gap-2 shrink-0">
-        <UdnEmblem size={size} />
         <HsvEmblem size={size} />
       </div>
       <div className="flex flex-col justify-center min-w-0">
         <span className="text-[11px] sm:text-[11.5px] font-semibold uppercase tracking-[0.06em] text-[#4A6275] leading-snug">
-          HỘI SINH VIÊN VIỆT NAM
+          THÀNH ĐOÀN ĐÀ NẴNG
         </span>
         <span className="text-[14px] sm:text-[16px] lg:text-[17px] font-extrabold uppercase tracking-[-0.01em] text-[#0B64A0] leading-tight truncate">
-          ĐẠI HỌC ĐÀ NẴNG
+          HỘI SINH VIÊN VIỆT NAM TP. ĐÀ NẴNG
         </span>
       </div>
     </div>
@@ -169,13 +167,12 @@ export const ProductBrandLockup: React.FC<{
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
       <div className="flex items-center gap-1.5 shrink-0">
-        <UdnEmblem size={size} />
         <HsvEmblem size={size} />
       </div>
       <div className="flex flex-col leading-none">
         <div className="flex items-center gap-1.5">
           <span className="text-[17px] font-bold text-slate-900 tracking-tight">
-            5TOT <span className="text-[#0D6EB0]">ĐHĐN</span>
+            5TOT <span className="text-[#0D6EB0]">Đà Nẵng</span>
           </span>
           {badgeLabel && (
             <span className="text-[10px] font-medium text-slate-500 bg-slate-100/80 px-1.5 py-0.5 rounded">
@@ -184,7 +181,7 @@ export const ProductBrandLockup: React.FC<{
           )}
         </div>
         <span className="text-[11px] font-medium text-slate-500 mt-0.5">
-          Hội Sinh viên Việt Nam · Đại học Đà Nẵng
+          Hội Sinh viên Việt Nam · TP. Đà Nẵng
         </span>
       </div>
     </div>

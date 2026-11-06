@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Staff Demo Scenarios Definition
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Staff Demo Scenarios Definition
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements Prompt 22 Sections 23–27:
  * - Dedicated demo scenario definitions for all 4 Staff roles:
@@ -31,7 +31,7 @@ export const MANAGER_DEMO_SCENARIOS: ManagerDemoScenarioConfig[] = [
     label: 'Mùa xét đang hoạt động (Tổng quan)',
     shortToolbarLabel: 'Tổng quan điều phối',
     description:
-      'Theo dõi toàn diện tiến độ xét duyệt cấp Đại học Đà Nẵng đợt năm học 2026–2027: 142 hồ sơ, 68% tiến độ xử lý.',
+      'Theo dõi toàn diện tiến độ xét duyệt cấp Thành phố Đà Nẵng đợt năm học 2026–2027: 142 hồ sơ, 68% tiến độ xử lý.',
     defaultRoute: 'overview',
   },
   {
@@ -76,7 +76,7 @@ export const MANAGER_DEMO_SCENARIOS: ManagerDemoScenarioConfig[] = [
     label: 'Gần mốc xử lý (Hạn nộp đợt 1)',
     shortToolbarLabel: 'Gần mốc xử lý',
     description:
-      'Mốc kết thúc tiếp nhận hồ sơ cấp Đại học Đà Nẵng sắp đến, sẵn sàng phối hợp đóng cổng tiếp nhận trực tuyến.',
+      'Mốc kết thúc tiếp nhận hồ sơ cấp Thành phố Đà Nẵng sắp đến, sẵn sàng phối hợp đóng cổng tiếp nhận trực tuyến.',
     defaultRoute: 'deadlines',
   },
 ];
@@ -105,7 +105,7 @@ export const ADMIN_DEMO_SCENARIOS: AdminDemoScenarioConfig[] = [
     label: 'Mùa xét đang hoạt động (Tổng quan)',
     shortToolbarLabel: 'Tổng quan quản trị',
     description:
-      'Bàn điều khiển quản trị năm học 2025–2026: theo dõi 09 trường/đơn vị thành viên ĐHĐN và các cảnh báo an toàn hệ thống.',
+      'Bàn điều khiển quản trị năm học 2025–2026: theo dõi 31 cơ sở đào tạo tại Đà Nẵng và các cảnh báo an toàn hệ thống.',
     defaultRoute: 'overview',
   },
   {

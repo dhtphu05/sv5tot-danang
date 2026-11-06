@@ -69,6 +69,22 @@ export class PrismaSchoolReviewUnitRepository implements ISchoolReviewUnitReposi
 
   public async findByMemberInstitutionId(institutionId: string): Promise<SchoolReviewUnitDto | null> {
     const prisma = await this.getPrisma();
+    const uIds = [
+      'inst-dut',
+      'inst-due',
+      'inst-ued',
+      'inst-ufl',
+      'inst-ute',
+      'inst-vku',
+      'inst-smp',
+      'inst-vnuk',
+    ];
+    if (uIds.includes(institutionId)) {
+      const udn = (await prisma.schoolReviewUnit.findUnique({
+        where: { id: 'unit-udn' },
+      })) as RawSchoolReviewUnitRecord | null;
+      if (udn) return this.mapToDto(udn);
+    }
     const unit = (await prisma.schoolReviewUnit.findFirst({
       where: {
         OR: [
@@ -125,6 +141,16 @@ export class PrismaSchoolReviewUnitRepository implements ISchoolReviewUnitReposi
   }
 
   private mapToDto(unit: RawSchoolReviewUnitRecord): SchoolReviewUnitDto {
+    const udnMemberIds = [
+      'inst-dut',
+      'inst-due',
+      'inst-ued',
+      'inst-ufl',
+      'inst-ute',
+      'inst-vku',
+      'inst-smp',
+      'inst-vnuk',
+    ];
     return {
       id: unit.id,
       institutionId: unit.institutionId,
@@ -133,7 +159,8 @@ export class PrismaSchoolReviewUnitRepository implements ISchoolReviewUnitReposi
       shortName: unit.shortName,
       unitType: unit.unitType as ReviewUnitType,
       isActive: unit.isActive,
-      memberInstitutionIds: [unit.institutionId],
+      memberInstitutionIds:
+        unit.id === 'unit-udn' ? udnMemberIds : [unit.institutionId],
       createdAt: unit.createdAt,
       updatedAt: unit.updatedAt,
     };

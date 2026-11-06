@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Officer Review Workspace Coordinator (Simplified for SRW-4)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Officer Review Workspace Coordinator (Simplified for SRW-4)
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements SRW-4 Sections 4, 5, 6, 16:
  * - Direct inspection of the canonical Student dossier (SharedStudentDossier in review mode)
@@ -547,10 +547,10 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
       />
 
       {/* HORIZONTAL CRITERION ANCHOR BAR (UX-S5.2) */}
-      <div className="w-full bg-white rounded-[16px] p-2.5 sm:p-3 shadow-[0_2px_12px_rgba(23,42,58,0.04)] border border-[#E2ECF2] flex flex-wrap items-center justify-between gap-2.5">
+      <div className="w-full bg-white rounded-[6px] p-2.5 px-3.5 border border-[#DFE5EC] flex flex-wrap items-center justify-between gap-2.5">
         {/* Anchors 1 to 5 */}
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-          <span className="text-[11.5px] font-bold text-[#64748B] uppercase tracking-wider mr-1 hidden sm:inline">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider mr-1 hidden sm:inline">
             Tiêu chí:
           </span>
           {CRITERIA_LIST.map((crit, idx) => {
@@ -564,31 +564,31 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
                   : 'pass'
                 : undefined);
 
-            let badgeClasses = 'bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]';
+            let badgeClasses = 'bg-[#F1F5F9] text-[#475569] border-[#CBD5E1]';
             let icon = null;
             let label = 'Chưa xét';
 
             if (progress === 'needs_supplement') {
               badgeClasses = 'bg-[#FEF6EB] text-[#B45309] border-[#FADDB6]';
-              icon = <AlertTriangle size={12} className="text-[#D97706]" />;
+              icon = <AlertTriangle size={11.5} className="text-[#D97706]" />;
               label = 'Chờ bổ sung';
             } else if (progress === 'supplement_returned') {
               badgeClasses = 'bg-[#FEF6EB] text-[#B45309] border-[#FADDB6]';
-              icon = <AlertTriangle size={12} className="text-[#D97706]" />;
+              icon = <AlertTriangle size={11.5} className="text-[#D97706]" />;
               label = 'Đã nhận BS';
             } else if (humanVerdict === 'pass') {
-              badgeClasses = 'bg-[#EAFBF1] text-[#136F3A] border-[#B6E6C9]';
-              icon = <Check size={12} className="text-[#1A934E] stroke-[2.5]" />;
+              badgeClasses = 'bg-[#ECFDF5] text-[#047857] border-[#A7F3D0]';
+              icon = <Check size={11.5} className="text-[#10A37F] stroke-[2.5]" />;
               label = 'Đạt';
             } else if (humanVerdict === 'fail') {
               badgeClasses = 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]';
-              icon = <X size={12} className="text-[#DC2626] stroke-[2.5]" />;
+              icon = <X size={11.5} className="text-[#DC2626] stroke-[2.5]" />;
               label = 'Không đạt';
             } else if (progress === 'completed') {
-              badgeClasses = 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]';
+              badgeClasses = 'bg-[#ECFDF5] text-[#047857] border-[#A7F3D0]';
               label = 'Chờ kết luận';
             } else if (progress === 'reviewing') {
-              badgeClasses = 'bg-[#EBF5FB] text-[#0F6FBA] border-[#BAE0FD]';
+              badgeClasses = 'bg-[#EFF6FF] text-[#007EE5] border-[#BFDBFE]';
               label = 'Đang xét';
             }
 
@@ -603,14 +603,14 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
                     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                   }
                 }}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-[12.5px] font-medium bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#E2E8F0] hover:border-[#CBD5E1] text-[#1E293B] transition-all cursor-pointer select-none"
+                className="group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] text-[12px] font-medium bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#DFE5EC] hover:border-[#94A3B8] text-[#1E293B] transition-colors cursor-pointer select-none"
               >
                 <span className="font-bold text-[#64748B] group-hover:text-[#0F172A]">
                   {idx + 1}.
                 </span>
                 <span className="font-semibold">{crit.name}</span>
                 <span
-                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[5px] text-[11px] font-bold border ${badgeClasses}`}
+                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[3px] text-[10.5px] font-bold border ${badgeClasses}`}
                 >
                   {icon}
                   <span>{label}</span>
@@ -629,16 +629,16 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
               setIsVirtualAiReportOpen(true);
             }}
             title="Mở báo cáo AI đối soát hồ sơ (theo yêu cầu)"
-            className="h-[34px] px-3 rounded-[9px] bg-[#F0F7FF] hover:bg-[#E0EFFF] text-[#0066CC] font-semibold text-[12px] inline-flex items-center gap-1.5 transition-colors border border-[#BAE0FD] cursor-pointer"
+            className="h-[32px] px-2.5 rounded-[5px] bg-[#EFF6FF] hover:bg-[#DBEAFE] text-[#0066CC] font-semibold text-[12px] inline-flex items-center gap-1.5 transition-colors border border-[#BFDBFE] cursor-pointer"
           >
-            <Sparkles size={13} className="text-[#0066CC]" />
+            <Sparkles size={13} className="text-[#007EE5]" />
             <span>AI hỗ trợ</span>
           </button>
 
           {isApplicationCompleted ? (
             <div className="flex items-center gap-2">
-              <span className="h-[34px] px-3.5 rounded-[9px] bg-[#EAFBF1] text-[#136F3A] border border-[#B6E6C9] font-bold text-[12px] inline-flex items-center gap-1.5 shadow-2xs">
-                <CheckCircle2 size={14} />
+              <span className="h-[32px] px-3 rounded-[5px] bg-[#ECFDF5] text-[#047857] border border-[#A7F3D0] font-bold text-[12px] inline-flex items-center gap-1.5">
+                <CheckCircle2 size={13.5} />
                 <span>{isSchoolStage ? 'Đã hoàn tất xét sơ tuyển' : 'Đã hoàn tất thẩm định'}</span>
               </span>
               {!effectiveIsReadOnly && (
@@ -646,9 +646,9 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
                   type="button"
                   onClick={handleReopenApplicationReview}
                   title="Hoàn tác chốt kết quả để mở lại xét duyệt hồ sơ này"
-                  className="h-[34px] px-3 rounded-[9px] bg-white hover:bg-[#FFFBEB] text-[#B45309] border border-[#FADDB6] hover:border-[#F59E0B] font-bold text-[12px] inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                  className="h-[32px] px-2.5 rounded-[5px] bg-white hover:bg-[#FFFBEB] text-[#B45309] border border-[#FADDB6] hover:border-[#F59E0B] font-bold text-[12px] inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
-                  <RotateCcw size={13} />
+                  <RotateCcw size={12.5} />
                   <span>Hoàn tác / Xét lại</span>
                 </button>
               )}
@@ -667,13 +667,13 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
                   }
                   setIsCompleteDialogOpen(true);
                 }}
-                className={`h-[34px] px-3.5 rounded-[9px] font-bold text-[12px] inline-flex items-center gap-1.5 transition-colors border-0 cursor-pointer shadow-sm ${
+                className={`h-[32px] px-3 rounded-[5px] font-bold text-[12px] inline-flex items-center gap-1.5 transition-colors border cursor-pointer ${
                   completionCheck.allowed
-                    ? 'bg-[#1680DE] hover:bg-[#1371C4] text-white'
-                    : 'bg-[#E2E8F0] hover:bg-[#CBD5E1] text-[#475569]'
+                    ? 'bg-[#10A37F] hover:bg-[#0D8A6B] text-white border-[#10A37F]'
+                    : 'bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] border-[#CBD5E1]'
                 }`}
               >
-                <CheckCircle2 size={14} />
+                <CheckCircle2 size={13.5} />
                 <span>{isSchoolStage ? 'Hoàn tất xét sơ tuyển' : 'Hoàn tất thẩm định'}</span>
               </button>
             )
@@ -682,19 +682,19 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
       </div>
 
       {isApplicationCompleted && !effectiveIsReadOnly && (
-        <div className="w-full rounded-[14px] px-4 py-3 bg-[#EAFBF1] border border-[#86EFAC] text-[#14532D] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
-          <div className="flex items-center gap-2.5 text-[13px]">
-            <CheckCircle2 size={18} className="text-[#16A34A] shrink-0" />
+        <div className="w-full rounded-[6px] px-4 py-2.5 bg-[#ECFDF5] border border-[#A7F3D0] text-[#065F46] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 text-[12.5px]">
+            <CheckCircle2 size={16} className="text-[#10A37F] shrink-0" />
             <div>
               <strong className="font-bold">
                 {isSchoolStage
                   ? 'Đã hoàn tất xét sơ tuyển 05 tiêu chí cấp Trường.'
-                  : 'Đã hoàn tất thẩm định 05 tiêu chí cấp Đại học Đà Nẵng.'}
+                  : 'Đã hoàn tất thẩm định 05 tiêu chí cấp Thành phố Đà Nẵng.'}
               </strong>{' '}
               <span>
                 {isSchoolStage
-                  ? 'Hồ sơ đã sẵn sàng để ghi nhận Kết luận đề xuất chuyển cấp ĐHĐN tại danh sách hồ sơ sơ tuyển.'
-                  : 'Hồ sơ đã được chuyển sang bước trình Hội đồng xét chọn cấp Đại học Đà Nẵng.'}
+                  ? 'Hồ sơ đã sẵn sàng để ghi nhận Kết luận đề xuất chuyển cấp Thành phố tại danh sách hồ sơ sơ tuyển.'
+                  : 'Hồ sơ đã được chuyển sang bước trình Hội đồng xét chọn cấp Thành phố Đà Nẵng.'}
               </span>
             </div>
           </div>
@@ -702,19 +702,19 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
             <button
               type="button"
               onClick={handleReopenApplicationReview}
-              className="h-[34px] px-3.5 rounded-[9px] bg-white hover:bg-[#FFFBEB] text-[#B45309] border border-[#F59E0B] font-bold text-[12px] inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+              className="h-[32px] px-3 rounded-[5px] bg-white hover:bg-[#FFFBEB] text-[#B45309] border border-[#F59E0B] font-bold text-[12px] inline-flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              <RotateCcw size={13} />
+              <RotateCcw size={12.5} />
               <span>Hoàn tác chốt & Xét lại</span>
             </button>
             <button
               type="button"
               onClick={onBackToQueue}
-              className="h-[34px] px-3.5 rounded-[9px] bg-[#16A34A] hover:bg-[#15803D] text-white font-bold text-[12px] inline-flex items-center gap-1.5 transition-colors cursor-pointer border-0 shrink-0 shadow-xs"
+              className="h-[32px] px-3 rounded-[5px] bg-[#10A37F] hover:bg-[#0D8A6B] text-white font-bold text-[12px] inline-flex items-center gap-1.5 transition-colors cursor-pointer border-0 shrink-0"
             >
               <span>
                 {isSchoolStage
-                  ? 'Quay lại danh sách hồ sơ xét sơ'
+                  ? 'Quay lại danh sách xét sơ'
                   : 'Quay lại danh sách hồ sơ'}
               </span>
             </button>
@@ -723,7 +723,7 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
       )}
 
       {/* LEAN DOSSIER SUMMARY STRIP (Human-concluded progress vs eligibility) */}
-      <div className="w-full bg-white rounded-[14px] px-4 py-3 border border-[#DCE7EE] shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-[13px]">
+      <div className="w-full bg-white rounded-[6px] px-3.5 py-2.5 border border-[#DFE5EC] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[12.5px]">
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <span className="text-[#64748B] font-medium">Tiến độ kết luận:</span>

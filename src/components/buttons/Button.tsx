@@ -26,30 +26,30 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    // Size configurations
+    // Size configurations — Crisp administrative geometry
     const sizeClasses = {
-      sm: 'h-8 px-3 text-[13px] gap-1.5 rounded-[8px]',
-      md: 'h-10 px-4 text-[14px] font-medium gap-2 rounded-[10px]',
-      lg: 'h-11 px-5 text-[15px] font-medium gap-2.5 rounded-[12px]',
+      sm: 'h-8 px-3 text-[12.5px] font-semibold gap-1.5 rounded-[5px]',
+      md: 'h-9.5 px-4 text-[13.5px] font-semibold gap-2 rounded-[6px]',
+      lg: 'h-11 px-5 text-[14.5px] font-semibold gap-2.5 rounded-[6px]',
     }[size];
 
-    // Variant configurations
+    // Variant configurations — HSV Ocean Blue & Emerald Teal Administrative System
     const variantClasses = {
       primary:
-        'bg-[#22A9E0] text-white hover:bg-[#1995C9] active:bg-[#1582B0] active:scale-[0.99] disabled:bg-slate-200 disabled:text-slate-400 disabled:scale-100 shadow-none font-medium',
+        'bg-[#10A37F] text-white hover:bg-[#0D8C6D] active:bg-[#0A755B] disabled:bg-slate-200 disabled:text-slate-400 shadow-none font-semibold',
       secondary:
-        'bg-black/[0.045] text-[#1D1D1F] hover:bg-black/[0.075] active:bg-black/[0.1] disabled:bg-black/[0.02] disabled:text-slate-400 font-medium',
+        'bg-white text-[#1E293B] border border-[#CBD5E1] hover:bg-[#F8FAFC] hover:border-[#94A3B8] active:bg-[#F1F5F9] disabled:bg-slate-50 disabled:text-slate-400 font-semibold',
       quiet:
-        'bg-transparent text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-black/[0.035] active:bg-black/[0.06] disabled:text-slate-300 font-medium',
+        'bg-transparent text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] active:bg-[#E2E8F0] disabled:text-slate-300 font-medium',
       danger:
-        'bg-[#DC2626] text-white hover:bg-[#B91C1C] active:bg-[#991B1B] disabled:bg-slate-200 disabled:text-slate-400 font-medium',
+        'bg-[#DC2626] text-white hover:bg-[#B91C1C] active:bg-[#991B1B] disabled:bg-slate-200 disabled:text-slate-400 font-semibold',
     }[variant];
 
     return (
       <button
         ref={ref}
         disabled={disabled || isLoading}
-        className={`inline-flex items-center justify-center select-none transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22A9E0]/40 whitespace-nowrap cursor-pointer disabled:cursor-not-allowed ${sizeClasses} ${variantClasses} ${className}`}
+        className={`inline-flex items-center justify-center select-none transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#10A37F]/35 whitespace-nowrap cursor-pointer disabled:cursor-not-allowed ${sizeClasses} ${variantClasses} ${className}`}
         {...props}
       >
         {isLoading ? (

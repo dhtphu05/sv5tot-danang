@@ -260,5 +260,5 @@ test('UX-CORR-08: School and City criterion conclusions maintain distinct audit 
   assert.equal(ws.criterionConclusions?.volunteer?.stage, 'CITY');
   assert.equal(ws.criterionConclusions?.volunteer?.actorName, 'Trần Hoàng Nam');
   assert.ok(ws.historyEvents.some((e) => e.description.includes('Cấp Trường') && e.actorName === 'Lê Văn An'));
-  assert.ok(ws.historyEvents.some((e) => e.description.includes('Cấp Đại học Đà Nẵng') && e.actorName === 'Trần Hoàng Nam'));
+  assert.ok(ws.historyEvents.some((e) => e.description.includes('Cấp Thành phố Đà Nẵng') && e.actorName === 'Trần Hoàng Nam'));
 });

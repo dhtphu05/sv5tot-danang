@@ -187,7 +187,7 @@ describe('Backend V2: Environment Configuration Unit Tests', () => {
     );
   });
 
-  it('defaults to official production URL https://sinhvien5tot.udn.vn when NODE_ENV is production and not explicitly set', () => {
+  it('defaults to official production URL https://sv5tot.thanhdoandanang.org.vn when NODE_ENV is production and not explicitly set', () => {
     const config = parseEnvironment({
       NODE_ENV: 'production',
       DATABASE_URL: 'postgresql://neondb_owner:pass@ep-cool-sky-123-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require',
@@ -199,8 +199,8 @@ describe('Backend V2: Environment Configuration Unit Tests', () => {
       R2_BUCKET_NAME: 'bucket',
     });
 
-    assert.equal(config.APP_PUBLIC_URL, 'https://sinhvien5tot.udn.vn');
-    assert.equal(config.APP_URL, 'https://sinhvien5tot.udn.vn');
+    assert.equal(config.APP_PUBLIC_URL, 'https://sv5tot.thanhdoandanang.org.vn');
+    assert.equal(config.APP_URL, 'https://sv5tot.thanhdoandanang.org.vn');
   });
 
   it('allows http://localhost:5173 in development mode', () => {

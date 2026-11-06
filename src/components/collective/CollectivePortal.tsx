@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Collective Portal & Student Account Collective Tab (FSD Route Composition)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Collective Portal & Student Account Collective Tab (FSD Route Composition)
+ * Cơ quan chỉ đạo: Thành Đoàn Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  * Niên khóa áp dụng: Năm học 2025–2026
  *
  * Decomposed into Feature-Sliced portal modules:
@@ -26,6 +26,7 @@ import {
   Clock,
   CheckCircle2,
   ShieldCheck,
+  KeyRound,
 } from 'lucide-react';
 import {
   getAllCollectiveApplications,
@@ -51,6 +52,8 @@ import { CollectiveSupplementsTab } from './portal/CollectiveSupplementsTab';
 import { CollectiveResultsTab } from './portal/CollectiveResultsTab';
 import { CollectiveAccountTab } from './portal/CollectiveAccountTab';
 import { Button } from '../buttons/Button';
+import { ChangePasswordModal } from '../auth/ChangePasswordModal';
+import { PortalTopHeader } from '../shell/PortalTopHeader';
 import {
   calculateParticipationRate,
   calculateRecognitionRate,
@@ -99,6 +102,7 @@ export const CollectivePortal: React.FC<CollectivePortalProps> = ({
   const [selectedAppId, setSelectedAppId] = useState<string>(initialAppId || '');
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [storeVersion, setStoreVersion] = useState(0);
 
   const effectiveEmail = (
@@ -110,7 +114,7 @@ export const CollectivePortal: React.FC<CollectivePortalProps> = ({
     .toLowerCase();
   const effectiveStudentId = (studentIdentity?.studentId || '').trim();
   const effectiveStudentName =
-    (studentIdentity?.fullName || '').trim() || 'Sinh viên ĐHĐN';
+    (studentIdentity?.fullName || '').trim() || 'Sinh viên Đà Nẵng';
   const effectiveUniversity =
     studentProfileSnapshot?.institutionName ||
     studentIdentity?.university ||
@@ -309,33 +313,33 @@ export const CollectivePortal: React.FC<CollectivePortalProps> = ({
   // =========================================================================
   if (!currentApp) {
     return (
-      <div className="flex-1 w-full max-w-6xl mx-auto px-6 lg:px-8 py-8 space-y-6 text-[#172A3A] animate-in fade-in duration-150">
-        {/* Hero Onboarding Card */}
-        <div className="bg-white rounded-[20px] border border-[#DCE7EE] p-7 sm:p-8 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2.5 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAF6FC] text-[#0D78AE] text-[11.5px] font-bold tracking-wide border border-[#CFE3F0]">
-              <Users size={13.5} />
+      <div className="flex-1 w-full max-w-6xl mx-auto px-5 lg:px-7 py-6 space-y-5 text-[#1E293B] animate-in fade-in duration-150">
+        {/* Flat Administrative Onboarding Box */}
+        <div className="bg-white rounded-[6px] border border-[#DFE5EC] border-t-[3px] border-t-[#007EE5] p-6 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-[4px] bg-[#EFF6FF] text-[#0066CC] text-[11px] font-bold tracking-wide border border-[#BFDBFE]">
+              <Users size={13} />
               <span>HẠNG MỤC XÉT CHỌN TẬP THỂ · NĂM HỌC 2025–2026</span>
             </div>
-            <h1 className="text-[24px] sm:text-[26px] font-extrabold text-[#172A3A] tracking-tight">
-              Hồ sơ Tập thể “Sinh viên 5 tốt”
+            <h1 className="text-[20px] sm:text-[22px] font-extrabold text-[#0F172A] tracking-tight">
+              Hồ sơ Tập thể “Sinh viên 5 tốt” cấp Thành phố Đà Nẵng
             </h1>
-            <p className="text-[13.5px] text-[#526B7C] leading-relaxed">
+            <p className="text-[13px] text-[#475569] leading-relaxed">
               Khởi tạo và kê khai trực tiếp hồ sơ đề nghị xét chọn danh hiệu{' '}
-              <strong className="text-[#172A3A]">Tập thể Sinh viên 5 tốt cấp Đại học Đà Nẵng</strong>{' '}
-              (Chi hội, Liên chi hội, Chi đoàn, Liên chi đoàn hoặc CLB/Đội/Nhóm) ngay trong tài khoản sinh viên của bạn.
+              <strong className="text-[#0F172A]">Tập thể Sinh viên 5 tốt cấp Thành phố</strong>{' '}
+              (Chi hội, Liên chi hội, Chi đoàn, Liên chi đoàn hoặc CLB/Đội/Nhóm) ngay trong tài khoản của bạn.
             </p>
             <div className="pt-1 flex items-center gap-3 text-[12.5px] text-[#475569] flex-wrap">
               <span>
                 Người phụ trách:{' '}
-                <strong className="text-[#172A3A]">{effectiveStudentName}</strong>
+                <strong className="text-[#0F172A]">{effectiveStudentName}</strong>
                 {effectiveStudentId ? ` (MSSV: ${effectiveStudentId})` : ''}
               </span>
               {effectiveUniversity && (
                 <>
                   <span>·</span>
                   <span>
-                    Đơn vị: <strong className="text-[#0D78AE]">{effectiveUniversity}</strong>
+                    Đơn vị: <strong className="text-[#007EE5]">{effectiveUniversity}</strong>
                   </span>
                 </>
               )}
@@ -348,39 +352,39 @@ export const CollectivePortal: React.FC<CollectivePortalProps> = ({
               variant="primary"
               size="lg"
               onClick={() => setIsCreateModalOpen(true)}
-              className="gap-2 font-bold shadow-sm h-[46px] px-6"
+              className="gap-2 font-semibold h-[42px] px-5"
             >
-              <Plus size={18} />
+              <Plus size={17} />
               <span>Khởi tạo hồ sơ Tập thể SV5T</span>
             </Button>
           </div>
         </div>
 
         {/* 4 Criteria Overview Grid */}
-        <div className="space-y-3">
-          <h2 className="text-[15px] font-bold text-[#172A3A]">
-            04 Tiêu chuẩn xét chọn Tập thể Sinh viên 5 tốt cấp Đại học Đà Nẵng
+        <div className="space-y-2.5">
+          <h2 className="text-[14.5px] font-bold text-[#0F172A]">
+            04 Tiêu chuẩn xét chọn Tập thể Sinh viên 5 tốt cấp Thành phố
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             {(['TT01', 'TT02', 'TT03', 'TT04'] as const).map((code) => {
               const meta = COLLECTIVE_REQUIREMENTS_META[code];
               return (
                 <div
                   key={code}
-                  className="bg-white rounded-[14px] border border-[#DCE7EE] p-5 space-y-2 shadow-2xs"
+                  className="bg-white rounded-[6px] border border-[#DFE5EC] p-4 space-y-1.5"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11.5px] font-extrabold text-[#0D78AE] bg-[#EAF6FC] px-2.5 py-0.5 rounded-[6px]">
+                    <span className="text-[11px] font-bold text-[#0066CC] bg-[#EFF6FF] border border-[#BFDBFE] px-2 py-0.5 rounded-[4px]">
                       {meta.code} — {meta.shortTitle}
                     </span>
-                    <span className="text-[11px] font-bold text-[#475569] bg-[#F1F5F9] px-2 py-0.5 rounded-full">
+                    <span className="text-[11px] font-semibold text-[#475569] bg-[#F8FAFC] border border-[#E2E8F0] px-2 py-0.5 rounded-[4px]">
                       {meta.ruleBadge}
                     </span>
                   </div>
-                  <div className="text-[14px] font-bold text-[#172A3A]">
+                  <div className="text-[13.5px] font-bold text-[#0F172A]">
                     {meta.title}
                   </div>
-                  <p className="text-[12.5px] text-[#607483] leading-relaxed">
+                  <p className="text-[12.5px] text-[#475569] leading-relaxed">
                     {meta.ruleHelper}
                   </p>
                 </div>
@@ -390,15 +394,15 @@ export const CollectivePortal: React.FC<CollectivePortalProps> = ({
         </div>
 
         {/* Direct Submission Regulatory Info */}
-        <div className="p-4 bg-[#EAF6FC] border border-[#CFE3F0] rounded-[14px] flex items-start gap-3 text-[13px] text-[#0B64A0]">
-          <ShieldCheck size={19} className="shrink-0 text-[#0D78AE] mt-0.5" />
+        <div className="p-4 bg-[#F8FAFC] border border-[#DFE5EC] border-l-[3px] border-l-[#10A37F] rounded-[4px] flex items-start gap-3 text-[12.5px] text-[#334155]">
+          <ShieldCheck size={18} className="shrink-0 text-[#10A37F] mt-0.5" />
           <div className="space-y-1 leading-relaxed">
-            <span className="font-bold text-[13.5px]">
+            <span className="font-bold text-[13px] text-[#0F172A]">
               Quy trình khởi tạo và nộp hồ sơ Tập thể:
             </span>
             <p>
               Sau khi nhấn <strong>“Khởi tạo hồ sơ Tập thể SV5T”</strong>, bạn kê khai đầy đủ 04 tiêu chuẩn, danh sách thành viên và minh chứng kèm theo, sau đó nộp trực tiếp lên{' '}
-              <strong>Hội Sinh viên Việt Nam Đại học Đà Nẵng</strong> để thẩm định và xét chọn.
+              <strong>Hội Sinh viên Việt Nam Thành phố Đà Nẵng</strong> để thẩm định và xét chọn.
             </p>
           </div>
         </div>
@@ -428,65 +432,119 @@ export const CollectivePortal: React.FC<CollectivePortalProps> = ({
     <div
       className={
         embeddedInStudentPortal
-          ? 'flex-1 flex flex-col min-h-screen bg-[#F3F8FC] text-[#172A3A] select-text'
-          : 'flex h-screen bg-[#F3F8FC] text-[#172A3A] overflow-hidden select-text'
+          ? 'flex-1 flex flex-col min-h-screen bg-[#F4F6F9] text-[#1E293B] select-text'
+          : 'min-h-screen flex flex-col bg-[#F4F6F9] text-[#1E293B] select-text'
       }
     >
-      {/* Top Horizontal Sub-Navigation when embedded inside Student Account */}
-      {embeddedInStudentPortal ? (
-        <div className="bg-white border-b border-[#DCE7EE] px-6 py-3 sticky top-0 z-20 shadow-2xs">
-          <div className="max-w-7xl mx-auto flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-[8px] bg-[#0D78AE] text-white flex items-center justify-center font-bold shrink-0">
-                  <Users size={16} />
+      {!embeddedInStudentPortal && (
+        <PortalTopHeader
+          title="5TOT Đà Nẵng"
+          subtitle="Cổng xét chọn Tập thể Sinh viên 5 tốt cấp Thành phố"
+          roleBadge="Cổng Tập thể"
+          userName={effectiveStudentName}
+          userEmail={effectiveEmail || undefined}
+          universityLabel={effectiveUniversity || currentApp.institutionName}
+          onOpenProfile={() => setActiveTab('account')}
+          onOpenChangePassword={() => setIsChangePasswordOpen(true)}
+          onLogout={onLogout}
+          logoutLabel="Đăng xuất"
+        />
+      )}
+
+      <div className={embeddedInStudentPortal ? 'flex-1 flex flex-col' : 'flex flex-1 min-h-[calc(100dvh-50px)]'}>
+        {/* Top Horizontal Sub-Navigation when embedded inside Student Account */}
+        {embeddedInStudentPortal ? (
+          <div className="bg-white border-b border-[#DFE5EC] px-5 lg:px-7 py-3 sticky top-[50px] z-20">
+            <div className="max-w-7xl mx-auto flex flex-col gap-2.5">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-[5px] bg-[#007EE5] text-white flex items-center justify-center font-bold shrink-0">
+                    <Users size={15} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[14px] font-bold text-[#0F172A] truncate">
+                        {currentApp.collectiveName}
+                      </span>
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-[4px] bg-[#F1F5F9] border border-[#E2E8F0] text-[#475569]">
+                        {COLLECTIVE_TYPE_LABELS[currentApp.collectiveType] || currentApp.collectiveType}
+                      </span>
+                    </div>
+                    <div className="text-[11.5px] text-[#64748B] truncate">
+                      {currentApp.institutionName} · {currentApp.facultyName}
+                    </div>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[14.5px] font-extrabold text-[#172A3A] truncate">
-                      {currentApp.collectiveName}
-                    </span>
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-[5px] bg-[#F1F5F9] text-[#475569]">
-                      {COLLECTIVE_TYPE_LABELS[currentApp.collectiveType] || currentApp.collectiveType}
-                    </span>
-                  </div>
-                  <div className="text-[11.5px] text-[#607483] truncate">
-                    {currentApp.institutionName} · {currentApp.facultyName}
-                  </div>
+
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  {myApps.length > 1 && (
+                    <select
+                      value={currentApp.id}
+                      onChange={(e) => setSelectedAppId(e.target.value)}
+                      aria-label="Chuyển đổi hồ sơ tập thể"
+                      className="h-[32px] px-2.5 bg-white border border-[#CBD5E1] rounded-[5px] text-[12.5px] font-semibold text-[#1E293B] outline-none focus:border-[#007EE5]"
+                    >
+                      {myApps.map((app) => (
+                        <option key={app.id} value={app.id}>
+                          {app.collectiveName} ({COLLECTIVE_TYPE_LABELS[app.collectiveType]})
+                        </option>
+                      ))}
+                    </select>
+                  )}
+
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="gap-1.5"
+                  >
+                    <Plus size={14} />
+                    <span>Khởi tạo tập thể mới</span>
+                  </Button>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 flex-wrap">
-                {myApps.length > 1 && (
-                  <select
-                    value={currentApp.id}
-                    onChange={(e) => setSelectedAppId(e.target.value)}
-                    aria-label="Chuyển đổi hồ sơ tập thể"
-                    className="h-[34px] px-2.5 bg-[#F8FBFD] border border-[#DCE7EE] rounded-[8px] text-[12.5px] font-semibold text-[#172A3A] outline-none focus:border-[#0D78AE]"
-                  >
-                    {myApps.map((app) => (
-                      <option key={app.id} value={app.id}>
-                        {app.collectiveName} ({COLLECTIVE_TYPE_LABELS[app.collectiveType]})
-                      </option>
-                    ))}
-                  </select>
-                )}
-
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setIsCreateModalOpen(true)}
-                  className="gap-1.5"
-                >
-                  <Plus size={14} />
-                  <span>Khởi tạo tập thể mới</span>
-                </Button>
+              {/* Flat Administrative Sub-tabs */}
+              <div className="flex items-center gap-1 overflow-x-auto pt-1.5 border-t border-[#E2E8F0]">
+                {navItems.map((item) => {
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setActiveTab(item.id as CollectivePortalTab)}
+                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-[4px] text-[12.5px] whitespace-nowrap transition-colors cursor-pointer ${
+                        isActive
+                          ? 'bg-[#10A37F] text-white font-semibold'
+                          : 'text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] font-medium'
+                      }`}
+                    >
+                      <span className={isActive ? 'text-white' : 'text-[#64748B]'}>
+                        {item.icon}
+                      </span>
+                      <span>{item.label}</span>
+                      {item.badge !== undefined && item.badge > 0 && (
+                        <span
+                          className={`text-[10.5px] font-bold px-1.5 py-0.2 rounded-[4px] tabular-nums ${
+                            isActive
+                              ? 'bg-white/25 text-white'
+                              : item.badgeColor || 'bg-[#E2E8F0] text-[#475569]'
+                          }`}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
-
-            {/* Sub-tabs */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pt-1 border-t border-[#F1F5F9]">
+          </div>
+        ) : (
+          /* Standalone Light Sub-Sidebar Navigation */
+          <aside className="w-[238px] bg-white border-r border-[#DFE5EC] flex flex-col shrink-0 z-20">
+            <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
               {navItems.map((item) => {
                 const isActive = activeTab === item.id;
                 return (
@@ -494,20 +552,24 @@ export const CollectivePortal: React.FC<CollectivePortalProps> = ({
                     key={item.id}
                     type="button"
                     onClick={() => setActiveTab(item.id as CollectivePortalTab)}
-                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-[8px] text-[12.5px] font-semibold whitespace-nowrap transition-colors cursor-pointer ${
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-[4px] text-[13px] transition-colors cursor-pointer ${
                       isActive
-                        ? 'bg-[#EAF6FC] text-[#0D78AE] font-bold'
-                        : 'text-[#607483] hover:text-[#172A3A] hover:bg-[#F8FBFD]'
+                        ? 'bg-[#10A37F] text-white font-semibold'
+                        : 'text-[#334155] hover:text-[#0F172A] hover:bg-[#F1F5F9] font-medium'
                     }`}
                   >
-                    <span className={isActive ? 'text-[#0D78AE]' : 'text-[#728391]'}>
-                      {item.icon}
-                    </span>
-                    <span>{item.label}</span>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className={isActive ? 'text-white' : 'text-[#64748B]'}>
+                        {item.icon}
+                      </span>
+                      <span className="truncate">{item.label}</span>
+                    </div>
                     {item.badge !== undefined && item.badge > 0 && (
                       <span
-                        className={`text-[10.5px] font-bold px-1.5 py-0.2 rounded-full tabular-nums ${
-                          item.badgeColor || 'bg-[#E2EDF5] text-[#475569]'
+                        className={`text-[10.5px] font-bold px-1.5 py-0.2 rounded-[4px] tabular-nums ${
+                          isActive
+                            ? 'bg-white/25 text-white'
+                            : item.badgeColor || 'bg-[#E2E8F0] text-[#475569]'
                         }`}
                       >
                         {item.badge}
@@ -517,78 +579,32 @@ export const CollectivePortal: React.FC<CollectivePortalProps> = ({
                 );
               })}
             </div>
-          </div>
-        </div>
-      ) : (
-        /* Standalone Sidebar Navigation (Fallback) */
-        <aside className="w-64 bg-white border-r border-[#DCE7EE] flex flex-col shrink-0 shadow-2xs z-20">
-          <div className="p-4 border-b border-[#DCE7EE] flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-[8px] bg-[#0D78AE] text-white flex items-center justify-center font-black text-[13px]">
-                5T
-              </div>
-              <div>
-                <div className="font-extrabold text-[13.5px] tracking-tight leading-tight text-[#0D78AE]">
-                  5TOT ĐÀ NẴNG
-                </div>
-                <div className="text-[10px] text-[#607483] font-semibold tracking-wider uppercase">
-                  Tập Thể SV5T
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <div className="flex-1 overflow-y-auto p-3 space-y-1">
-            {navItems.map((item) => {
-              const isActive = activeTab === item.id;
-              return (
+            {onLogout && (
+              <div className="p-2.5 border-t border-[#DFE5EC] bg-[#F8FAFC] space-y-1">
                 <button
-                  key={item.id}
                   type="button"
-                  onClick={() => setActiveTab(item.id as CollectivePortalTab)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-[9px] text-[13px] font-semibold transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-[#EAF6FC] text-[#0D78AE] font-bold shadow-2xs'
-                      : 'text-[#607483] hover:text-[#172A3A] hover:bg-[#F8FBFD]'
-                  }`}
+                  onClick={() => setIsChangePasswordOpen(true)}
+                  className="w-full flex items-center justify-between px-2 py-1.5 rounded-[4px] text-[12px] font-medium text-[#334155] hover:bg-[#E2E8F0]/60 transition-colors cursor-pointer"
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span className={isActive ? 'text-[#0D78AE]' : 'text-[#728391]'}>
-                      {item.icon}
-                    </span>
-                    <span className="truncate">{item.label}</span>
-                  </div>
-                  {item.badge !== undefined && item.badge > 0 && (
-                    <span
-                      className={`text-[10.5px] font-bold px-1.5 py-0.2 rounded-full tabular-nums ${
-                        item.badgeColor || 'bg-[#E2EDF5] text-[#475569]'
-                      }`}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
+                  <span>Đổi mật khẩu</span>
+                  <KeyRound size={13} className="text-[#10A37F]" />
                 </button>
-              );
-            })}
-          </div>
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="w-full flex items-center justify-between px-2 py-1.5 rounded-[4px] text-[12px] font-medium text-[#475569] hover:text-[#DC2626] hover:bg-[#FEF2F2] transition-colors cursor-pointer"
+                >
+                  <span>Đăng xuất</span>
+                  <LogOut size={13} />
+                </button>
+              </div>
+            )}
+          </aside>
+        )}
 
-          {onLogout && (
-            <div className="p-3 border-t border-[#DCE7EE] bg-[#F8FBFD]">
-              <button
-                type="button"
-                onClick={onLogout}
-                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-[7px] text-[12px] font-semibold text-[#466474] hover:text-[#DC2626] hover:bg-[#FEF2F2] transition-colors cursor-pointer"
-              >
-                <span>Đăng xuất</span>
-                <LogOut size={13.5} />
-              </button>
-            </div>
-          )}
-        </aside>
-      )}
-
-      {/* Main Content Area */}
-      <div className="flex-1 min-w-0 flex flex-col overflow-y-auto">
+        {/* Main Content Area */}
+        <div className="flex-1 min-w-0 flex flex-col overflow-y-auto">
         {/* TAB 1: TỔNG QUAN */}
         {activeTab === 'overview' && (
           <CollectiveOverviewTab
@@ -637,7 +653,7 @@ export const CollectivePortal: React.FC<CollectivePortalProps> = ({
                 Hộp thư & Thông báo xét duyệt
               </h2>
               <p className="text-[13px] text-[#607483] mt-0.5">
-                Các cập nhật chính thức từ Hội Sinh viên Đại học Đà Nẵng về tiến độ hồ sơ tập thể
+                Các cập nhật chính thức từ Hội Sinh viên TP. Đà Nẵng về tiến độ hồ sơ tập thể
               </p>
             </div>
 
@@ -675,6 +691,7 @@ export const CollectivePortal: React.FC<CollectivePortalProps> = ({
             onLogout={embeddedInStudentPortal ? undefined : onLogout}
           />
         )}
+        </div>
       </div>
 
       {/* Result Certificate Modal */}
@@ -701,6 +718,14 @@ export const CollectivePortal: React.FC<CollectivePortalProps> = ({
         initialClassName={studentProfileSnapshot?.className}
         initialPhone={studentProfileSnapshot?.phone}
         onSubmit={handleCreateSubmit}
+      />
+
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+        accountName={currentApp.preparedByUserName || effectiveStudentName}
+        accountEmail={currentApp.preparedByUserEmail || effectiveEmail}
+        roleLabel="Người phụ trách hồ sơ Tập thể"
       />
     </div>
   );

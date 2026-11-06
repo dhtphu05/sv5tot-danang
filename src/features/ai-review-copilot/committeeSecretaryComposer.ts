@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — AI Committee Secretary Report Composer
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — AI Committee Secretary Report Composer
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements AI-REVIEW-H1 Committee Extension:
  * - Feature A: Committee Verdict-First AI Report
@@ -113,7 +113,7 @@ export function composeCommitteeSecretaryReport({
 }: ComposeCommitteeSecretaryReportParams): CommitteeSecretaryReportData {
   const assignedOfficerName =
     application.assignment?.officerName ||
-    (isBackendMode() ? 'Cán bộ xét duyệt cấp ĐHĐN' : 'Trần Hoàng Nam');
+    (isBackendMode() ? 'Cán bộ xét duyệt cấp Thành phố' : 'Trần Hoàng Nam');
   const resolvedSchoolUnit = resolveSchoolReviewUnit(application.institution.id);
   const schoolUnitName =
     application.schoolReviewSummary?.schoolReviewUnitName ||
@@ -163,21 +163,21 @@ export function composeCommitteeSecretaryReport({
 
       // Level 1: School Preliminary Review
       let schoolStatus: 'recorded' | 'pending' | 'unavailable' = 'recorded';
-      let schoolRecLabel = 'Đạt — Đề xuất chuyển cấp ĐHĐN';
+      let schoolRecLabel = 'Đạt — Đề xuất chuyển cấp Thành phố';
       let schoolNote: string | undefined =
-        schoolReview?.officerNotes || 'Đơn vị xét sơ đã thẩm định và đề xuất chuyển cấp ĐHĐN xét duyệt.';
+        schoolReview?.officerNotes || 'Đơn vị xét sơ đã thẩm định và đề xuất chuyển cấp Thành phố xét duyệt.';
       let schoolOfficerName =
         schoolReview?.recommendingOfficerName ||
         (resolvedSchoolUnit.resolved && resolvedSchoolUnit.unit?.unitOfficerName
           ? resolvedSchoolUnit.unit.unitOfficerName
-          : 'Cán bộ xét cấp trường Đại học Đà Nẵng');
+          : 'Cán bộ xét sơ tuyển cấp Đơn vị');
       let schoolTimestamp =
         schoolReview?.forwardedAt ||
         schoolReview?.recommendationDate ||
         (isBackendMode() ? application.submittedAt || 'Theo hồ sơ nộp' : '15/10/2026 · 14:00');
 
       if (schoolReview?.recommendation === 'not_recommended') {
-        schoolRecLabel = 'Không đề xuất chuyển cấp ĐHĐN';
+        schoolRecLabel = 'Không đề xuất chuyển cấp Thành phố';
         schoolNote = schoolReview.notRecommendedReason || 'Chưa đáp ứng đủ tiêu chuẩn cấp Trường.';
       } else if (!isIndividual && !schoolReview) {
         schoolStatus = 'unavailable';
@@ -302,7 +302,7 @@ export function composeCommitteeSecretaryReport({
         if (isFlagged) {
           hasDiscrepancy = true;
           discrepancyNote =
-            'Có khác biệt trong nhận định cần Hội đồng xem xét: Cấp Trường đề xuất Đạt, tuy nhiên Cán bộ cấp Đại học Đà Nẵng chuyển xem xét do: "' +
+            'Có khác biệt trong nhận định cần Hội đồng xem xét: Cấp Trường đề xuất Đạt, tuy nhiên Cán bộ cấp Thành phố Đà Nẵng chuyển xem xét do: "' +
             (escalationReason || 'Cần đối chiếu cấp tổ chức') +
             '".';
         } else if (aiVerdict === 'insufficient') {
@@ -375,7 +375,7 @@ export function composeCommitteeSecretaryReport({
   if (pendingFlags.length > 0) {
     preliminaryVerdict = 'insufficient';
     verdictHeadline = `Hồ sơ có ${pendingFlags.length} nội dung cần Hội đồng xem xét làm rõ căn cứ.`;
-    verdictExplanation = `Kính gửi các đồng chí thành viên Hội đồng: Qua tổng hợp kết quả thẩm định sơ tuyển cấp Trường và thẩm định độc lập của Cán bộ cấp Đại học Đà Nẵng, hồ sơ sinh viên ${application.student.fullName} cơ bản đáp ứng 4/5 tiêu chuẩn. Tuy nhiên, tại tiêu chuẩn ${pendingFlags[0].criterionName}, Cán bộ phụ trách ghi nhận nội dung "${pendingFlags[0].declarationTitle}" cần Hội đồng đối chiếu làm rõ trước khi quyết định.`;
+    verdictExplanation = `Kính gửi các đồng chí thành viên Hội đồng: Qua tổng hợp kết quả thẩm định sơ tuyển cấp Trường và thẩm định độc lập của Cán bộ cấp Thành phố Đà Nẵng, hồ sơ sinh viên ${application.student.fullName} cơ bản đáp ứng 4/5 tiêu chuẩn. Tuy nhiên, tại tiêu chuẩn ${pendingFlags[0].criterionName}, Cán bộ phụ trách ghi nhận nội dung "${pendingFlags[0].declarationTitle}" cần Hội đồng đối chiếu làm rõ trước khi quyết định.`;
   } else if (
     application.supplementSummary.requestCount > 0 &&
     application.supplementSummary.activeStatus === 'waiting_student'
@@ -393,18 +393,18 @@ export function composeCommitteeSecretaryReport({
 
   // 4. Executive Briefing
   const schoolReviewStatusText = schoolReview?.isForwardedToCity
-    ? `Đơn vị xét sơ ${schoolUnitName} đã chuyển hồ sơ lên cấp Đại học Đà Nẵng ngày ${schoolReview.forwardedAt || '15/10/2026'} (Kết luận: ${schoolReview.recommendation === 'recommended' ? 'Đề xuất chuyển' : 'Không đề xuất'}).`
+    ? `Đơn vị xét sơ ${schoolUnitName} đã chuyển hồ sơ lên cấp Thành phố Đà Nẵng ngày ${schoolReview.forwardedAt || '15/10/2026'} (Kết luận: ${schoolReview.recommendation === 'recommended' ? 'Đề xuất chuyển' : 'Không đề xuất'}).`
     : `Hồ sơ chưa có thông tin xác nhận chuyển giao chính thức từ Trường.`;
 
-  const cityReviewStatusText = `Cán bộ cấp Đại học Đà Nẵng ${assignedOfficerName} đã hoàn tất thẩm định 05/05 tiêu chí vào ngày ${
+  const cityReviewStatusText = `Cán bộ cấp Thành phố Đà Nẵng ${assignedOfficerName} đã hoàn tất thẩm định 05/05 tiêu chí vào ngày ${
     application.committeeSummary?.submittedToCommitteeAt || application.updatedAt
   }.`;
 
   const executiveBriefing =
-    `Sinh viên ${application.student.fullName} (MSSV: ${application.student.studentCode}, ${application.institution.officialName}) tham gia xét chọn danh hiệu Sinh viên 5 tốt cấp Đại học Đà Nẵng năm học ${application.schoolYear}. ` +
+    `Sinh viên ${application.student.fullName} (MSSV: ${application.student.studentCode}, ${application.institution.officialName}) tham gia xét chọn danh hiệu Sinh viên 5 tốt cấp Thành phố Đà Nẵng năm học ${application.schoolYear}. ` +
     `Hồ sơ gồm ${application.totalDeclarations} mục kê khai và ${application.totalEvidence} tài liệu minh chứng đã được số hóa. ` +
     (discrepancyCount > 0
-      ? `Hệ thống ghi nhận ${discrepancyCount} điểm có sự khác biệt giữa nhận định của Trường và Cán bộ chuyên trách cấp Đại học Đà Nẵng cần lưu ý trong phiên họp.`
+      ? `Hệ thống ghi nhận ${discrepancyCount} điểm có sự khác biệt giữa nhận định của Trường và Cán bộ chuyên trách cấp Thành phố Đà Nẵng cần lưu ý trong phiên họp.`
       : `Không phát hiện điểm mâu thuẫn giữa hai cấp thẩm định.`);
 
   // 5. Top Findings & Unresolved Matters
@@ -432,7 +432,7 @@ export function composeCommitteeSecretaryReport({
         criterionId: comp.criterionId,
         criterionName: comp.criterionName,
         badge: 'Khác biệt nhận định',
-        summary: comp.discrepancyNote || 'Cần đối chiếu nhận định giữa Trường và cấp Đại học Đà Nẵng.',
+        summary: comp.discrepancyNote || 'Cần đối chiếu nhận định giữa Trường và cấp Thành phố Đà Nẵng.',
         importance: 'medium',
       });
       if (comp.discrepancyNote) {
@@ -472,9 +472,9 @@ export function composeCommitteeSecretaryReport({
   // 7. Draft Committee Briefing / Discussion Note
   const resolvedFlagCount = flaggedItems.length - pendingFlags.length;
   const draftCommitteeNote =
-    `Hội đồng xét chọn danh hiệu Sinh viên 5 tốt cấp Đại học Đà Nẵng đã thảo luận và thẩm tra hồ sơ sinh viên ${application.student.fullName} (MSSV: ${application.student.studentCode}, ${application.institution.officialName}).\n` +
+    `Hội đồng xét chọn danh hiệu Sinh viên 5 tốt cấp Thành phố Đà Nẵng đã thảo luận và thẩm tra hồ sơ sinh viên ${application.student.fullName} (MSSV: ${application.student.studentCode}, ${application.institution.officialName}).\n` +
     `- Đơn vị xét sơ tuyển: ${schoolUnitName} (Đề xuất: ${schoolReview?.recommendation === 'recommended' ? 'Đạt' : 'Chưa đề xuất'}).\n` +
-    `- Cán bộ thẩm định cấp Đại học Đà Nẵng: ${assignedOfficerName} (Đã hoàn tất rà soát 05 tiêu chí).\n` +
+    `- Cán bộ thẩm định cấp Thành phố Đà Nẵng: ${assignedOfficerName} (Đã hoàn tất rà soát 05 tiêu chí).\n` +
     (flaggedItems.length > 0
       ? `- Về các nội dung chuyển Hội đồng xem xét (${flaggedItems.length} mục): Hội đồng đã xem xét hồ sơ gốc, thống nhất ${
           pendingFlags.length === 0
@@ -484,7 +484,7 @@ export function composeCommitteeSecretaryReport({
       : '- Không có nội dung vướng mắc phát sinh.\n') +
     `- Kết luận thảo luận: ${
       preliminaryVerdict === 'favorable'
-        ? 'Thống nhất trình Hội đồng thông qua quyết định công nhận Sinh viên 5 tốt cấp Đại học Đà Nẵng.'
+        ? 'Thống nhất trình Hội đồng thông qua quyết định công nhận Sinh viên 5 tốt cấp Thành phố Đà Nẵng.'
         : 'Cần hoàn tất giải trình các nội dung ghi nhận trước khi tiến hành biểu quyết chính thức.'
     }`;
 
@@ -492,13 +492,13 @@ export function composeCommitteeSecretaryReport({
   const suggestedFollowUps = [
     {
       id: 'fu-compare-school-city',
-      prompt: 'Trường và cấp Đại học Đà Nẵng có nhận định khác nhau ở điểm nào?',
+      prompt: 'Trường và cấp Thành phố Đà Nẵng có nhận định khác nhau ở điểm nào?',
       answer:
         discrepancyCount > 0
           ? `Có ${discrepancyCount} nội dung khác biệt, chủ yếu tại tiêu chí ${
               comparisons.find((c) => c.hasDiscrepancy)?.criterionName || 'Học tập tốt'
-            }. Đơn vị xét sơ tuyển cấp Trường đề xuất chuyển Đạt, trong khi Cán bộ chuyên trách cấp Đại học Đà Nẵng đề nghị Hội đồng xem xét thêm do cần kiểm tra cấp độ ban hành của giải thưởng/hoạt động.`
-          : 'Đơn vị xét sơ tuyển cấp Trường và Cán bộ phụ trách cấp Đại học Đà Nẵng hoàn toàn đồng thuận về tính hợp lệ của cả 05 tiêu chuẩn.',
+            }. Đơn vị xét sơ tuyển cấp Trường đề xuất chuyển Đạt, trong khi Cán bộ chuyên trách cấp Thành phố Đà Nẵng đề nghị Hội đồng xem xét thêm do cần kiểm tra cấp độ ban hành của giải thưởng/hoạt động.`
+          : 'Đơn vị xét sơ tuyển cấp Trường và Cán bộ phụ trách cấp Thành phố Đà Nẵng hoàn toàn đồng thuận về tính hợp lệ của cả 05 tiêu chuẩn.',
     },
     {
       id: 'fu-evidence-integrity',
@@ -519,7 +519,7 @@ export function composeCommitteeSecretaryReport({
   ];
 
   const statutoryDisclaimer =
-    'Lưu ý: Báo cáo này là ý kiến tổng hợp tư vấn sơ bộ từ AI Thư ký Hội đồng phục vụ phiên họp. Quyền kết luận và công nhận chính thức hoàn toàn thuộc thẩm quyền của các thành viên Hội đồng xét chọn theo Quy chế Sinh viên 5 tốt Đại học Đà Nẵng.';
+    'Lưu ý: Báo cáo này là ý kiến tổng hợp tư vấn sơ bộ từ AI Thư ký Hội đồng phục vụ phiên họp. Quyền kết luận và công nhận chính thức hoàn toàn thuộc thẩm quyền của các thành viên Hội đồng xét chọn theo Quy chế Sinh viên 5 tốt Thành phố Đà Nẵng.';
 
   return {
     applicationId: application.applicationId,

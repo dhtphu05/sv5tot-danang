@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Student Home Primary Hero Banner (FSD Widgets Layer)
+ * 5TOT Đà Nẵng — Student Home Primary Hero Banner (FSD Widgets Layer)
  * Deterministic Single Primary Action Selector across all 14 lifecycle states (States A–M, H2, Two-Level School/City).
  */
 
@@ -68,7 +68,7 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
     return (
       <section
         aria-label="Bắt đầu hồ sơ Sinh viên 5 tốt"
-        className="bg-white rounded-[16px] border border-[#DCE7EE] shadow-2xs overflow-hidden"
+        className="bg-white rounded-[6px] border border-[#DCE7EE] shadow-2xs overflow-hidden"
       >
         <div className="p-6 sm:p-7 flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-gradient-to-br from-[#F4FAFE] via-white to-white">
           <div className="space-y-2.5 max-w-2xl">
@@ -83,7 +83,7 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
             </h2>
             <p className="text-[13.5px] text-[#466474] leading-relaxed">
               Hệ thống hỗ trợ bạn kê khai thông tin và đính kèm minh chứng theo 5 tiêu chí
-              chính thức của Hội Sinh viên Việt Nam Đại học Đà Nẵng. Bạn có thể lưu nháp
+              chính thức của Hội Sinh viên Việt Nam Thành phố Đà Nẵng. Bạn có thể lưu nháp
               và cập nhật nhiều lần trước khi gửi chính thức.
             </p>
             <div className="pt-1 flex items-center gap-4 text-[12.5px] text-[#607483] font-medium flex-wrap">
@@ -140,7 +140,7 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
     return (
       <section
         aria-label="Yêu cầu bổ sung hồ sơ"
-        className="bg-white rounded-[16px] border-2 border-[#F59E0B] shadow-2xs overflow-hidden"
+        className="bg-white rounded-[6px] border-2 border-[#F59E0B] shadow-2xs overflow-hidden"
       >
         <div className="px-6 py-3 bg-[#FFFBEB] border-b border-[#FDE68A] flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
@@ -177,7 +177,7 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
             <div className="p-3.5 rounded-[10px] bg-[#F8FAFC] border border-[#E2E8F0] text-[13px] text-[#334E68] leading-relaxed">
               <span className="font-bold text-[#172A3A]">
                 {primarySupplement.originatingReviewStage === 'CITY'
-                  ? 'Hội Sinh viên Đại học Đà Nẵng'
+                  ? 'Hội Sinh viên Thành phố Đà Nẵng'
                   : primarySupplement.requestingReviewUnitName ||
                     storeState.schoolReviewUnitName ||
                     application?.student?.university ||
@@ -239,7 +239,7 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
     return (
       <section
         aria-label="Kết quả xét chọn chính thức"
-        className={`bg-white rounded-[16px] border shadow-2xs overflow-hidden ${
+        className={`bg-white rounded-[6px] border shadow-2xs overflow-hidden ${
           isRecognized ? 'border-[#86EFAC]' : 'border-[#CBD5E1]'
         }`}
       >
@@ -278,7 +278,7 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
           <div className="space-y-2 max-w-2xl">
             <h2 className="text-[20px] sm:text-[22px] font-extrabold text-[#172A3A] tracking-tight">
               {isRecognized
-                ? 'Chúc mừng bạn được công nhận Sinh viên 5 tốt cấp Đại học Đà Nẵng'
+                ? 'Chúc mừng bạn được công nhận Sinh viên 5 tốt cấp Thành phố Đà Nẵng'
                 : 'Kết quả xét chọn đã được công bố'}
             </h2>
             <p className="text-[13.5px] text-[#466474] leading-relaxed">
@@ -316,7 +316,7 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
     return (
       <section
         aria-label="Thời gian nhận hồ sơ đã kết thúc"
-        className="bg-white rounded-[16px] border border-[#CBD5E1] shadow-2xs p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+        className="bg-white rounded-[6px] border border-[#CBD5E1] shadow-2xs p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
       >
         <div className="space-y-2 max-w-2xl">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] text-[12px] font-bold bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]">
@@ -327,7 +327,7 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
             Thời gian nhận hồ sơ đã kết thúc
           </h2>
           <p className="text-[13.5px] text-[#466474] leading-relaxed">
-            Đợt nhận hồ sơ xét chọn Sinh viên 5 tốt cấp Đại học Đà Nẵng năm học{' '}
+            Đợt nhận hồ sơ xét chọn Sinh viên 5 tốt cấp Thành phố Đà Nẵng năm học{' '}
             {application?.student?.academicYear || '2025–2026'} đã đóng.
             Bạn vẫn có thể xem lại các thông tin và minh chứng đã chuẩn bị trong hồ sơ.
           </p>
@@ -356,7 +356,7 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
     return (
       <section
         aria-label="Minh chứng cần kiểm tra"
-        className="bg-white rounded-[16px] border border-[#FCD34D] shadow-2xs overflow-hidden"
+        className="bg-white rounded-[6px] border border-[#FCD34D] shadow-2xs overflow-hidden"
       >
         <div className="px-6 py-3 bg-[#FFFBEB] border-b border-[#FDE68A] flex items-center justify-between gap-3 flex-wrap">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] text-[12px] font-bold bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D]">
@@ -409,7 +409,7 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
     return (
       <section
         aria-label="Kiểm tra hồ sơ trước khi gửi"
-        className="bg-white rounded-[16px] border border-[#BAE6FD] shadow-2xs overflow-hidden"
+        className="bg-white rounded-[6px] border border-[#BAE6FD] shadow-2xs overflow-hidden"
       >
         <div className="px-6 py-3 bg-[#F0F9FF] border-b border-[#BAE6FD] flex items-center justify-between gap-3 flex-wrap">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] text-[12px] font-bold bg-[#E0F2FE] text-[#0369A1] border border-[#7DD3FC]">
@@ -464,7 +464,7 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
     return (
       <section
         aria-label="Đang chờ xác nhận điều kiện nộp hồ sơ"
-        className="bg-white rounded-[16px] border border-[#DCE7EE] shadow-2xs p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+        className="bg-white rounded-[6px] border border-[#DCE7EE] shadow-2xs p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
       >
         <div className="space-y-2 max-w-2xl">
           <div className="flex items-center gap-2 flex-wrap">
@@ -512,7 +512,7 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
     return (
       <section
         aria-label="Hồ sơ đang hoàn thiện"
-        className="bg-white rounded-[16px] border border-[#DCE7EE] shadow-2xs p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+        className="bg-white rounded-[6px] border border-[#DCE7EE] shadow-2xs p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
       >
         <div className="space-y-2 max-w-2xl">
           <div className="flex items-center gap-2.5 flex-wrap">
@@ -565,7 +565,7 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
     return (
       <section
         aria-label="Đã hoàn tất xét 5 tiêu chí"
-        className="bg-white rounded-[16px] border border-[#DCE7EE] shadow-2xs p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+        className="bg-white rounded-[6px] border border-[#DCE7EE] shadow-2xs p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
       >
         <div className="space-y-2 max-w-2xl">
           <div className="flex items-center gap-2 flex-wrap">
@@ -582,7 +582,7 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
           </h2>
           <p className="text-[13.5px] text-[#466474] leading-relaxed">
             Hội đồng đã hoàn tất việc rà soát 5 tiêu chí trong hồ sơ của bạn. Kết quả công nhận
-            danh hiệu Sinh viên 5 tốt cấp Đại học Đà Nẵng sẽ được hiển thị sau khi có quyết định công bố chính thức.
+            danh hiệu Sinh viên 5 tốt cấp Thành phố Đà Nẵng sẽ được hiển thị sau khi có quyết định công bố chính thức.
           </p>
         </div>
         <div className="shrink-0 flex flex-col sm:flex-row lg:flex-col items-stretch sm:items-center lg:items-end gap-2">
@@ -605,7 +605,7 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
     return (
       <section
         aria-label="Đã gửi thông tin bổ sung"
-        className="bg-white rounded-[16px] border border-[#DCE7EE] shadow-2xs p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+        className="bg-white rounded-[6px] border border-[#DCE7EE] shadow-2xs p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
       >
         <div className="space-y-2 max-w-2xl">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] text-[12px] font-bold bg-[#EAFBF1] text-[#136F3A] border border-[#B6E6C9]">
@@ -654,18 +654,18 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
     return (
       <section
         aria-label="Trạng thái hồ sơ"
-        className="bg-white rounded-[16px] border border-[#FECDD3] shadow-2xs p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+        className="bg-white rounded-[6px] border border-[#FECDD3] shadow-2xs p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
       >
         <div className="space-y-2 max-w-2xl">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] text-[12px] font-bold bg-[#FFF1F2] text-[#BE123C] border border-[#FECDD3]">
             <AlertCircle size={13.5} />
-            <span>Chưa đề xuất chuyển cấp Đại học Đà Nẵng</span>
+            <span>Chưa đề xuất chuyển cấp Thành phố Đà Nẵng</span>
           </span>
           <h2 className="text-[20px] font-extrabold text-[#172A3A]">
-            Hồ sơ chưa được đơn vị xét sơ tuyển đề xuất chuyển lên cấp Đại học Đà Nẵng
+            Hồ sơ chưa được đơn vị xét sơ tuyển đề xuất chuyển lên cấp Thành phố Đà Nẵng
           </h2>
           <p className="text-[13.5px] text-[#466474] leading-relaxed">
-            Đơn vị xét sơ tuyển ({unitName}) đã hoàn tất rà soát sơ tuyển và ghi nhận hồ sơ chưa đáp ứng các tiêu chuẩn để đề xuất chuyển lên Hội Sinh viên Đại học Đà Nẵng trong đợt này. Cấp Đại học Đà Nẵng chưa thực hiện xét duyệt hồ sơ này.
+            Đơn vị xét sơ tuyển ({unitName}) đã hoàn tất rà soát sơ tuyển và ghi nhận hồ sơ chưa đáp ứng các tiêu chuẩn để đề xuất chuyển lên Hội Sinh viên Thành phố Đà Nẵng trong đợt này. Cấp Thành phố Đà Nẵng chưa thực hiện xét duyệt hồ sơ này.
           </p>
         </div>
         <div className="shrink-0">
@@ -687,18 +687,18 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
     return (
       <section
         aria-label="Trạng thái hồ sơ"
-        className="bg-white rounded-[16px] border border-[#BAE6FD] shadow-2xs p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+        className="bg-white rounded-[6px] border border-[#BAE6FD] shadow-2xs p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
       >
         <div className="space-y-2 max-w-2xl">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] text-[12px] font-bold bg-[#E5F5FC] text-[#0D78AE] border border-[#BAE6FD]">
             <CheckCircle2 size={13.5} />
-            <span>Đã đề xuất chuyển lên cấp Đại học Đà Nẵng</span>
+            <span>Đã đề xuất chuyển lên cấp Thành phố Đà Nẵng</span>
           </span>
           <h2 className="text-[20px] font-extrabold text-[#172A3A]">
-            Đã đề xuất chuyển lên cấp Đại học Đà Nẵng · Chờ chuyển chính thức
+            Đã đề xuất chuyển lên cấp Thành phố Đà Nẵng · Chờ chuyển chính thức
           </h2>
           <p className="text-[13.5px] text-[#466474] leading-relaxed">
-            Đơn vị xét sơ tuyển ({unitName}) đã hoàn tất xét sơ tuyển 05 tiêu chí và đề xuất hồ sơ của bạn lên Hội Sinh viên Việt Nam Đại học Đà Nẵng xét chọn. Hồ sơ đang chờ xác nhận chuyển giao chính thức.
+            Đơn vị xét sơ tuyển ({unitName}) đã hoàn tất xét sơ tuyển 05 tiêu chí và đề xuất hồ sơ của bạn lên Hội Sinh viên Việt Nam Thành phố Đà Nẵng xét chọn. Hồ sơ đang chờ xác nhận chuyển giao chính thức.
           </p>
         </div>
         <div className="shrink-0">
@@ -720,18 +720,18 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
     return (
       <section
         aria-label="Trạng thái hồ sơ"
-        className="bg-white rounded-[16px] border border-[#DCE7EE] shadow-2xs p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+        className="bg-white rounded-[6px] border border-[#DCE7EE] shadow-2xs p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
       >
         <div className="space-y-2 max-w-2xl">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] text-[12px] font-bold bg-[#EAFBF1] text-[#136F3A] border border-[#B6E6C9]">
             <ShieldCheck size={13.5} />
-            <span>Đã chuyển hồ sơ lên cấp Đại học Đà Nẵng</span>
+            <span>Đã chuyển hồ sơ lên cấp Thành phố Đà Nẵng</span>
           </span>
           <h2 className="text-[20px] font-extrabold text-[#172A3A]">
-            Cấp Đại học Đà Nẵng đang xét hồ sơ
+            Cấp Thành phố Đà Nẵng đang xét hồ sơ
           </h2>
           <p className="text-[13.5px] text-[#466474] leading-relaxed">
-            Hội Sinh viên Việt Nam Đại học Đà Nẵng đã tiếp nhận hồ sơ từ đơn vị xét sơ tuyển ({unitName}) và đang thực hiện thẩm định độc lập theo quy chế Đại học Đà Nẵng.
+            Hội Sinh viên Việt Nam Thành phố Đà Nẵng đã tiếp nhận hồ sơ từ đơn vị xét sơ tuyển ({unitName}) và đang thực hiện thẩm định độc lập theo quy chế cấp Thành phố Đà Nẵng.
           </p>
         </div>
         <div className="shrink-0">
@@ -753,7 +753,7 @@ export const StudentHomeHeroBanner: React.FC<StudentHomeHeroBannerProps> = ({
   return (
     <section
       aria-label="Trạng thái hồ sơ"
-      className="bg-white rounded-[16px] border border-[#DCE7EE] shadow-2xs p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+      className="bg-white rounded-[6px] border border-[#DCE7EE] shadow-2xs p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
     >
       <div className="space-y-2 max-w-2xl">
         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] text-[12px] font-bold bg-[#E5F5FC] text-[#0D78AE] border border-[#BAE6FD]">

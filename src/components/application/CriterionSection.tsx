@@ -1,4 +1,7 @@
-import { isMatchingDeclarationId, isMatchingRequirementId } from '../supplement/supplementHelpers';
+import {
+  isMatchingDeclarationId,
+  isMatchingRequirementId,
+} from '../supplement/supplementHelpers';
 import React, { useState } from 'react';
 import { ChevronDown, BookOpen } from 'lucide-react';
 import {
@@ -45,8 +48,14 @@ export interface CriterionSectionProps {
   onUpdateExplanation?: (requestId: string, explanation: string) => void;
   customStatusLabel?: string;
   customStatusVariant?: RequirementStatus;
-  requirementReviewStatuses?: Record<string, { status: RequirementStatus; customLabel?: string }>;
-  renderRowReviewerSlot?: (req: ApplicationRequirement, criterionId: string) => React.ReactNode;
+  requirementReviewStatuses?: Record<
+    string,
+    { status: RequirementStatus; customLabel?: string }
+  >;
+  renderRowReviewerSlot?: (
+    req: ApplicationRequirement,
+    criterionId: string
+  ) => React.ReactNode;
   renderDeclarationReviewerSlot?: (
     req: ApplicationRequirement,
     decl: ApplicationDeclaration,
@@ -95,12 +104,12 @@ export const CriterionSection: React.FC<CriterionSectionProps> = ({
           id: 'integration',
           number: 6,
           name: 'Thành tích khác',
-          shortName: 'Thành tích khác',
-          accentColor: '#4F46E5',
-          accentSoft: 'rgba(79, 70, 229, 0.12)',
-          bgTint: '#F8FAFF',
+          accentColor: '#0D9488',
+          accentSoft: 'rgba(13, 148, 136, 0.10)',
+          bgTint: '#F8FAFC',
         } as any)
       : undefined);
+
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
 
   const toggleGroupCollapse = (groupId: string) => {
@@ -110,14 +119,15 @@ export const CriterionSection: React.FC<CriterionSectionProps> = ({
     }));
   };
 
-  // Find supplement requests targeting this criterion
-  const criterionRequests = supplementRequests.filter((r) =>
-    r.criterionId === criterion.id ||
-    criterion.requirements.some((req) =>
-      isMatchingRequirementId(r.requirementId, req.id) ||
-      (r.declarationId &&
-        req.declarations?.some((d) => isMatchingDeclarationId(r.declarationId, d.id)))
-    )
+  const criterionRequests = supplementRequests.filter(
+    (r) =>
+      r.criterionId === criterion.id ||
+      criterion.requirements.some(
+        (req) =>
+          isMatchingRequirementId(r.requirementId, req.id) ||
+          (r.declarationId &&
+            req.declarations?.some((d) => isMatchingDeclarationId(r.declarationId, d.id)))
+      )
   );
   const hasActiveSupplement = criterionRequests.some((r) => r.status === 'active');
 
@@ -137,9 +147,14 @@ export const CriterionSection: React.FC<CriterionSectionProps> = ({
 
   const getCriterionStatus = (label: string): RequirementStatus => {
     if (label === 'Chưa kê khai' || label === 'Chưa có kê khai') return 'undeclared';
-    if (label === 'Đã được xem xét' || label === 'Đã hoàn tất xét') return 'review_completed';
+    if (label === 'Đã được xem xét' || label === 'Đã hoàn tất xét')
+      return 'review_completed';
     if (label === 'Đang xét') return 'reviewing';
-    if (label === 'Cần bổ sung' || label === 'Có thể kiểm tra thêm' || label === 'Có thể bổ sung')
+    if (
+      label === 'Cần bổ sung' ||
+      label === 'Có thể kiểm tra thêm' ||
+      label === 'Có thể bổ sung'
+    )
       return 'requires_supplement';
     if (
       label === 'Đang chờ tiếp tục xét' ||
@@ -147,41 +162,29 @@ export const CriterionSection: React.FC<CriterionSectionProps> = ({
       label === 'Chờ cán bộ kiểm tra'
     )
       return 'awaiting_officer';
-    if (label === 'Cần bạn kiểm tra' || label === 'Cần kiểm tra') return 'needs_verification';
+    if (label === 'Cần bạn kiểm tra' || label === 'Cần kiểm tra')
+      return 'needs_verification';
     return 'declared';
   };
 
-  // Section 3 & 5: Factual secondary progress line without redundant evidence counts in Column 1
   const getCriterionProgressSummary = () => {
     if (isOtherAchievements) {
       const allDecls = criterion.requirements.flatMap((r) => r.declarations || []);
-      const totalEv = allDecls.reduce(
-        (sum, d) => sum + (d.evidenceFiles?.length || 0),
-        0
-      );
-      return allDecls.length > 0
-        ? `${allDecls.length} thành tích bổ sung đã kê khai · ${totalEv} minh chứng`
-        : 'Chưa có thành tích bổ sung (không bắt buộc · ngoài 5 tiêu chí)';
+      return allDecls.length > 0 ? `${allDecls.length} thành tích` : 'Không bắt buộc';
     }
     if (criterion.id === 'volunteer') {
-      const volActReq = criterion.requirements.find((r) => r.id === 'volunteer-activities');
-      const volCampReq = criterion.requirements.find((r) => r.id === 'volunteer-campaign');
+      const volActReq = criterion.requirements.find(
+        (r) => r.id === 'volunteer-activities'
+      );
       const volAwardReq = criterion.requirements.find((r) => r.id === 'volunteer-award');
-
-      const campCount = volCampReq?.declarations?.length || 0;
       const awardCount = volAwardReq?.declarations?.length || 0;
       const actDecls = volActReq?.declarations || [];
 
-      if (campCount > 0 && actDecls.length === 0 && awardCount === 0) {
-        return `${campCount} chứng nhận chiến dịch tình nguyện đã kê khai`;
-      }
-      if (awardCount > 0 && actDecls.length === 0 && campCount === 0) {
-        return `${awardCount} giấy khen hoạt động tình nguyện đã kê khai`;
+      if (awardCount > 0 && actDecls.length === 0) {
+        return `${awardCount} giấy khen`;
       }
 
-      const totalActivities = actDecls.length;
       let totalDays = 0;
-      let bloodDonations = 0;
       for (const d of actDecls) {
         const text = `${d.value} ${d.detail || ''} ${d.metadata?.duration || ''}`.toLowerCase();
         if (
@@ -189,51 +192,42 @@ export const CriterionSection: React.FC<CriterionSectionProps> = ({
           text.includes('hiến máu') ||
           text.includes('hien mau')
         ) {
-          bloodDonations += 1;
           totalDays += 1;
         } else if (d.metadata?.days || d.metadata?.volDaysCount) {
-          const parsed = parseInt(d.metadata.days || d.metadata.volDaysCount || '1', 10);
+          const parsed = parseInt(
+            d.metadata.days || d.metadata.volDaysCount || '1',
+            10
+          );
           totalDays += isNaN(parsed) ? 1 : parsed;
         } else {
           const match = text.match(/(\d+)\s*ngày/);
           totalDays += match ? parseInt(match[1], 10) : 1;
         }
       }
-
-      const otherForms: string[] = [];
-      if (campCount > 0) otherForms.push(`${campCount} chiến dịch`);
-      if (awardCount > 0) otherForms.push(`${awardCount} giấy khen`);
-      const otherStr = otherForms.length > 0 ? ` + ${otherForms.join(', ')}` : '';
-
-      return `${totalActivities} hoạt động · ${totalDays}/3 ngày tình nguyện${
-        bloodDonations > 0 ? ` (${bloodDonations} lần hiến máu)` : ''
-      }${otherStr}`;
+      return `${totalDays}/5 ngày TN${awardCount > 0 ? ` + ${awardCount} GK` : ''}`;
     }
+
     const declaredCount = criterion.requirements.filter(
       (r) => r.declarations && r.declarations.length > 0
     ).length;
-
-    if (criterion.id === 'physical') {
-      return `${declaredCount} nội dung đã kê khai`;
-    }
-    return `${declaredCount} nội dung đã kê khai`;
+    return `${declaredCount} mục đã khai`;
   };
 
   const progressSummary = getCriterionProgressSummary();
-  const totalGroups = criterion.groups?.length || 0;
 
-  // Helper to resolve the specific request and changes for a requirement row
   const getReqSupplementProps = (req: ApplicationRequirement) => {
-    let reqSupplement: SupplementRequest | null | undefined = criterionRequests.find((r) => {
-      if (r.status !== 'active') return false;
-      if (isMatchingRequirementId(r.requirementId, req.id)) return true;
-      if (
-        r.declarationId &&
-        req.declarations?.some((d) => isMatchingDeclarationId(r.declarationId, d.id))
-      )
-        return true;
-      return false;
-    });
+    let reqSupplement: SupplementRequest | null | undefined = criterionRequests.find(
+      (r) => {
+        if (r.status !== 'active') return false;
+        if (isMatchingRequirementId(r.requirementId, req.id)) return true;
+        if (
+          r.declarationId &&
+          req.declarations?.some((d) => isMatchingDeclarationId(r.declarationId, d.id))
+        )
+          return true;
+        return false;
+      }
+    );
 
     if (!reqSupplement) {
       reqSupplement = criterionRequests.find(
@@ -256,253 +250,271 @@ export const CriterionSection: React.FC<CriterionSectionProps> = ({
         null;
     }
 
-    const reqChanges = reqSupplement ? supplementChangesMap[reqSupplement.id] || null : null;
+    const reqChanges = reqSupplement
+      ? supplementChangesMap[reqSupplement.id] || null
+      : null;
     return { reqSupplement, reqChanges };
+  };
+
+  const renderRequirementsStack = () => {
+    if (!isExpanded) {
+      return (
+        <div
+          onClick={onToggleExpand}
+          className="px-4 py-3.5 bg-[#F8FAFC]/60 flex items-center justify-between gap-3 cursor-pointer hover:bg-[#F1F5F9] transition-colors"
+        >
+          <span className="text-[12.5px] text-[#475569] font-medium">
+            Đang thu gọn ({progressSummary}) — Nhấn để mở chi tiết các tiêu chuẩn của mục{' '}
+            <strong className="text-[#0F172A]">{criterion.name}</strong>
+          </span>
+          <StatusChip
+            status={customStatusVariant || getCriterionStatus(resolvedStatusLabel)}
+            customLabel={resolvedStatusLabel}
+            size="sm"
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div className="bg-white">
+        {criterion.groups && criterion.groups.length > 0 ? (
+          <div>
+            {criterion.groups.map((group) => {
+              const isGroupCollapsed = !!collapsedGroups[group.id];
+              const isAtLeastNOrOptional =
+                group.groupType === 'AT_LEAST_N' || group.groupType === 'OPTIONAL';
+              const declaredCountInGroup = group.requirements.filter(
+                (r) => r.declarations && r.declarations.length > 0
+              ).length;
+              const isGroupSatisfied =
+                group.groupType === 'AT_LEAST_N'
+                  ? declaredCountInGroup >= (group.minSelections || 1)
+                  : group.groupType === 'OPTIONAL';
+
+              return (
+                <div
+                  key={group.id}
+                  className="border-b border-[#DFE5EC] last:border-b-0"
+                >
+                  <RequirementGroupHeader
+                    group={group}
+                    criterionToken={token}
+                    isCollapsed={isGroupCollapsed}
+                    onToggleCollapse={() => toggleGroupCollapse(group.id)}
+                  />
+
+                  {!isGroupCollapsed && (
+                    <div>
+                      {group.requirements.map((req, reqIdx) => {
+                        const { reqSupplement, reqChanges } = getReqSupplementProps(req);
+                        return (
+                          <RequirementRow
+                            key={req.id}
+                            requirement={req}
+                            criterionToken={token}
+                            hasParentGroup={true}
+                            isAlternativeOption={isAtLeastNOrOptional}
+                            isGroupSatisfied={isGroupSatisfied}
+                            groupType={group.groupType}
+                            isFirstInGroup={reqIdx === 0}
+                            isLastInGroup={reqIdx === group.requirements.length - 1}
+                            isExpanded={
+                              expandedRowMap
+                                ? !!expandedRowMap[req.id]
+                                : expandedRowId === req.id
+                            }
+                            isHighlighted={highlightedRequirementId === req.id}
+                            onToggleExpand={() => onToggleRowExpand(req.id)}
+                            onUpdateDeclaration={onUpdateDeclaration}
+                            onAddDeclaration={onAddDeclaration}
+                            onDeleteDeclaration={onDeleteDeclaration}
+                            onOpenRegulation={onOpenRegulation}
+                            onInspectEvidence={onInspectEvidence}
+                            onAddEvidence={onAddEvidence}
+                            onDeleteEvidence={onDeleteEvidence}
+                            onOpenAddDeclaration={onOpenAddDeclaration}
+                            onOpenEditDeclaration={onOpenEditDeclaration}
+                            onOpenAddEvidenceModal={onOpenAddEvidenceModal}
+                            readOnly={readOnly}
+                            isSupplementMode={isSupplementMode}
+                            supplementRequest={reqSupplement}
+                            supplementChanges={reqChanges}
+                            isSupplementWindowClosed={isSupplementWindowClosed}
+                            isSupplementSubmitting={isSupplementSubmitting}
+                            onSendSupplement={onSendSupplement}
+                            customReviewStatus={requirementReviewStatuses?.[req.id]}
+                            reviewerActionSlot={
+                              renderRowReviewerSlot
+                                ? renderRowReviewerSlot(req, criterion.id)
+                                : undefined
+                            }
+                            renderDeclarationReviewerSlot={renderDeclarationReviewerSlot}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div>
+            {criterion.requirements.map((req) => {
+              const { reqSupplement, reqChanges } = getReqSupplementProps(req);
+              return (
+                <RequirementRow
+                  key={req.id}
+                  requirement={req}
+                  criterionToken={token}
+                  hasParentGroup={false}
+                  isExpanded={
+                    expandedRowMap ? !!expandedRowMap[req.id] : expandedRowId === req.id
+                  }
+                  isHighlighted={highlightedRequirementId === req.id}
+                  onToggleExpand={() => onToggleRowExpand(req.id)}
+                  onUpdateDeclaration={onUpdateDeclaration}
+                  onAddDeclaration={onAddDeclaration}
+                  onDeleteDeclaration={onDeleteDeclaration}
+                  onOpenRegulation={onOpenRegulation}
+                  onInspectEvidence={onInspectEvidence}
+                  onAddEvidence={onAddEvidence}
+                  onDeleteEvidence={onDeleteEvidence}
+                  onOpenAddDeclaration={onOpenAddDeclaration}
+                  onOpenEditDeclaration={onOpenEditDeclaration}
+                  onOpenAddEvidenceModal={onOpenAddEvidenceModal}
+                  readOnly={readOnly}
+                  isSupplementMode={isSupplementMode}
+                  supplementRequest={reqSupplement}
+                  supplementChanges={reqChanges}
+                  isSupplementWindowClosed={isSupplementWindowClosed}
+                  isSupplementSubmitting={isSupplementSubmitting}
+                  onSendSupplement={onSendSupplement}
+                  customReviewStatus={requirementReviewStatuses?.[req.id]}
+                  reviewerActionSlot={
+                    renderRowReviewerSlot
+                      ? renderRowReviewerSlot(req, criterion.id)
+                      : undefined
+                  }
+                  renderDeclarationReviewerSlot={renderDeclarationReviewerSlot}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {renderCriterionConclusionSlot && (
+          <div className="border-t border-[#DFE5EC]">
+            {renderCriterionConclusionSlot(criterion.id)}
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
     <div
       id={`criterion-section-${criterion.id}`}
-      className="border-b border-[#DCE7EE] scroll-anchor-target"
+      className="border-b border-[#DFE5EC] last:border-b-0 scroll-anchor-target bg-white"
     >
-      {/* 4-column aligned Criterion Header (Target 58–64px, Section 2 & 10, Prompt 10 Section 8, 11, 49) */}
+      {/* Mobile Criterion Accordion Bar (< 768px) */}
       <div
         onClick={onToggleExpand}
-        style={{
-          backgroundColor: hasActiveSupplement ? '#FFFBF4' : token?.bgTint || '#F8FBFD',
-          boxShadow: `inset 3.5px 0 0 0 ${
-            hasActiveSupplement ? '#D97706' : token?.accentColor || '#18A6E0'
-          }`,
-        }}
-        className="app-table-grid px-6 py-3 items-center min-h-[58px] hover:brightness-[0.98] transition-all cursor-pointer select-none"
+        className={`flex md:hidden items-center justify-between gap-2 px-4 py-3 border-b border-[#DFE5EC] cursor-pointer select-none ${
+          hasActiveSupplement ? 'bg-[#FFFBEB]' : 'bg-[#F8FAFC]'
+        }`}
       >
-        {/* Column 1: Chevron + Number + Criterion Name & Factual Progress (Level 1 Header) */}
-        <div className="grid-col-1 flex items-center gap-3 pr-6 min-w-0">
-          <button
-            type="button"
-            aria-label={isExpanded ? 'Thu gọn tiêu chí' : 'Mở rộng tiêu chí'}
-            className="text-[#607483] hover:text-[#172A3A] transition-transform duration-200 shrink-0"
-            style={{ transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}
-          >
-            <ChevronDown size={17} strokeWidth={2.4} />
-          </button>
-
-          {/* Restrained Accent Number */}
-          <div
-            className="w-7 h-7 rounded-[7px] flex items-center justify-center text-[13px] font-extrabold shrink-0 select-none shadow-2xs"
-            style={{
-              backgroundColor: token?.accentSoft || 'rgba(0,0,0,0.06)',
-              color: token?.accentColor || '#172A3A',
-            }}
-          >
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className="w-6 h-6 rounded-[4px] bg-[#007EE5] text-white text-[12px] font-bold flex items-center justify-center shrink-0">
             {isOtherAchievements ? '+' : criterion.number}
-          </div>
-
-          <div className="flex flex-col min-w-0">
-            {/* Primary line: Canonical criterion title never truncated */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[16px] xl:text-[17px] font-bold text-[#172A3A] tracking-tight whitespace-normal break-words">
-                {criterion.name}
-              </span>
-              {isOtherAchievements && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-[5px] text-[10.5px] font-bold bg-[#EEF2FF] text-[#4338CA] border border-[#C7D2FE]">
-                  Ngoài 5 tiêu chí · Cho phép nhiều kê khai
-                </span>
-              )}
-            </div>
-            {/* Secondary line: Factual declaration count with evidence summary */}
-            <span className="text-[11.5px] text-[#607483] font-medium whitespace-normal break-words mt-0.5 tabular-nums">
-              {hasDeclaredItems ? progressSummary : criterion.shortSummary || progressSummary}
-            </span>
-          </div>
-        </div>
-
-        {/* Column 2: Requirement groups structure hint (Clean & quiet) */}
-        <div className="grid-col-2 px-6 border-l border-[#E3EBF1] min-w-0 text-[12.5px] text-[#607483] font-medium flex items-center h-full">
-          <span className="whitespace-normal break-words">
-            {isOtherAchievements
-              ? 'Kê khai bổ sung (nhiều mục)'
-              : totalGroups > 1
-              ? `${totalGroups} nhóm tiêu chuẩn`
-              : 'Yêu cầu quy định'}
           </span>
+          <div className="min-w-0">
+            <div className="text-[14px] font-bold text-[#0F172A] truncate">
+              {criterion.name}
+            </div>
+            <div className="text-[11px] text-[#64748B]">{progressSummary}</div>
+          </div>
         </div>
-
-        {/* Column 3: Regulation link (only Xem quy định) */}
-        <div
-          className="grid-col-3 px-6 border-l border-[#E3EBF1] flex items-center h-full min-w-0"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {isOtherAchievements ? (
-            <span className="text-[12px] font-medium text-[#607483]">
-              Không bắt buộc
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => onOpenRegulation(criterion.id)}
-              className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#466474] hover:text-[#126A9C] hover:underline transition-colors shrink-0 cursor-pointer"
-            >
-              <BookOpen size={13} />
-              <span>Xem quy định</span>
-            </button>
-          )}
-        </div>
-
-        {/* Column 4: Status Label (Prompt 10 Section 11 & 49: Avoid repeating Cần bổ sung at every nested level when expanded) */}
-        <div className="grid-col-4 pl-6 border-l border-[#E3EBF1] flex items-center justify-end h-full min-w-0">
-          {hasActiveSupplement && isExpanded ? (
-            <span className="text-[11.5px] font-semibold text-[#8C3A19] whitespace-nowrap">
-              1 nội dung cần bổ sung
-            </span>
-          ) : (
-            <StatusChip
-              status={
-                customStatusVariant ||
-                getCriterionStatus(resolvedStatusLabel)
-              }
-              customLabel={resolvedStatusLabel}
-              size="sm"
-            />
-          )}
+        <div className="flex items-center gap-2 shrink-0">
+          <StatusChip
+            status={customStatusVariant || getCriterionStatus(resolvedStatusLabel)}
+            customLabel={resolvedStatusLabel}
+            size="sm"
+          />
+          <ChevronDown
+            size={15}
+            className="text-[#475569] transition-transform"
+            style={{ transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+          />
         </div>
       </div>
 
-      {/* Requirement Groups & Rows */}
-      {isExpanded && (
-        <div className="bg-white">
-          {criterion.groups && criterion.groups.length > 0 ? (
-            <div className="space-y-3 py-2 bg-[#F8FAFC]/60">
-              {criterion.groups.map((group) => {
-                const isGroupCollapsed = !!collapsedGroups[group.id];
+      {/* Mobile Body */}
+      <div className="block md:hidden">{isExpanded && renderRequirementsStack()}</div>
 
-                return (
-                  <div key={group.id} className="bg-white border-y border-[#DCE7EE] shadow-2xs overflow-hidden">
-                    {/* Semantic Requirement Group Header (Level 2) */}
-                    <RequirementGroupHeader
-                      group={group}
-                      criterionToken={token}
-                      isCollapsed={isGroupCollapsed}
-                      onToggleCollapse={() => toggleGroupCollapse(group.id)}
-                    />
-
-                    {/* Group Option Rows (Level 3 - always display all official criteria rows) */}
-                    {!isGroupCollapsed && (() => {
-                      const isAtLeastNOrOptional =
-                        group.groupType === 'AT_LEAST_N' || group.groupType === 'OPTIONAL';
-                      const declaredRequirements = group.requirements.filter(
-                        (r) => r.declarations && r.declarations.length > 0
-                      );
-
-                      const visibleRequirements = group.requirements;
-
-                      const declaredCountInGroup = declaredRequirements.length;
-                      const isGroupSatisfied =
-                        group.groupType === 'AT_LEAST_N'
-                          ? declaredCountInGroup >= (group.minSelections || 1)
-                          : group.groupType === 'OPTIONAL'
-                          ? true
-                          : false;
-
-                      return (
-                        <div className="divide-y divide-[#EBF1F5] bg-white">
-                          {visibleRequirements.map((req, reqIdx) => {
-                            const { reqSupplement, reqChanges } = getReqSupplementProps(req);
-                            return (
-                              <RequirementRow
-                                key={req.id}
-                                requirement={req}
-                                criterionToken={token}
-                                hasParentGroup={true}
-                                isAlternativeOption={isAtLeastNOrOptional}
-                                isGroupSatisfied={isGroupSatisfied}
-                                groupType={group.groupType}
-                                isFirstInGroup={reqIdx === 0}
-                                isLastInGroup={reqIdx === visibleRequirements.length - 1}
-                                isExpanded={expandedRowMap ? !!expandedRowMap[req.id] : expandedRowId === req.id}
-                                isHighlighted={highlightedRequirementId === req.id}
-                                onToggleExpand={() => onToggleRowExpand(req.id)}
-                                onUpdateDeclaration={onUpdateDeclaration}
-                                onAddDeclaration={onAddDeclaration}
-                                onDeleteDeclaration={onDeleteDeclaration}
-                                onOpenRegulation={onOpenRegulation}
-                                onInspectEvidence={onInspectEvidence}
-                                onAddEvidence={onAddEvidence}
-                                onDeleteEvidence={onDeleteEvidence}
-                                onOpenAddDeclaration={onOpenAddDeclaration}
-                                onOpenEditDeclaration={onOpenEditDeclaration}
-                                onOpenAddEvidenceModal={onOpenAddEvidenceModal}
-                                readOnly={readOnly}
-                                isSupplementMode={isSupplementMode}
-                                supplementRequest={reqSupplement}
-                                supplementChanges={reqChanges}
-                                isSupplementWindowClosed={isSupplementWindowClosed}
-                                isSupplementSubmitting={isSupplementSubmitting}
-                                onSendSupplement={onSendSupplement}
-                                customReviewStatus={requirementReviewStatuses?.[req.id]}
-                                reviewerActionSlot={
-                                  renderRowReviewerSlot
-                                    ? renderRowReviewerSlot(req, criterion.id)
-                                    : undefined
-                                }
-                                renderDeclarationReviewerSlot={renderDeclarationReviewerSlot}
-                              />
-                            );
-                          })}
-                        </div>
-                      );
-                    })()}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="divide-y divide-[#DCE7EE] bg-white">
-              {criterion.requirements.map((req) => {
-                const { reqSupplement, reqChanges } = getReqSupplementProps(req);
-                return (
-                  <RequirementRow
-                    key={req.id}
-                    requirement={req}
-                    criterionToken={token}
-                    hasParentGroup={false}
-                    isExpanded={expandedRowMap ? !!expandedRowMap[req.id] : expandedRowId === req.id}
-                    isHighlighted={highlightedRequirementId === req.id}
-                    onToggleExpand={() => onToggleRowExpand(req.id)}
-                    onUpdateDeclaration={onUpdateDeclaration}
-                    onAddDeclaration={onAddDeclaration}
-                    onDeleteDeclaration={onDeleteDeclaration}
-                    onOpenRegulation={onOpenRegulation}
-                    onInspectEvidence={onInspectEvidence}
-                    onAddEvidence={onAddEvidence}
-                    onDeleteEvidence={onDeleteEvidence}
-                    onOpenAddDeclaration={onOpenAddDeclaration}
-                    onOpenEditDeclaration={onOpenEditDeclaration}
-                    onOpenAddEvidenceModal={onOpenAddEvidenceModal}
-                    readOnly={readOnly}
-                    isSupplementMode={isSupplementMode}
-                    supplementRequest={reqSupplement}
-                    supplementChanges={reqChanges}
-                    isSupplementWindowClosed={isSupplementWindowClosed}
-                    isSupplementSubmitting={isSupplementSubmitting}
-                    onSendSupplement={onSendSupplement}
-                    customReviewStatus={requirementReviewStatuses?.[req.id]}
-                    reviewerActionSlot={
-                      renderRowReviewerSlot
-                        ? renderRowReviewerSlot(req, criterion.id)
-                        : undefined
-                    }
-                    renderDeclarationReviewerSlot={renderDeclarationReviewerSlot}
-                  />
-                );
-              })}
-            </div>
-          )}
-
-          {/* Criterion Human Conclusion Slot (Bottom of criterion in review mode) */}
-          {renderCriterionConclusionSlot && renderCriterionConclusionSlot(criterion.id)}
+      {/* Desktop 5-Column Administrative Row-Spanned Layout (>= 768px) */}
+      <div className="hidden md:grid admin-dossier-criterion-split items-stretch">
+        {/* Col 1: STT (Row-spanned top-aligned with sticky number) */}
+        <div
+          onClick={onToggleExpand}
+          title={isExpanded ? 'Nhấn để thu gọn tiêu chí' : 'Nhấn để mở rộng tiêu chí'}
+          className={`border-r border-[#DFE5EC] flex items-start justify-center p-2 pt-3.5 text-[13px] font-bold text-[#1E293B] cursor-pointer select-none ${
+            hasActiveSupplement ? 'bg-[#FFFBEB]/60' : 'bg-white hover:bg-[#F8FAFC]'
+          }`}
+        >
+          <span className="sticky top-[112px]">
+            {isOtherAchievements ? '+' : criterion.number}
+          </span>
         </div>
-      )}
+
+        {/* Col 2: Tiêu chí (Row-spanned top-aligned with sticky label, regulation & status meta) */}
+        <div
+          className={`border-r border-[#DFE5EC] p-3 pt-3.5 flex flex-col items-center justify-start text-center select-none ${
+            hasActiveSupplement ? 'bg-[#FFFBEB]/60' : 'bg-white'
+          }`}
+        >
+          <div className="sticky top-[112px] flex flex-col items-center gap-1.5 w-full">
+            <button
+              type="button"
+              onClick={onToggleExpand}
+              className="text-[13px] font-bold text-[#0F172A] hover:text-[#007EE5] leading-snug cursor-pointer"
+            >
+              {criterion.name}
+            </button>
+
+            <span className="text-[11px] text-[#64748B] font-medium tabular-nums">
+              {progressSummary}
+            </span>
+
+            {(hasActiveSupplement || customStatusLabel || readOnly) && (
+              <StatusChip
+                status={customStatusVariant || getCriterionStatus(resolvedStatusLabel)}
+                customLabel={
+                  hasActiveSupplement ? 'Cần bổ sung' : resolvedStatusLabel
+                }
+                size="sm"
+              />
+            )}
+
+            {!isOtherAchievements && (
+              <button
+                type="button"
+                onClick={() => onOpenRegulation(criterion.id)}
+                className="inline-flex items-center gap-1 text-[11px] font-medium text-[#007EE5] hover:underline cursor-pointer mt-0.5"
+              >
+                <BookOpen size={11.5} />
+                <span>Quy định</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Cols 3–5 Merged Stack: Group Rule Headers + Requirement Rows + Reviewer Conclusion */}
+        <div className="min-w-0 flex flex-col justify-start">
+          {renderRequirementsStack()}
+        </div>
+      </div>
     </div>
   );
 };

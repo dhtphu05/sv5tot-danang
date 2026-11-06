@@ -49,7 +49,7 @@ export function resolveAuthoritativeResultForRecord(
       outcome,
       outcomeLabel:
         outcome === 'recognized'
-          ? 'Được công nhận Sinh viên 5 tốt cấp Đại học Đà Nẵng'
+          ? 'Được công nhận Sinh viên 5 tốt cấp Thành phố Đà Nẵng'
           : 'Chưa được công nhận trong đợt xét này',
       isPublished: app.finalResultSummary.isPublished,
       decidedAt: app.updatedAt,
@@ -60,7 +60,7 @@ export function resolveAuthoritativeResultForRecord(
     return {
       hasDecision: true,
       outcome: 'recognized',
-      outcomeLabel: 'Được công nhận Sinh viên 5 tốt cấp Đại học Đà Nẵng',
+      outcomeLabel: 'Được công nhận Sinh viên 5 tốt cấp Thành phố Đà Nẵng',
       isPublished: true,
       decidedAt: app.updatedAt,
       publishedAt: app.updatedAt,

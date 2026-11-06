@@ -1,6 +1,6 @@
 import { isMatchingDeclarationId, isMatchingRequirementId } from '../../components/supplement/supplementHelpers';
 /**
- * 5TOT ĐHĐN — Student Supplement Response & Change-Tracking Feature Hook (FSD Features Layer)
+ * 5TOT Đà Nẵng — Student Supplement Response & Change-Tracking Feature Hook (FSD Features Layer)
  * Manages active supplement requests, change tracking (declarations/evidence added/removed),
  * supplement demo scenario switching, and student supplement submission.
  */

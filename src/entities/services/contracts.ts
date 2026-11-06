@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Typed Domain Service Contracts (Dual-Mode Architecture)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Typed Domain Service Contracts (Dual-Mode Architecture)
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Shared contract layer consumed identically by both:
  * - DemoAdapter (Interactive Demo Mode — isolated in-memory/localStorage fixtures)
@@ -142,6 +142,14 @@ export interface AuthServiceContract {
     facultyName?: string;
     password?: string;
   }): Promise<AuthSessionPayload>;
+  changePassword(params: {
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<{
+    success: boolean;
+    message: string;
+    session?: AuthSessionPayload;
+  }>;
   getCurrentSession(): Promise<AuthSessionPayload | null>;
   logout(): Promise<void>;
 }

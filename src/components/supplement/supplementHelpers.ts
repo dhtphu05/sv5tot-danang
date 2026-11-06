@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Supplement Request & Declaration Matching Helpers
+ * 5TOT Đà Nẵng — Supplement Request & Declaration Matching Helpers
  */
 
 export function isMatchingDeclarationId(

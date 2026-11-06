@@ -460,7 +460,7 @@ export class EvidenceService {
         const app = await this.lookupIndividualAppCached(obj.individualAppId, appCache);
         if (app && (app.currentReviewStage === 'STUDENT_DRAFT' || app.schoolPreliminaryStatus === 'PENDING_SCHOOL_REVIEW')) {
           throw ApiError.forbidden(
-            'Hồ sơ chưa được đơn vị trường chuyển lên cấp Đại học Đà Nẵng, cán bộ cấp Đại học Đà Nẵng chưa có quyền truy cập minh chứng.',
+            'Hồ sơ chưa được đơn vị trường chuyển lên cấp Thành phố Đà Nẵng, cán bộ cấp Thành phố chưa có quyền truy cập minh chứng.',
             'UNFORWARDED_EVIDENCE_ACCESS_DENIED'
           );
         }

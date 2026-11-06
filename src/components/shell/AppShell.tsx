@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
-import { Menu, X, Bell } from 'lucide-react';
+import { X } from 'lucide-react';
 import { SidebarNav } from './SidebarNav';
-import { UdnEmblem, HsvEmblem } from '../brand/HsvLogo';
+import { PortalTopHeader } from './PortalTopHeader';
+import { PortalBreadcrumbBar } from './PortalBreadcrumbBar';
 import { FeedbackFloatingWidget } from '../feedback/FeedbackFloatingWidget';
+import { ChangePasswordModal } from '../auth/ChangePasswordModal';
+import { getApiActorContext } from '../../shared/api/httpClient';
+import { MOCK_STUDENT } from '../../tokens';
 
 export interface AppShellProps {
   children: React.ReactNode;
@@ -20,77 +24,65 @@ export const AppShell: React.FC<AppShellProps> = ({
   activeNavId = 'overview',
   onNavSelect,
   notificationCount = 0,
-  studentName,
-  studentId,
-  studentUniversity,
+  studentName = MOCK_STUDENT.fullName,
+  studentId = MOCK_STUDENT.studentId,
+  studentUniversity = MOCK_STUDENT.university,
   className = '',
 }) => {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+
+  const actorCtx = getApiActorContext();
 
   const handleNavSelect = (id: string) => {
     setIsMobileNavOpen(false);
     onNavSelect?.(id);
   };
 
+  const handleHamburgerToggle = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setIsMobileNavOpen((prev) => !prev);
+    } else {
+      setIsDesktopCollapsed((prev) => !prev);
+    }
+  };
+
   return (
-    <div
-      className={`flex flex-col md:flex-row min-h-screen bg-[#F3F8FC] text-[#172A3A] ${className}`}
-    >
-      {/* Mobile Top Header (Screens < 768px) */}
-      <div className="md:hidden sticky top-0 z-40 bg-white/95 backdrop-blur-xs border-b border-[#DCE7EE] px-4 py-2.5 flex items-center justify-between">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <button
-            type="button"
-            onClick={() => setIsMobileNavOpen(true)}
-            aria-label="Mở menu điều hướng"
-            className="p-1.5 rounded-[8px] text-[#4A6275] hover:text-[#172A3A] hover:bg-[#F0F6FA] cursor-pointer"
-          >
-            <Menu size={20} />
-          </button>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <UdnEmblem size={26} className="shrink-0" />
-            <HsvEmblem size={26} className="shrink-0" />
-          </div>
-          <div className="min-w-0">
-            <span className="text-[10px] font-bold tracking-wider text-[#0D78AE] uppercase block leading-none">
-              HSV ĐH Đà Nẵng
-            </span>
-            <span className="text-[13.5px] font-extrabold text-[#172A3A] truncate block leading-tight">
-              5TOT ĐHĐN
-            </span>
-          </div>
-        </div>
+    <div className={`min-h-screen flex flex-col bg-[#F4F6F9] text-[#1E293B] ${className}`}>
+      {/* 1. Full-Width Top Institutional Blue Bar (#007EE5) */}
+      <PortalTopHeader
+        title="5TOT Đà Nẵng"
+        subtitle="Hội Sinh viên Việt Nam Thành phố Đà Nẵng"
+        userName={studentName}
+        userSubLabel={studentId ? `MSSV: ${studentId}` : undefined}
+        userEmail={actorCtx?.userEmail}
+        universityLabel={studentUniversity}
+        notificationCount={notificationCount}
+        onToggleSidebar={handleHamburgerToggle}
+        onOpenNotifications={() => handleNavSelect('notifications')}
+        onOpenProfile={() => handleNavSelect('profile')}
+        onOpenChangePassword={() => setIsChangePasswordOpen(true)}
+        onLogout={() => handleNavSelect('public-entry')}
+      />
 
-        <div className="flex items-center gap-2">
-          {notificationCount > 0 && (
-            <button
-              type="button"
-              onClick={() => handleNavSelect('notifications')}
-              className="relative p-1.5 rounded-[8px] text-[#0D78AE] hover:bg-[#EAF6FC] cursor-pointer"
-              title={`${notificationCount} thông báo mới`}
-            >
-              <Bell size={18} />
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#EF4444]" />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Mobile Slide-Over Drawer Backdrop & Container */}
+      {/* Mobile Slide-Over Drawer (< 768px) */}
       {isMobileNavOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex animate-in fade-in duration-150">
           <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-2xs transition-opacity"
+            className="fixed inset-0 bg-black/40 transition-opacity"
             onClick={() => setIsMobileNavOpen(false)}
             aria-hidden="true"
           />
-          <div className="relative w-[240px] max-w-[80vw] h-full bg-white shadow-xl z-50 flex flex-col">
-            <div className="p-3 border-b border-[#DCE7EE] flex items-center justify-between">
-              <span className="text-[12px] font-bold text-[#0D78AE] uppercase">Menu điều hướng</span>
+          <div className="relative w-[248px] max-w-[82vw] h-full bg-white shadow-xl z-50 flex flex-col">
+            <div className="h-[50px] px-3.5 bg-[#007EE5] text-white flex items-center justify-between">
+              <span className="text-[12.5px] font-bold uppercase tracking-wide">
+                Danh mục chức năng
+              </span>
               <button
                 type="button"
                 onClick={() => setIsMobileNavOpen(false)}
-                className="p-1 rounded-[6px] text-[#728391] hover:text-[#172A3A] cursor-pointer"
+                className="p-1 rounded-[4px] text-white/85 hover:text-white hover:bg-white/15 cursor-pointer"
                 aria-label="Đóng menu"
               >
                 <X size={18} />
@@ -100,6 +92,10 @@ export const AppShell: React.FC<AppShellProps> = ({
               <SidebarNav
                 activeId={activeNavId}
                 onSelect={handleNavSelect}
+                onOpenChangePassword={() => {
+                  setIsMobileNavOpen(false);
+                  setIsChangePasswordOpen(true);
+                }}
                 notificationCount={notificationCount}
                 studentName={studentName}
                 studentId={studentId}
@@ -111,20 +107,42 @@ export const AppShell: React.FC<AppShellProps> = ({
         </div>
       )}
 
-      {/* Desktop Sticky Left Sidebar */}
-      <SidebarNav
-        activeId={activeNavId}
-        onSelect={onNavSelect}
-        notificationCount={notificationCount}
-        studentName={studentName}
-        studentId={studentId}
-        studentUniversity={studentUniversity}
-        className="hidden md:flex"
-      />
+      {/* 2. Below-Header Workspace Frame: Collapsible White Sidebar + Breadcrumb + Main Content */}
+      <div className="flex flex-1 min-h-[calc(100dvh-50px)]">
+        <SidebarNav
+          activeId={activeNavId}
+          onSelect={onNavSelect}
+          onOpenChangePassword={() => setIsChangePasswordOpen(true)}
+          collapsed={isDesktopCollapsed}
+          notificationCount={notificationCount}
+          studentName={studentName}
+          studentId={studentId}
+          studentUniversity={studentUniversity}
+          className="hidden md:flex"
+        />
 
-      {/* Main Viewport Content Area: Scrolls naturally with the single page document */}
-      <main className="flex-1 flex flex-col min-w-0 w-full">{children}</main>
+        <main className="flex-1 flex flex-col min-w-0 w-full">
+          <PortalBreadcrumbBar
+            activeNavId={activeNavId}
+            onNavigateHome={() => handleNavSelect('overview')}
+          />
+          <div className="flex-1 flex flex-col min-w-0 w-full">{children}</div>
+        </main>
+      </div>
+
       <FeedbackFloatingWidget />
+
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+        accountName={actorCtx?.userName || studentName}
+        accountEmail={actorCtx?.userEmail}
+        roleLabel={
+          actorCtx?.role === 'COLLECTIVE_PREPARER'
+            ? 'Người lập hồ sơ Tập thể'
+            : 'Tài khoản Sinh viên'
+        }
+      />
     </div>
   );
 };
@@ -135,7 +153,7 @@ export const PageLayout: React.FC<{
   className?: string;
 }> = ({ children, maxWidth = 'max-w-7xl', className = '' }) => {
   return (
-    <div className={`w-full ${maxWidth} mx-auto px-6 lg:px-8 py-6 ${className}`}>
+    <div className={`w-full ${maxWidth} mx-auto px-5 lg:px-7 py-5 ${className}`}>
       {children}
     </div>
   );

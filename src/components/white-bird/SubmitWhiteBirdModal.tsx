@@ -1,15 +1,6 @@
 /**
- * 5TOT Đại học Đà Nẵng — Modal kiểm tra và xác nhận nộp hồ sơ Giải thưởng "Cánh chim trắng"
- * Căn cứ Quy chế Giải thưởng ban hành kèm theo Quyết định số 14-QĐ/ĐHĐN-HSV ngày 04/10/2022
- * của Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng.
- *
- * Thiết kế lại hoàn chỉnh:
- * 1. Thông tin hồ sơ chuẩn bị nộp (Nổi bật tên hồ sơ, đối tượng, đơn vị, năm học).
- * 2. Bảng kiểm tra thành phần hồ sơ (WB01, WB02, WB03 theo đúng quy chế từng hạng mục,
- *    trạng thái kê khai, số tệp thực tế, hành động Kiểm tra/Chỉnh sửa).
- * 3. Sau khi nộp (Giải thích rõ 3 hậu quả thực tế về tiếp nhận, tạm khóa chỉnh sửa và theo dõi).
- * 4. Xử lý cảnh báo (Hồ sơ hoàn thành, Hồ sơ chưa hoàn thành, Cảnh báo hỗ trợ kiểm tra hình thức).
- * 5. Footer (Quay lại chỉnh sửa, Xác nhận nộp hồ sơ với loading, chống double-submit, hiển thị lỗi).
+ * 5TOT Đà Nẵng — Modal kiểm tra và xác nhận nộp hồ sơ Giải thưởng "9/1" Cấp Thành phố
+ * Đơn vị tổ chức: Ban Thư ký Hội Sinh viên Việt Nam Thành phố Đà Nẵng.
  */
 
 import React, { useEffect, useRef } from 'react';
@@ -111,8 +102,8 @@ export const SubmitWhiteBirdModal: React.FC<SubmitWhiteBirdModalProps> = ({
     {
       id: 'WB01',
       code: 'WB01',
-      name: 'Văn bản đề nghị xét trao Giải thưởng',
-      description: 'Văn bản của các tổ chức, cá nhân có thẩm quyền theo Điều 5 Quy chế',
+      name: 'Văn bản đề nghị xét trao Giải thưởng 9/1',
+      description: 'Văn bản giới thiệu của cấp bộ Hội – Đoàn hoặc chủ thể có thẩm quyền theo Quy chế Giải thưởng 9/1',
       isOptional: false,
       isReady: readiness.wb01Ready,
       filesCount: application.requirements.wb01.evidenceFiles.length,
@@ -124,14 +115,14 @@ export const SubmitWhiteBirdModal: React.FC<SubmitWhiteBirdModalProps> = ({
         category === 'UOM_MAM'
           ? 'Báo cáo thuyết minh mô hình, giải pháp, sáng kiến & Cam kết sáng tạo'
           : category === 'TRUYEN_LUA'
-          ? 'Báo cáo thành tích cá nhân theo mẫu quy định'
+          ? 'Báo cáo thành tích cá nhân cán bộ Hội – Đoàn tiêu biểu'
           : 'Báo cáo thuyết minh dự án, đề tài NCKH, khởi nghiệp & Cam kết bản quyền',
       description:
         category === 'UOM_MAM'
-          ? 'Thuyết minh theo 4 tiêu chuẩn (Điểm a khoản 4.2 Điều 4) và cam kết tính sáng tạo theo Khoản 6.1 Điều 6'
+          ? 'Thuyết minh theo 4 tiêu chuẩn (tính mới, hiệu quả, lan tỏa, điển hình) và cam kết tính sáng tạo'
           : category === 'TRUYEN_LUA'
-          ? 'Lý lịch đồng bộ từ Hồ sơ cá nhân, quá trình giữ chức vụ Đoàn - Hội (≥ 2 năm), thành tích xuất sắc 2 năm liên tục và đính kèm Báo cáo có xác nhận pháp lý (Khoản 6.2 Điều 6)'
-          : 'Thuyết minh bối cảnh, tính mới, hiệu quả ứng dụng và cam kết bản quyền theo Mẫu báo cáo & Khoản 6.3 Điều 6',
+          ? 'Lý lịch đồng bộ từ Hồ sơ cá nhân, quá trình giữ chức vụ Đoàn - Hội (≥ 2 năm), thành tích xuất sắc 2 năm liên tục và đính kèm Báo cáo có xác nhận pháp lý'
+          : 'Thuyết minh bối cảnh, tính mới, hiệu quả ứng dụng và cam kết bản quyền',
       isOptional: false,
       isReady: readiness.wb02Ready,
       filesCount: application.requirements.wb02.evidenceFiles.length,
@@ -147,18 +138,18 @@ export const SubmitWhiteBirdModal: React.FC<SubmitWhiteBirdModalProps> = ({
           : 'Minh chứng đạt giải thưởng tại các cuộc thi liên quan',
       description:
         category === 'UOM_MAM'
-          ? 'Hình ảnh hoạt động, sản phẩm mẫu, phóng sự hoặc tài liệu minh họa mô hình theo Khoản 6.1 Điều 6'
+          ? 'Hình ảnh hoạt động, sản phẩm mẫu, phóng sự hoặc tài liệu minh họa mô hình'
           : category === 'TRUYEN_LUA'
-          ? 'Đính kèm quyết định chuẩn y chức vụ Đoàn - Hội, tài liệu minh chứng thành tích xuất sắc 02 năm liên tục và bảng điểm/ĐRL (Khoản 6.2 Điều 6)'
-          : 'Bản scan Quyết định khen thưởng hoặc Giấy chứng nhận đạt giải từ cấp Đại học Đà Nẵng trở lên',
+          ? 'Đính kèm quyết định chuẩn y chức vụ Đoàn - Hội, tài liệu minh chứng thành tích xuất sắc 02 năm liên tục và bảng điểm/ĐRL'
+          : 'Bản scan Quyết định khen thưởng hoặc Giấy chứng nhận đạt giải từ cấp Thành phố trở lên',
       isOptional: readiness.isWb03Optional,
       isReady: readiness.wb03Ready,
       filesCount: application.requirements.wb03.evidenceFiles.length,
       specialNote:
         category === 'TRUYEN_LUA'
-          ? 'Tự động tổng hợp danh mục từ tệp đính kèm; yêu cầu tối thiểu 01 tệp minh chứng chức vụ / khen thưởng hợp lệ (Khoản 6.2 Điều 6)'
+          ? 'Tự động tổng hợp danh mục từ tệp đính kèm; yêu cầu tối thiểu 01 tệp minh chứng chức vụ / khen thưởng hợp lệ'
           : category === 'SANG_TAO'
-          ? 'Giải thưởng từ cấp Đại học Đà Nẵng trở lên (không dùng giấy chứng nhận tham gia)'
+          ? 'Giải thưởng từ cấp Thành phố trở lên (không dùng giấy chứng nhận tham gia)'
           : category === 'UOM_MAM'
           ? 'Thành phần tùy chọn (nếu có). Không làm giảm tiến độ xét nộp nếu không có minh họa'
           : undefined,
@@ -188,10 +179,10 @@ export const SubmitWhiteBirdModal: React.FC<SubmitWhiteBirdModalProps> = ({
                 id="submit-white-bird-modal-title"
                 className="text-[16px] sm:text-[17px] font-bold text-[#172A3A] truncate"
               >
-                Kiểm tra & Xác nhận nộp hồ sơ Giải thưởng
+                Kiểm tra & Xác nhận nộp hồ sơ Giải thưởng 9/1
               </h2>
               <p className="text-[11.5px] text-[#607483] mt-0.5 truncate">
-                Cơ quan tiếp nhận: Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng
+                Cơ quan tiếp nhận: Văn phòng Hội Sinh viên Việt Nam Thành phố Đà Nẵng
               </p>
             </div>
           </div>
@@ -491,7 +482,7 @@ export const SubmitWhiteBirdModal: React.FC<SubmitWhiteBirdModalProps> = ({
 
             <ol className="list-decimal pl-5 space-y-1.5 text-[12px] text-[#1E3A5F] leading-relaxed">
               <li>
-                <strong>Cơ quan tiếp nhận:</strong> Hồ sơ được chuyển trực tiếp đến Cơ quan Thường trực Giải thưởng: <strong>Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng</strong> để phân công cán bộ thẩm định.
+                <strong>Cơ quan tiếp nhận:</strong> Hồ sơ được chuyển trực tiếp đến Cơ quan Thường trực Giải thưởng: <strong>Văn phòng Hội Sinh viên Việt Nam Thành phố Đà Nẵng</strong> để phân công cán bộ thẩm định.
               </li>
               <li>
                 <strong>Trạng thái & Quyền chỉnh sửa:</strong> Hồ sơ chuyển từ trạng thái <em>Bản nháp</em> sang <em>Đã nộp / Đang thẩm định</em> và tạm khóa chỉnh sửa; sinh viên sẽ được mở khóa bổ sung nếu Cơ quan Thường trực gửi yêu cầu bổ sung hồ sơ.

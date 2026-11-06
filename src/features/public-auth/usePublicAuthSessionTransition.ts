@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Public Auth & Persona Session Transition Hook (FSD Features Layer)
+ * 5TOT Đà Nẵng — Public Auth & Persona Session Transition Hook (FSD Features Layer)
  * Handles login persona routing (Collective, School Officer, City Officer, City Manager, Committee, Student)
  * and new student registration state initialization.
  */
@@ -123,10 +123,20 @@ export function usePublicAuthSessionTransition({
         INITIAL_STAFF_ACCOUNTS.find(
           (acc) => acc.email.toLowerCase() === lower
         ) ||
-        (lower === 'canbo.udn@udn.vn' || lower === 'an.nv@udn.vn'
-          ? INITIAL_STAFF_ACCOUNTS.find((acc) => acc.id === 'staff-sch-dut')
-          : lower === 'canbo.ufls@udn.vn'
-          ? INITIAL_STAFF_ACCOUNTS.find((acc) => acc.id === 'staff-sch-ufl')
+        ([
+          'canbo.udn@udn.vn',
+          'an.nv@udn.vn',
+          'canbo.dut@udn.vn',
+          'canbo.due@udn.vn',
+          'canbo.ued@udn.vn',
+          'canbo.ufl@udn.vn',
+          'canbo.ufls@udn.vn',
+          'canbo.ute@udn.vn',
+          'canbo.vku@udn.vn',
+          'canbo.smp@udn.vn',
+          'canbo.vnuk@udn.vn',
+        ].includes(lower)
+          ? INITIAL_STAFF_ACCOUNTS.find((acc) => acc.id === 'staff-sch-udn')
           : undefined);
       const matchedCollectiveAccount = AUTHORIZED_COLLECTIVE_REGISTRY.find(
         (col) => col.authorizedPreparerEmail.toLowerCase() === lower
@@ -648,6 +658,8 @@ export function usePublicAuthSessionTransition({
         fullName: payload.fullName,
         studentId: payload.studentId,
         university: payload.institutionName,
+        faculty: payload.facultyName,
+        facultyDepartmentId: payload.facultyDepartmentId,
         email: payload.email,
         institutionId: payload.institutionId,
       });

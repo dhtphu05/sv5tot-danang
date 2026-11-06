@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Admin Control Plane Backend V2 Sync Helper
+ * 5TOT Đà Nẵng — Admin Control Plane Backend V2 Sync Helper
  * Bridges `useAdminControlPlane` with Backend V2 (`/api/v2/admin/*`, `/api/v2/seasons/*`,
  * `/api/v2/institutions/*`, `/api/v2/school-review-units/*`) when running in Real Backend Mode.
  */
@@ -82,7 +82,9 @@ function mapBackendSnapshotToFrontend(raw: any): Partial<AdminControlPlaneSnapsh
             srvInst.organizationContext || 'Đơn vị đào tạo trên địa bàn TP. Đà Nẵng',
           isUnderUdn: srvInst.group === 'UD_MEMBER_UNIVERSITY',
           schoolReviewUnitId:
-            srvInst.group === 'UD_MEMBER_UNIVERSITY' ? 'unit-udn' : `unit-${srvInst.id}`,
+            srvInst.group === 'UD_MEMBER_UNIVERSITY'
+              ? 'unit-udn'
+              : (`unit-${srvInst.id.replace(/^inst-/, '')}` as Institution['schoolReviewUnitId']),
           schoolReviewUnitName: srvInst.officialName,
           eligibilityMode: 'DIRECT_CITY',
           status: srvInst.isActive === false ? 'suspended' : 'active',
@@ -133,7 +135,7 @@ function mapBackendSnapshotToFrontend(raw: any): Partial<AdminControlPlaneSnapsh
         unitLabel:
           srvStaff.schoolReviewUnitLabelVi ||
           existing?.unitLabel ||
-          'Ban Thư ký Hội Sinh viên Đại học Đà Nẵng',
+          'Ban Thư ký Hội Sinh viên Thành phố Đà Nẵng',
         institutionId: srvStaff.institutionId || existing?.institutionId,
         schoolReviewUnitId:
           srvStaff.schoolReviewUnitId || existing?.schoolReviewUnitId || undefined,

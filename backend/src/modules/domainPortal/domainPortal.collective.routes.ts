@@ -1,7 +1,7 @@
 /**
- * 5TOT Đại học Đà Nẵng — Frontend Domain Portal V2 Collective, Evidence & Audit Routes (Backend V2)
- * Cơ quan quản lý: Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Frontend Domain Portal V2 Collective, Evidence & Audit Routes (Backend V2)
+ * Cơ quan chỉ đạo: Thành Đoàn Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  */
 
 import fs from 'node:fs';
@@ -10,6 +10,7 @@ import type { Router, Request, Response } from 'express';
 import { MAX_EVIDENCE_SIZE_BYTES, r2StorageClient } from '../../shared/storage/r2StorageClient';
 import {
   ALLOWED_EXTENSIONS,
+  SCHOOL_UNIT_MAP,
   STAFF_SEED_ACCOUNTS,
   createEmptyCollectiveRequirements,
   portalState,
@@ -53,6 +54,15 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
   });
 
   router.put('/white-bird/applications/:id', (req: Request, res: Response): void => {
+    const actor = resolveSessionActor(req);
+    if (actor.authenticated && actor.role === 'SCHOOL_OFFICER') {
+      res.status(403).json({
+        success: false,
+        errorCode: 'FORBIDDEN_ROLE',
+        error: 'Cán bộ sơ tuyển đơn vị không có thẩm quyền cập nhật Giải thưởng 9/1 cấp Thành phố.',
+      });
+      return;
+    }
     const { id } = req.params;
     const incoming = (req.body?.application || req.body || {}) as Record<string, any>;
     const idx = portalState.whiteBirdApplications.findIndex((w) => w.id === id);
@@ -93,6 +103,15 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
   });
 
   router.put('/collective/applications/:id', (req: Request, res: Response): void => {
+    const actor = resolveSessionActor(req);
+    if (actor.authenticated && actor.role === 'SCHOOL_OFFICER') {
+      res.status(403).json({
+        success: false,
+        errorCode: 'FORBIDDEN_ROLE',
+        error: 'Hồ sơ Tập thể nộp trực tiếp cấp Thành phố, không thuộc thẩm quyền chỉnh sửa của đơn vị.',
+      });
+      return;
+    }
     const { id } = req.params;
     const incoming = (req.body?.application || req.body || {}) as Record<string, any>;
     const idx = portalState.collectiveApplications.findIndex((c) => c.id === id);
@@ -136,15 +155,18 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
       return;
     }
 
+    const mappedUnit = SCHOOL_UNIT_MAP[institutionId];
     const id = `COL-2026-DN-${Date.now().toString(36).toUpperCase()}`;
     const created: Record<string, any> = {
       id,
       collectiveName,
       collectiveType,
       institutionId,
-      institutionName: institutionName || 'Trường Đại học Bách khoa – ĐHĐN',
-      schoolReviewUnitId: schoolReviewUnitId || 'unit-dut',
-      schoolReviewUnitName: schoolReviewUnitName || 'Trường Đại học Bách khoa – ĐHĐN',
+      institutionName:
+        institutionName || mappedUnit?.instName || 'Trường Đại học Bách khoa – ĐHĐN',
+      schoolReviewUnitId: schoolReviewUnitId || mappedUnit?.unitId || 'unit-udn',
+      schoolReviewUnitName:
+        schoolReviewUnitName || mappedUnit?.unitName || 'Đại học Đà Nẵng',
       facultyName: facultyName || 'Khoa Đào tạo',
       academicYear: academicYear || '2025–2026',
       contactPhone: contactPhone || '',
@@ -287,13 +309,13 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
       actorId: actor.id,
       actorName: actor.name,
       actorRole: actor.role,
-      details: 'Nộp trực tiếp hồ sơ tập thể lên Hội Sinh viên Đại học Đà Nẵng',
+      details: 'Nộp trực tiếp hồ sơ tập thể lên Hội Sinh viên Việt Nam TP. Đà Nẵng',
     });
 
     res.status(200).json({
       success: true,
-      message: 'Đã nộp hồ sơ tập thể trực tiếp lên Hội Sinh viên Đại học Đà Nẵng.',
-      destination: 'Hội Sinh viên Việt Nam Đại học Đà Nẵng',
+      message: 'Đã nộp hồ sơ tập thể trực tiếp lên Hội Sinh viên Việt Nam TP. Đà Nẵng.',
+      destination: 'Hội Sinh viên Việt Nam Thành phố Đà Nẵng',
       data: app,
     });
   });
@@ -320,7 +342,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
       app.status = 'city_assigned';
       app.assignedOfficerId = officerAcc?.id || 'staff-off-nam';
       app.assignedOfficerName =
-        officerAcc?.fullName || 'Cán bộ xét duyệt cấp Đại học Đà Nẵng';
+        officerAcc?.fullName || 'Cán bộ xét duyệt cấp Thành phố Đà Nẵng';
       app.assignmentNote = assignmentNote || '';
       app.updatedAt = new Date().toISOString();
 
@@ -346,7 +368,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
 
   router.post(
     '/collective/applications/:id/review/start',
-    requireAllowedRoles('CITY_OFFICER', 'ADMIN'),
+    requireAllowedRoles('CITY_OFFICER', 'CITY_MANAGER', 'ADMIN'),
     (req: Request, res: Response): void => {
       const app = portalState.collectiveApplications.find((c) => c.id === req.params.id);
       if (!app) {
@@ -362,7 +384,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
 
   router.post(
     '/collective/applications/:id/review/requirement',
-    requireAllowedRoles('CITY_OFFICER', 'ADMIN'),
+    requireAllowedRoles('CITY_OFFICER', 'CITY_MANAGER', 'ADMIN'),
     (req: Request, res: Response): void => {
       const app = portalState.collectiveApplications.find((c) => c.id === req.params.id);
       if (!app) {
@@ -378,12 +400,24 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
         res.status(400).json({ success: false, error: 'Thiếu requirementId hoặc judgment' });
         return;
       }
+      const nowIso = new Date().toISOString();
+      const actor = resolveSessionActor(req);
+      app.requirementJudgments = app.requirementJudgments || {};
       app.requirementJudgments[requirementId] = {
         judgment,
         notes: notes || '',
-        updatedAt: new Date().toISOString(),
+        updatedAt: nowIso,
       };
-      app.updatedAt = new Date().toISOString();
+      app.cityRequirementReviews = app.cityRequirementReviews || {};
+      app.cityRequirementReviews[requirementId] = {
+        requirementId,
+        judgment,
+        officerNotes: notes || '',
+        notes: notes || '',
+        reviewedAt: nowIso,
+        officerName: actor.name,
+      };
+      app.updatedAt = nowIso;
       savePortalStateToDisk();
       res.status(200).json({ success: true, data: app });
     }
@@ -391,7 +425,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
 
   router.post(
     '/collective/applications/:id/review/evidence',
-    requireAllowedRoles('CITY_OFFICER', 'ADMIN'),
+    requireAllowedRoles('CITY_OFFICER', 'CITY_MANAGER', 'ADMIN'),
     (req: Request, res: Response): void => {
       const app = portalState.collectiveApplications.find((c) => c.id === req.params.id);
       if (!app) {
@@ -408,13 +442,25 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
         res.status(400).json({ success: false, error: 'Thiếu thông tin đánh giá minh chứng' });
         return;
       }
+      const nowIso = new Date().toISOString();
+      const actor = resolveSessionActor(req);
+      app.evidenceJudgments = app.evidenceJudgments || {};
       app.evidenceJudgments[evidenceId] = {
         requirementId,
         status,
         notes: notes || '',
-        updatedAt: new Date().toISOString(),
+        updatedAt: nowIso,
       };
-      app.updatedAt = new Date().toISOString();
+      app.cityEvidenceReviews = app.cityEvidenceReviews || {};
+      app.cityEvidenceReviews[evidenceId] = {
+        evidenceId,
+        requirementId,
+        status,
+        officerNotes: notes || '',
+        reviewedAt: nowIso,
+        officerName: actor.name,
+      };
+      app.updatedAt = nowIso;
       savePortalStateToDisk();
       res.status(200).json({ success: true, data: app });
     }
@@ -422,7 +468,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
 
   router.post(
     '/collective/applications/:id/review/supplement-request',
-    requireAllowedRoles('CITY_OFFICER', 'ADMIN'),
+    requireAllowedRoles('CITY_OFFICER', 'CITY_MANAGER', 'ADMIN'),
     (req: Request, res: Response): void => {
       const app = portalState.collectiveApplications.find((c) => c.id === req.params.id);
       if (!app) {
@@ -486,11 +532,14 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
     }
 
     const key = requirementId.toLowerCase() as 'tt01' | 'tt02' | 'tt03' | 'tt04';
-    if (app.requirements[key] && Array.isArray(files)) {
+    if (app.requirements?.[key] && Array.isArray(files)) {
       app.requirements[key].evidenceFiles = [
         ...(app.requirements[key].evidenceFiles || []),
         ...files,
       ];
+    }
+    if (app[key] && Array.isArray(files)) {
+      app[key].evidenceFiles = [...(app[key].evidenceFiles || []), ...files];
     }
     app.status = 'city_supplement_returned';
     app.updatedAt = new Date().toISOString();
@@ -511,7 +560,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
 
   router.post(
     '/collective/applications/:id/review/complete',
-    requireAllowedRoles('CITY_OFFICER', 'ADMIN'),
+    requireAllowedRoles('CITY_OFFICER', 'CITY_MANAGER', 'ADMIN'),
     (req: Request, res: Response): void => {
       const app = portalState.collectiveApplications.find((c) => c.id === req.params.id);
       if (!app) {
@@ -616,7 +665,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
       app.status = 'published';
       app.finalResult = {
         outcome: app.committeeDecision?.outcome || 'recognized',
-        decisionNumber: decisionNumber || '112/QĐ-HSV-ĐHĐN',
+        decisionNumber: decisionNumber || '112/QĐ-HSVTP',
         decisionDate: decisionDate || new Date().toLocaleDateString('vi-VN'),
         publishedAt: new Date().toISOString(),
         publishedBy: actor.name,

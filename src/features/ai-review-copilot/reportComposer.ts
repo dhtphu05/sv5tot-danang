@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Virtual AI Review Officer Report Composer
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Virtual AI Review Officer Report Composer
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements Prompt Section 3, 4, 5, 6, 7 & 8:
  * - Truly conversational, verdict-first, grounded synthesis in natural Vietnamese.
@@ -90,7 +90,7 @@ export function composeVirtualAiReviewReport(
       'Tôi đã rà soát toàn diện các thông tin kê khai và đối chiếu minh chứng của cả 5 tiêu chí. Toàn bộ tài liệu đều hợp lệ, đúng niên khóa và có căn cứ xác thực vững chắc theo quy chế.';
   } else if (verdict === 'preliminary_not_meets') {
     verdictReason =
-      'Tôi phát hiện trong hồ sơ có ít nhất 01 tiêu chuẩn bắt buộc không đạt ngưỡng quy chế Đại học Đà Nẵng (điểm trung bình học tập hoặc kỷ luật), minh chứng chính thức thể hiện chưa thỏa mãn điều kiện công nhận.';
+      'Tôi phát hiện trong hồ sơ có ít nhất 01 tiêu chuẩn bắt buộc không đạt ngưỡng quy chế cấp Thành phố Đà Nẵng (điểm trung bình học tập hoặc kỷ luật), minh chứng chính thức thể hiện chưa thỏa mãn điều kiện công nhận.';
   } else if (verdict === 'stale') {
     verdictReason =
       'Tài liệu minh chứng của hồ sơ vừa được cập nhật hoặc thay thế. Kết quả đánh giá sơ bộ trước đây cần được quét lại để đảm bảo tính chính xác theo tệp mới nhất.';
@@ -168,7 +168,7 @@ export function composeVirtualAiReviewReport(
     type: 'human_authority_disclaimer',
     id: 'block-disclaimer',
     officerName,
-    text: 'Báo cáo này là phân tích sơ bộ của Trợ lý AI và hoàn toàn mang tính chất tham khảo nghiệp vụ. Quyền quyết định kết quả thẩm định và công nhận danh hiệu Sinh viên 5 tốt hoàn toàn thuộc về Cán bộ Hội Sinh viên Đại học Đà Nẵng và Hội đồng xét chọn.',
+    text: 'Báo cáo này là phân tích sơ bộ của Trợ lý AI và hoàn toàn mang tính chất tham khảo nghiệp vụ. Quyền quyết định kết quả thẩm định và công nhận danh hiệu Sinh viên 5 tốt hoàn toàn thuộc về Cán bộ Hội Sinh viên Thành phố Đà Nẵng và Hội đồng xét chọn.',
   });
 
   return {
@@ -201,7 +201,7 @@ function composeApplicationScopeBlocks(
     blocks.push({
       type: 'paragraph',
       id: 'block-unavail-text',
-      text: 'Hệ thống thẩm định đang chạy ở chế độ Độc lập ngoại tuyến. Toàn bộ tính năng duyệt hồ sơ, xem minh chứng, chấm điểm và gửi yêu cầu bổ sung của Cán bộ Hội Sinh viên Đại học Đà Nẵng vẫn hoạt động bình thường mà không bị phụ thuộc vào AI.',
+      text: 'Hệ thống thẩm định đang chạy ở chế độ Độc lập ngoại tuyến. Toàn bộ tính năng duyệt hồ sơ, xem minh chứng, chấm điểm và gửi yêu cầu bổ sung của Cán bộ Hội Sinh viên Thành phố Đà Nẵng vẫn hoạt động bình thường mà không bị phụ thuộc vào AI.',
       emphasis: 'warning',
     });
     return;
@@ -320,7 +320,7 @@ function composeApplicationScopeBlocks(
       criterionNumber: 5,
       criterionName: 'Hội nhập tốt',
       verdict: 'preliminary_meets',
-      summary: 'Chứng chỉ IELTS Academic 7.0 (IDP) còn thời hạn đến 2027, vượt mức yêu cầu tối thiểu 5.5 của Hội Sinh viên Đại học Đà Nẵng.',
+      summary: 'Chứng chỉ IELTS Academic 7.0 (IDP) còn thời hạn đến 2027, vượt mức chuẩn B1 (IELTS >= 4.5) của Hội Sinh viên Thành phố Đà Nẵng.',
       findingCount: 1,
       primaryActionLabel: 'Xem tiêu chí',
     });
@@ -363,7 +363,7 @@ function composeApplicationScopeBlocks(
     blocks.push({
       type: 'paragraph',
       id: 'block-p-lead-notmeets',
-      text: `Qua rà soát chi tiết, hồ sơ của ứng viên ${studentName} có điểm không phù hợp với quy chế xét chọn danh hiệu năm học ${policySeason}. Cụ thể, tiêu chuẩn học tập không đạt mức điểm sàn quy chuẩn bắt buộc của Hội Sinh viên Đại học Đà Nẵng.`,
+      text: `Qua rà soát chi tiết, hồ sơ của ứng viên ${studentName} có điểm không phù hợp với quy chế xét chọn danh hiệu năm học ${policySeason}. Cụ thể, tiêu chuẩn học tập không đạt mức điểm sàn quy chuẩn bắt buộc của Hội Sinh viên Thành phố Đà Nẵng.`,
       emphasis: 'lead',
     });
 
@@ -388,7 +388,7 @@ function composeApplicationScopeBlocks(
         id: 'card-reg-unmet',
         criterionId: unmetFinding.criterionId,
         requirementId: unmetFinding.requirementId,
-        regulationTitle: 'Quy chế xét chọn Sinh viên 5 tốt cấp Đại học Đà Nẵng 2025–2026',
+        regulationTitle: 'Quy chế xét chọn Sinh viên 5 tốt cấp Thành phố Đà Nẵng 2025–2026',
         articleCitation: unmetFinding.applicableRegulation || 'Điều 5.1: Tiêu chuẩn Học tập tốt',
         snippet: 'Sinh viên phải đạt điểm trung bình chung học tập cả năm học từ 3.20/4.00 (hoặc 8.00/10) trở lên đối với bậc Đại học.',
         actionLabel: 'Xem quy chế',
@@ -411,7 +411,7 @@ function composeApplicationScopeBlocks(
   blocks.push({
     type: 'paragraph',
     id: 'block-p-lead-insuff',
-    text: `Ứng viên ${studentName} có kết quả học tập và phong trào tích cực, đạt chuẩn sơ bộ ở các tiêu chuẩn Đạo đức và Ngoại ngữ. Tuy nhiên, hồ sơ hiện có 02 nội dung quan trọng cần Cán bộ Hội Sinh viên Đại học Đà Nẵng đối soát kỹ lưỡng trước khi đưa ra nhận định đầy đủ:`,
+    text: `Ứng viên ${studentName} có kết quả học tập và phong trào tích cực, đạt chuẩn sơ bộ ở các tiêu chuẩn Đạo đức và Ngoại ngữ. Tuy nhiên, hồ sơ hiện có 02 nội dung quan trọng cần Cán bộ Hội Sinh viên Thành phố Đà Nẵng đối soát kỹ lưỡng trước khi đưa ra nhận định đầy đủ:`,
     emphasis: 'lead',
   });
 
@@ -485,7 +485,7 @@ function composeApplicationScopeBlocks(
     blocks.push({
       type: 'paragraph',
       id: 'block-p-detailed-header',
-      text: 'Tổng quan chi tiết trạng thái đối soát của toàn bộ 5 Tiêu chí cấp Đại học Đà Nẵng:',
+      text: 'Tổng quan chi tiết trạng thái đối soát của toàn bộ 5 Tiêu chí cấp Thành phố Đà Nẵng:',
       emphasis: 'lead',
     });
 
@@ -756,8 +756,8 @@ function getContextualFollowUps(
       },
       {
         id: 'fu-crit-rule',
-        label: 'Quy định ĐHĐN về tiêu chuẩn này',
-        prompt: 'Trích dẫn chính xác điều khoản quy chế Đại học Đà Nẵng áp dụng cho tiêu chí này.',
+        label: 'Quy định TP. Đà Nẵng về tiêu chuẩn này',
+        prompt: 'Trích dẫn chính xác điều khoản quy chế cấp Thành phố Đà Nẵng áp dụng cho tiêu chí này.',
       },
     ];
   }
@@ -797,7 +797,7 @@ function getContextualFollowUps(
       {
         id: 'fu-notmeets-recheck',
         label: 'Có trường hợp đặc cách hoặc tương đương không?',
-        prompt: 'Kiểm tra quy định về các trường hợp quy đổi tương đương theo hướng dẫn Hội Sinh viên Đại học Đà Nẵng.',
+        prompt: 'Kiểm tra quy định về các trường hợp quy đổi tương đương theo hướng dẫn Hội Sinh viên Thành phố Đà Nẵng.',
       },
     ];
   }

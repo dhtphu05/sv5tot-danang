@@ -59,8 +59,8 @@ export const TrackingSummary: React.FC<TrackingSummaryProps> = ({
   const canonicalStages = [
     { label: 'Gửi hồ sơ', short: 'Gửi hồ sơ', full: '01. Hoàn thiện và gửi hồ sơ' },
     { label: 'Xét sơ cấp Trường', short: 'Xét sơ cấp Trường', full: '02. Xét sơ tuyển cấp Trường' },
-    { label: 'Chuyển cấp ĐHĐN', short: 'Chuyển cấp ĐHĐN', full: '03. Đề xuất và chuyển cấp ĐHĐN' },
-    { label: 'Xét duyệt cấp ĐHĐN', short: 'Xét duyệt cấp ĐHĐN', full: '04. Xét duyệt cấp Đại học Đà Nẵng' },
+    { label: 'Chuyển cấp Thành phố', short: 'Chuyển cấp Thành phố', full: '03. Đề xuất và chuyển cấp Thành phố' },
+    { label: 'Xét duyệt cấp Thành phố', short: 'Xét duyệt cấp Thành phố', full: '04. Xét duyệt cấp Thành phố Đà Nẵng' },
     { label: 'Kết quả chính thức', short: 'Kết quả', full: '05. Kết quả xét chọn' },
   ];
 
@@ -113,20 +113,20 @@ export const TrackingSummary: React.FC<TrackingSummaryProps> = ({
     message = `Hồ sơ đã được gửi đến ${schoolReviewUnitName} và đang chờ tiếp nhận xét sơ tuyển.`;
     progressBadge = 'Chờ tiếp nhận xét sơ';
   } else if (isNotRecommended) {
-    statusTitle = 'Chưa đề xuất chuyển lên cấp Đại học Đà Nẵng';
-    message = `Hồ sơ chưa được đơn vị xét sơ (${schoolReviewUnitName}) đề xuất chuyển lên cấp Đại học Đà Nẵng trong đợt này.`;
+    statusTitle = 'Chưa đề xuất chuyển lên cấp Thành phố Đà Nẵng';
+    message = `Hồ sơ chưa được đơn vị xét sơ (${schoolReviewUnitName}) đề xuất chuyển lên cấp Thành phố Đà Nẵng trong đợt này.`;
     progressBadge = 'Không đề xuất chuyển';
   } else if (schoolPreliminaryStatus === 'recommended_forwarding' || (schoolRecommendation === 'recommended' && !isSchoolForwarded)) {
-    statusTitle = 'Đã đề xuất chuyển lên cấp Đại học Đà Nẵng';
-    message = `Đơn vị xét sơ (${schoolReviewUnitName}) đã hoàn tất xét sơ và đề xuất chuyển lên Hội Sinh viên Đại học Đà Nẵng. Đang chờ xác nhận chuyển chính thức.`;
-    progressBadge = 'Chờ chuyển cấp ĐHĐN';
+    statusTitle = 'Đã đề xuất chuyển lên cấp Thành phố Đà Nẵng';
+    message = `Đơn vị xét sơ (${schoolReviewUnitName}) đã hoàn tất xét sơ và đề xuất chuyển lên Hội Sinh viên Thành phố Đà Nẵng. Đang chờ xác nhận chuyển chính thức.`;
+    progressBadge = 'Chờ chuyển cấp Thành phố';
   } else if (isSchoolForwarded || (reviewStage === 'CITY' && submissionState !== 'result_published')) {
-    statusTitle = 'Đã chuyển hồ sơ lên cấp Đại học Đà Nẵng';
-    message = 'Hội Sinh viên Đại học Đà Nẵng đã tiếp nhận hồ sơ từ đơn vị xét sơ và đang thực hiện thẩm định độc lập.';
-    progressBadge = 'Cấp Đại học Đà Nẵng xét duyệt';
+    statusTitle = 'Đã chuyển hồ sơ lên cấp Thành phố Đà Nẵng';
+    message = 'Hội Sinh viên Thành phố Đà Nẵng đã tiếp nhận hồ sơ từ đơn vị xét sơ và đang thực hiện thẩm định độc lập.';
+    progressBadge = 'Cấp Thành phố Đà Nẵng xét duyệt';
   } else if (submissionState === 'supplement_required' || hasSupplement) {
     const isCitySupp = reviewStage === 'CITY';
-    statusTitle = `Cần bổ sung hồ sơ (${isCitySupp ? 'Cấp Đại học Đà Nẵng' : 'Cấp Trường'})`;
+    statusTitle = `Cần bổ sung hồ sơ (${isCitySupp ? 'Cấp Thành phố Đà Nẵng' : 'Cấp Trường'})`;
     message = `Các tiêu chí khác vẫn giữ nguyên. Chỉ phạm vi được cán bộ đề nghị tại ${supplementCriterionName} đang mở để bạn bổ sung.`;
     progressBadge = `${reviewedCriteriaCount}/${totalCriteriaCount} tiêu chí đã xem xét`;
   } else if (submissionState === 'supplement_sent') {
@@ -143,7 +143,7 @@ export const TrackingSummary: React.FC<TrackingSummaryProps> = ({
     progressBadge = 'Chờ kết quả chính thức';
   } else if (submissionState === 'result_published') {
     statusTitle = 'Đã có kết quả xét chọn chính thức';
-    message = 'Hồ sơ đã hoàn tất toàn bộ quy trình hai cấp và có quyết định công nhận chính thức từ cấp Đại học Đà Nẵng.';
+    message = 'Hồ sơ đã hoàn tất toàn bộ quy trình hai cấp và có quyết định công nhận chính thức từ cấp Thành phố Đà Nẵng.';
     progressBadge = '5/5 tiêu chí đã hoàn tất xét';
   }
 
@@ -151,24 +151,24 @@ export const TrackingSummary: React.FC<TrackingSummaryProps> = ({
 
   return (
     <div
-      className={`py-3.5 px-5 bg-[#EAF6FC] border border-[#D0E8F5] rounded-[12px] shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4 select-none ${className}`}
+      className={`py-3.5 px-5 bg-white border border-[#DFE5EC] border-l-[3px] border-l-[#007EE5] rounded-[6px] flex flex-col lg:flex-row lg:items-center justify-between gap-4 select-none ${className}`}
     >
       {/* Left Column: Contextual status, timestamp & reassuring copy */}
       <div className="flex flex-col min-w-0 max-w-2xl">
         <div className="flex items-center gap-2 flex-wrap tabular-nums">
-          <span className="text-[14.5px] font-bold text-[#172A3A] tracking-tight">
+          <span className="text-[14px] font-bold text-[#0F172A] tracking-tight">
             {statusTitle}
           </span>
-          <span className="text-[12px] text-[#607483]">·</span>
-          <span className="text-[12px] text-[#466474] font-medium">
+          <span className="text-[12px] text-[#94A3B8]">·</span>
+          <span className="text-[12px] text-[#475569] font-medium">
             {submissionState === 'draft' ? 'Chưa gửi hồ sơ' : `Gửi lần đầu ${submittedAt}`}
           </span>
           {progressBadge && (
             <>
-              <span className="text-[12px] text-[#607483]">·</span>
+              <span className="text-[12px] text-[#94A3B8]">·</span>
               <span
                 className={`text-[12px] font-semibold ${
-                  isNotRecommended ? 'text-[#BE123C]' : 'text-[#0D78AE]'
+                  isNotRecommended ? 'text-[#BE123C]' : 'text-[#007EE5]'
                 }`}
               >
                 {progressBadge}
@@ -177,12 +177,12 @@ export const TrackingSummary: React.FC<TrackingSummaryProps> = ({
           )}
         </div>
 
-        <p className="text-[12.5px] text-[#466474] mt-1 leading-snug">
+        <p className="text-[12.5px] text-[#475569] mt-1 leading-snug">
           {message}
         </p>
       </div>
 
-      {/* Right Column: Compact Horizontal Workflow Timeline (Prompt 10 Section 37 & S4 Section 13) */}
+      {/* Right Column: Compact Horizontal Workflow Timeline */}
       <div className="shrink-0 pt-1 lg:pt-0 overflow-x-auto">
         <div className="flex items-center gap-1.5 sm:gap-2">
           {stages.map((stage, idx) => {
@@ -194,28 +194,27 @@ export const TrackingSummary: React.FC<TrackingSummaryProps> = ({
               <React.Fragment key={stage.label}>
                 {/* Stage Step Item */}
                 <div className="flex flex-col items-center gap-1 text-center min-w-[64px] sm:min-w-[74px]">
-                  {/* Step Dot/Icon */}
                   <div className="flex items-center justify-center">
                     {isStoppedAfter ? (
                       <div
-                        className="w-4.5 h-4.5 rounded-full bg-[#FFF1F2] text-[#BE123C] border border-[#FECDD3] flex items-center justify-center shadow-2xs text-[10px] font-bold"
+                        className="w-4.5 h-4.5 rounded-full bg-[#FFF1F2] text-[#BE123C] border border-[#FECDD3] flex items-center justify-center text-[10px] font-bold"
                         title={`${stage.label} (Không tiếp tục)`}
                       >
                         ✕
                       </div>
                     ) : isCompleted ? (
                       <div
-                        className="w-4.5 h-4.5 rounded-full bg-[#1A934E] text-white flex items-center justify-center shadow-2xs"
+                        className="w-4.5 h-4.5 rounded-full bg-[#10A37F] text-white flex items-center justify-center"
                         title={`${stage.label} (Đã hoàn tất)`}
                       >
                         <Check size={11} strokeWidth={2.8} />
                       </div>
                     ) : isCurrent ? (
                       <div
-                        className={`w-4.5 h-4.5 rounded-full text-white flex items-center justify-center ring-3 shadow-2xs ${
+                        className={`w-4.5 h-4.5 rounded-full text-white flex items-center justify-center ring-3 ${
                           submissionState === 'supplement_required'
                             ? 'bg-[#D97706] ring-[#D97706]/20'
-                            : 'bg-[#18A6E0] ring-[#18A6E0]/20'
+                            : 'bg-[#007EE5] ring-[#007EE5]/20'
                         }`}
                         title={`${stage.label} (Hiện tại)`}
                       >
@@ -223,7 +222,7 @@ export const TrackingSummary: React.FC<TrackingSummaryProps> = ({
                       </div>
                     ) : (
                       <div
-                        className="w-4.5 h-4.5 rounded-full bg-white border border-[#CBD5E1] flex items-center justify-center"
+                        className="w-4.5 h-4.5 rounded-full bg-[#F8FAFC] border border-[#CBD5E1] flex items-center justify-center"
                         title={`${stage.label} (Bước tiếp theo)`}
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-[#94A3B8]" />
@@ -238,10 +237,10 @@ export const TrackingSummary: React.FC<TrackingSummaryProps> = ({
                         ? 'font-medium text-[#BE123C]'
                         : isCurrent
                         ? submissionState === 'supplement_required'
-                          ? 'font-bold text-[#B75B00]'
-                          : 'font-bold text-[#0D78AE]'
+                          ? 'font-bold text-[#B45309]'
+                          : 'font-bold text-[#007EE5]'
                         : isCompleted
-                        ? 'font-semibold text-[#172A3A]'
+                        ? 'font-semibold text-[#0F766E]'
                         : 'font-medium text-[#64748B]'
                     }`}
                   >
@@ -256,8 +255,8 @@ export const TrackingSummary: React.FC<TrackingSummaryProps> = ({
                       isNotRecommended && idx >= 1
                         ? 'bg-[#FECDD3]'
                         : idx < currentStageIdx
-                        ? 'bg-[#1A934E]'
-                        : 'bg-[#CBD5E1]'
+                        ? 'bg-[#10A37F]'
+                        : 'bg-[#DFE5EC]'
                     }`}
                     aria-hidden="true"
                   />

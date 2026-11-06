@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Student Portal Cross-Role Sync & Navigation Feature Hook (FSD Features Layer)
+ * 5TOT Đà Nẵng — Student Portal Cross-Role Sync & Navigation Feature Hook (FSD Features Layer)
  * Encapsulates student application submission, supplement resolution, notification activation,
  * and home/results deep-linking handlers.
  */
@@ -497,7 +497,7 @@ export function useStudentPortalWorkflow({
               submittedApp.student.university || resolvedInst.institutionName,
           },
           schoolYear: submittedApp.season || 'Năm học 2025–2026',
-          levelLabel: 'Cấp Đại học Đà Nẵng',
+          levelLabel: 'Cấp Thành phố Đà Nẵng',
           submittedAt: 'Vừa xong · Hôm nay',
           submittedDateSortKey: new Date().toISOString(),
           updatedAt: 'Vừa xong',

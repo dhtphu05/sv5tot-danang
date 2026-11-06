@@ -190,7 +190,7 @@ export function getReportRows(params: {
               ? 'Chưa được công nhận trong đợt xét này'
               : 'Hội đồng cần xem xét lại';
           if (outcome === 'recognized') {
-            decisionNumber = c.finalResult?.decisionNumber || '86/QĐ-HSV-ĐHĐN';
+            decisionNumber = c.finalResult?.decisionNumber || '86/QĐ-HSVTP';
           }
           decidedAt = c.finalResult?.decisionDate || '24/10/2026';
         } else {

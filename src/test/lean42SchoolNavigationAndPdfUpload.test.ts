@@ -620,30 +620,32 @@ describe('LEAN-4.2: School Navigation & Workflow Deduplication (28 Tests)', () =
   });
 
   it('26. 1-time batch forwarding per School Unit per Season invariant preserved', async () => {
-    const unitDut = AUTHORITATIVE_SCHOOL_REVIEW_UNITS.find((u) => u.id === 'unit-dut');
-    assert.ok(unitDut);
-    assert.equal(unitDut.code, 'DUT');
+    const unitUdn = AUTHORITATIVE_SCHOOL_REVIEW_UNITS.find((u) => u.id === 'unit-udn');
+    assert.ok(unitUdn);
+    assert.equal(unitUdn.code, 'UDN');
   });
 
-  it('27. 9 UDN member institutions map to their respective 9 independent school review units', () => {
+  it('27. 8 UDN member institutions consolidate to unit-udn while standalone institutions map 1:1', () => {
     const udnMembers: Array<[string, string]> = [
-      ['inst-dut', 'unit-dut'],
-      ['inst-due', 'unit-due'],
-      ['inst-ued', 'unit-ued'],
-      ['inst-ufl', 'unit-ufl'],
-      ['inst-ute', 'unit-ute'],
-      ['inst-vku', 'unit-vku'],
-      ['inst-smp', 'unit-smp'],
-      ['inst-vnuk', 'unit-vnuk'],
-      ['inst-kontum', 'unit-kontum'],
+      ['inst-dut', 'unit-udn'],
+      ['inst-due', 'unit-udn'],
+      ['inst-ued', 'unit-udn'],
+      ['inst-ufl', 'unit-udn'],
+      ['inst-ute', 'unit-udn'],
+      ['inst-vku', 'unit-udn'],
+      ['inst-smp', 'unit-udn'],
+      ['inst-vnuk', 'unit-udn'],
     ];
-    assert.equal(udnMembers.length, 9);
+    assert.equal(udnMembers.length, 8);
     for (const [instId, expectedUnitId] of udnMembers) {
       assert.equal(INSTITUTION_TO_SCHOOL_REVIEW_UNIT_MAP[instId], expectedUnitId);
       const resolved = resolveSchoolReviewUnit(instId);
       assert.equal(resolved.resolved, true);
       assert.equal(resolved.unit?.id, expectedUnitId);
     }
+    const dtuResolved = resolveSchoolReviewUnit('inst-dtu');
+    assert.equal(dtuResolved.resolved, true);
+    assert.equal(dtuResolved.unit?.id, 'unit-dtu');
   });
 
   it('28. Unselected applications in batch forwarding are NOT marked as failed', () => {

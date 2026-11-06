@@ -1,6 +1,6 @@
 /**
- * 5TOT ĐHĐN — Student Home ("Trang chủ" — Calm Orientation & Next-Action Hub)
- * Hội Sinh viên Việt Nam Đại học Đà Nẵng — Năm học 2025–2026
+ * 5TOT Đà Nẵng — Student Home ("Trang chủ" — Calm Orientation & Next-Action Hub)
+ * Hội Sinh viên Việt Nam Thành phố Đà Nẵng — Năm học 2025–2026
  *
  * Refactored into Feature-Sliced Widgets under src/widgets/student-home/:
  * - StudentHomeHeroBanner: Deterministic Single Primary Action Selector across all 14 states
@@ -29,6 +29,7 @@ import { TrackingSummary } from '../tracking/TrackingSummary';
 import { StudentHomeHeroBanner } from '../../widgets/student-home/StudentHomeHeroBanner';
 import { StudentHomeCriteriaStrip } from '../../widgets/student-home/StudentHomeCriteriaStrip';
 import { StudentHomeRecentUpdates } from '../../widgets/student-home/StudentHomeRecentUpdates';
+import { resolveSchoolReviewUnit } from '../../staff/schoolReviewTypes';
 
 export interface StudentHomeViewProps {
   storeState: CoherentStudentStoreState;
@@ -136,17 +137,17 @@ export const StudentHomeView: React.FC<StudentHomeViewProps> = ({
 
   return (
     <div
-      className={`flex-1 w-full max-w-[1080px] mx-auto px-6 lg:px-8 py-6 flex flex-col gap-6 text-[#172A3A] ${className}`}
+      className={`flex-1 w-full max-w-[1140px] mx-auto px-5 lg:px-7 py-5 flex flex-col gap-5 text-[#1E293B] ${className}`}
     >
       {/* 1. PAGE HEADER & STUDENT CONTEXT */}
-      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+      <header className="bg-white rounded-[6px] border border-[#DFE5EC] px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2 text-[12px] font-bold text-[#0D78AE] uppercase tracking-wider">
-            <span>Hội Sinh viên Việt Nam Đại học Đà Nẵng</span>
+          <div className="flex items-center gap-2 text-[11.5px] font-bold text-[#007EE5] uppercase tracking-wider">
+            <span>Hội Sinh viên Việt Nam Thành phố Đà Nẵng</span>
             <span>·</span>
             <span>Năm học {application?.student?.academicYear || MOCK_STUDENT.schoolYear}</span>
           </div>
-          <h1 className="text-[22px] sm:text-[24px] font-extrabold text-[#172A3A] tracking-tight mt-0.5">
+          <h1 className="text-[20px] sm:text-[22px] font-extrabold text-[#0F172A] tracking-tight mt-0.5">
             Xin chào, {
               application?.applicantProfileSnapshot?.fullName ||
               (application?.student?.fullName && !application.student.fullName.startsWith('Cán bộ')
@@ -155,28 +156,37 @@ export const StudentHomeView: React.FC<StudentHomeViewProps> = ({
               MOCK_STUDENT.fullName
             }
           </h1>
-          <p className="text-[13px] text-[#607483] mt-0.5">
-            MSSV:{' '}
-            <strong className="text-[#172A3A]">
-              {(application?.applicantProfileSnapshot as any)?.studentCode ||
-                application?.student?.studentId ||
-                MOCK_STUDENT.studentId}
-            </strong>
-            {application?.student?.faculty ? ` · ${application.student.faculty}` : ''}
-          </p>
-          <div className="text-[12.5px] text-[#526B7C] mt-1 flex items-center gap-2 flex-wrap">
+          <div className="text-[12.5px] text-[#475569] mt-1 flex items-center gap-2 flex-wrap">
+            <span>
+              MSSV:{' '}
+              <strong className="text-[#0F172A] tabular-nums">
+                {(application?.applicantProfileSnapshot as any)?.studentCode ||
+                  application?.student?.studentId ||
+                  MOCK_STUDENT.studentId}
+              </strong>
+            </span>
+            {application?.student?.faculty && (
+              <>
+                <span>·</span>
+                <span>{application.student.faculty}</span>
+              </>
+            )}
+            <span>·</span>
             <span>
               Đơn vị đào tạo:{' '}
-              <strong className="text-[#172A3A]">
+              <strong className="text-[#0F172A]">
                 {application?.student?.university || MOCK_STUDENT.university}
               </strong>
             </span>
             <span>·</span>
             <span>
               Đơn vị xét sơ:{' '}
-              <strong className="text-[#0D78AE]">
+              <strong className="text-[#007EE5]">
                 {storeState.schoolReviewUnitName ||
                   application?.schoolReviewUnitName ||
+                  resolveSchoolReviewUnit(
+                    (application?.applicantProfileSnapshot as any)?.institutionId || 'inst-dut'
+                  ).unit?.officialName ||
                   application?.student?.university ||
                   MOCK_STUDENT.university}
               </strong>
@@ -189,8 +199,8 @@ export const StudentHomeView: React.FC<StudentHomeViewProps> = ({
                 <span>·</span>
                 <span>
                   Đơn vị xét duyệt:{' '}
-                  <strong className="text-[#15803D]">
-                    Hội Sinh viên Việt Nam Đại học Đà Nẵng
+                  <strong className="text-[#10A37F]">
+                    Hội Sinh viên Việt Nam Thành phố Đà Nẵng
                   </strong>
                 </span>
               </>
@@ -198,13 +208,13 @@ export const StudentHomeView: React.FC<StudentHomeViewProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
           <button
             type="button"
             onClick={onOpenEvidenceLibrary}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-white border border-[#DCE7EE] hover:border-[#B9D0DE] text-[12.5px] font-semibold text-[#334E68] transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[5px] bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#DFE5EC] text-[12.5px] font-semibold text-[#1E293B] transition-colors cursor-pointer"
           >
-            <FolderArchive size={14} className="text-[#0D78AE]" />
+            <FolderArchive size={14} className="text-[#007EE5]" />
             <span>Kho minh chứng</span>
           </button>
         </div>
@@ -214,32 +224,32 @@ export const StudentHomeView: React.FC<StudentHomeViewProps> = ({
       {isLoading ? (
         <div
           aria-label="Đang tải thông tin trang chủ"
-          className="space-y-5 animate-pulse"
+          className="space-y-4 animate-pulse"
         >
-          <div className="bg-white rounded-[16px] border border-[#DCE7EE] p-6 space-y-4">
-            <div className="h-5 w-44 bg-[#D5E4EE] rounded" />
-            <div className="h-7 w-96 max-w-full bg-[#D5E4EE] rounded" />
-            <div className="h-4 w-full max-w-2xl bg-[#EAF1F6] rounded" />
-            <div className="h-10 w-44 bg-[#D5E4EE] rounded-[10px]" />
+          <div className="bg-white rounded-[6px] border border-[#DFE5EC] p-6 space-y-4">
+            <div className="h-5 w-44 bg-[#E2E8F0] rounded-[4px]" />
+            <div className="h-7 w-96 max-w-full bg-[#E2E8F0] rounded-[4px]" />
+            <div className="h-4 w-full max-w-2xl bg-[#F1F5F9] rounded-[4px]" />
+            <div className="h-9 w-40 bg-[#E2E8F0] rounded-[5px]" />
           </div>
-          <div className="bg-white rounded-[16px] border border-[#DCE7EE] p-5 space-y-3">
-            <div className="h-5 w-56 bg-[#D5E4EE] rounded" />
+          <div className="bg-white rounded-[6px] border border-[#DFE5EC] p-5 space-y-3">
+            <div className="h-5 w-56 bg-[#E2E8F0] rounded-[4px]" />
             <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
               {[1, 2, 3, 4, 5].map((n) => (
-                <div key={n} className="h-24 bg-[#EAF1F6] rounded-[10px]" />
+                <div key={n} className="h-20 bg-[#F1F5F9] rounded-[5px]" />
               ))}
             </div>
           </div>
         </div>
       ) : isHomeError ? (
-        <div className="bg-white rounded-[16px] border border-[#DCE7EE] p-10 shadow-2xs flex flex-col items-center text-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#FEF2F2] text-[#DC2626] flex items-center justify-center">
+        <div className="bg-white rounded-[6px] border border-[#DFE5EC] p-10 flex flex-col items-center text-center gap-3">
+          <div className="w-10 h-10 rounded-[5px] bg-[#FEF2F2] text-[#DC2626] flex items-center justify-center">
             <AlertCircle size={20} />
           </div>
-          <h2 className="text-[16px] font-bold text-[#172A3A]">
+          <h2 className="text-[16px] font-bold text-[#0F172A]">
             Chưa thể tải thông tin trang chủ lúc này
           </h2>
-          <p className="text-[13px] text-[#607483] max-w-md">
+          <p className="text-[13px] text-[#475569] max-w-md">
             Hệ thống tạm thời chưa đồng bộ được tóm tắt hồ sơ. Bạn có thể thử lại hoặc mở trực tiếp mục Hồ sơ của tôi ở thanh điều hướng.
           </p>
           <div className="pt-1 flex items-center gap-2.5">
@@ -302,21 +312,21 @@ export const StudentHomeView: React.FC<StudentHomeViewProps> = ({
           )}
 
           {/* Student Personal Information Profile Quick Status */}
-          <div className="bg-white rounded-2xl border border-[#DCE7EE] p-4 flex items-center justify-between gap-4 shadow-2xs">
+          <div className="bg-white rounded-[6px] border border-[#DFE5EC] p-4 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-[#E5F5FC] text-[#0D78AE] flex items-center justify-center font-bold shrink-0">
+              <div className="w-9 h-9 rounded-[5px] bg-[#F0F9FF] border border-[#BAE6FD] text-[#007EE5] flex items-center justify-center font-bold shrink-0">
                 <UserCircle2 size={18} />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-[13.5px] text-[#172A3A]">
+                  <span className="font-bold text-[13.5px] text-[#0F172A]">
                     Thông tin định danh cá nhân
                   </span>
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#E5F5FC] text-[#0D78AE]">
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-[4px] bg-[#ECFDF5] border border-[#A7F3D0] text-[#0F766E]">
                     Đầy đủ thông tin
                   </span>
                 </div>
-                <p className="text-[12px] text-[#607483] truncate">
+                <p className="text-[12px] text-[#64748B] truncate">
                   Thông tin cá nhân, học tập và tổ chức phục vụ quy trình xét chọn Sinh viên 5 tốt.
                 </p>
               </div>
@@ -325,9 +335,9 @@ export const StudentHomeView: React.FC<StudentHomeViewProps> = ({
               <button
                 type="button"
                 onClick={onOpenProfile}
-                className="px-3.5 py-1.5 rounded-xl bg-[#F0F4F8] hover:bg-[#E5F5FC] text-[#0D78AE] font-bold text-[12.5px] transition-colors cursor-pointer shrink-0"
+                className="px-3 py-1.5 rounded-[5px] bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#DFE5EC] text-[#1E293B] font-bold text-[12px] transition-colors cursor-pointer shrink-0"
               >
-                Xem & Cập nhật
+                Xem &amp; Cập nhật
               </button>
             )}
           </div>

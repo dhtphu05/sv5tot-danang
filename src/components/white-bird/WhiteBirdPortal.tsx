@@ -1,8 +1,7 @@
 /**
- * 5TOT Đại học Đà Nẵng — Giải thưởng "Cánh chim trắng" Student Account Tab & Workspace
- * Căn cứ Quy chế Giải thưởng "Cánh chim trắng" ban hành kèm theo Quyết định số 14-QĐ/ĐHĐN-HSV ngày 04/10/2022
- * của Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng.
- * Cơ quan Thường trực Giải thưởng: Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng.
+ * 5TOT Đà Nẵng — Giải thưởng "9/1" Cấp Thành phố Student Account Tab & Workspace
+ * Căn cứ Quy chế Giải thưởng "9/1" của Ban Chấp hành Hội Sinh viên Việt Nam Thành phố Đà Nẵng.
+ * Cơ quan Thường trực Giải thưởng: Văn phòng Hội Sinh viên Việt Nam Thành phố Đà Nẵng.
  */
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
@@ -10,7 +9,6 @@ import {
   Feather,
   Sparkles,
   Flame,
-  Lightbulb,
   Plus,
   FileCheck2,
   FolderArchive,
@@ -198,11 +196,11 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
   const effectiveUserName =
     studentProfileSnapshot?.fullName ||
     studentIdentity?.fullName ||
-    'Sinh viên ĐHĐN';
+    'Sinh viên Đà Nẵng';
   const effectiveUniversity =
     studentProfileSnapshot?.institutionName ||
     studentIdentity?.university ||
-    'Trường Đại học Bách khoa – ĐHĐN';
+    'Trường Đại học Bách khoa - Đại học Đà Nẵng';
 
   const userApps = useMemo(() => {
     void storeTick;
@@ -238,16 +236,19 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
       '',
       `Ban Thư ký Hội Sinh viên ${activeApp.institutionName}`.toLowerCase(),
       `Ban Thư ký Hội Sinh viên Việt Nam ${activeApp.institutionName}`.toLowerCase(),
+      `Ban Thường vụ Đoàn Thanh niên ${activeApp.institutionName}`.toLowerCase(),
       `Ban Chấp hành Liên chi Hội ${activeApp.facultyName || 'Khoa'}`.toLowerCase(),
       'Ban Chấp hành Liên chi Hội'.toLowerCase(),
       'Ban Chấp hành Liên chi hội'.toLowerCase(),
       `Ban Chủ nhiệm CLB/Đội/Nhóm trực thuộc HSV ${activeApp.institutionName}`.toLowerCase(),
+      'Ban Chủ nhiệm CLB/Đội/Nhóm trực thuộc HSV TP. Đà Nẵng'.toLowerCase(),
       'Ban Chủ nhiệm CLB/Đội/Nhóm trực thuộc HSV Đại học Đà Nẵng'.toLowerCase(),
     ];
 
     const isCurrentDefault =
       knownDefaults.includes(currentName.trim().toLowerCase()) ||
-      currentName.trim().toLowerCase().startsWith('ban thư ký hội sinh viên');
+      currentName.trim().toLowerCase().startsWith('ban thư ký hội sinh viên') ||
+      currentName.trim().toLowerCase().startsWith('ban thường vụ đoàn thanh niên');
 
     let updatedName = currentName;
 
@@ -259,6 +260,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
       if (isCurrentDefault || !currentName.trim()) {
         if (newType === 'BTK_HSV_TRUONG') {
           updatedName = `Ban Thư ký Hội Sinh viên ${activeApp.institutionName}`;
+        } else if (newType === 'BTV_DOAN_TRUONG') {
+          updatedName = `Ban Thường vụ Đoàn Thanh niên ${activeApp.institutionName}`;
         } else if (newType === 'BCH_LIEN_CHI_HOI') {
           updatedName = activeApp.facultyName
             ? `Ban Chấp hành Liên chi Hội ${activeApp.facultyName}`
@@ -266,7 +269,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
         } else if (newType === 'BCN_CLB_TRUONG' || newType === 'BCN_CLB_DOI_NHOM') {
           updatedName = `Ban Chủ nhiệm CLB/Đội/Nhóm trực thuộc HSV ${activeApp.institutionName}`;
         } else if (newType === 'BCN_CLB_DHDN') {
-          updatedName = 'Ban Chủ nhiệm CLB/Đội/Nhóm trực thuộc HSV Đại học Đà Nẵng';
+          updatedName = 'Ban Chủ nhiệm CLB/Đội/Nhóm trực thuộc HSV TP. Đà Nẵng';
         }
       }
     }
@@ -297,13 +300,13 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
         ? `student-${effectiveStudentId}`
         : `user-${Date.now()}`,
       preparedByUserName: effectiveUserName,
-      preparedByUserEmail: effectiveEmail || 'sinhvien@udn.vn',
+      preparedByUserEmail: effectiveEmail || 'sinhvien@danang.edu.vn',
     });
     setSelectedAppId(created.id);
     setIsCreateModalOpen(false);
     setActiveTab('workspace');
     setActiveReqId('WB01');
-    showToast(`Đã khởi tạo hồ sơ Giải thưởng Cánh chim trắng: ${created.nominationTitle}`);
+    showToast(`Đã khởi tạo hồ sơ Giải thưởng 9/1: ${created.nominationTitle}`);
   };
 
   const triggerUploadForReq = (reqId: WhiteBirdRequirementId) => {
@@ -447,8 +450,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
       setIsConfirmSubmitOpen(false);
       showToast(
         wasSupplement
-          ? 'Đã gửi lại hồ sơ bổ sung Giải thưởng Cánh chim trắng trực tiếp lên Văn phòng Hội Sinh viên ĐHĐN!'
-          : 'Đã nộp thẳng hồ sơ Giải thưởng Cánh chim trắng về Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng!'
+          ? 'Đã gửi lại hồ sơ bổ sung Giải thưởng 9/1 trực tiếp lên Văn phòng Hội Sinh viên TP. Đà Nẵng!'
+          : 'Đã nộp thẳng hồ sơ Giải thưởng 9/1 về Văn phòng Hội Sinh viên Việt Nam Thành phố Đà Nẵng!'
       );
       setActiveTab('overview');
     } catch {
@@ -467,62 +470,56 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
   if (!activeApp) {
     return (
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-12 min-w-0">
-        {/* Hero Banner */}
-        <div className="rounded-[16px] bg-gradient-to-r from-[#0B3B5B] via-[#0D5C8C] to-[#0D78AE] text-white p-6 md:p-7 shadow-sm border border-[#0D5C8C]">
+        {/* Flat Administrative Onboarding Header */}
+        <div className="rounded-[6px] bg-white border border-[#DFE5EC] border-t-[3px] border-t-[#007EE5] p-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
-            <div className="space-y-2 max-w-[700px]">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 border border-white/25 text-[11.5px] font-bold tracking-wide uppercase">
-                <Feather size={14} />
-                <span>Giải thưởng “Cánh chim trắng” · Quyết định số 14-QĐ/ĐHĐN-HSV ngày 04/10/2022</span>
+            <div className="space-y-2 max-w-[720px]">
+              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-[4px] bg-[#EFF6FF] border border-[#BFDBFE] text-[#0066CC] text-[11.5px] font-bold tracking-wide uppercase">
+                <Award size={13.5} />
+                <span>Giải thưởng “9/1” · Hội Sinh viên Việt Nam Thành phố Đà Nẵng</span>
               </div>
-              <h1 className="text-[22px] md:text-[24px] font-extrabold tracking-tight text-white">
-                Khởi tạo & Kê khai Hồ sơ Giải thưởng “Cánh chim trắng”
+              <h1 className="text-[20px] md:text-[22px] font-extrabold tracking-tight text-[#0F172A]">
+                Khởi tạo & Kê khai Hồ sơ Giải thưởng “9/1” Cấp Thành phố
               </h1>
-              <p className="text-[13.5px] text-sky-100 leading-relaxed">
-                Giải thưởng cao quý của Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng
-                nhằm tôn vinh các cá nhân, tập thể có mô hình sáng kiến hiệu quả, cống hiến xuất sắc
-                nhiều năm liền trong công tác Hội hoặc có dự án khởi nghiệp, đề tài nghiên cứu khoa học
-                ứng dụng thực tiễn cao.
+              <p className="text-[13px] text-[#475569] leading-relaxed">
+                Giải thưởng cao quý của Ban Chấp hành Hội Sinh viên Việt Nam Thành phố Đà Nẵng
+                nhằm tôn vinh các cán bộ Hội – Đoàn tiêu biểu cống hiến xuất sắc nhiều năm liền
+                và các cá nhân, tập thể có mô hình, giải pháp, sáng kiến công tác Hội hiệu quả,
+                thiết thực trong phong trào sinh viên toàn Thành phố.
               </p>
             </div>
             <div className="shrink-0">
               <button
                 type="button"
                 onClick={() => setIsCreateModalOpen(true)}
-                className="inline-flex items-center gap-2.5 px-5 py-3 rounded-[11px] bg-white text-[#0B3B5B] hover:bg-sky-50 font-bold text-[13.5px] shadow-md transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[5px] bg-[#10A37F] hover:bg-[#0D8C6D] text-white font-semibold text-[13.5px] transition-colors cursor-pointer"
               >
-                <Plus size={17} strokeWidth={2.4} />
-                <span>Khởi tạo hồ sơ Giải thưởng Cánh chim trắng</span>
+                <Plus size={16} strokeWidth={2.4} />
+                <span>Khởi tạo hồ sơ Giải thưởng 9/1</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* 3 Official Categories Grid */}
+        {/* 2 Official Categories Grid */}
         <div>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3.5">
             <div>
               <h2 className="text-[16px] font-bold text-[#172A3A]">
-                3 hạng mục xét trao Giải thưởng “Cánh chim trắng”
+                02 hạng mục xét trao Giải thưởng “9/1” cấp Thành phố
               </h2>
               <p className="text-[12px] text-[#607483] mt-0.5">
-                Theo Điều 3 và Điều 6 Quy chế ban hành kèm theo Quyết định số 14-QĐ/ĐHĐN-HSV.
+                Theo Quy chế Giải thưởng “9/1” của Ban Chấp hành Hội Sinh viên Việt Nam Thành phố Đà Nẵng.
               </p>
             </div>
             <span className="text-[12px] font-semibold text-[#0D78AE] shrink-0">
-              Cơ quan Thường trực: Văn phòng Hội Sinh viên ĐHĐN
+              Cơ quan Thường trực: Văn phòng Hội Sinh viên TP. Đà Nẵng
             </span>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {(
               [
-                {
-                  code: 'UOM_MAM' as WhiteBirdCategory,
-                  icon: <Sparkles size={19} className="text-[#0D78AE]" />,
-                  accentBg: 'bg-[#EBF6FC]',
-                  badge: 'Cá nhân hoặc Tập thể',
-                },
                 {
                   code: 'TRUYEN_LUA' as WhiteBirdCategory,
                   icon: <Flame size={19} className="text-[#D97706]" />,
@@ -530,9 +527,9 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   badge: 'Chỉ dành cho Cá nhân',
                 },
                 {
-                  code: 'SANG_TAO' as WhiteBirdCategory,
-                  icon: <Lightbulb size={19} className="text-[#0284C7]" />,
-                  accentBg: 'bg-[#E0F2FE]',
+                  code: 'UOM_MAM' as WhiteBirdCategory,
+                  icon: <Sparkles size={19} className="text-[#0D78AE]" />,
+                  accentBg: 'bg-[#EBF6FC]',
                   badge: 'Cá nhân hoặc Tập thể',
                 },
               ] as const
@@ -567,7 +564,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       </p>
                     </div>
 
-                    {/* Tiêu chuẩn xét trao (Điều 4) - Hiển thị trực tiếp */}
+                    {/* Tiêu chuẩn xét trao - Hiển thị trực tiếp */}
                     <div className="pt-3 border-t border-[#EDF2F7]">
                       <div className="text-[12px] font-bold text-[#172A3A] mb-2 flex items-center justify-between">
                         <span>Tiêu chuẩn xét trao:</span>
@@ -590,7 +587,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       </div>
                     </div>
 
-                    {/* Hồ sơ đề nghị xét trao (Điều 6) */}
+                    {/* Hồ sơ đề nghị xét trao */}
                     <div className="pt-3 border-t border-[#EDF2F7]">
                       <div className="text-[12px] font-bold text-[#172A3A] mb-2 flex items-center justify-between">
                         <span>Hồ sơ đề nghị xét trao:</span>
@@ -635,24 +632,23 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
         <div className="rounded-[12px] bg-[#F8FCF9] border border-[#DCFCE7] p-4 text-[12px] text-[#334155] shadow-2xs">
           <div className="flex items-center gap-1.5 font-bold text-[#15803D] mb-2">
             <Info size={15} />
-            <span>Ghi chú nghiệp vụ quan trọng theo Quy chế Giải thưởng (Quyết định số 14-QĐ/ĐHĐN-HSV)</span>
+            <span>Ghi chú nghiệp vụ quan trọng theo Quy chế Giải thưởng “9/1” cấp Thành phố</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-[11.5px] leading-relaxed">
             <div className="p-3 rounded-[8px] bg-white border border-[#E8F5E9]">
-              <strong className="text-[#15803D] block mb-1">Điều 3 · Nguyên tắc trao thưởng:</strong>
-              Mỗi cá nhân, tập thể chỉ có thể nhận Giải thưởng của mỗi hạng mục một lần duy nhất.
+              <strong className="text-[#15803D] block mb-1">Nguyên tắc trao thưởng:</strong>
+              Mỗi cá nhân, tập thể chỉ có thể nhận Giải thưởng của mỗi hạng mục một lần duy nhất trong suốt quá trình học tập.
             </div>
             <div className="p-3 rounded-[8px] bg-white border border-[#E8F5E9]">
-              <strong className="text-[#15803D] block mb-1">Khoản 4.1 Điều 4 · Thời gian tính thành tích:</strong>
-              Thành tích, mô hình, giải pháp, sáng kiến, đề tài, dự án đề nghị xét trao Giải thưởng được tính trong năm học xét trao cho đến thời điểm kết thúc nhận hồ sơ đề nghị xét trao.
+              <strong className="text-[#15803D] block mb-1">Thời gian tính thành tích:</strong>
+              Thành tích, mô hình, giải pháp, sáng kiến đề nghị xét trao Giải thưởng được tính trong năm học xét trao cho đến thời điểm kết thúc nhận hồ sơ đề nghị xét trao.
             </div>
             <div className="p-3 rounded-[8px] bg-white border border-[#E8F5E9]">
-              <strong className="text-[#15803D] block mb-1">Điều 9 · Số lượng Giải thưởng:</strong>
-              Hằng năm, Hội đồng Giải thưởng xét, trao Giải thưởng cho:
+              <strong className="text-[#15803D] block mb-1">Cơ cấu hạng mục xét trao:</strong>
+              Hằng năm, Hội đồng Giải thưởng cấp Thành phố tổ chức xét chọn tiêu biểu trên 02 hạng mục:
               <ul className="list-disc list-inside mt-1 space-y-0.5 text-[#475569]">
-                <li>05 mô hình, giải pháp, sáng kiến tiêu biểu nhất ở hạng mục “Cánh chim ươm mầm”.</li>
-                <li>05 cá nhân có thành tích xuất sắc nhất ở hạng mục “Cánh chim truyền lửa”.</li>
-                <li>05 dự án, đề tài tiêu biểu nhất ở hạng mục “Cánh chim sáng tạo”.</li>
+                <li>Cán bộ Hội – Đoàn tiêu biểu (dành cho cá nhân cán bộ có tối thiểu 02 năm công tác).</li>
+                <li>Mô hình, giải pháp, sáng kiến công tác Hội hiệu quả (dành cho cá nhân hoặc tập thể).</li>
               </ul>
             </div>
           </div>
@@ -663,34 +659,34 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
           <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#E2EEF6] flex flex-col justify-between">
             <div>
               <div className="text-[12px] font-bold text-[#0D5C8C] uppercase tracking-wide mb-1.5">
-                Điều 5 · Thẩm quyền đề xuất xét trao
+                Thẩm quyền đề xuất xét trao
               </div>
               <ul className="text-[11.5px] text-[#475569] space-y-1.5 leading-relaxed list-disc list-inside">
-                <li>Ủy viên Ban Chấp hành Hội Sinh viên Việt Nam Đại học Đà Nẵng.</li>
-                <li>Ban Thư ký Hội Sinh viên Việt Nam các Trường Đại học thành viên Đại học Đà Nẵng; Ban Chủ nhiệm (hoặc tương đương) của các CLB/Đội/Nhóm trực thuộc Hội Sinh viên Việt Nam Đại học Đà Nẵng.</li>
-                <li>Ban Chấp hành Liên chi Hội; Ban Chủ nhiệm (hoặc tương đương) của các CLB/Đội/Nhóm trực thuộc Hội Sinh viên Việt Nam các Trường thành viên Đại học Đà Nẵng.</li>
+                <li>Ủy viên Ban Thư ký / Ban Chấp hành Hội Sinh viên Việt Nam Thành phố Đà Nẵng.</li>
+                <li>Ban Thư ký Hội Sinh viên các trường Đại học, Học viện, Cao đẳng; Ban Thường vụ Đoàn Thanh niên các cơ sở đào tạo chưa có tổ chức Hội Sinh viên.</li>
+                <li>Ban Chấp hành Liên chi Hội; Ban Chủ nhiệm (hoặc tương đương) các CLB/Đội/Nhóm trực thuộc Hội Sinh viên cấp Thành phố và cấp Trường.</li>
               </ul>
             </div>
           </div>
           <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#E2EEF6] flex flex-col justify-between">
             <div>
               <div className="text-[12px] font-bold text-[#0D5C8C] uppercase tracking-wide mb-1.5">
-                Điều 11 · Hình thức Giải thưởng
+                Hình thức Giải thưởng
               </div>
               <ol className="text-[11.5px] text-[#475569] space-y-1.5 leading-relaxed list-decimal list-inside">
-                <li>Một biểu trưng “Giải thưởng Cánh chim trắng” dành cho cá nhân, tập thể được giải tương ứng với hạng mục được trao.</li>
-                <li>Giấy khen của Ban Chấp hành Hội Sinh viên Việt Nam Đại học Đà Nẵng.</li>
-                <li>Phần thưởng bằng tiền mặt hoặc hiện vật (tùy thuộc vào nguồn xã hội hóa hằng năm).</li>
+                <li>Biểu trưng “Giải thưởng 9/1” dành cho cá nhân, tập thể đạt giải tương ứng với hạng mục được trao.</li>
+                <li>Giấy khen của Ban Chấp hành Hội Sinh viên Việt Nam Thành phố Đà Nẵng.</li>
+                <li>Phần thưởng kèm theo theo quy định khen thưởng hằng năm nhân dịp kỷ niệm Ngày truyền thống Học sinh, Sinh viên (09/01).</li>
               </ol>
             </div>
           </div>
           <div className="p-3.5 rounded-[10px] bg-[#F8FBFD] border border-[#E2EEF6] flex flex-col justify-between">
             <div>
               <div className="text-[12px] font-bold text-[#0D5C8C] uppercase tracking-wide mb-1.5">
-                Điều 7 · Quy trình & Thời hạn tiếp nhận
+                Quy trình & Tiếp nhận hồ sơ
               </div>
               <p className="text-[11.5px] text-[#475569] leading-relaxed">
-                Hồ sơ đề nghị xét trao Giải thưởng gửi về Cơ quan Thường trực Giải thưởng (Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng) trước ngày 30/11 hằng năm để Cơ quan Thường trực thẩm định và trình Hội đồng xét duyệt.
+                Hồ sơ đề nghị xét trao Giải thưởng gửi trực tuyến về Cơ quan Thường trực Giải thưởng (Văn phòng Hội Sinh viên Việt Nam Thành phố Đà Nẵng) để thẩm định và trình Hội đồng xét duyệt cấp Thành phố.
               </p>
             </div>
           </div>
@@ -728,27 +724,27 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
       case 'submitted':
       case 'under_review':
         return {
-          label: 'Đã nộp thẳng về Văn phòng Hội Sinh viên ĐHĐN · Đang thẩm định',
+          label: 'Đã nộp thẳng về Văn phòng Hội Sinh viên TP. Đà Nẵng · Đang thẩm định',
           cls: 'bg-[#E0F2FE] text-[#0369A1] border-[#BAE6FD]',
         };
       case 'supplement_returned':
         return {
-          label: 'Đã gửi lại hồ sơ bổ sung · Đang chờ cấp ĐHĐN thẩm định lại',
+          label: 'Đã gửi lại hồ sơ bổ sung · Đang chờ cấp Thành phố thẩm định lại',
           cls: 'bg-[#E0E7FF] text-[#3730A3] border-[#C7D2FE]',
         };
       case 'awaiting_committee':
         return {
-          label: 'Đã qua thẩm định · Đang trình Hội đồng xét duyệt Giải thưởng Cánh chim trắng ĐHĐN',
+          label: 'Đã qua thẩm định · Đang trình Hội đồng xét duyệt Giải thưởng 9/1 cấp Thành phố',
           cls: 'bg-[#F0F9FF] text-[#0284C7] border-[#BAE6FD]',
         };
       case 'recognized':
         return {
-          label: 'Đạt Giải thưởng “Cánh chim trắng” cấp Đại học Đà Nẵng',
+          label: 'Đạt Giải thưởng “9/1” cấp Thành phố Đà Nẵng',
           cls: 'bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]',
         };
       case 'supplement_requested':
         return {
-          label: 'Yêu cầu bổ sung hồ sơ từ Văn phòng Hội Sinh viên ĐHĐN',
+          label: 'Yêu cầu bổ sung hồ sơ từ Văn phòng Hội Sinh viên TP. Đà Nẵng',
           cls: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
         };
       case 'not_recognized':
@@ -793,17 +789,17 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
         </div>
       )}
 
-      {/* Supplement Request Alert Banner from UDN */}
+      {/* Supplement Request Alert Banner from City */}
       {activeApp.status === 'supplement_requested' && (
         <div className="bg-[#FFFBEB] border border-[#F59E0B] rounded-[13px] p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="space-y-1">
             <div className="text-[12.5px] font-extrabold text-[#B45309] uppercase tracking-wide flex items-center gap-1.5">
               <AlertCircle size={15} />
-              <span>Yêu cầu bổ sung hồ sơ từ Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng</span>
+              <span>Yêu cầu bổ sung hồ sơ từ Văn phòng Hội Sinh viên Việt Nam Thành phố Đà Nẵng</span>
             </div>
             <p className="text-[13px] text-[#78350F] font-medium">
               {activeApp.supplementRequestNote ||
-                'Vui lòng kiểm tra và bổ sung thông tin/minh chứng theo yêu cầu của Cán bộ thẩm định cấp Đại học Đà Nẵng, sau đó nhấn “Gửi lại hồ sơ bổ sung về Văn phòng HSV ĐHĐN”.'}
+                'Vui lòng kiểm tra và bổ sung thông tin/minh chứng theo yêu cầu của Cán bộ thẩm định cấp Thành phố, sau đó nhấn “Gửi lại hồ sơ bổ sung về Văn phòng HSV TP. Đà Nẵng”.'}
             </p>
           </div>
           <Button
@@ -817,40 +813,40 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
       )}
 
       {/* Top Context Bar */}
-      <div className="bg-white rounded-[14px] border border-[#DCE7EE] p-4 shadow-xs space-y-3">
+      <div className="bg-white rounded-[6px] border border-[#DFE5EC] p-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-[10px] bg-[#E5F5FC] border border-[#CBE4F5] text-[#0D78AE] flex items-center justify-center shrink-0">
-              <Feather size={20} />
+            <div className="w-9 h-9 rounded-[5px] bg-[#007EE5] text-white flex items-center justify-center shrink-0">
+              <Feather size={18} />
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#EBF6FC] text-[#0D78AE] border border-[#CBE4F5]">
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-[4px] bg-[#EFF6FF] text-[#0066CC] border border-[#BFDBFE]">
                   {categoryMeta.name}
                 </span>
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#F8FAFC] text-[#475569] border border-[#E2E8F0] inline-flex items-center gap-1">
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-[4px] bg-[#F8FAFC] text-[#475569] border border-[#E2E8F0] inline-flex items-center gap-1">
                   {activeApp.nomineeType === 'INDIVIDUAL' ? (
                     <>
-                      <User size={12} className="text-[#0D78AE]" /> Cá nhân được đề cử: <strong className="text-[#172A3A] font-bold">{activeApp.nomineeName}</strong>
+                      <User size={12} className="text-[#007EE5]" /> Cá nhân được đề cử: <strong className="text-[#0F172A] font-bold">{activeApp.nomineeName}</strong>
                     </>
                   ) : (
                     <>
-                      <Users size={12} className="text-[#0D78AE]" /> Tập thể / Nhóm: <strong className="text-[#172A3A] font-bold">{activeApp.nomineeName}</strong>
+                      <Users size={12} className="text-[#007EE5]" /> Tập thể / Nhóm: <strong className="text-[#0F172A] font-bold">{activeApp.nomineeName}</strong>
                     </>
                   )}
                 </span>
                 <span
-                  className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${statusBadge.cls}`}
+                  className={`text-[11px] font-bold px-2 py-0.5 rounded-[4px] border ${statusBadge.cls}`}
                 >
                   {statusBadge.label}
                 </span>
               </div>
-              <h1 className="text-[16.5px] font-extrabold text-[#172A3A] break-words mt-1 leading-snug">
+              <h1 className="text-[16px] font-bold text-[#0F172A] break-words mt-1 leading-snug">
                 {activeApp.category === 'TRUYEN_LUA' ? activeApp.nomineeName : activeApp.nominationTitle}
               </h1>
-              <div className="text-[12px] text-[#607483] flex flex-wrap items-center gap-2 mt-0.5">
+              <div className="text-[12px] text-[#64748B] flex flex-wrap items-center gap-2 mt-0.5">
                 <span className="inline-flex items-center gap-1 font-medium text-[#334155]">
-                  <Building2 size={13} className="text-[#0D78AE]" />
+                  <Building2 size={13} className="text-[#007EE5]" />
                   {activeApp.institutionName}
                 </span>
                 <span>·</span>
@@ -861,8 +857,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   <>
                     <span>·</span>
                     <span className="inline-flex items-center gap-1 text-[#475569]">
-                      <Mail size={12} className="text-[#0D78AE]" />
-                      Người nộp trực tuyến: <strong className="text-[#172A3A] font-medium">{activeApp.preparedByUserName}</strong>
+                      <Mail size={12} className="text-[#007EE5]" />
+                      Người nộp trực tuyến: <strong className="text-[#0F172A] font-medium">{activeApp.preparedByUserName}</strong>
                     </span>
                   </>
                 )}
@@ -875,8 +871,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
               <select
                 value={activeApp.id}
                 onChange={(e) => setSelectedAppId(e.target.value)}
-                aria-label="Chuyển đổi hồ sơ Giải thưởng Cánh chim trắng"
-                className="text-[12.5px] font-semibold text-[#172A3A] bg-[#F8FBFD] border border-[#DCE7EE] rounded-lg px-2.5 py-1.5"
+                aria-label="Chuyển đổi hồ sơ Giải thưởng 9/1"
+                className="text-[12.5px] font-semibold text-[#1E293B] bg-white border border-[#CBD5E1] rounded-[5px] px-2.5 py-1.5"
               >
                 {userApps.map((app) => (
                   <option key={app.id} value={app.id}>
@@ -891,37 +887,37 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
             <button
               type="button"
               onClick={() => setIsCreateModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12.5px] font-bold bg-[#E5F5FC] text-[#0D78AE] hover:bg-[#D0ECFA] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[5px] text-[12.5px] font-semibold bg-white border border-[#CBD5E1] text-[#1E293B] hover:bg-[#F8FAFC] transition-colors cursor-pointer"
             >
-              <Plus size={14} />
+              <Plus size={14} className="text-[#10A37F]" />
               <span>Tạo đề cử mới</span>
             </button>
           </div>
         </div>
 
         {/* Sub-navigation Tabs */}
-        <div className="flex items-center gap-1.5 pt-2 border-t border-[#EDF3F8] overflow-x-auto">
+        <div className="flex items-center gap-1 pt-2 border-t border-[#E2E8F0] overflow-x-auto">
           {(
             [
               {
                 id: 'overview' as const,
                 label: 'Tổng quan đề cử',
-                icon: <Feather size={15} />,
+                icon: <Feather size={14.5} />,
               },
               {
                 id: 'workspace' as const,
                 label: `Kê khai hồ sơ & Minh chứng (${readiness.readyCount}/${readiness.totalRequired})`,
-                icon: <FileCheck2 size={15} />,
+                icon: <FileCheck2 size={14.5} />,
               },
               {
                 id: 'evidence' as const,
                 label: `Kho minh chứng (${allEvidenceFiles.length})`,
-                icon: <FolderArchive size={15} />,
+                icon: <FolderArchive size={14.5} />,
               },
               {
                 id: 'results' as const,
                 label: 'Kết quả xét trao',
-                icon: <Award size={15} />,
+                icon: <Award size={14.5} />,
               },
             ]
           ).map((tab) => {
@@ -931,10 +927,10 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-[9px] text-[13px] font-semibold transition-colors cursor-pointer shrink-0 ${
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-[4px] text-[12.5px] transition-colors cursor-pointer shrink-0 ${
                   isActive
-                    ? 'bg-[#0D78AE] text-white shadow-xs'
-                    : 'text-[#55697B] hover:text-[#172A3A] hover:bg-[#F3F8FC]'
+                    ? 'bg-[#10A37F] text-white font-semibold'
+                    : 'text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] font-medium'
                 }`}
               >
                 {tab.icon}
@@ -1065,7 +1061,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                 <h3 className="text-[15px] font-bold text-[#172A3A]">
                   {activeApp.category === 'UOM_MAM'
                     ? `Tiến độ: ${readiness.readyCount}/${readiness.totalRequired} thành phần bắt buộc`
-                    : `Tiến độ hoàn thiện hồ sơ Giải thưởng “Cánh chim trắng”: ${readiness.readyCount}/3 thành phần`}
+                    : `Tiến độ hoàn thiện hồ sơ Giải thưởng “9/1”: ${readiness.readyCount}/3 thành phần`}
                 </h3>
               </div>
               {readiness.missingReasons.length > 0 ? (
@@ -1080,9 +1076,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     ? (readiness.wb03HasData
                         ? 'Hồ sơ đã hoàn tất 2/2 thành phần bắt buộc (WB01, WB02) và đã đính kèm tài liệu minh họa (WB03).'
                         : 'Hồ sơ đã hoàn tất 2/2 thành phần bắt buộc (WB01, WB02). Bạn có thể nộp ngay hoặc bổ sung hình ảnh, sản phẩm minh họa ở WB03 (không bắt buộc).')
-                    : activeApp.category === 'SANG_TAO'
-                    ? 'Đã hoàn thành kê khai 3/3 thành phần hồ sơ theo Khoản 6.3 Điều 6. Nội dung và minh chứng sẽ được kiểm tra khi thẩm định.'
-                    : 'Đã hoàn thành kê khai 3/3 thành phần hồ sơ theo Khoản 6.2 Điều 6. Nội dung và minh chứng sẽ được kiểm tra khi thẩm định.'}
+                    : 'Đã hoàn thành kê khai 3/3 thành phần hồ sơ theo quy định. Nội dung và minh chứng sẽ được kiểm tra khi thẩm định cấp Thành phố.'}
                 </p>
               )}
             </div>
@@ -1135,7 +1129,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   id: 'WB01' as const,
                   badge: 'WB01 · Bắt buộc',
                   title: 'Văn bản đề nghị xét trao',
-                  subtitle: 'Giới thiệu của cấp bộ Hội có thẩm quyền',
+                  subtitle: 'Giới thiệu của cấp bộ Hội – Đoàn có thẩm quyền',
                   ready: readiness.wb01Ready,
                   files: activeApp.requirements.wb01.evidenceFiles.length,
                   isOptional: false,
@@ -1221,8 +1215,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
               </div>
               <p className="text-[11.5px] text-[#607483] leading-relaxed">
                 {activeApp.category === 'UOM_MAM'
-                  ? 'Sau khi hoàn tất 2 thành phần bắt buộc (WB01, WB02), sinh viên nộp hồ sơ trực tuyến về Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng (WB03 là thành phần tùy chọn nếu có).'
-                  : 'Sau khi hoàn tất cả 3 mục WB01, WB02, WB03, sinh viên nộp hồ sơ trực tuyến về Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng.'}
+                  ? 'Sau khi hoàn tất 2 thành phần bắt buộc (WB01, WB02), sinh viên nộp hồ sơ trực tuyến về Văn phòng Hội Sinh viên Việt Nam Thành phố Đà Nẵng (WB03 là thành phần tùy chọn nếu có).'
+                  : 'Sau khi hoàn tất cả 3 mục WB01, WB02, WB03, sinh viên nộp hồ sơ trực tuyến về Văn phòng Hội Sinh viên Việt Nam Thành phố Đà Nẵng.'}
               </p>
               {!isReadOnly ? (
                 <Button
@@ -1265,19 +1259,21 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
               const wb01Data = activeApp.requirements.wb01;
               const isIndividualNominator = wb01Data.nominatingUnitType === 'UV_BCH_HSV_DHDN';
               const unitNamePlaceholder = isIndividualNominator
-                ? 'VD: Đồng chí Nguyễn Văn A – Ủy viên BCH Hội Sinh viên Đại học Đà Nẵng'
+                ? 'VD: Đồng chí Nguyễn Văn A – Ủy viên BTK / BCH Hội Sinh viên TP. Đà Nẵng'
+                : wb01Data.nominatingUnitType === 'BTV_DOAN_TRUONG'
+                ? 'VD: Ban Thường vụ Đoàn Thanh niên cơ sở đào tạo'
                 : wb01Data.nominatingUnitType === 'BCH_LIEN_CHI_HOI'
                 ? 'VD: Ban Chấp hành Liên chi Hội Khoa Công nghệ Thông tin'
                 : wb01Data.nominatingUnitType === 'BCN_CLB_DHDN'
-                ? 'VD: Ban Chủ nhiệm CLB Sinh viên Nghiên cứu Khoa học ĐHĐN'
+                ? 'VD: Ban Chủ nhiệm CLB trực thuộc Hội Sinh viên TP. Đà Nẵng'
                 : wb01Data.nominatingUnitType === 'BCN_CLB_TRUONG' ||
                   wb01Data.nominatingUnitType === 'BCN_CLB_DOI_NHOM'
-                ? 'VD: Ban Chủ nhiệm CLB Học thuật & Sáng tạo DUT'
-                : 'VD: Ban Thư ký Hội Sinh viên Trường Đại học Bách khoa – ĐHĐN';
+                ? 'VD: Ban Chủ nhiệm CLB Học thuật & Sáng tạo'
+                : 'VD: Ban Thư ký Hội Sinh viên Trường Đại học Bách khoa - Đại học Đà Nẵng';
 
               const signerPlaceholder = isIndividualNominator
-                ? 'VD: Nguyễn Văn A (Ủy viên Ban Chấp hành Hội Sinh viên ĐHĐN)'
-                : 'VD: Lê Văn B (Chủ tịch Hội Sinh viên Trường / Bí thư LCH)';
+                ? 'VD: Nguyễn Văn A (Ủy viên Ban Chấp hành Hội Sinh viên TP. Đà Nẵng)'
+                : 'VD: Lê Văn B (Chủ tịch Hội Sinh viên Trường / Bí thư Đoàn Trường)';
 
               const statusMeta = getRequirementCompletionStatus(readiness.wb01Ready, activeApp.status);
 
@@ -1287,17 +1283,17 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D78AE]">
-                          Thành phần WB01 · Điều 5 Quy chế
+                          Thành phần WB01 · Văn bản giới thiệu
                         </span>
                         <span className={statusMeta.badgeClass}>
                           {statusMeta.label}
                         </span>
                       </div>
                       <h2 className="text-[16px] font-bold text-[#172A3A] mt-0.5">
-                        Văn bản đề nghị xét trao Giải thưởng “Cánh chim trắng”
+                        Văn bản đề nghị xét trao Giải thưởng “9/1”
                       </h2>
                       <p className="text-[12.5px] text-[#607483] mt-0.5 leading-relaxed">
-                        Kê khai thông tin tổ chức, cá nhân có thẩm quyền đề nghị xét trao theo Điều 5 Quy chế và đính kèm văn bản đề nghị theo {categoryMeta.dossierArticleRef || 'Điều 6'}.
+                        Kê khai thông tin tổ chức, cá nhân có thẩm quyền đề nghị xét trao theo Quy chế Giải thưởng “9/1” và đính kèm văn bản đề nghị có xác nhận.
                       </p>
                     </div>
                   </div>
@@ -1309,7 +1305,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           htmlFor="wb01-nominator-subject-select"
                           className="text-[12.5px] font-bold text-[#172A3A] select-none"
                         >
-                          Chủ thể đề nghị xét trao Giải thưởng (Điều 5) <span className="text-red-500">*</span>
+                          Chủ thể đề nghị xét trao Giải thưởng <span className="text-red-500">*</span>
                         </label>
                       </div>
                       <select
@@ -1321,7 +1317,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         }
                         className="w-full px-3 py-2.5 text-[13px] font-semibold text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
                       >
-                        <optgroup label="Cá nhân có thẩm quyền đề xuất (Điều 5)">
+                        <optgroup label="Cá nhân có thẩm quyền đề xuất">
                           {WHITE_BIRD_NOMINATING_SUBJECT_OPTIONS.filter((o) => o.category === 'Cá nhân').map(
                             (opt) => (
                               <option key={opt.value} value={opt.value}>
@@ -1330,7 +1326,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             )
                           )}
                         </optgroup>
-                        <optgroup label="Tổ chức có thẩm quyền đề xuất (Điều 5)">
+                        <optgroup label="Tổ chức có thẩm quyền đề xuất">
                           {WHITE_BIRD_NOMINATING_SUBJECT_OPTIONS.filter((o) => o.category === 'Tổ chức').map(
                             (opt) => (
                               <option key={opt.value} value={opt.value}>
@@ -1347,7 +1343,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                         return (
                           <div className="mt-2 p-2.5 rounded-[9px] bg-[#F8FBFD] border border-[#DCE7EE] text-[12px] leading-relaxed">
                             <span className="text-[11px] font-bold text-[#0D78AE] uppercase tracking-wide block">
-                              Chủ thể đề xuất chính thức (Điều 5):
+                              Chủ thể đề xuất chính thức:
                             </span>
                             <span className="font-semibold text-[#1E293B] break-words">
                               {selectedSubject?.label || wb01Data.nominatingUnitType}
@@ -1357,8 +1353,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       })()}
                       <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
                         {isIndividualNominator
-                          ? 'Ủy viên Ban Chấp hành Hội Sinh viên Việt Nam ĐHĐN có thẩm quyền trực tiếp đề xuất (Điều 5).'
-                          : 'Cấp bộ Hội hoặc Đơn vị trực thuộc có thẩm quyền đề xuất theo Điều 5.'}
+                          ? 'Ủy viên Ban Thư ký / Ban Chấp hành Hội Sinh viên Việt Nam TP. Đà Nẵng có thẩm quyền trực tiếp đề xuất.'
+                          : 'Cấp bộ Hội, Đoàn Trường hoặc Đơn vị trực thuộc có thẩm quyền đề xuất.'}
                       </p>
                     </div>
 
@@ -1369,7 +1365,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           className="text-[12.5px] font-bold text-[#172A3A] select-none"
                         >
                           {isIndividualNominator
-                            ? 'Họ và tên Ủy viên Ban Chấp hành HSV ĐHĐN đề nghị *'
+                            ? 'Họ và tên Ủy viên BTK / BCH HSV TP. Đà Nẵng đề nghị *'
                             : 'Tên tổ chức đề nghị xét trao *'}
                         </label>
                       </div>
@@ -1389,8 +1385,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       />
                       <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
                         {isIndividualNominator
-                          ? 'Nhập họ và tên Ủy viên Ban Chấp hành HSV ĐHĐN đề xuất.'
-                          : 'Nhập tên Ban Thư ký HSV trường, Liên chi Hội hoặc CLB/Đội/Nhóm đề nghị.'}
+                          ? 'Nhập họ và tên Ủy viên Ban Thư ký / Ban Chấp hành HSV TP. Đà Nẵng đề xuất.'
+                          : 'Nhập tên Ban Thư ký HSV trường, Ban Thường vụ Đoàn trường, Liên chi Hội hoặc CLB/Đội/Nhóm đề nghị.'}
                       </p>
                     </div>
                   </div>
@@ -1924,7 +1920,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           3. Khả năng lan tỏa và nhân rộng
                         </label>
                         <p className="text-[11.5px] text-[#64748B] leading-snug">
-                          <strong>Tiêu chuẩn:</strong> Có khả năng nghiên cứu triển khai mô hình, giải pháp, sáng kiến trong phạm vi rộng hơn (trong trường thành viên, các liên chi hội, cụm thi đua hoặc toàn Đại học Đà Nẵng).
+                          <strong>Tiêu chuẩn:</strong> Có khả năng nghiên cứu triển khai mô hình, giải pháp, sáng kiến trong phạm vi rộng hơn (trong trường, các liên chi hội, cụm thi đua hoặc toàn Thành phố Đà Nẵng).
                         </p>
                         <AutoResizeTextarea
                           id="wb02-sec-scalability"
@@ -2614,10 +2610,10 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                       {/* Thông điệp duy nhất về đồng bộ từ Hồ sơ cá nhân */}
                       <div className="text-[12px] text-[#607483] space-y-0.5">
                         <p>
-                          Thông tin dưới đây được tự động đồng bộ từ <strong>Hồ sơ cá nhân</strong> trên hệ thống 5TOT ĐHĐN. Để điều chỉnh thông tin chung, vui lòng nhấn &ldquo;Cập nhật thông tin cá nhân&rdquo;.
+                          Thông tin dưới đây được tự động đồng bộ từ <strong>Hồ sơ cá nhân</strong> trên hệ thống 5TOT Đà Nẵng. Để điều chỉnh thông tin chung, vui lòng nhấn &ldquo;Cập nhật thông tin cá nhân&rdquo;.
                         </p>
                         <p className="text-[11px] text-[#94A3B8]">
-                          Căn cứ: Mẫu Báo cáo thành tích cá nhân ban hành kèm Quyết định số 14-QĐ/ĐHĐN-HSV.
+                          Căn cứ: Mẫu Báo cáo thành tích cá nhân theo Quy chế Giải thưởng “9/1” cấp Thành phố.
                         </p>
                       </div>
 
@@ -2638,7 +2634,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                               reportTitle: e.target.value,
                             })
                           }
-                          placeholder={`VD: Báo cáo thành tích cá nhân đề nghị xét trao Giải thưởng Cánh chim trắng — ${activeApp.nomineeName}`}
+                          placeholder={`VD: Báo cáo thành tích cá nhân đề nghị xét trao Giải thưởng 9/1 — ${activeApp.nomineeName}`}
                         />
                       </div>
 
@@ -3168,7 +3164,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                           Thông tin dưới đây hỗ trợ Hội đồng thẩm định toàn diện và là tiêu chí ưu tiên xét giải (không thay thế điều kiện bắt buộc về công tác Đoàn – Hội).
                         </p>
                         <p className="text-[11px] text-[#94A3B8]">
-                          Căn cứ: Mẫu Báo cáo thành tích cá nhân kèm Quyết định số 14-QĐ/ĐHĐN-HSV.
+                          Căn cứ: Mẫu Báo cáo thành tích cá nhân theo Quy chế Giải thưởng “9/1” cấp Thành phố.
                         </p>
                       </div>
 
@@ -3288,7 +3284,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                               Tôi cam kết toàn bộ quá trình rèn luyện, giữ chức vụ và thành tích kê khai là hoàn toàn trung thực.
                             </span>
                             <span className="text-[11px] text-[#64748B] block mt-0.5">
-                              Căn cứ: Điểm c khoản 4.2 Điều 4 và Khoản 6.2 Điều 6 Quy chế Giải thưởng Cánh chim trắng.
+                              Căn cứ: Quy chế Giải thưởng “9/1” cấp Thành phố của Ban Chấp hành Hội Sinh viên Việt Nam TP. Đà Nẵng.
                             </span>
                           </div>
                         </label>
@@ -3609,7 +3605,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                             awardOrRecognitionSummary: e.target.value,
                           })
                         }
-                        placeholder={`VD: Đạt Giải Nhất Cuộc thi Sinh viên Nghiên cứu Khoa học cấp Đại học Đà Nẵng năm học ${activeApp.academicYear || '2025–2026'} theo Quyết định số 412/QĐ-ĐHĐN ngày 19/05/2026 của Giám đốc Đại học Đà Nẵng. Đề tài được Hội đồng chuyên môn đánh giá xuất sắc về tính sáng tạo và khả năng ứng dụng thực tế.`}
+                        placeholder={`VD: Đạt Giải Nhất Cuộc thi Sinh viên Nghiên cứu Khoa học cấp Thành phố Đà Nẵng năm học ${activeApp.academicYear || '2025–2026'} theo Quyết định số 412/QĐ-HSVTP ngày 19/05/2026 của Ban Thư ký Hội Sinh viên Thành phố Đà Nẵng. Đề tài được Hội đồng chuyên môn đánh giá xuất sắc về tính sáng tạo và khả năng ứng dụng thực tế.`}
                       />
                       <p className="text-[11px] text-[#64748B] mt-1 leading-snug">
                         Nêu rõ tên cuộc thi, cơ quan tổ chức, hạng giải (Nhất, Nhì, Ba, Khuyến khích, Giải thưởng chuyên đề) và tóm tắt quyết định công nhận.
@@ -4314,7 +4310,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-[16px] font-bold text-[#172A3A]">
-                Kho minh chứng Giải thưởng “Cánh chim trắng” ({allEvidenceFiles.length} tệp)
+                Kho minh chứng Giải thưởng “9/1” ({allEvidenceFiles.length} tệp)
               </h2>
               <p className="text-[12.5px] text-[#607483]">
                 {activeApp.category === 'UOM_MAM'
@@ -4411,8 +4407,8 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
             <div className="space-y-2 flex-1">
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D78AE]">
                 {activeApp.status === 'draft'
-                  ? 'Trạng thái hồ sơ · Giải thưởng “Cánh chim trắng”'
-                  : 'Hội đồng xét duyệt Giải thưởng “Cánh chim trắng” · Hội Sinh viên Việt Nam ĐHĐN'}
+                  ? 'Trạng thái hồ sơ · Giải thưởng “9/1”'
+                  : 'Hội đồng xét duyệt Giải thưởng “9/1” · Hội Sinh viên Việt Nam TP. Đà Nẵng'}
               </span>
               <h2 className="text-[17px] font-extrabold text-[#172A3A] mt-0.5">
                 {activeApp.status === 'draft'
@@ -4424,23 +4420,19 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
               <p className="text-[13px] text-[#55697B] mt-1 leading-relaxed">
                 {activeApp.status === 'draft'
                   ? (readiness.canSubmit
-                      ? (activeApp.category === 'SANG_TAO'
-                          ? 'Hồ sơ đã hoàn thành kê khai 3/3 thành phần bắt buộc nhưng chưa được nộp. Vui lòng kiểm tra và xác nhận nộp để gửi đến Cơ quan Thường trực Giải thưởng.'
-                          : activeApp.category === 'UOM_MAM'
+                      ? (activeApp.category === 'UOM_MAM'
                           ? 'Hồ sơ đã hoàn thành kê khai 2/2 thành phần bắt buộc (WB01, WB02) nhưng chưa được nộp. Vui lòng kiểm tra và xác nhận nộp để gửi đến Cơ quan Thường trực Giải thưởng (WB03 là thành phần tùy chọn nếu có).'
                           : 'Hồ sơ đã hoàn thành kê khai 3/3 thành phần bắt buộc nhưng chưa được nộp. Vui lòng kiểm tra và xác nhận nộp để gửi đến Cơ quan Thường trực Giải thưởng.')
                       : (activeApp.category === 'UOM_MAM'
-                          ? 'Hồ sơ hiện đang ở trạng thái bản nháp. Vui lòng hoàn tất 2 thành phần bắt buộc (WB01, WB02) và nhấn “Nộp hồ sơ Giải thưởng” để chuyển hồ sơ về Cơ quan Thường trực (Văn phòng Hội Sinh viên ĐHĐN). Thành phần WB03 là tài liệu minh họa tùy chọn nếu có.'
-                          : activeApp.category === 'SANG_TAO'
-                          ? 'Hồ sơ hiện đang ở trạng thái bản nháp. Vui lòng hoàn tất đủ 3 thành phần WB01, WB02, WB03 theo Khoản 6.3 Điều 6 và nhấn “Nộp hồ sơ Giải thưởng” để gửi về Cơ quan Thường trực (Văn phòng Hội Sinh viên ĐHĐN).'
-                          : 'Hồ sơ hiện đang ở trạng thái bản nháp. Vui lòng hoàn tất đủ các thành phần WB01, WB02, WB03 và nhấn “Nộp hồ sơ Giải thưởng” để gửi về Cơ quan Thường trực (Văn phòng Hội Sinh viên ĐHĐN).'))
+                          ? 'Hồ sơ hiện đang ở trạng thái bản nháp. Vui lòng hoàn tất 2 thành phần bắt buộc (WB01, WB02) và nhấn “Nộp hồ sơ Giải thưởng” để chuyển hồ sơ về Cơ quan Thường trực (Văn phòng Hội Sinh viên TP. Đà Nẵng). Thành phần WB03 là tài liệu minh họa tùy chọn nếu có.'
+                          : 'Hồ sơ hiện đang ở trạng thái bản nháp. Vui lòng hoàn tất đủ các thành phần WB01, WB02, WB03 và nhấn “Nộp hồ sơ Giải thưởng” để gửi về Cơ quan Thường trực (Văn phòng Hội Sinh viên TP. Đà Nẵng).'))
                   : activeApp.status === 'recognized'
-                  ? `Chúc mừng! Đề cử "${activeApp.nominationTitle}" (${categoryMeta.name}) đã được Hội đồng xét duyệt cấp Đại học Đà Nẵng quyết định trao Giải thưởng “Cánh chim trắng” (${
-                      activeApp.decisionNumber || 'Quyết định của Ban Thư ký HSV ĐHĐN'
+                  ? `Chúc mừng! Đề cử "${activeApp.nominationTitle}" (${categoryMeta.name}) đã được Hội đồng xét duyệt cấp Thành phố quyết định trao Giải thưởng “9/1” (${
+                      activeApp.decisionNumber || 'Quyết định của BCH Hội Sinh viên TP. Đà Nẵng'
                     }).`
                   : activeApp.status === 'not_recognized'
-                  ? 'Hội đồng xét duyệt cấp Đại học Đà Nẵng đã hoàn tất phiên họp xét chọn. Hồ sơ đề cử chưa đạt Giải thưởng trong kỳ xét này.'
-                  : 'Hồ sơ đề cử đã được tiếp nhận tại Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng (Cơ quan Thường trực Giải thưởng) để thẩm định và trình Hội đồng xét duyệt Giải thưởng Cánh chim trắng.'}
+                  ? 'Hội đồng xét duyệt cấp Thành phố đã hoàn tất phiên họp xét chọn. Hồ sơ đề cử chưa đạt Giải thưởng trong kỳ xét này.'
+                  : 'Hồ sơ đề cử đã được tiếp nhận tại Văn phòng Hội Sinh viên Việt Nam Thành phố Đà Nẵng (Cơ quan Thường trực Giải thưởng) để thẩm định và trình Hội đồng xét duyệt Giải thưởng 9/1.'}
               </p>
               {activeApp.status === 'draft' && (
                 <div className="pt-2 flex items-center gap-2.5">
@@ -4478,7 +4470,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
                   )}
                   {activeApp.councilNote && (
                     <div>
-                      <strong>Nhận xét / Kết luận của Hội đồng cấp ĐHĐN:</strong>{' '}
+                      <strong>Nhận xét / Kết luận của Hội đồng cấp Thành phố:</strong>{' '}
                       {activeApp.councilNote}
                     </div>
                   )}
@@ -4512,7 +4504,7 @@ export const WhiteBirdPortal: React.FC<WhiteBirdPortalProps> = ({
         initialPhone={studentProfileSnapshot?.phoneNumber}
       />
 
-      {/* Submit Confirmation Modal (Shared across all 3 categories) */}
+      {/* Submit Confirmation Modal */}
       <SubmitWhiteBirdModal
         isOpen={isConfirmSubmitOpen}
         onClose={() => {

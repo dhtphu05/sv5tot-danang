@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Direct Inline Row Review Controls (UX-S5.2)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức & vận hành: Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Direct Inline Row Review Controls (UX-S5.2)
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức & vận hành: Ban Thư ký Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements UX-S5.2 Core Principle:
  * READ THE DOSSIER -> INSPECT THE EVIDENCE -> CLICK [ĐẠT] OR [KHÔNG ĐẠT]
@@ -274,7 +274,7 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
         scope: payload.scope,
         message: payload.message,
         allowedActions: payload.allowedActions,
-        requestedDueDate: payload.requestedDueDate || 'Theo lịch chung của Đại học Đà Nẵng',
+        requestedDueDate: payload.requestedDueDate || 'Theo lịch chung cấp Thành phố Đà Nẵng',
       });
       return true;
     } else if (onOpenSupplementModal) {

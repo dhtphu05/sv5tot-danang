@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Student Home 5-Criteria Overview Strip (FSD Widgets Layer)
+ * 5TOT Đà Nẵng — Student Home 5-Criteria Overview Strip (FSD Widgets Layer)
  */
 
 import React from 'react';
@@ -166,28 +166,28 @@ export const StudentHomeCriteriaStrip: React.FC<StudentHomeCriteriaStripProps> =
   return (
     <section
       aria-label="Tóm tắt 5 tiêu chí trong hồ sơ"
-      className="bg-white rounded-[15px] border border-[#DCE7EE] shadow-2xs overflow-hidden"
+      className="bg-white rounded-[6px] border border-[#DFE5EC] overflow-hidden"
     >
-      <div className="px-5 py-3.5 border-b border-[#E6EFF5] flex items-center justify-between gap-3 flex-wrap">
+      <div className="px-5 py-3 border-b border-[#DFE5EC] bg-[#F8FAFC] flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h2 className="text-[15px] font-bold text-[#172A3A]">
+          <h2 className="text-[14.5px] font-bold text-[#0F172A]">
             Tóm tắt 5 tiêu chí trong hồ sơ
           </h2>
-          <p className="text-[12px] text-[#607483]">
+          <p className="text-[12px] text-[#64748B]">
             Bấm vào từng tiêu chí để mở trực tiếp mục tương ứng trong Hồ sơ của tôi
           </p>
         </div>
         <button
           type="button"
           onClick={() => onOpenApplication()}
-          className="inline-flex items-center gap-1 text-[12.5px] font-bold text-[#0D78AE] hover:text-[#126A9C] hover:underline cursor-pointer"
+          className="inline-flex items-center gap-1 text-[12.5px] font-bold text-[#10A37F] hover:text-[#0D8A6B] hover:underline cursor-pointer"
         >
           <span>Mở bảng hồ sơ chi tiết</span>
           <ChevronRight size={14} />
         </button>
       </div>
 
-      <div className="divide-y divide-[#EEF4F8]">
+      <div className="divide-y divide-[#E2E8F0]">
         {criteria.map((criterion) => {
           const meta = getCriterionOverviewMeta(criterion);
           const isWarning = meta.badgeTone === 'warning';
@@ -199,50 +199,50 @@ export const StudentHomeCriteriaStrip: React.FC<StudentHomeCriteriaStripProps> =
               key={criterion.id}
               type="button"
               onClick={() => onOpenApplication({ criterionId: criterion.id })}
-              className={`w-full px-5 py-3.5 text-left flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-colors cursor-pointer group ${
+              className={`w-full px-5 py-3 text-left flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-colors cursor-pointer group ${
                 isWarning
                   ? 'bg-[#FFFDF7] hover:bg-[#FEF7E6]'
-                  : 'hover:bg-[#F8FBFD]'
+                  : 'hover:bg-[#F8FAFC]'
               }`}
             >
               <div className="flex items-start sm:items-center gap-3 min-w-0">
                 <span
-                  className={`w-6 h-6 rounded-[7px] text-[12px] font-extrabold flex items-center justify-center shrink-0 mt-0.5 sm:mt-0 ${
+                  className={`w-6 h-6 rounded-[4px] text-[12px] font-extrabold flex items-center justify-center shrink-0 mt-0.5 sm:mt-0 border ${
                     isWarning
-                      ? 'bg-[#FEF3C7] text-[#B45309]'
+                      ? 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]'
                       : isSuccess
-                      ? 'bg-[#EAFBF1] text-[#136F3A]'
-                      : 'bg-[#E5F5FC] text-[#0D78AE]'
+                      ? 'bg-[#ECFDF5] text-[#0F766E] border-[#A7F3D0]'
+                      : 'bg-[#F0F9FF] text-[#0369A1] border-[#BAE6FD]'
                   }`}
                 >
                   {criterion.number}
                 </span>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[13.5px] font-bold text-[#172A3A] group-hover:text-[#0D78AE] transition-colors">
+                    <span className="text-[13.5px] font-bold text-[#0F172A] group-hover:text-[#007EE5] transition-colors">
                       {criterion.name}
                     </span>
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-[5px] text-[11px] font-bold border ${
+                      className={`inline-flex items-center px-2 py-0.5 rounded-[4px] text-[11px] font-bold border ${
                         isWarning
                           ? 'bg-[#FEF3C7] text-[#92400E] border-[#FCD34D]'
                           : isSuccess
-                          ? 'bg-[#EAFBF1] text-[#136F3A] border-[#B6E6C9]'
+                          ? 'bg-[#ECFDF5] text-[#0F766E] border-[#A7F3D0]'
                           : isBrand
-                          ? 'bg-[#E5F5FC] text-[#0D78AE] border-[#BAE6FD]'
-                          : 'bg-[#F1F5F9] text-[#475569] border-[#CBD5E1]'
+                          ? 'bg-[#F0F9FF] text-[#0369A1] border-[#BAE6FD]'
+                          : 'bg-[#F8FAFC] text-[#475569] border-[#DFE5EC]'
                       }`}
                     >
                       {meta.badgeLabel}
                     </span>
                   </div>
-                  <p className="text-[12.5px] text-[#607483] truncate mt-0.5">
+                  <p className="text-[12.5px] text-[#64748B] truncate mt-0.5">
                     {meta.summaryText}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5 text-[12px] font-semibold text-[#0D78AE] shrink-0 self-end sm:self-center">
+              <div className="flex items-center gap-1.5 text-[12px] font-semibold text-[#10A37F] shrink-0 self-end sm:self-center">
                 <span>{isWarning ? 'Kiểm tra ngay' : 'Xem chi tiết'}</span>
                 <ChevronRight
                   size={14}

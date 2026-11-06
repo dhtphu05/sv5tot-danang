@@ -259,7 +259,7 @@ export class ResendEmailService implements IEmailService {
 
     return this.send({
       to: data.to,
-      subject: '[5TOT ĐHĐN] Yêu cầu đặt lại mật khẩu',
+      subject: '[5TOT Đà Nẵng] Yêu cầu đặt lại mật khẩu',
       html,
       text,
       idempotencyKey: `password-reset/${tokenDigest}`,
@@ -283,7 +283,7 @@ export class ResendEmailService implements IEmailService {
 
     return this.send({
       to: data.to,
-      subject: '[SV5T ĐHĐN] Mật khẩu tài khoản của bạn đã được thay đổi',
+      subject: '[5TOT Đà Nẵng] Mật khẩu tài khoản của bạn đã được thay đổi',
       html,
       text,
     });
@@ -368,7 +368,7 @@ export class ResendEmailService implements IEmailService {
 
     const cleanContent = data.content.trim().replace(/\r?\n/g, ' ');
     const preview = cleanContent.length > 50 ? cleanContent.slice(0, 50) + '...' : cleanContent;
-    const subject = `[SV5T ĐHĐN - ${categoryTag}] ${preview} (${data.senderName})`;
+    const subject = `[5TOT Đà Nẵng - ${categoryTag}] ${preview} (${data.senderName})`;
 
     const html = buildFeedbackNotificationHtmlTemplate(data);
     const text = buildFeedbackNotificationPlainTextTemplate(data);

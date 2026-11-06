@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — School Preliminary Review Demo Scenarios & Fixture Factory (Prompt S2)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — School Preliminary Review Demo Scenarios & Fixture Factory (Prompt S2)
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements Prompt S2 Sections 72–77:
  * - 9 Canonical School Officer Scenarios (A through I)
@@ -141,7 +141,7 @@ export const SCHOOL_DEMO_SCENARIOS: SchoolDemoScenarioConfig[] = [
     code: 'ST-08',
     label: 'Đã hoàn tất xét sơ tuyển',
     shortLabel: 'Đã hoàn tất xét',
-    description: 'Hồ sơ đã hoàn tất quy trình xét sơ cấp Trường (5/5 tiêu chí), sẵn sàng chuyển sang bước đề xuất chuyển cấp ĐHĐN.',
+    description: 'Hồ sơ đã hoàn tất quy trình xét sơ cấp Trường (5/5 tiêu chí), sẵn sàng chuyển sang bước đề xuất chuyển cấp Thành phố.',
     schoolStatus: 'preliminary_completed',
     defaultCriterionId: 'volunteer',
     defaultRequirementId: 'volunteer-activities',
@@ -151,9 +151,9 @@ export const SCHOOL_DEMO_SCENARIOS: SchoolDemoScenarioConfig[] = [
   {
     id: 'I_school_forwarded_history',
     code: 'ST-09',
-    label: 'Đã chuyển ĐHĐN · Lịch sử chỉ đọc',
-    shortLabel: 'Đã chuyển ĐHĐN',
-    description: 'Hồ sơ đã được chuyển giao chính thức lên cấp Đại học Đà Nẵng. Cán bộ trường chỉ có quyền xem lại lịch sử sơ tuyển.',
+    label: 'Đã chuyển Thành phố · Lịch sử chỉ đọc',
+    shortLabel: 'Đã chuyển Thành phố',
+    description: 'Hồ sơ đã được chuyển giao chính thức lên cấp Thành phố Đà Nẵng. Cán bộ trường chỉ có quyền xem lại lịch sử sơ tuyển.',
     schoolStatus: 'forwarded_to_city',
     defaultCriterionId: 'volunteer',
     defaultRequirementId: 'volunteer-activities',
@@ -176,9 +176,9 @@ export function buildSchoolScenarioWorkspace(
   scenarioId: SchoolDemoScenarioId,
   applicationId = 'APP-2026-DN-102220123'
 ): ApplicationReviewWorkspaceState {
-  const reviewerId = 'staff-sch-dut';
+  const reviewerId = 'staff-sch-udn';
   const reviewerName = 'Nguyễn Văn An';
-  const reviewUnitId: SchoolReviewUnitId = 'unit-dut';
+  const reviewUnitId: SchoolReviewUnitId = 'unit-udn';
 
   // Base Pristine School Scope Records
   const scopeRecords: Record<string, StaffScopeReviewRecord> = {};
@@ -214,7 +214,7 @@ export function buildSchoolScenarioWorkspace(
           timestamp: '11/10/2026 · 20:30',
           actorName: 'Nguyễn Minh Anh',
           actorRoleLabel: 'Sinh viên',
-          description: 'Hồ sơ trực tuyến được nộp tới Đơn vị xét sơ tuyển Trường Đại học Bách khoa – ĐHĐN.',
+          description: 'Hồ sơ trực tuyến được nộp tới Đơn vị xét sơ tuyển Đại học Đà Nẵng.',
           scopeBadge: 'Tiếp nhận',
           tone: 'brand',
         },
@@ -380,8 +380,8 @@ export function buildSchoolScenarioWorkspace(
           requestedByRole: 'Cán bộ xét sơ tuyển',
           staffStatus: 'waiting_student',
           originatingReviewStage: 'SCHOOL',
-          requestingReviewUnitId: 'unit-dut',
-          requestingReviewUnitName: 'Trường Đại học Bách khoa – ĐHĐN',
+          requestingReviewUnitId: 'unit-udn',
+          requestingReviewUnitName: 'Đại học Đà Nẵng',
           requestingOfficerId: reviewerId,
           requestingOfficerName: reviewerName,
         },
@@ -459,8 +459,8 @@ export function buildSchoolScenarioWorkspace(
           staffStatus: 'student_returned',
           returnedAt: '16/10/2026 · 14:15',
           originatingReviewStage: 'SCHOOL',
-          requestingReviewUnitId: 'unit-dut',
-          requestingReviewUnitName: 'Trường Đại học Bách khoa – ĐHĐN',
+          requestingReviewUnitId: 'unit-udn',
+          requestingReviewUnitName: 'Đại học Đà Nẵng',
           requestingOfficerId: reviewerId,
           requestingOfficerName: reviewerName,
         },
@@ -630,8 +630,8 @@ export function buildSchoolScenarioWorkspace(
           timestamp: '15/10/2026 · 11:00',
           actorName: reviewerName,
           actorRoleLabel: 'Cán bộ xét duyệt cấp Trường',
-          description: 'Hồ sơ đã được chuyển giao lên Hội đồng xét chọn cấp Đại học Đà Nẵng.',
-          scopeBadge: 'Đã chuyển cấp ĐHĐN',
+          description: 'Hồ sơ đã được chuyển giao lên Hội đồng xét chọn cấp Thành phố Đà Nẵng.',
+          scopeBadge: 'Đã chuyển cấp Thành phố',
           tone: 'brand',
         },
       ];

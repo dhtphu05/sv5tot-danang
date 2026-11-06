@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — User Feedback & Bug Telemetry Floating Widget
+ * 5TOT Đà Nẵng — User Feedback & Bug Telemetry Floating Widget
  * Thiết kế đồng bộ chuẩn mực theo hệ thống giao diện ĐHĐN:
  * - Màu chủ đạo: Xanh ĐHĐN (#07457E, #0B64A0), viền #DCE7EE, nền phụ #F8FBFD.
  * - Icon hệ thống Lucide sắc sảo, không dùng emoji cẩu thả.

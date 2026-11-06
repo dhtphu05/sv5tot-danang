@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Officer Review AI Modals & Companion Widget (FSD Widgets Layer)
+ * 5TOT Đà Nẵng — Officer Review AI Modals & Companion Widget (FSD Widgets Layer)
  * Isolates AI Companion, Feedback Modal, Explainability Modal, and Virtual AI Review Report.
  */
 
@@ -167,7 +167,7 @@ export const OfficerReviewAiModals: React.FC<OfficerReviewAiModalsProps> = ({
           customFindings: scenarioConfigFindings,
           studentApp,
           policySeason: '2025–2026',
-          officerName: applicationRecord.assignment?.officerName || 'Cán bộ xét duyệt cấp ĐHĐN',
+          officerName: applicationRecord.assignment?.officerName || 'Cán bộ xét duyệt cấp Thành phố',
         }}
         onNavigateToEvidence={(evidenceId, critId, reqId) => {
           onInspectFinding({

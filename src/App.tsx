@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Application Root & Shared Student Store Coordinator (FSD App Layer)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Application Root & Shared Student Store Coordinator (FSD App Layer)
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Composes initialSessionResolver, useAdminControlPlane, useStaffWorkflowCoordination,
  * useStudentPortalWorkflow, usePublicAuthSessionTransition, DemoLauncherPage,
@@ -768,10 +768,10 @@ export default function App() {
             title:
               st === 'recognized'
                 ? 'Chúc mừng! Kết quả xét chọn Sinh viên 5 tốt đã được công bố'
-                : 'Thông báo kết quả xét chọn Sinh viên 5 tốt cấp Đại học Đà Nẵng',
+                : 'Thông báo kết quả xét chọn Sinh viên 5 tốt cấp Thành phố Đà Nẵng',
             message:
               st === 'recognized'
-                ? `Hồ sơ ${hydratedApp.applicationId} đã được công nhận danh hiệu Sinh viên 5 tốt cấp Đại học Đà Nẵng${
+                ? `Hồ sơ ${hydratedApp.applicationId} đã được công nhận danh hiệu Sinh viên 5 tốt cấp Thành phố Đà Nẵng${
                     hydratedApp.decisionCode ? ` (Quyết định ${hydratedApp.decisionCode})` : ''
                   }.`
                 : hydratedApp.councilFeedback ||
@@ -796,14 +796,14 @@ export default function App() {
               st === 'all_reviewed'
                 ? 'Đã hoàn tất thẩm định 5 tiêu chí — Chờ Hội đồng xét chọn'
                 : hydratedApp.reviewStage === 'CITY'
-                ? 'Hồ sơ đã được chuyển lên Hội Sinh viên Đại học Đà Nẵng'
+                ? 'Hồ sơ đã được chuyển lên Hội Sinh viên Thành phố Đà Nẵng'
                 : 'Hồ sơ đã được nộp về Đơn vị xét sơ tuyển',
             message:
               st === 'all_reviewed'
-                ? 'Hồ sơ của bạn đã được thẩm định đủ 5 tiêu chí và chuyển sang Hội đồng xét chọn cấp Đại học Đà Nẵng.'
+                ? 'Hồ sơ của bạn đã được thẩm định đủ 5 tiêu chí và chuyển sang Hội đồng xét chọn cấp Thành phố Đà Nẵng.'
                 : `Hồ sơ ${hydratedApp.applicationId} đang được xử lý tại ${
                     hydratedApp.reviewStage === 'CITY'
-                      ? 'Hội Sinh viên Việt Nam Đại học Đà Nẵng'
+                      ? 'Hội Sinh viên Việt Nam Thành phố Đà Nẵng'
                       : hydratedApp.schoolReviewUnitName || studentIdentity.university
                   }.`,
             timestamp: hydratedApp.submittedAt || 'Đã ghi nhận',

@@ -51,9 +51,12 @@ export function resolveSchoolMappingForApp(app: Record<string, any>): {
   unitName: string;
   instName: string;
 } {
-  const unitMatchInstId = Object.entries(SCHOOL_UNIT_MAP).find(
-    ([, v]) => v.unitId === app.schoolReviewUnitId
-  )?.[0];
+  const unitMatchInstId =
+    app.schoolReviewUnitId && app.schoolReviewUnitId !== 'unit-udn'
+      ? Object.entries(SCHOOL_UNIT_MAP).find(
+          ([, v]) => v.unitId === app.schoolReviewUnitId
+        )?.[0]
+      : undefined;
   if (unitMatchInstId && unitMatchInstId !== 'inst-dut') {
     return { instId: unitMatchInstId, ...SCHOOL_UNIT_MAP[unitMatchInstId] };
   }
@@ -61,8 +64,7 @@ export function resolveSchoolMappingForApp(app: Record<string, any>): {
   const inferredFromAppNames =
     inferInstitutionIdFromName(app.student?.university) ||
     inferInstitutionIdFromName(app.trainingInstitutionName) ||
-    inferInstitutionIdFromName(app.applicantProfileSnapshot?.institutionName) ||
-    inferInstitutionIdFromName(app.schoolReviewUnitName);
+    inferInstitutionIdFromName(app.applicantProfileSnapshot?.institutionName);
   if (inferredFromAppNames && inferredFromAppNames !== 'inst-dut' && SCHOOL_UNIT_MAP[inferredFromAppNames]) {
     return { instId: inferredFromAppNames, ...SCHOOL_UNIT_MAP[inferredFromAppNames] };
   }
@@ -164,12 +166,12 @@ export function syncStaffRecordFromStudentApplication(
     app.student?.fullName ||
     app.applicantProfileSnapshot?.fullName ||
     existing?.student?.fullName ||
-    'Sinh viên ĐHĐN';
+    'Sinh viên Đà Nẵng';
   const studentEmail =
     app.student?.email ||
     app.applicantProfileSnapshot?.email ||
     existing?.student?.email ||
-    `${studentCode}@sv.udn.vn`;
+    `${studentCode}@sv.danang.vn`;
 
   let totalDecl = 0;
   let totalEv = 0;
@@ -208,7 +210,7 @@ export function syncStaffRecordFromStudentApplication(
     dateOfBirth: '15/05/2004',
     ethnicity: 'Kinh',
     academicYearNumber: 3,
-    educationLevel: 'Đại học',
+    educationLevel: mapped.instId.startsWith('inst-cd-') ? 'Cao đẳng' : 'Đại học',
     className: app.student?.class || '22CLC1',
     homeProvince: 'Thành phố Đà Nẵng',
     institutionId: mapped.instId,
@@ -224,14 +226,8 @@ export function syncStaffRecordFromStudentApplication(
     institutionName: baseSnapshot.institutionName || mapped.instName,
   };
   app.applicantProfileSnapshot = resolvedSnapshot;
-  const resolvedUnitId =
-    mapped.unitId !== 'unit-dut'
-      ? mapped.unitId
-      : app.schoolReviewUnitId || existing?.schoolReviewUnitId || mapped.unitId;
-  const resolvedUnitName =
-    mapped.unitId !== 'unit-dut'
-      ? mapped.unitName
-      : app.schoolReviewUnitName || existing?.schoolReviewUnitName || mapped.unitName;
+  const resolvedUnitId = mapped.unitId;
+  const resolvedUnitName = mapped.unitName;
   app.schoolReviewUnitId = resolvedUnitId;
   app.schoolReviewUnitName = resolvedUnitName;
   app.trainingInstitutionName = app.trainingInstitutionName || mapped.instName;
@@ -245,7 +241,7 @@ export function syncStaffRecordFromStudentApplication(
     ...(existing || {
       applicationId: appId,
       schoolYear: app.season || 'Năm học 2025–2026',
-      levelLabel: app.level || 'Cấp Đại học Đà Nẵng',
+      levelLabel: app.level || 'Cấp Thành phố Đà Nẵng',
       submittedAt: isDraftApp ? '' : app.submittedAt || nowFormatted,
       submittedDateSortKey: new Date().toISOString(),
       internalDeadline: '10/11/2026',
@@ -357,8 +353,7 @@ export function ensureAllSubmittedApplicationsHaveStaffRecords(): void {
     const mapped = resolveSchoolMappingForApp(app);
     const needsUnitFix =
       existingRec &&
-      mapped.unitId !== 'unit-dut' &&
-      existingRec.schoolReviewUnitId === 'unit-dut';
+      existingRec.schoolReviewUnitId !== mapped.unitId;
     if (!existingRec || needsUnitFix) {
       const synced = syncStaffRecordFromStudentApplication(app, { createIfMissing: true });
       if (synced) {

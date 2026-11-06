@@ -1,4 +1,5 @@
 import React from 'react';
+import { Info } from 'lucide-react';
 
 export interface ApplicationTableHeaderProps {
   className?: string;
@@ -8,42 +9,53 @@ export interface ApplicationTableHeaderProps {
 }
 
 /**
- * 4-column Table Header
- * Uses shared .app-table-grid:
- * - >= 1440px: minmax(0, 32fr) minmax(0, 28fr) minmax(0, 20fr) minmax(180px, 20fr)
- * Soft HSV blue surface: #EAF6FC, text: #466474, weight: 600, height: 46–50px.
- * Subtle 1px #E3EBF1 vertical dividers for clean visual scanning.
+ * 5-Column Administrative Dossier Table Header (Matching Central HSV Portal Layout):
+ * STT | Tiêu chí | Tiêu chuẩn cụ thể | Yêu cầu minh chứng | Kết quả (hoặc Đánh giá)
  */
 export const ApplicationTableHeader: React.FC<ApplicationTableHeaderProps> = ({
   className = '',
   isSticky = false,
-  isCompact = false,
   isReviewMode = false,
 }) => {
   return (
     <div
-      className={`hidden md:grid app-table-grid items-center px-6 min-h-[48px] bg-[#EAF6FC] text-[13px] font-semibold text-[#466474] select-none border-b border-[#DCE7EE] transition-all rounded-t-[13px] ${
-        isSticky ? 'sticky top-0 z-[15] shadow-xs' : ''
+      className={`hidden md:grid admin-dossier-header-grid items-stretch bg-[#F8FAFC] text-[12.5px] font-bold text-[#1E293B] select-none border-b border-[#DFE5EC] ${
+        isSticky ? 'sticky top-[96px] z-[15]' : ''
       } ${className}`}
     >
-      {/* Column 1: Tiêu chuẩn & yêu cầu */}
-      <div className="grid-col-1 flex items-center tracking-tight pr-6 min-w-0">
-        <span className="truncate">Tiêu chuẩn & yêu cầu</span>
+      {/* Col 1: STT */}
+      <div className="flex items-center justify-center py-2.5 px-2 border-r border-[#DFE5EC]">
+        <span>STT</span>
       </div>
 
-      {/* Column 2: Khai báo của sinh viên with subtle vertical separator */}
-      <div className="grid-col-2 flex items-center tracking-tight px-6 border-l border-[#E3EBF1] h-full min-w-0">
-        <span className="truncate">Khai báo của sinh viên</span>
+      {/* Col 2: Tiêu chí */}
+      <div className="flex items-center justify-center py-2.5 px-3 border-r border-[#DFE5EC] text-center">
+        <span>Tiêu chí</span>
       </div>
 
-      {/* Column 3: Minh chứng with subtle vertical separator */}
-      <div className="grid-col-3 flex items-center tracking-tight px-6 border-l border-[#E3EBF1] h-full min-w-0">
-        <span className="truncate">Minh chứng</span>
+      {/* Col 3: Tiêu chuẩn cụ thể */}
+      <div className="flex items-center justify-center py-2.5 px-4 border-r border-[#DFE5EC] text-center">
+        <span>Tiêu chuẩn cụ thể</span>
       </div>
 
-      {/* Column 4: Đánh giá / Trạng thái with subtle vertical separator */}
-      <div className="grid-col-4 flex items-center justify-end tracking-tight pl-6 border-l border-[#E3EBF1] h-full min-w-0">
-        <span className="truncate">{isReviewMode ? 'Đánh giá' : 'Trạng thái'}</span>
+      {/* Col 4: Yêu cầu minh chứng */}
+      <div className="flex items-center justify-center py-2.5 px-4 border-r border-[#DFE5EC] text-center">
+        <span>Yêu cầu minh chứng</span>
+      </div>
+
+      {/* Col 5: Kết quả / Đánh giá */}
+      <div className="flex items-center justify-center gap-1 py-2.5 px-3 text-center">
+        <span>{isReviewMode ? 'Kết quả & Đánh giá' : 'Kết quả'}</span>
+        <span
+          title={
+            isReviewMode
+              ? 'Kết quả kê khai của ứng viên và thao tác thẩm định của cán bộ'
+              : 'Nhấn dấu (+) để kê khai nội dung và đính kèm minh chứng'
+          }
+          className="text-[#007EE5] inline-flex items-center"
+        >
+          <Info size={13} strokeWidth={2.2} />
+        </span>
       </div>
     </div>
   );

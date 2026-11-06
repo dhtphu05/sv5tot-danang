@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Staff, Officer, School & Committee Workflow Coordination Hook (FSD Features Layer)
+ * 5TOT Đà Nẵng — Staff, Officer, School & Committee Workflow Coordination Hook (FSD Features Layer)
  * Manages cross-role state and actions for City Officer, School Officer, City Manager, and City Committee.
  */
 
@@ -264,19 +264,19 @@ export function useStaffWorkflowCoordination({
   );
 
   useEffect(() => {
-    if (!isActive) return;
-    if (staffUser && (staffUser.primaryRole === 'SCHOOL_OFFICER' || staffUser.primaryRole === 'CITY_OFFICER')) {
-      const current = getApiActorContext();
-      if (!current || current.userId !== staffUser.id) {
-        setApiActorContext({
-          userId: staffUser.id || 'staff-sch-dut',
-          userName: staffUser.fullName,
-          userEmail: staffUser.email || 'canbo.dut@udn.vn',
-          role: staffUser.primaryRole || 'SCHOOL_OFFICER',
-          unitId: staffUser.schoolReviewUnitId || 'unit-dut',
-          token: `staff-token-${staffUser.id || 'staff-sch-dut'}`,
-        });
-      }
+    if (!isActive || !staffUser) return;
+    const current = getApiActorContext();
+    if (!current || current.userId !== staffUser.id || current.role !== staffUser.primaryRole) {
+      const isSchoolRole = staffUser.primaryRole === 'SCHOOL_OFFICER';
+      setApiActorContext({
+        userId: staffUser.id || (isSchoolRole ? 'staff-sch-udn' : 'staff-off-nam'),
+        userName: staffUser.fullName,
+        userEmail:
+          staffUser.email || (isSchoolRole ? 'canbo.udn@udn.vn' : 'canbo.thanhpho@hsvdanang.vn'),
+        role: staffUser.primaryRole || 'CITY_OFFICER',
+        unitId: isSchoolRole ? staffUser.schoolReviewUnitId || 'unit-udn' : undefined,
+        token: `staff-token-${staffUser.id || (isSchoolRole ? 'staff-sch-udn' : 'staff-off-nam')}`,
+      });
     }
   }, [staffUser, isActive]);
   const [staffRouteId, setStaffRouteId] =
@@ -752,8 +752,8 @@ export function useStaffWorkflowCoordination({
                 scenarioCfg?.description || app.latestOperationalNote,
               schoolReviewSummary: {
                 ...(app.schoolReviewSummary || {
-                  schoolReviewUnitId: 'unit-dut',
-                  schoolReviewUnitName: 'Trường Đại học Bách khoa – ĐHĐN',
+                  schoolReviewUnitId: 'unit-udn',
+                  schoolReviewUnitName: 'Đại học Đà Nẵng',
                   isForwardedToCity: false,
                   reviewedCriteriaCount: 2,
                   totalCriteriaCount: 5,
@@ -849,7 +849,7 @@ export function useStaffWorkflowCoordination({
           if (staffUser.primaryRole === 'SCHOOL_OFFICER') {
             fallback.workspaceState.reviewStage = 'SCHOOL';
             fallback.workspaceState.reviewUnitId =
-              staffUser.schoolReviewUnitId || 'unit-dut';
+              staffUser.schoolReviewUnitId || 'unit-udn';
           }
           setOfficerStudentAppMap((prev) => {
             const existing = prev[applicationId];
@@ -1500,7 +1500,7 @@ export function useStaffWorkflowCoordination({
     if (isBackendMode()) {
       resolveDomainServices()
         .committeeDecision.publishIndividualResults({
-          decisionNumber: '108/QĐ-HSV-ĐHĐN',
+          decisionNumber: '108/QĐ-HSVTP',
           actor: {
             id: staffUser.id,
             name: staffUser.fullName,
@@ -1524,7 +1524,7 @@ export function useStaffWorkflowCoordination({
     const allCol = getAllCollectiveApplications();
     allCol.forEach((app) => {
       if (app.status === 'finalized' || Boolean(app.committeeOutcome)) {
-        publishCollectiveResult(app.id, '86/QĐ-HSV-ĐHĐN', {
+        publishCollectiveResult(app.id, '86/QĐ-HSVTP', {
           name: staffUser.fullName,
           role: staffUser.roleLabel,
         });
@@ -1532,7 +1532,7 @@ export function useStaffWorkflowCoordination({
           resolveDomainServices()
             .committeeDecision.publishCollectiveResult({
               applicationId: app.id,
-              decisionNumber: '86/QĐ-HSV-ĐHĐN',
+              decisionNumber: '86/QĐ-HSVTP',
               actor: {
                 id: staffUser.id,
                 name: staffUser.fullName,

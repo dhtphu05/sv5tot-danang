@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — School Batch Forwarding Confirmation, Decision Preview & Snapshot Modals
+ * 5TOT Đà Nẵng — School Batch Forwarding Confirmation, Decision Preview & Snapshot Modals
  * FSD Layer: widgets/school-backoffice
  * LEAN-4.1 Correction: Direct School Finalization — Select, Attach and Forward
  * Removed second per-student recommendation modal.
@@ -88,14 +88,14 @@ export const SchoolForwardingModals: React.FC<SchoolForwardingModalsProps> = ({
   return (
     <>
       {/* ===================================================================== */}
-      {/* MODAL 1: XÁC NHẬN TRÌNH DANH SÁCH LÊN ĐẠI HỌC ĐÀ NẴNG (LEAN-4.1) */}
+      {/* MODAL 1: XÁC NHẬN TRÌNH DANH SÁCH LÊN CẤP THÀNH PHỐ ĐÀ NẴNG (LEAN-4.1) */}
       {/* ===================================================================== */}
       {isBatchConfirmOpen && (
         <Dialog
           isOpen={isBatchConfirmOpen}
           onClose={isConfirmingBatch ? () => {} : onCloseBatchConfirm}
-          title="Xác nhận trình danh sách lên Đại học Đà Nẵng"
-          description={`Xác nhận trình ${selectedApps.length} hồ sơ của ${unitName} lên Hội Sinh viên Đại học Đà Nẵng?`}
+          title="Xác nhận trình danh sách lên cấp Thành phố Đà Nẵng"
+          description={`Xác nhận trình ${selectedApps.length} hồ sơ của ${unitName} lên Hội Sinh viên Thành phố Đà Nẵng?`}
           maxWidth="max-w-2xl"
           primaryAction={{
             label: isConfirmingBatch ? 'Đang gửi...' : 'Xác nhận trình',
@@ -113,7 +113,7 @@ export const SchoolForwardingModals: React.FC<SchoolForwardingModalsProps> = ({
             <div className="p-3 bg-[#FFFBEB] border border-[#FDE68A] rounded-[8px] flex items-start gap-2.5 text-[12.5px] text-[#92400E]">
               <AlertTriangle size={16} className="text-[#D97706] shrink-0 mt-0.5" />
               <div className="leading-relaxed">
-                Mỗi đơn vị chỉ được trình danh sách một lần duy nhất trong năm học. Sau khi gửi, danh sách đề xuất và văn bản đính kèm sẽ được cố định và chuyển sang Hội đồng xét chọn cấp Đại học Đà Nẵng thẩm định.
+                Mỗi đơn vị chỉ được trình danh sách một lần duy nhất trong năm học. Sau khi gửi, danh sách đề xuất và văn bản đính kèm sẽ được cố định và chuyển sang Hội đồng xét chọn cấp Thành phố Đà Nẵng thẩm định.
               </div>
             </div>
 
@@ -237,7 +237,7 @@ export const SchoolForwardingModals: React.FC<SchoolForwardingModalsProps> = ({
                 rows={2}
                 value={forwardBatchNote}
                 onChange={(e) => onSetForwardBatchNote(e.target.value)}
-                placeholder="Ghi chú thêm nếu cần lưu ý với Hội đồng xét chọn cấp Đại học Đà Nẵng..."
+                placeholder="Ghi chú thêm nếu cần lưu ý với Hội đồng xét chọn cấp Thành phố Đà Nẵng..."
                 className="w-full p-2 text-[12px] border border-[#DCE7EE] rounded-[8px] bg-white focus:outline-none focus:border-[#0D78AE]"
               />
             </div>
@@ -381,7 +381,7 @@ export const SchoolForwardingModals: React.FC<SchoolForwardingModalsProps> = ({
           isOpen={Boolean(snapshotModalApp)}
           onClose={onCloseSnapshotModal}
           title="Bản lưu vết xét sơ tuyển cấp Trường"
-          description="Bản ghi nhận trạng thái đánh giá và nhận xét của cấp Trường tại thời điểm bàn giao lên cấp Đại học Đà Nẵng."
+          description="Bản ghi nhận trạng thái đánh giá và nhận xét của cấp Trường tại thời điểm bàn giao lên cấp Thành phố Đà Nẵng."
           maxWidth="max-w-xl"
           secondaryAction={{
             label: 'Đóng',
@@ -395,7 +395,7 @@ export const SchoolForwardingModals: React.FC<SchoolForwardingModalsProps> = ({
                   {snapshotModalApp.applicationId}
                 </span>
                 <span className="font-bold text-[#16A34A] text-[11.5px]">
-                  Đã chuyển cấp Đại học Đà Nẵng
+                  Đã chuyển cấp Thành phố Đà Nẵng
                 </span>
               </div>
               <div className="text-[14px] font-bold text-[#0F2335]">

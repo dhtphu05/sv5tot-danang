@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Centralized Officer Review Business Logic & Selectors
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Centralized Officer Review Business Logic & Selectors
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements Prompt 17 Sections 4, 13, 14, 46, 49, 58–63, 90, 127:
  * - Single source of truth for access control, review statuses, supplement eligibility,
@@ -21,7 +21,10 @@ import {
 } from '../demo/fixtures/studentApplication';
 import { StaffApplicationRecord, StaffUser } from './types';
 import { can } from './permissions';
-import { resolveSchoolReviewUnit } from './schoolReviewTypes';
+import {
+  normalizeLegacySchoolReviewUnitId,
+  resolveSchoolReviewUnit,
+} from './schoolReviewTypes';
 import {
   ApplicationReviewWorkspaceState,
   CriterionHumanConclusion,
@@ -83,13 +86,15 @@ export function canOfficerReviewApplication(
 
   // SCHOOL REVIEW STAGE ACCESS CONTROL (Prompt S2)
   if (user.primaryRole === 'SCHOOL_OFFICER' || reviewStage === 'SCHOOL') {
-    const userUnitId = user.schoolReviewUnitId || 'unit-dut';
-    let appUnitId = appRecord.schoolReviewUnitId;
-    if (!appUnitId) {
-      const res = resolveSchoolReviewUnit(appRecord.institution.id);
-      if (res.resolved && res.unit) {
-        appUnitId = res.unit.id;
-      }
+    const userUnitId = normalizeLegacySchoolReviewUnitId(
+      user.schoolReviewUnitId || 'unit-udn'
+    );
+    let appUnitId = appRecord.schoolReviewUnitId
+      ? normalizeLegacySchoolReviewUnitId(appRecord.schoolReviewUnitId)
+      : undefined;
+    const res = resolveSchoolReviewUnit(appRecord.institution.id);
+    if (res.resolved && res.unit) {
+      appUnitId = res.unit.id;
     }
 
     if (appUnitId && appUnitId !== userUnitId) {
@@ -112,7 +117,7 @@ export function canOfficerReviewApplication(
         isReadOnly: true,
         reason: 'already_forwarded',
         message:
-          'Hồ sơ đã được chuyển lên cấp Đại học Đà Nẵng. Dữ liệu xét sơ cấp Trường chỉ dùng để tra cứu lịch sử.',
+          'Hồ sơ đã được chuyển lên cấp Thành phố Đà Nẵng. Dữ liệu xét sơ cấp Trường chỉ dùng để tra cứu lịch sử.',
       };
     }
 
@@ -146,7 +151,7 @@ export function canOfficerReviewApplication(
       allowed: false,
       canMutate: false,
       reason: 'not_assigned_to_officer',
-      message: 'Tài khoản không có thẩm quyền truy cập hồ sơ xét duyệt cấp Đại học Đà Nẵng.',
+      message: 'Tài khoản không có thẩm quyền truy cập hồ sơ xét duyệt cấp Thành phố Đà Nẵng.',
     };
   }
 
@@ -180,7 +185,7 @@ export function canOfficerReviewApplication(
       isReadOnly: true,
       reason: 'not_forwarded_yet' as any,
       message:
-        'Hồ sơ đang ở cấp Trường (chưa chuyển giao lên cấp Đại học Đà Nẵng). Cán bộ cấp Đại học Đà Nẵng chỉ xem chế độ tra cứu.',
+        'Hồ sơ đang ở cấp Trường (chưa chuyển giao lên cấp Thành phố Đà Nẵng). Cán bộ cấp Thành phố Đà Nẵng chỉ xem chế độ tra cứu.',
     };
   }
 
@@ -1283,10 +1288,11 @@ export function calculateVolunteerAggregation(
   threshold: number;
   summaryText: string;
 } {
-  const decls = [
-    ...getDeclarationsForRequirement(studentApp, 'volunteer', 'volunteer-campaign'),
-    ...getDeclarationsForRequirement(studentApp, 'volunteer', 'volunteer-activities'),
-  ];
+  const decls = getDeclarationsForRequirement(
+    studentApp,
+    'volunteer',
+    'volunteer-activities'
+  );
   const activityCount = decls.length;
   let totalDaysDeclared = 0;
   let bloodDonationCount = 0;
@@ -1314,8 +1320,15 @@ export function calculateVolunteerAggregation(
     }
   }
 
-  const threshold = 3;
-  const thresholdMet = totalDaysDeclared >= threshold;
+  const awardDecls = getDeclarationsForRequirement(
+    studentApp,
+    'volunteer',
+    'volunteer-award'
+  );
+  const threshold = 5;
+  const thresholdMet = totalDaysDeclared >= threshold || awardDecls.length >= 1;
+  const awardSuffix =
+    awardDecls.length > 0 ? ` · ${awardDecls.length} khen thưởng tình nguyện` : '';
 
   return {
     activityCount,
@@ -1325,7 +1338,7 @@ export function calculateVolunteerAggregation(
     threshold,
     summaryText: `${activityCount} hoạt động · ${totalDaysDeclared}/${threshold} ngày tình nguyện đã kê khai${
       bloodDonationCount > 0 ? ` (gồm ${bloodDonationCount} lần hiến máu)` : ''
-    }`,
+    }${awardSuffix}`,
   };
 }
 

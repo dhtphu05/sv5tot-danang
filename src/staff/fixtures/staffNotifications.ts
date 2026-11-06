@@ -17,9 +17,9 @@ export const STAFF_NOTIFICATIONS_FIXTURE: StaffNotificationItem[] = [
   {
     id: 'snotif-2',
     targetRoles: ['CITY_OFFICER'],
-    title: 'Đợt xét chọn cấp Đại học Đà Nẵng năm học 2025–2026 đang mở',
+    title: 'Đợt xét chọn cấp Thành phố Đà Nẵng năm học 2025–2026 đang mở',
     summary:
-      'Quản lý xét duyệt Nguyễn Thu Hà đã sẵn sàng phân công hồ sơ từ 09 trường thành viên năm học 2025–2026 cho bạn.',
+      'Quản lý xét duyệt Nguyễn Thu Hà đã sẵn sàng điều phối hồ sơ từ 31 cơ sở đào tạo trên địa bàn Thành phố năm học 2025–2026.',
     timestamp: '01/10/2025 · 14:00',
     isUnread: true,
     categoryLabel: 'Mùa xét 2025–2026',
@@ -41,9 +41,9 @@ export const STAFF_NOTIFICATIONS_FIXTURE: StaffNotificationItem[] = [
   {
     id: 'snotif-4',
     targetRoles: ['CITY_MANAGER'],
-    title: 'Theo dõi tiếp nhận hồ sơ từ 09 trường thành viên ĐHĐN',
+    title: 'Theo dõi tiếp nhận hồ sơ từ 24 đơn vị xét sơ tuyển trên địa bàn Thành phố',
     summary:
-      'Hồ sơ chuyển từ Trường ĐH Bách khoa, Kinh tế, Sư phạm, Ngoại ngữ, Sư phạm Kỹ thuật, VKU, Y Dược, VNUK, Phân hiệu Kon Tum sẽ hiển thị tại mục Điều phối.',
+      'Hồ sơ chuyển từ Cụm Đại học Đà Nẵng (unit-udn) và 23 trường Đại học, Học viện, Cao đẳng độc lập tại Đà Nẵng sẽ hiển thị tại mục Điều phối.',
     timestamp: '01/10/2025 · 09:15',
     isUnread: false,
     categoryLabel: 'Cần điều phối',
@@ -53,7 +53,7 @@ export const STAFF_NOTIFICATIONS_FIXTURE: StaffNotificationItem[] = [
   {
     id: 'snotif-5',
     targetRoles: ['CITY_MANAGER'],
-    title: 'Theo dõi khối lượng công việc cán bộ thẩm định cấp ĐHĐN',
+    title: 'Theo dõi khối lượng công việc cán bộ thẩm định cấp Thành phố',
     summary:
       'Vui lòng kiểm tra khối lượng công việc và phân bổ hồ sơ năm học 2025–2026 cho tổ thẩm định.',
     timestamp: '01/10/2025 · 09:00',
@@ -65,9 +65,9 @@ export const STAFF_NOTIFICATIONS_FIXTURE: StaffNotificationItem[] = [
   {
     id: 'snotif-6',
     targetRoles: ['CITY_COMMITTEE'],
-    title: 'Hội đồng xét chọn cấp Đại học Đà Nẵng năm học 2025–2026',
+    title: 'Hội đồng xét chọn cấp Thành phố Đà Nẵng năm học 2025–2026',
     summary:
-      'Các hồ sơ hoàn tất thẩm định cấp ĐHĐN sẽ được chuyển sang danh sách Hội đồng xét chọn.',
+      'Các hồ sơ hoàn tất thẩm định cấp Thành phố sẽ được chuyển sang danh sách Hội đồng xét chọn.',
     timestamp: '01/10/2025 · 10:30',
     isUnread: false,
     categoryLabel: 'Hội đồng xét chọn',
@@ -77,7 +77,7 @@ export const STAFF_NOTIFICATIONS_FIXTURE: StaffNotificationItem[] = [
   {
     id: 'snotif-7',
     targetRoles: ['ADMIN'],
-    title: 'Đồng bộ danh mục 09 trường, đơn vị thành viên Đại học Đà Nẵng hoàn tất',
+    title: 'Đồng bộ danh mục 31 cơ sở đào tạo trên địa bàn Thành phố Đà Nẵng hoàn tất',
     summary:
       'Hệ thống đã áp dụng cấu hình 05 tiêu chí chuẩn và mốc thời gian năm học 2025–2026 (Hạn nhận hồ sơ: 10/11/2026 · 20:00).',
     timestamp: '01/10/2025 · 08:00',

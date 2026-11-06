@@ -1,7 +1,6 @@
 /**
- * 5TOT Đại học Đà Nẵng — Create White Bird Award ("Giải thưởng Cánh chim trắng") Application Modal
- * Căn cứ Quy chế Giải thưởng "Cánh chim trắng" ban hành kèm theo Quyết định số 14-QĐ/ĐHĐN-HSV ngày 04/10/2022
- * của Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng.
+ * 5TOT Đà Nẵng — Create January 9th Award ("Giải thưởng 9/1") Application Modal
+ * Đơn vị tổ chức: Ban Thư ký Hội Sinh viên Việt Nam Thành phố Đà Nẵng.
  */
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
@@ -10,7 +9,6 @@ import {
   Feather,
   Sparkles,
   Flame,
-  Lightbulb,
   User,
   Users,
   Building2,
@@ -21,8 +19,10 @@ import {
 } from 'lucide-react';
 import {
   AUTHORITATIVE_SCHOOL_REVIEW_UNITS,
+  resolveSchoolReviewUnit,
   SchoolReviewUnitId,
 } from '../../staff/schoolReviewTypes';
+import { DANANG_INSTITUTION_REGISTRY } from '../../demo/fixtures/institutionRegistry';
 import { resolveInstitutionFromUniversity } from '../../demo/fixtures/studentApplication';
 import { Button } from '../buttons/Button';
 import { Input } from '../forms/Input';
@@ -68,19 +68,14 @@ const CATEGORY_CARDS: Array<{
   icon: React.ReactNode;
 }> = [
   {
-    code: 'UOM_MAM',
-    badge: 'Cá nhân hoặc Tập thể',
-    icon: <Sparkles size={16} className="text-[#0D78AE]" />,
-  },
-  {
     code: 'TRUYEN_LUA',
     badge: 'Chỉ dành cho Cá nhân',
     icon: <Flame size={16} className="text-[#D97706]" />,
   },
   {
-    code: 'SANG_TAO',
+    code: 'UOM_MAM',
     badge: 'Cá nhân hoặc Tập thể',
-    icon: <Lightbulb size={16} className="text-[#0284C7]" />,
+    icon: <Sparkles size={16} className="text-[#0D78AE]" />,
   },
 ];
 
@@ -89,7 +84,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
   onClose,
   onSubmit,
   initialCategory,
-  initialUserName = 'Sinh viên ĐHĐN',
+  initialUserName = 'Sinh viên Đà Nẵng',
   initialUserEmail = '',
   initialStudentId = '',
   initialUniversity = '',
@@ -101,31 +96,27 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const defaultResolvedUnit = useMemo(() => {
+  const defaultResolvedInstitution = useMemo(() => {
     if (initialInstitutionId) {
-      const matched = AUTHORITATIVE_SCHOOL_REVIEW_UNITS.find((u) =>
-        u.memberInstitutionIds.includes(initialInstitutionId)
-      );
+      const matched = DANANG_INSTITUTION_REGISTRY.find((i) => i.id === initialInstitutionId);
       if (matched) return matched;
     }
     if (initialUniversity) {
       const resolved = resolveInstitutionFromUniversity(initialUniversity);
-      const matched = AUTHORITATIVE_SCHOOL_REVIEW_UNITS.find(
-        (u) =>
-          u.id === resolved.schoolReviewUnitId ||
-          u.memberInstitutionIds.includes(resolved.institutionId)
-      );
+      const matched = DANANG_INSTITUTION_REGISTRY.find((i) => i.id === resolved.institutionId);
       if (matched) return matched;
     }
-    return AUTHORITATIVE_SCHOOL_REVIEW_UNITS[0];
+    return DANANG_INSTITUTION_REGISTRY[0];
   }, [initialInstitutionId, initialUniversity]);
 
-  const [category, setCategory] = useState<WhiteBirdCategory | null>(initialCategory || null);
+  const [category, setCategory] = useState<WhiteBirdCategory | null>(
+    initialCategory && initialCategory !== 'SANG_TAO' ? initialCategory : null
+  );
   const [categoryError, setCategoryError] = useState<string>('');
   const [isDossierOpen, setIsDossierOpen] = useState<boolean>(false);
   const [nomineeType, setNomineeType] = useState<WhiteBirdNomineeType>('INDIVIDUAL');
-  const [selectedUnitId, setSelectedUnitId] = useState<SchoolReviewUnitId>(
-    defaultResolvedUnit.id
+  const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>(
+    defaultResolvedInstitution.id
   );
   const [nomineeName, setNomineeName] = useState<string>(initialUserName);
   const [nominationTitle, setNominationTitle] = useState<string>('');
@@ -162,18 +153,13 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
   // Reset or initialize state when opening
   useEffect(() => {
     if (!isOpen) return;
-    setCategory(initialCategory || null);
+    setCategory(initialCategory && initialCategory !== 'SANG_TAO' ? initialCategory : null);
     setCategoryError('');
     setIsDossierOpen(false);
     setIsSubmitting(false);
+    setNomineeType('INDIVIDUAL');
 
-    if (initialCategory === 'TRUYEN_LUA') {
-      setNomineeType('INDIVIDUAL');
-    } else {
-      setNomineeType('INDIVIDUAL');
-    }
-
-    setSelectedUnitId(defaultResolvedUnit.id);
+    setSelectedInstitutionId(defaultResolvedInstitution.id);
     setNomineeName(initialUserName || '');
     setNominationTitle('');
     setFacultyName(initialFaculty || '');
@@ -186,7 +172,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
   }, [
     isOpen,
     initialCategory,
-    defaultResolvedUnit.id,
+    defaultResolvedInstitution.id,
     initialUserName,
     initialFaculty,
     initialClassName,
@@ -203,7 +189,6 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
       if (nomineeName.startsWith('Nhóm') || nomineeName.startsWith('Tập thể')) {
         setNomineeName(initialUserName || '');
       }
-      // Khởi tạo/cập nhật tiêu đề hồ sơ cá nhân, không giữ tên dự án/mô hình từ hạng mục khác
       const candidateName = (nomineeName.startsWith('Nhóm') || nomineeName.startsWith('Tập thể'))
         ? (initialUserName || 'Cá nhân đề cử')
         : (nomineeName.trim() || initialUserName || 'Cá nhân đề cử');
@@ -211,7 +196,6 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
         setNominationTitle(`Báo cáo thành tích cá nhân – ${candidateName}`);
       }
     } else {
-      // Khi chuyển sang Ươm mầm hoặc Sáng tạo, nếu tiêu đề đang mang định dạng báo cáo cá nhân thì làm mới
       if (nominationTitle.startsWith('Báo cáo thành tích cá nhân –')) {
         setNominationTitle('');
       }
@@ -227,17 +211,24 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
       setNomineeName(
         initialClassName
           ? `Tập thể Chi hội ${initialClassName}`
-          : 'Nhóm sinh viên nghiên cứu / sáng kiến'
+          : 'Tập thể / Nhóm sáng kiến công tác Hội'
       );
     }
   };
 
+  const selectedInstitution = useMemo(() => {
+    return (
+      DANANG_INSTITUTION_REGISTRY.find((i) => i.id === selectedInstitutionId) ||
+      defaultResolvedInstitution
+    );
+  }, [selectedInstitutionId, defaultResolvedInstitution]);
+
   const selectedUnit = useMemo(() => {
     return (
-      AUTHORITATIVE_SCHOOL_REVIEW_UNITS.find((u) => u.id === selectedUnitId) ||
-      defaultResolvedUnit
+      resolveSchoolReviewUnit(selectedInstitution.id).unit ||
+      AUTHORITATIVE_SCHOOL_REVIEW_UNITS[0]
     );
-  }, [selectedUnitId, defaultResolvedUnit]);
+  }, [selectedInstitution]);
 
   if (!isOpen) return null;
 
@@ -249,7 +240,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
     let hasError = false;
 
     if (!category) {
-      setCategoryError('Vui lòng chọn 1 trong 3 hạng mục Giải thưởng để tiếp tục.');
+      setCategoryError('Vui lòng chọn 1 trong 2 hạng mục Giải thưởng 9/1 để tiếp tục.');
       hasError = true;
     }
 
@@ -258,7 +249,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
       finalTitle = `Báo cáo thành tích cá nhân – ${nomineeName.trim() || initialUserName || 'Cá nhân đề cử'}`;
       setNominationTitle(finalTitle);
     } else if (!finalTitle) {
-      setTitleError('Vui lòng nhập tên đề cử / mô hình / dự án / đề tài.');
+      setTitleError('Vui lòng nhập tên đề cử / mô hình / giải pháp / sáng kiến.');
       hasError = true;
     }
 
@@ -277,7 +268,6 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
     }
 
     setIsSubmitting(true);
-    const instId = selectedUnit.memberInstitutionIds[0] || 'inst-dut';
 
     try {
       onSubmit({
@@ -285,9 +275,9 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
         category,
         nomineeType: category === 'TRUYEN_LUA' ? 'INDIVIDUAL' : nomineeType,
         nomineeName: nomineeName.trim() || initialUserName,
-        studentId: initialStudentId || 'SV-UDN',
-        institutionId: instId,
-        institutionName: selectedUnit.officialName,
+        studentId: initialStudentId || 'SV-DN',
+        institutionId: selectedInstitution.id,
+        institutionName: selectedInstitution.officialName,
         schoolReviewUnitId: selectedUnit.id,
         schoolReviewUnitName: selectedUnit.officialName,
         facultyName: facultyName.trim() || 'Khoa / Đơn vị trực thuộc',
@@ -304,9 +294,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
       ? 'VD: Mô hình Số hóa Sổ tay Sinh viên 5 tốt & Ngân hàng Minh chứng'
       : category === 'TRUYEN_LUA'
       ? `VD: Báo cáo thành tích cá nhân – ${nomineeName.trim() || initialUserName || 'Nguyễn Văn A'}`
-      : category === 'SANG_TAO'
-      ? 'VD: Dự án Khởi nghiệp Hệ thống IoT Cảnh báo ngập lụt đô thị thông minh'
-      : 'VD: Nhập tên mô hình, giải pháp, dự án hoặc đề tài đề cử...';
+      : 'VD: Nhập tên mô hình, giải pháp, sáng kiến hoặc tiêu đề hồ sơ đề cử...';
 
   return (
     <div
@@ -331,14 +319,14 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
                   id="create-white-bird-modal-title"
                   className="text-[17px] font-bold text-[#172A3A]"
                 >
-                  Khởi tạo hồ sơ Cánh chim trắng
+                  Khởi tạo hồ sơ Giải thưởng 9/1
                 </h2>
                 <span className="text-[11px] font-medium text-[#0D78AE] bg-[#EBF6FC] px-2 py-0.5 rounded-full border border-[#D0E6F5]">
-                  QĐ 14-QĐ/ĐHĐN-HSV
+                  Cấp Thành phố Đà Nẵng
                 </span>
               </div>
               <p className="text-[12px] text-[#607483] mt-0.5">
-                Năm học {academicYear} · Tạo hồ sơ đề cử
+                Năm học {academicYear} · Hội Sinh viên Việt Nam Thành phố Đà Nẵng
               </p>
             </div>
           </div>
@@ -358,11 +346,11 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
           className="flex-1 flex flex-col min-h-0 overflow-hidden"
         >
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
-            {/* 1. Selection Cards */}
+            {/* 1. Selection Cards (2 Traditional Categories Only) */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="text-[13px] font-bold text-[#172A3A]">
-                  Chọn hạng mục Giải thưởng <span className="text-red-500">*</span>
+                  Chọn hạng mục Giải thưởng 9/1 <span className="text-red-500">*</span>
                 </label>
                 {categoryError && (
                   <span className="text-[11.5px] font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200">
@@ -371,7 +359,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {CATEGORY_CARDS.map((card) => {
                   const meta = WHITE_BIRD_CATEGORIES[card.code];
                   const isSelected = category === card.code;
@@ -429,7 +417,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
                 >
                   <span className="flex items-center gap-1.5">
                     <Info size={14} className="shrink-0" />
-                    <span>Xem thành phần hồ sơ cần chuẩn bị theo Điều 6</span>
+                    <span>Xem thành phần hồ sơ cần chuẩn bị theo Quy chế</span>
                   </span>
                   {isDossierOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                 </button>
@@ -467,7 +455,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
                   <Feather size={18} />
                 </div>
                 <p className="text-[13px] font-semibold text-[#1E293B]">
-                  Chọn một hạng mục ở trên để bắt đầu tạo hồ sơ.
+                  Chọn một trong hai hạng mục ở trên để bắt đầu tạo hồ sơ.
                 </p>
                 <p className="text-[12px] text-[#64748B]">
                   Hệ thống sẽ hiển thị các trường khai báo phù hợp theo hạng mục đã chọn.
@@ -488,7 +476,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
                   </span>
                 </div>
 
-                {/* Row 1: Nominee Type & Unit */}
+                {/* Row 1: Nominee Type & Institution */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   <div>
                     <label className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5">
@@ -525,7 +513,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
                     </div>
                     {category === 'TRUYEN_LUA' && (
                       <p className="text-[11px] text-[#D97706] mt-1 font-medium">
-                        * Hạng mục “Cánh chim truyền lửa” chỉ xét trao cho Cá nhân theo Điều 3.
+                        * Hạng mục “Cán bộ Hội – Đoàn tiêu biểu” chỉ xét trao cho Cá nhân.
                       </p>
                     )}
                   </div>
@@ -535,7 +523,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
                       htmlFor="wb-unit-select"
                       className="block text-[12.5px] font-bold text-[#172A3A] mb-1.5"
                     >
-                      Trường thành viên / Đơn vị trực thuộc ĐHĐN <span className="text-red-500">*</span>
+                      Trường Đại học / Học viện / Cao đẳng tại Đà Nẵng <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <Building2
@@ -544,13 +532,13 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
                       />
                       <select
                         id="wb-unit-select"
-                        value={selectedUnitId}
-                        onChange={(e) => setSelectedUnitId(e.target.value as SchoolReviewUnitId)}
+                        value={selectedInstitutionId}
+                        onChange={(e) => setSelectedInstitutionId(e.target.value)}
                         className="w-full pl-9 pr-3 py-2.5 text-[13px] font-semibold text-[#172A3A] bg-white border border-[#C8D9E6] rounded-[9px] focus:outline-none focus:border-[#0D78AE]"
                       >
-                        {AUTHORITATIVE_SCHOOL_REVIEW_UNITS.map((u) => (
-                          <option key={u.id} value={u.id}>
-                            {u.officialName}
+                        {DANANG_INSTITUTION_REGISTRY.map((inst) => (
+                          <option key={inst.id} value={inst.id}>
+                            {inst.officialName}
                           </option>
                         ))}
                       </select>
@@ -564,9 +552,7 @@ export const CreateWhiteBirdModal: React.FC<CreateWhiteBirdModalProps> = ({
                     label={
                       category === 'UOM_MAM'
                         ? 'Tên mô hình, giải pháp, sáng kiến *'
-                        : category === 'TRUYEN_LUA'
-                        ? 'Tiêu đề hồ sơ đề cử *'
-                        : 'Tên dự án khởi nghiệp đổi mới sáng tạo / Đề tài NCKH *'
+                        : 'Tiêu đề hồ sơ đề cử *'
                     }
                     rows={2}
                     minHeight={58}

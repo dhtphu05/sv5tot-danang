@@ -1,5 +1,5 @@
 /**
- * 5TOT Đại học Đà Nẵng — Staff, School Preliminary, Officer & Committee Review Routes
+ * 5TOT Đà Nẵng — Staff, School Preliminary, Officer & Committee Review Routes
  *
  * Handles individual application staff listings, school preliminary review,
  * workspace synchronization, forwarding to City, officer assignment,
@@ -24,16 +24,47 @@ import {
   ensureAllSubmittedApplicationsHaveStaffRecords,
 } from './domainPortal.individual.sync';
 
+function assertSchoolOfficerUnitAndMutable(
+  req: Request,
+  res: Response,
+  record: Record<string, any>
+): boolean {
+  const actor = resolveSessionActor(req);
+  if (actor.authenticated && actor.role === 'SCHOOL_OFFICER') {
+    if (actor.unitId && record.schoolReviewUnitId && actor.unitId !== record.schoolReviewUnitId) {
+      res.status(403).json({
+        success: false,
+        errorCode: 'CROSS_UNIT_FORBIDDEN',
+        error: `Hồ sơ thuộc đơn vị xét sơ tuyển "${record.schoolReviewUnitId}", ngoài phạm vi của bạn.`,
+      });
+      return false;
+    }
+    if (record.schoolPreliminaryStatus === 'forwarded_to_city' || record.currentReviewStage === 'CITY') {
+      res.status(409).json({
+        success: false,
+        errorCode: 'ALREADY_FORWARDED_TO_CITY',
+        error: 'Hồ sơ đã trình lên cấp Thành phố Đà Nẵng, không thể chỉnh sửa kết quả sơ tuyển.',
+      });
+      return false;
+    }
+  }
+  return true;
+}
+
 export function registerIndividualReviewPortalRoutes(router: Router): void {
-  router.get('/individual/applications', (_req: Request, res: Response): void => {
+  router.get('/individual/applications', (req: Request, res: Response): void => {
     ensureAllSubmittedApplicationsHaveStaffRecords();
+    const actor = resolveSessionActor(req);
+    const enforceUnitId =
+      actor.authenticated && actor.role === 'SCHOOL_OFFICER' ? actor.unitId : undefined;
     const enriched = portalState.individualStaffRecords
       .filter(
         (r) =>
-          isTestRuntime() ||
-          (!isLegacyMockOrTestAppId(r?.applicationId) &&
-            !isNonUdnInstitutionRecord(r) &&
-            r?.schoolPreliminaryStatus !== 'school_not_submitted')
+          (!enforceUnitId || r?.schoolReviewUnitId === enforceUnitId) &&
+          (isTestRuntime() ||
+            (!isLegacyMockOrTestAppId(r?.applicationId) &&
+              !isNonUdnInstitutionRecord(r) &&
+              r?.schoolPreliminaryStatus !== 'school_not_submitted'))
       )
       .map((r) => ({
         ...r,
@@ -59,6 +90,21 @@ export function registerIndividualReviewPortalRoutes(router: Router): void {
       });
       return;
     }
+    const actor = resolveSessionActor(req);
+    if (
+      actor.authenticated &&
+      actor.role === 'SCHOOL_OFFICER' &&
+      actor.unitId &&
+      record.schoolReviewUnitId &&
+      actor.unitId !== record.schoolReviewUnitId
+    ) {
+      res.status(403).json({
+        success: false,
+        errorCode: 'CROSS_UNIT_FORBIDDEN',
+        error: 'Bạn không có thẩm quyền truy cập hồ sơ của đơn vị khác.',
+      });
+      return;
+    }
     res.status(200).json({
       success: true,
       data: {
@@ -70,7 +116,11 @@ export function registerIndividualReviewPortalRoutes(router: Router): void {
 
   router.get('/school-review/applications', (req: Request, res: Response): void => {
     ensureAllSubmittedApplicationsHaveStaffRecords();
-    const unitId = req.query.unitId as string | undefined;
+    const actor = resolveSessionActor(req);
+    const unitId =
+      actor.authenticated && actor.role === 'SCHOOL_OFFICER' && actor.unitId
+        ? actor.unitId
+        : (req.query.unitId as string | undefined);
     const list = (
       unitId
         ? portalState.individualStaffRecords.filter((r) => r.schoolReviewUnitId === unitId)
@@ -107,6 +157,7 @@ export function registerIndividualReviewPortalRoutes(router: Router): void {
       }
 
       const current = portalState.individualStaffRecords[idx];
+      if (!assertSchoolOfficerUnitAndMutable(req, res, current)) return;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const nextCriteria = (current.criteriaReview || []).map((c: Record<string, any>) =>
         c.criterionId === criterionId
@@ -179,6 +230,9 @@ export function registerIndividualReviewPortalRoutes(router: Router): void {
       const idx = portalState.individualStaffRecords.findIndex((r) => r.applicationId === id);
       if (idx === -1) {
         res.status(404).json({ success: false, error: `Không tìm thấy hồ sơ ${id}` });
+        return;
+      }
+      if (!assertSchoolOfficerUnitAndMutable(req, res, portalState.individualStaffRecords[idx])) {
         return;
       }
 
@@ -402,8 +456,8 @@ export function registerIndividualReviewPortalRoutes(router: Router): void {
           actor.role === 'SCHOOL_OFFICER' || current.schoolReviewSummary
             ? {
                 ...(current.schoolReviewSummary || {
-                  schoolReviewUnitId: current.schoolReviewUnitId || 'unit-dut',
-                  schoolReviewUnitName: current.schoolReviewUnitName || 'Trường Đại học Bách khoa – ĐHĐN',
+                  schoolReviewUnitId: current.schoolReviewUnitId || 'unit-udn',
+                  schoolReviewUnitName: current.schoolReviewUnitName || 'Đại học Đà Nẵng',
                   isForwardedToCity: false,
                   totalCriteriaCount: 5,
                 }),
@@ -533,6 +587,7 @@ export function registerIndividualReviewPortalRoutes(router: Router): void {
 
       const actor = resolveSessionActor(req);
       const current = portalState.individualStaffRecords[idx];
+      if (!assertSchoolOfficerUnitAndMutable(req, res, current)) return;
       const nextRec =
         recommendation === 'not_recommended'
           ? 'not_recommended'
@@ -585,8 +640,8 @@ export function registerIndividualReviewPortalRoutes(router: Router): void {
             : summaryNote || current.latestOperationalNote,
         schoolReviewSummary: {
           ...(current.schoolReviewSummary || {}),
-          schoolReviewUnitId: current.schoolReviewUnitId || 'unit-dut',
-          schoolReviewUnitName: current.schoolReviewUnitName || 'Trường Đại học Bách khoa – ĐHĐN',
+          schoolReviewUnitId: current.schoolReviewUnitId || 'unit-udn',
+          schoolReviewUnitName: current.schoolReviewUnitName || 'Đại học Đà Nẵng',
           recommendingOfficerName: actor.name,
           status: nextStatus,
           reviewedCriteriaCount: 5,
@@ -635,6 +690,7 @@ export function registerIndividualReviewPortalRoutes(router: Router): void {
 
       const actor = resolveSessionActor(req);
       const current = portalState.individualStaffRecords[idx];
+      if (!assertSchoolOfficerUnitAndMutable(req, res, current)) return;
       const now = new Date().toISOString();
 
       if (portalState.studentApplications[id]) {
@@ -671,8 +727,8 @@ export function registerIndividualReviewPortalRoutes(router: Router): void {
         })),
         schoolReviewSummary: {
           ...(current.schoolReviewSummary || {}),
-          schoolReviewUnitId: current.schoolReviewUnitId || 'unit-dut',
-          schoolReviewUnitName: current.schoolReviewUnitName || 'Trường Đại học Bách khoa – ĐHĐN',
+          schoolReviewUnitId: current.schoolReviewUnitId || 'unit-udn',
+          schoolReviewUnitName: current.schoolReviewUnitName || 'Đại học Đà Nẵng',
           recommendingOfficerName: actor.name,
           forwardedByName: actor.name,
           forwardedAt: now,
@@ -680,7 +736,7 @@ export function registerIndividualReviewPortalRoutes(router: Router): void {
           status: 'forwarded_to_city',
           recommendation: 'recommended',
         },
-        latestOperationalNote: `Đã chuyển từ ${current.schoolReviewUnitName || 'Đơn vị xét sơ tuyển'} lên Hội Sinh viên Đại học Đà Nẵng (${now}).`,
+        latestOperationalNote: `Đã chuyển từ ${current.schoolReviewUnitName || 'Đơn vị xét sơ tuyển'} lên Hội Sinh viên Việt Nam TP. Đà Nẵng (${now}).`,
         studentApplication: portalState.studentApplications[id] || current.studentApplication,
       };
       portalState.individualStaffRecords[idx] = updated;
@@ -693,12 +749,12 @@ export function registerIndividualReviewPortalRoutes(router: Router): void {
         actorId: actor.id,
         actorName: actor.name,
         actorRole: actor.role,
-        details: 'Chuyển hồ sơ cá nhân lên cấp Đại học Đà Nẵng.',
+        details: 'Chuyển hồ sơ cá nhân lên cấp Thành phố Đà Nẵng.',
       });
 
       res.status(200).json({
         success: true,
-        message: 'Đã xác nhận và chuyển hồ sơ lên Hội Sinh viên Đại học Đà Nẵng.',
+        message: 'Đã xác nhận và chuyển hồ sơ lên Hội Sinh viên Việt Nam TP. Đà Nẵng.',
         data: updated,
       });
     }
@@ -729,7 +785,7 @@ export function registerIndividualReviewPortalRoutes(router: Router): void {
         workflowStatus: 'assigned',
         assignment: {
           officerId: officerAcc?.id || 'staff-off-nam',
-          officerName: officerAcc?.fullName || 'Cán bộ xét duyệt cấp Đại học Đà Nẵng',
+          officerName: officerAcc?.fullName || 'Cán bộ xét duyệt cấp Thành phố Đà Nẵng',
           assignedAt: new Date().toISOString(),
           assignedBy: actor.name,
           reason,
@@ -823,7 +879,7 @@ export function registerIndividualReviewPortalRoutes(router: Router): void {
     requireAllowedRoles('CITY_COMMITTEE'),
     (req: Request, res: Response): void => {
       const { decisionNumber } = (req.body || {}) as { decisionNumber?: string };
-      const finalDecisionNo = decisionNumber || '108/QĐ-HSV-ĐHĐN';
+      const finalDecisionNo = decisionNumber || '108/QĐ-HSVTP';
       let publishedCount = 0;
 
       portalState.individualStaffRecords = portalState.individualStaffRecords.map((rec) => {
@@ -868,7 +924,7 @@ export function registerIndividualReviewPortalRoutes(router: Router): void {
         actorId: actor.id,
         actorName: actor.name,
         actorRole: actor.role,
-        details: `Công bố quyết định Sinh viên 5 Tốt cấp Đại học Đà Nẵng (${finalDecisionNo})`,
+        details: `Công bố quyết định Sinh viên 5 Tốt cấp Thành phố Đà Nẵng (${finalDecisionNo})`,
       });
 
       res.status(200).json({

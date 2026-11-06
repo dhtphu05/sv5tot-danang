@@ -304,8 +304,22 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
               recommendation: 'recommended',
               forwardedAt: nowIso,
               forwardedBy: userId,
+              forwardedByName: resultDto.submittedByName || rec.schoolReviewSummary?.forwardedByName,
+              decisionDocumentMetadata: resultDto.decisionFileId
+                ? {
+                    fileId: resultDto.decisionFileId,
+                    fileName: resultDto.decisionFileName || 'van_ban_de_nghi.pdf',
+                    fileSize: resultDto.decisionFileSize || 0,
+                    fileUrl: resultDto.decisionFileUrl,
+                    decisionNumber: resultDto.decisionNumber,
+                    decisionTitle: resultDto.decisionTitle,
+                    decisionDate: resultDto.decisionDate,
+                    signedByName: resultDto.signedByName,
+                    signedByTitle: resultDto.signedByTitle,
+                  }
+                : rec.schoolReviewSummary?.decisionDocumentMetadata,
             },
-            latestOperationalNote: `Đơn vị xét sơ tuyển đã chính thức chuyển hồ sơ lên cấp Đại học Đà Nẵng (${resultDto.decisionNumber || 'Đợt chính thức'})`,
+            latestOperationalNote: `Đơn vị xét sơ tuyển đã chính thức chuyển hồ sơ lên cấp Thành phố Đà Nẵng (${resultDto.decisionFileName || resultDto.decisionNumber || 'Đợt chính thức'})`,
             updatedAt: nowIso,
             updatedSortKey: Date.now(),
           };
@@ -419,7 +433,7 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
 
       if (app.forwardingBatchId) {
         invalidIds.push(appId);
-        reasons.push(`Hồ sơ ${appId} đã được chuyển lên cấp Đại học Đà Nẵng trước đó`);
+        reasons.push(`Hồ sơ ${appId} đã được chuyển lên cấp Thành phố Đà Nẵng trước đó`);
         continue;
       }
 
@@ -596,7 +610,7 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
 
     const blockingReasons: string[] = [];
     if (selected === 0) {
-      blockingReasons.push('Chưa có hồ sơ nào được đơn vị đề xuất chuyển cấp Đại học Đà Nẵng.');
+      blockingReasons.push('Chưa có hồ sơ nào được đơn vị đề xuất chuyển cấp Thành phố Đà Nẵng.');
     }
     if (!existingBatch?.decisionFileId) {
       blockingReasons.push('Chưa đính kèm văn bản đề nghị chính thức của đơn vị.');

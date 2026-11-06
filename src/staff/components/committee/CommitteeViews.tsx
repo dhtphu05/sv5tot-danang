@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Committee Home, Queues, Results & Recognition Views
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Committee Home, Queues, Results & Recognition Views
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements Prompt 19 Sections 13–21, 51–67, 82–91, 95, 97–116:
  * - CommitteeHome ("Tổng quan" for CITY_COMMITTEE)
@@ -100,7 +100,7 @@ export const CommitteeViews: React.FC<CommitteeViewsProps> = ({
   const [collectiveOutcome, setCollectiveOutcome] =
     useState<'recognized' | 'not_recognized'>('recognized');
   const [collectiveDecisionNotes, setCollectiveDecisionNotes] = useState<string>(
-    'Hội đồng thống nhất thông qua kết luận đạt tiêu chuẩn Tập thể Sinh viên 5 tốt cấp Đại học Đà Nẵng.'
+    'Hội đồng thống nhất thông qua kết luận đạt tiêu chuẩn Tập thể Sinh viên 5 tốt cấp Thành phố Đà Nẵng.'
   );
   const [selectedCollectiveDetails, setSelectedCollectiveDetails] =
     useState<CollectiveApplication | null>(null);

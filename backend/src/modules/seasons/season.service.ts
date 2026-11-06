@@ -265,7 +265,7 @@ export class SeasonService {
 
     if (nowMs > endMs) {
       throw ApiError.badRequest(
-        `Đã quá hạn nộp hồ sơ Tập thể SV5T trực tiếp về cấp Đại học Đà Nẵng (T04 kết thúc lúc ${formatVietnamTimestampVi(season.collectiveSubmissionEnd)}).`,
+        `Đã quá hạn nộp hồ sơ Tập thể SV5T trực tiếp về cấp Thành phố Đà Nẵng (T04 kết thúc lúc ${formatVietnamTimestampVi(season.collectiveSubmissionEnd)}).`,
         'COLLECTIVE_SUBMISSION_WINDOW_CLOSED'
       );
     }

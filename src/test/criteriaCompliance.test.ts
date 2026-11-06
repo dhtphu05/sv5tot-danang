@@ -51,8 +51,8 @@ const ethicsScoreReq = ethicsFoundation?.requirements.find((r) => r.id === 'ethi
 const ethicsLawReq = ethicsFoundation?.requirements.find((r) => r.id === 'ethics-law');
 
 assert(
-  Boolean(ethicsScoreReq && ethicsScoreReq.title.includes('80 điểm')),
-  'ETHICS TC1.1: Conduct score threshold is >= 80 điểm (trên thang điểm 100)'
+  Boolean(ethicsScoreReq && ethicsScoreReq.ruleHelper?.includes('80/100 điểm')),
+  'ETHICS TC1.1: Conduct score threshold is >= 80/100 điểm (hoặc loại Giỏi cơ sở đặc thù)'
 );
 
 assert(
@@ -67,8 +67,15 @@ const ethicsPolPaper = ethicsSupplement?.requirements.find((r) => r.id === 'ethi
 const ethicsCommend = ethicsSupplement?.requirements.find((r) => r.id === 'ethics-commendation');
 
 assert(
-  Boolean(ethicsParty && ethicsPolTeam && ethicsPolPaper && ethicsCommend),
-  'ETHICS TC1.3–1.6: All 4 priority alternatives implemented in Group B'
+  Boolean(
+    ethicsSupplement?.groupType === 'AT_LEAST_N' &&
+    ethicsSupplement?.minSelections === 1 &&
+    ethicsParty &&
+    ethicsPolTeam &&
+    ethicsPolPaper &&
+    ethicsCommend
+  ),
+  'ETHICS TC1.3–1.6: All 4 mandatory-at-least-1 alternatives implemented in Group B'
 );
 
 assert(
@@ -89,13 +96,16 @@ console.log('\n--- 2. ACADEMIC CRITERION AUDIT ---');
 const academicDef = CRITERIA_DEFINITIONS.academic;
 const academicGpaReq = academicDef.groups[0]?.requirements.find((r) => r.id === 'academic-gpa');
 assert(
-  Boolean(academicGpaReq && academicGpaReq.title.includes('3,2/4')),
-  'ACADEMIC TC2.1: GPA threshold is >= 3,2/4 per QĐ 12 QĐ/ĐHĐN-HSV'
+  Boolean(
+    academicGpaReq &&
+    academicGpaReq.ruleHelper?.includes('3.2/4') &&
+    academicGpaReq.ruleHelper?.includes('3.0/4')
+  ),
+  'ACADEMIC TC2.1: GPA threshold is >= 3.2/4 (ĐH/HV) and >= 3.0/4 (CĐ) per Hướng dẫn 14-HD/BTK-HSVTP'
 );
 
 const academicAchGroup = academicDef.groups[1];
 const acaNckh = academicAchGroup?.requirements.find((r) => r.id === 'academic-nckh');
-const acaThesis = academicAchGroup?.requirements.find((r) => r.id === 'academic-thesis');
 const acaPaper = academicAchGroup?.requirements.find((r) => r.id === 'academic-paper');
 const acaPres = academicAchGroup?.requirements.find((r) => r.id === 'academic-presentation');
 const acaProd = academicAchGroup?.requirements.find((r) => r.id === 'academic-product');
@@ -103,28 +113,28 @@ const acaTeam = academicAchGroup?.requirements.find((r) => r.id === 'academic-te
 const acaInnov = academicAchGroup?.requirements.find((r) => r.id === 'academic-innovation');
 
 assert(
-  Boolean(acaNckh && acaThesis && acaPaper && acaPres && acaProd && acaTeam && acaInnov),
-  'ACADEMIC TC2.2–2.8: All 7 official academic pathways implemented'
+  Boolean(acaNckh && acaPaper && acaPres && acaProd && acaTeam && acaInnov && academicAchGroup?.requirements.length === 6),
+  'ACADEMIC TC2.2–2.7: All 6 official City-level academic pathways implemented'
 );
 
 assert(
-  Boolean(acaPaper && !acaPaper.ruleHelper?.includes('bắt buộc')),
-  'ACADEMIC TC2.4: Journal publication does NOT require an award'
+  Boolean(acaPaper && acaPaper.ruleHelper?.includes('không yêu cầu giải thưởng')),
+  'ACADEMIC TC2.3: Journal publication does NOT require an award'
 );
 
 assert(
-  Boolean(acaPres && !acaPres.ruleHelper?.includes('bắt buộc có giải')),
-  'ACADEMIC TC2.5: Conference presentation does NOT require an award'
+  Boolean(acaPres && acaPres.ruleHelper?.includes('không yêu cầu giải thưởng')),
+  'ACADEMIC TC2.4: Conference presentation does NOT require an award'
 );
 
 assert(
-  Boolean(acaTeam && !acaTeam.ruleHelper?.includes('bắt buộc có giải')),
-  'ACADEMIC TC2.7: Academic competition team does NOT require an award'
+  Boolean(acaTeam && acaTeam.ruleHelper?.includes('không yêu cầu đạt giải')),
+  'ACADEMIC TC2.6: Academic competition team does NOT require an award'
 );
 
 assert(
-  Boolean(acaThesis && acaThesis.title.includes('8,0 trở lên')),
-  'ACADEMIC TC2.3: Graduation thesis/project >= 8,0 is a distinct requirement'
+  Boolean(acaInnov && acaInnov.ruleHelper?.includes('bắt buộc có giải')),
+  'ACADEMIC TC2.7: Creative idea competition requires winning an award from school level+'
 );
 
 // -----------------------------------------------------------------------------
@@ -135,17 +145,15 @@ console.log('\n--- 3. PHYSICAL CRITERION AUDIT ---');
 const physDef = CRITERIA_DEFINITIONS.physical;
 const physKhoe = physDef.groups[0]?.requirements.find((r) => r.id === 'physical-khoe');
 const physSport = physDef.groups[0]?.requirements.find((r) => r.id === 'physical-sport');
-const physClub = physDef.groups[0]?.requirements.find((r) => r.id === 'physical-club');
-const physPeGrade = physDef.groups[0]?.requirements.find((r) => r.id === 'physical-pe-grade');
 
 assert(
-  Boolean(physKhoe && physSport && physClub && physPeGrade),
-  'PHYSICAL: All 4 official physical standards (TC3.1–TC3.4) present'
+  Boolean(physKhoe && physSport && physDef.groups[0]?.requirements.length === 2),
+  'PHYSICAL: Both official City physical standards (TC3.1 Thanh niên khỏe & TC3.2 Giải thể thao phong trào) present'
 );
 
 assert(
-  Boolean(physPeGrade && physPeGrade.title.includes('loại khá trở lên')),
-  'PHYSICAL TC3.4: PE grade >= Khá is present'
+  Boolean(physSport && physSport.ruleHelper?.includes('bắt buộc đạt giải')),
+  'PHYSICAL TC3.2: Grassroots sport pathway requires winning an award from faculty level+'
 );
 
 // -----------------------------------------------------------------------------
@@ -155,15 +163,14 @@ console.log('\n--- 4. VOLUNTEER CRITERION AUDIT & AGGREGATION ---');
 
 const volDef = CRITERIA_DEFINITIONS.volunteer;
 const volAct = volDef.groups[0]?.requirements.find((r) => r.id === 'volunteer-activities');
-const volCamp = volDef.groups[0]?.requirements.find((r) => r.id === 'volunteer-campaign');
 const volAward = volDef.groups[0]?.requirements.find((r) => r.id === 'volunteer-award');
 
 assert(
-  Boolean(volAct && volCamp && volAward),
-  'VOLUNTEER: All 3 official volunteer standards (campaign, >= 03 days, and school+ award) present'
+  Boolean(volAct && volAward && volDef.groups[0]?.requirements.length === 2),
+  'VOLUNTEER: Unified 2-pathway volunteer standard (>= 05 days OR faculty+ volunteer award) present'
 );
 
-// Test V01: 1 shelter day + 1 blood donation + 1 Green Sunday = 3 qualifying days (meets 3-day threshold)
+// Test V01: 3 shelter days + 1 blood donation + 1 Green Sunday = 5 qualifying days (meets 5-day City threshold)
 const mockStudentApp: StudentApplicationData = {
   applicationId: 'TEST-APP-01',
   season: 'Năm học 2025–2026',
@@ -188,16 +195,16 @@ const mockStudentApp: StudentApplicationData = {
           id: 'volunteer-activities',
           code: 'TC4.1',
           criterionId: 'volunteer',
-          title: 'Hoạt động tình nguyện tích lũy',
-          ruleBadge: 'Tích lũy >= 3 ngày',
+          title: 'Hoạt động tình nguyện tích lũy (Tối thiểu 05 ngày/năm)',
+          ruleBadge: 'Tích lũy >= 05 ngày',
           status: 'ready',
           declarations: [
             {
               id: 'decl-shelter',
               value: 'Tình nguyện tại Mái ấm Hy Vọng',
-              detail: 'Thời gian tham gia: 1 ngày',
+              detail: 'Thời gian tham gia: 3 ngày',
               date: '10/03/2026',
-              metadata: { days: '1', volActivityType: 'shelter' },
+              metadata: { days: '3', volActivityType: 'shelter' },
               evidenceFiles: [],
             },
             {
@@ -225,8 +232,8 @@ const mockStudentApp: StudentApplicationData = {
 
 const volAgg = calculateVolunteerAggregation(mockStudentApp);
 assert(
-  volAgg.totalDaysDeclared === 3 && volAgg.threshold === 3 && volAgg.thresholdMet === true && volAgg.bloodDonationCount === 1,
-  'VOLUNTEER V01: 1 shelter day + 1 blood donation (1-day equivalent) + 1 Green Sunday day = 3 days (threshold 3 met per QĐ 12)'
+  volAgg.totalDaysDeclared === 5 && volAgg.threshold === 5 && volAgg.thresholdMet === true && volAgg.bloodDonationCount === 1,
+  'VOLUNTEER V01: 3 shelter days + 1 blood donation (1-day equivalent) + 1 Green Sunday day = 5 days (threshold 5 met per HD 14-HD/BTK-HSVTP)'
 );
 
 // -----------------------------------------------------------------------------
@@ -236,20 +243,18 @@ console.log('\n--- 5. INTEGRATION CRITERION AUDIT ---');
 
 const intDef = CRITERIA_DEFINITIONS.integration;
 assert(
-  intDef.groups.length >= 2,
-  'INTEGRATION: Contains Group A (Skills/Union), Group B (Activity), Group C (Languages/Intl/Contest), and Priority Group'
+  intDef.groups.length === 2,
+  'INTEGRATION: Contains mandatory Group A (Skills/Union) and mandatory Group B (Languages/Intl/Contest)'
 );
 
 const intGroupA = intDef.groups.find((g) => g.id === 'integration-skills-award');
-const intGroupAct = intDef.groups.find((g) => g.id === 'integration-activity-group');
 const intGroupB = intDef.groups.find((g) => g.id === 'integration-languages-intl');
 
 const intSkills = intGroupA?.requirements.find((r) => r.id === 'integration-skills');
 const intUnion = intGroupA?.requirements.find((r) => r.id === 'integration-union-award');
-const intAct = intGroupAct?.requirements.find((r) => r.id === 'integration-activity') || intGroupA?.requirements.find((r) => r.id === 'integration-activity');
 assert(
-  Boolean(intSkills && intUnion && intAct),
-  'INTEGRATION: Social skills course, Union award, and Faculty+ integration activity all supported in accordance with Decision 12'
+  Boolean(intSkills && intUnion),
+  'INTEGRATION GROUP A: Social skills course and Union award supported'
 );
 
 const intLang = intGroupB?.requirements.find((r) => r.id === 'integration-lang');
@@ -257,21 +262,22 @@ const intIntl = intGroupB?.requirements.find((r) => r.id === 'integration-intl')
 const intContest = intGroupB?.requirements.find((r) => r.id === 'integration-contest');
 assert(
   Boolean(intLang && intIntl && intContest),
-  'INTEGRATION GROUP C: Language pathway, International activity, and Contest all supported'
+  'INTEGRATION GROUP B: Language pathway, International activity, and Contest all supported'
 );
 
 assert(
   Boolean(
-    intLang?.title.includes('B1') &&
-    intLang?.title.includes('05/2012/TT/BGDĐT') &&
-    intLang?.title.includes('3,0/4')
+    intLang?.ruleHelper?.includes('B1') &&
+    intLang?.ruleHelper?.includes('TOEIC >= 405') &&
+    intLang?.ruleHelper?.includes('IELTS >= 4.5') &&
+    intLang?.ruleHelper?.includes('3.0/4')
   ),
-  'INTEGRATION TC5.4: Exact thresholds: B1, Thông tư 05/2012/TT/BGDĐT (IELTS, TOEFL, TOEIC), or course GPA >= 3,0/4'
+  'INTEGRATION TC5.3: Exact thresholds: B1, IELTS >= 4.5, TOEIC >= 405, TOEFL iBT >= 53, or course GPA >= 3.0/4'
 );
 
 assert(
-  Boolean(intContest?.title.includes('giải Ba trở lên')),
-  'INTEGRATION TC5.6: Language/knowledge contest requires at least 3rd prize'
+  Boolean(intContest?.ruleHelper?.includes('Giải Ba trở lên')),
+  'INTEGRATION TC5.5: Language/knowledge contest requires at least 3rd prize'
 );
 
 // -----------------------------------------------------------------------------
@@ -364,13 +370,13 @@ assert(
 );
 
 assert(
-  REGULATION_DATA.academic.sections.length >= 7,
-  'REGULATION DATA: Academic section has all 7 requirements rendered'
+  REGULATION_DATA.academic.sections.length >= 2,
+  'REGULATION DATA: Academic section renders GPA and achievement pathways'
 );
 
 assert(
-  REGULATION_DATA.integration.sections.length >= 5,
-  'REGULATION DATA: Integration section has all 5 requirements rendered'
+  REGULATION_DATA.integration.sections.length >= 2,
+  'REGULATION DATA: Integration section renders mandatory Group A and Group B sections'
 );
 
 // -----------------------------------------------------------------------------

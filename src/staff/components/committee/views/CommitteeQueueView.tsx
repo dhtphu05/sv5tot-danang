@@ -117,7 +117,7 @@ export const CommitteeQueueView: React.FC<CommitteeQueueViewProps> = ({
             {app.institution.officialName}
           </div>
           <div className="text-[11px] text-[#607483] mt-0.5">
-            Cán bộ xét: {app.assignment?.officerName || 'Cán bộ xét duyệt cấp ĐHĐN'}
+            Cán bộ xét: {app.assignment?.officerName || 'Cán bộ xét duyệt cấp Thành phố'}
           </div>
         </div>
       ),
@@ -142,7 +142,7 @@ export const CommitteeQueueView: React.FC<CommitteeQueueViewProps> = ({
             <div>
               <span className="inline-flex items-center gap-1 text-[12px] font-bold text-[#0B64A0] bg-[#EAF5FC] border border-[#CBE5F6] px-2 py-0.5 rounded-[5px]">
                 <CheckCircle2 size={12} className="text-[#0D78AE]" />
-                <span>Đề xuất trình ĐHĐN</span>
+                <span>Đề xuất trình Thành phố</span>
               </span>
               <div className="text-[11px] text-[#607483] mt-0.5 tabular-nums">
                 {docNum ? `Theo ${docNum}` : 'Đã kèm văn bản PDF'}
@@ -168,7 +168,7 @@ export const CommitteeQueueView: React.FC<CommitteeQueueViewProps> = ({
     },
     {
       key: 'city_review',
-      header: 'Thẩm định cấp ĐHĐN',
+      header: 'Thẩm định cấp Thành phố',
       renderCell: (app) => {
         const prg = deriveApplicationCriteriaReviewProgress(app);
         return (
@@ -187,7 +187,7 @@ export const CommitteeQueueView: React.FC<CommitteeQueueViewProps> = ({
                 : prg.compactProgressLabel}
             </div>
             <div className="text-[11px] text-[#607483]">
-              {app.assignment?.officerName || 'Tổ thẩm định ĐHĐN'}
+              {app.assignment?.officerName || 'Tổ thẩm định Thành phố'}
             </div>
           </div>
         );
@@ -224,7 +224,7 @@ export const CommitteeQueueView: React.FC<CommitteeQueueViewProps> = ({
       header: 'Thao tác',
       align: 'right',
       renderCell: (app) => (
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
           <Button
             variant="secondary"
             size="sm"
@@ -233,7 +233,7 @@ export const CommitteeQueueView: React.FC<CommitteeQueueViewProps> = ({
               onOpenDecisionTargetModal(app);
             }}
           >
-            Ghi nhận kết luận
+            Kết luận
           </Button>
           <Button
             variant="primary"
@@ -243,7 +243,7 @@ export const CommitteeQueueView: React.FC<CommitteeQueueViewProps> = ({
               onOpenApplicationWorkspace(app.applicationId);
             }}
           >
-            Xem hồ sơ
+            Xem
           </Button>
         </div>
       ),
@@ -397,7 +397,7 @@ export const CommitteeQueueView: React.FC<CommitteeQueueViewProps> = ({
           <p className="text-[13px] text-[#4A6275] mt-0.5">
             {isDecisionQueuePage
               ? 'Tất cả các hồ sơ đã hoàn tất phần thẩm định 05/05 tiêu chí và sẵn sàng để Hội đồng ghi nhận kết luận chính thức.'
-              : 'Hồ sơ đã qua sơ tuyển từ cơ sở và thẩm định độc lập cấp Đại học Đà Nẵng, sẵn sàng để Hội đồng xem xét và ghi nhận quyết định.'}
+              : 'Hồ sơ đã qua sơ tuyển từ cơ sở và thẩm định độc lập cấp Thành phố Đà Nẵng, sẵn sàng để Hội đồng xem xét và ghi nhận quyết định.'}
           </p>
         </div>
       </div>
@@ -562,12 +562,12 @@ export const CommitteeQueueView: React.FC<CommitteeQueueViewProps> = ({
                                 ? 'Không đề xuất'
                                 : app.schoolPreliminaryStatus === 'recommended_forwarding' ||
                                   app.schoolPreliminaryStatus === 'forwarded_to_city'
-                                ? 'Đề xuất cấp ĐHĐN'
+                                ? 'Đề xuất cấp Thành phố'
                                 : 'Chưa kết luận'}
                             </span>
                           </div>
                           <div className="flex items-center justify-between text-[11.5px] text-[#607483]">
-                            <span>Thẩm định cấp ĐHĐN:</span>
+                            <span>Thẩm định cấp Thành phố:</span>
                             <span className="font-bold text-[#136F3A]">
                               {(() => {
                                 const prg = deriveApplicationCriteriaReviewProgress(app);

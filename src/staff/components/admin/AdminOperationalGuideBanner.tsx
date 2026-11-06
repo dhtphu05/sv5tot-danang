@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — 4-Step Admin Operational Workflow Guide Banner
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — 4-Step Admin Operational Workflow Guide Banner
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Gives non-technical Student Association Administrators a clear, step-by-step
  * roadmap for preparing, opening, operating, and hotfixing a 5TOT award season.
@@ -48,10 +48,10 @@ export const AdminOperationalGuideBanner: React.FC<
       step: 2 as const,
       title: 'Bước 2 · Đơn vị & Tài khoản Cán bộ',
       subtitle:
-        'Kiểm tra danh sách 09 trường/đơn vị thành viên ĐHĐN & cấp quyền Cán bộ',
+        'Kiểm tra danh sách 31 cơ sở đào tạo tại Đà Nẵng & cấp quyền Cán bộ',
       route: 'admin_institutions' as StaffRouteId,
       icon: Building2,
-      badge: '09 trường thành viên',
+      badge: '31 cơ sở đào tạo',
     },
     {
       step: 3 as const,

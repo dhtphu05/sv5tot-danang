@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Collective Official Result Presentation Modal
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Collective Official Result Presentation Modal
+ * Cơ quan chỉ đạo: Thành Đoàn Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements Prompt S4.8 v2 Sections 67, 68:
  * - Displays official published result of the Collective Student 5-Good track.
@@ -40,10 +40,10 @@ export const CollectiveResultModal: React.FC<CollectiveResultModalProps> = ({
             <HsvEmblem size={28} />
             <div>
               <h2 className="text-[15px] font-bold text-[#172A3A]">
-                Kết quả xét chọn Tập thể Sinh viên 5 tốt cấp Đại học Đà Nẵng
+                Kết quả xét chọn Tập thể Sinh viên 5 tốt cấp Thành phố
               </h2>
               <p className="text-[11.5px] text-[#607483]">
-                Hội Sinh viên Việt Nam Đại học Đà Nẵng · Năm học {application.academicYear}
+                Hội Sinh viên Việt Nam Thành phố Đà Nẵng · Năm học {application.academicYear}
               </p>
             </div>
           </div>
@@ -61,13 +61,13 @@ export const CollectiveResultModal: React.FC<CollectiveResultModalProps> = ({
           {/* Institutional Crest & Decision Heading */}
           <div className="border-b border-[#E3EBF1] pb-5">
             <div className="text-[11px] font-bold tracking-[0.08em] uppercase text-[#466474]">
-              HỘI SINH VIÊN VIỆT NAM ĐẠI HỌC ĐÀ NẴNG
+              BAN CHẤP HÀNH HỘI SINH VIÊN VIỆT NAM THÀNH PHỐ ĐÀ NẴNG
             </div>
             <div className="text-[13px] font-extrabold uppercase text-[#126A9C] mt-0.5">
-              HỘI ĐỒNG XÉT CHỌN DANH HIỆU SINH VIÊN 5 TỐT CẤP ĐẠI HỌC ĐÀ NẴNG
+              HỘI ĐỒNG XÉT CHỌN DANH HIỆU SINH VIÊN 5 TỐT CẤP THÀNH PHỐ
             </div>
             <div className="text-[12px] text-[#728391] mt-1">
-              Số: {res?.decisionNumber || '86/QĐ-HSV-ĐHĐN'} · Đà Nẵng, ngày {res?.decisionDate || '24/10/2026'}
+              Số: {res?.decisionNumber || '86/QĐ-HSVTP'} · Đà Nẵng, ngày {res?.decisionDate || '24/10/2026'}
             </div>
           </div>
 
@@ -93,7 +93,7 @@ export const CollectiveResultModal: React.FC<CollectiveResultModalProps> = ({
                 CÔNG NHẬN DANH HIỆU
               </div>
               <div className="text-[22px] font-black text-[#172A3A] tracking-tight">
-                TẬP THỂ SINH VIÊN 5 TỐT CẤP ĐẠI HỌC ĐÀ NẴNG
+                TẬP THỂ SINH VIÊN 5 TỐT CẤP THÀNH PHỐ
               </div>
               <div className="text-[14.5px] font-bold text-[#0B64A0]">
                 {COLLECTIVE_TYPE_LABELS[application.collectiveType]}: {application.collectiveName}
@@ -103,7 +103,7 @@ export const CollectiveResultModal: React.FC<CollectiveResultModalProps> = ({
                 {application.institutionName}
               </div>
               <div className="text-[12px] text-[#728391] pt-2">
-                Hồ sơ nộp trực tiếp và xét chọn tại: <strong>Hội Sinh viên Việt Nam Đại học Đà Nẵng</strong>
+                Hồ sơ nộp trực tiếp và xét chọn tại: <strong>Hội Sinh viên Việt Nam Thành phố Đà Nẵng</strong>
               </div>
             </div>
           ) : (
@@ -150,7 +150,7 @@ export const CollectiveResultModal: React.FC<CollectiveResultModalProps> = ({
                   <div className={`text-right font-semibold ${tt02Ok ? 'text-[#16A34A]' : 'text-[#DC2626]'}`}>
                     {partRate}% ({application.tt02.participatingCount}/{application.tt02.totalMembers})
                   </div>
-                  <div>• TT03: Ít nhất 20% đạt SV5T cấp Trường</div>
+                  <div>• TT03: Ít nhất 20% đạt SV5T cấp Trường+</div>
                   <div className={`text-right font-semibold ${tt03Ok ? 'text-[#16A34A]' : 'text-[#DC2626]'}`}>
                     {recRate.toFixed(1)}% (Ngưỡng &ge; 20%)
                   </div>
@@ -166,7 +166,7 @@ export const CollectiveResultModal: React.FC<CollectiveResultModalProps> = ({
           {/* Signatory Footer */}
           <div className="pt-2 flex justify-end text-right text-[12.5px]">
             <div>
-              <div className="font-bold text-[#172A3A]">{res?.signedBy || 'TM. BAN THƯ KÝ — CHỦ TỊCH HỘI SINH VIÊN ĐẠI HỌC ĐÀ NẴNG'}</div>
+              <div className="font-bold text-[#172A3A]">{res?.signedBy || 'TM. BAN THƯ KÝ — CHỦ TỊCH HỘI SINH VIÊN TP. ĐÀ NẴNG'}</div>
               <div className="text-[11px] text-[#728391] mt-1">(Đã ký số và ban hành chính thức)</div>
             </div>
           </div>
@@ -175,7 +175,7 @@ export const CollectiveResultModal: React.FC<CollectiveResultModalProps> = ({
         {/* Footer Actions */}
         <div className="px-6 py-4 bg-[#F8FBFD] border-t border-[#DCE7EE] flex items-center justify-between">
           <div className="text-[11.5px] text-[#607483]">
-            Trích lục số {res?.decisionNumber || '86/QĐ-HSV-ĐHĐN'}
+            Trích lục số {res?.decisionNumber || '86/QĐ-HSVTP'}
           </div>
           <div className="flex items-center gap-2">
             <Button

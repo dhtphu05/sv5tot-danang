@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Minimal Student Declaration Editor Modal
+ * 5TOT Đà Nẵng — Minimal Student Declaration Editor Modal
  * Focused purely on:
  * 1. Criterion & requirement context clearly visible.
  * 2. Single primary input: "Tên kê khai".

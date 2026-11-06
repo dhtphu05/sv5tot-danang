@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Staff Backoffice Route Dispatcher (Refactored into FSD Widgets)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Staff Backoffice Route Dispatcher (Refactored into FSD Widgets)
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  */
 
 import React, { useState, useMemo } from 'react';
@@ -136,7 +136,7 @@ export interface StaffBackofficeViewsProps {
   ) => void;
   onActivateStaff?: (id: string) => void;
   onResendStaffInvite?: (id: string) => void;
-  onResetStaffPassword?: (id: string, reason?: string) => void;
+  onResetStaffPassword?: (id: string, reason?: string, newTemporaryPassword?: string) => Promise<{ success: boolean; error?: string }> | { success: boolean; error?: string } | void;
   onInitializeFirstAdmin?: (payload: {
     bootstrapToken: string;
     fullName: string;

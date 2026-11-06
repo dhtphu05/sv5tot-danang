@@ -1,10 +1,10 @@
 /**
- * 5TOT ĐHĐN — Public Reset Password Page
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Public Reset Password Page
+ * Cơ quan chỉ đạo: Thành Đoàn Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements high-standard Reset Password UI/UX conforming 100% to common design system:
- * - Identical institutional lockup header (UdnEmblem + HsvEmblem size 40, exact 3-line title)
+ * - Identical institutional lockup header (HsvEmblem size 42, exact 3-line title)
  * - Exact max-w-[436px] container & shadow-elevated card
  * - In-card h1 (22px font-extrabold text-[#172A3A]) and subtext
  * - Real-time password strength meter
@@ -23,7 +23,7 @@ import {
   KeyRound,
   Clock,
 } from 'lucide-react';
-import { UdnEmblem, HsvEmblem } from '../brand/HsvLogo';
+import { HsvEmblem } from '../brand/HsvLogo';
 import { Button } from '../buttons/Button';
 import { apiRequest } from '../../shared/api/httpClient';
 
@@ -179,11 +179,11 @@ export const PublicResetPasswordPage: React.FC<PublicResetPasswordPageProps> = (
           className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#466474] hover:text-[#126A9C] transition-colors cursor-pointer"
         >
           <ArrowLeft size={15} />
-          <span>Cổng xét chọn Danh hiệu và Giải thưởng Sinh viên ĐHĐN</span>
+          <span>Cổng xét chọn Danh hiệu và Giải thưởng Sinh viên TP. Đà Nẵng</span>
         </button>
 
         <div className="hidden sm:flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-[#607483]">
-          <span>HỘI SINH VIÊN VIỆT NAM · ĐẠI HỌC ĐÀ NẴNG</span>
+          <span>THÀNH ĐOÀN ĐÀ NẴNG · HỘI SINH VIÊN VIỆT NAM TP. ĐÀ NẴNG</span>
         </div>
       </div>
 
@@ -192,17 +192,16 @@ export const PublicResetPasswordPage: React.FC<PublicResetPasswordPageProps> = (
         {/* Institutional Lockup Header (exact identical style as Login & Signup) */}
         <div className="flex flex-col items-center text-center mb-5">
           <div className="flex items-center gap-2.5">
-            <UdnEmblem size={40} />
-            <HsvEmblem size={40} />
+            <HsvEmblem size={42} />
           </div>
           <div className="mt-2 text-[10.5px] font-bold uppercase tracking-[0.07em] text-[#466474]">
-            HỘI SINH VIÊN VIỆT NAM
+            THÀNH ĐOÀN ĐÀ NẴNG
           </div>
           <div className="text-[11.5px] font-extrabold uppercase tracking-[0.05em] text-[#126A9C]">
-            ĐẠI HỌC ĐÀ NẴNG
+            HỘI SINH VIÊN VIỆT NAM THÀNH PHỐ ĐÀ NẴNG
           </div>
           <div className="text-[14px] font-extrabold text-[#172A3A] mt-1">
-            Cổng xét chọn Danh hiệu & Giải thưởng Sinh viên · ĐHĐN
+            5TOT Đà Nẵng · Cổng xét chọn Danh hiệu & Giải thưởng Sinh viên
           </div>
         </div>
 
@@ -486,7 +485,7 @@ export const PublicResetPasswordPage: React.FC<PublicResetPasswordPageProps> = (
 
       {/* Quiet Footer */}
       <footer className="text-center text-[12px] text-[#607483]">
-        Hệ thống quản lý và xét chọn Sinh viên 5 tốt cấp Đại học Đà Nẵng · Hội Sinh viên Việt Nam Đại học Đà Nẵng
+        Hệ thống quản lý và xét chọn Sinh viên 5 tốt cấp Thành phố Đà Nẵng · Hội Sinh viên Việt Nam TP. Đà Nẵng
       </footer>
     </div>
   );

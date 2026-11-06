@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Season Statistics, Operational Analytics & Reports Coordinator (AnalyticsPage)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Season Statistics, Operational Analytics & Reports Coordinator (AnalyticsPage)
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements Prompt 20 Sections 1–47, 90–116, 130–139:
  * - Permission-driven institutional analytics (Manager, Committee, Admin).
@@ -338,7 +338,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
         <div className="bg-white rounded-[12px] border border-[#D4E2EC] p-6 space-y-3 shadow-2xs">
           <div className="inline-flex items-center gap-2 text-[#B45309] font-extrabold text-[15px]">
             <ShieldAlert size={18} />
-            <span>Khu vực thống kê toàn Đại học Đà Nẵng dành cho cấp Quản lý &amp; Hội đồng</span>
+            <span>Khu vực thống kê toàn Thành phố Đà Nẵng dành cho cấp Quản lý &amp; Hội đồng</span>
           </div>
           <p className="text-[13px] text-[#4A6275]">
             Tài khoản Cán bộ xét duyệt chỉ theo dõi tiến độ các hồ sơ được phân công trực tiếp tại màn hình Tổng quan và Hồ sơ được phân công.
@@ -455,7 +455,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
                 <div className="text-[22px] font-extrabold text-[#0F2335] tabular-nums mt-0.5">
                   {collectiveSeasonAnalytics.totalSubmitted}
                 </div>
-                <div className="text-[11px] text-[#526B7C] mt-0.5">Toàn Đại học Đà Nẵng</div>
+                <div className="text-[11px] text-[#526B7C] mt-0.5">Toàn Thành phố Đà Nẵng</div>
               </div>
 
               <div className="p-3.5">
@@ -662,7 +662,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
                 Danh sách hồ sơ Tập thể Sinh viên 5 tốt ({allCollectiveApps.length} tập thể)
               </div>
               <span className="text-[12px] text-[#526B7C]">
-                Cấp Đại học Đà Nẵng
+                Cấp Thành phố Đà Nẵng
               </span>
             </div>
 

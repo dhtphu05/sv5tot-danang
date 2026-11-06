@@ -458,6 +458,10 @@ describe('PHASE SV5T-R2 — 3x4 Portrait Photo Domain & Security Suite (R2-01 to
     const ws = createCleanWorkspaceState();
     ws.scopeRecords[getScopeKey('ethics-score', 'decl-drl')] = mockScope(getScopeKey('ethics-score', 'decl-drl'), 'suitable');
     ws.scopeRecords[getScopeKey('ethics-law', 'decl-law')] = mockScope(getScopeKey('ethics-law', 'decl-law'), 'suitable');
+    ws.scopeRecords[getScopeKey('ethics-commendation', 'decl-ethics-award')] = mockScope(
+      getScopeKey('ethics-commendation', 'decl-ethics-award'),
+      'suitable'
+    );
 
     const appWithPortrait: StudentApplicationData = {
       ...INITIAL_STUDENT_APPLICATION,

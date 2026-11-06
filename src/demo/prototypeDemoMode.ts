@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Prototype Demo Mode Configuration, Scenarios & Persistence
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Prototype Demo Mode Configuration, Scenarios & Persistence
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements Prompt 14.9 Sections 1–41:
  * - Dedicated stakeholder Prototype Demo Mode (/demo launcher + discreet collapsible toolbar).
@@ -186,7 +186,7 @@ export const PROTOTYPE_SCENARIOS: PrototypeScenarioConfig[] = [
     label: 'Được công nhận',
     toolbarLabel: 'Được công nhận',
     description:
-      'Công bố kết quả chính thức: Được công nhận Sinh viên 5 tốt cấp Đại học Đà Nẵng.',
+      'Công bố kết quả chính thức: Được công nhận Sinh viên 5 tốt cấp Thành phố Đà Nẵng.',
     homeScenarioId: 'state_k_recognized',
     defaultNavId: 'results',
     defaultPath: '/app/results',
@@ -612,19 +612,9 @@ const LEGACY_MOCK_AND_TEST_APP_IDS = new Set<string>([
   'COL-2026-DN-MVR6LAXP',
 ]);
 
-const NON_UDN_INSTITUTION_IDS = new Set<string>([
-  'inst-dtu',
-  'inst-donga',
-  'inst-dau',
-  'inst-upes3',
-  'inst-tyd',
-  'inst-fpt',
-  'unit-dtu',
-  'unit-donga',
-  'unit-dau',
-  'unit-upes3',
-  'unit-tyd',
-  'unit-fpt',
+const EXCLUDED_OUT_OF_CITY_IDS = new Set<string>([
+  'inst-kontum',
+  'unit-kontum',
 ]);
 
 export function isNonUdnInstitutionRecord(rec?: Record<string, any> | null): boolean {
@@ -637,7 +627,7 @@ export function isNonUdnInstitutionRecord(rec?: Record<string, any> | null): boo
     rec.schoolReviewSummary?.schoolReviewUnitId,
   ];
   for (const id of rawIds) {
-    if (typeof id === 'string' && NON_UDN_INSTITUTION_IDS.has(id.trim().toLowerCase())) {
+    if (typeof id === 'string' && EXCLUDED_OUT_OF_CITY_IDS.has(id.trim().toLowerCase())) {
       return true;
     }
   }
@@ -652,14 +642,7 @@ export function isNonUdnInstitutionRecord(rec?: Record<string, any> | null): boo
   for (const name of rawNames) {
     if (typeof name === 'string' && name.trim()) {
       const lower = name.trim().toLowerCase();
-      if (
-        lower.includes('duy tân') ||
-        lower.includes('đông á') ||
-        lower.includes('kiến trúc') ||
-        lower.includes('thể dục thể thao') ||
-        lower.includes('kỹ thuật y') ||
-        lower.includes('fpt')
-      ) {
+      if (lower.includes('kon tum')) {
         return true;
       }
     }

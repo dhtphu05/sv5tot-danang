@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Criteria Domain & Advisory Evaluation Service (Backend V2)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Criteria Domain & Advisory Evaluation Service (Backend V2)
+ * Cơ quan chỉ đạo: Thành Đoàn Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements authoritative regulation semantics:
  * - Exactly 5 Individual criteria (Ethics, Academic, Physical, Volunteer, Integration).
@@ -277,101 +277,101 @@ export class CriteriaService {
       }
     }
 
-    // 1. ETHICS Evaluation (2.1 QĐ 12/ĐHĐN-HSV: TC1.1 & TC1.2 bắt buộc; TC1.3-TC1.6 là tiêu chí ưu tiên Mục B):
+    // 1. ETHICS Evaluation (Hướng dẫn 14-HD/BTK-HSVTP: TC1.1 & TC1.2 bắt buộc VÀ ít nhất 1/4 tiêu chuẩn bổ sung TC1.3–TC1.6):
     const hasEthicsScore = allDeclaredReqs.has('TC1.1') || allDeclaredReqs.has('ethics-score');
     const hasEthicsLaw = allDeclaredReqs.has('TC1.2') || allDeclaredReqs.has('ethics-law');
+    const hasEthicsSupplement =
+      allDeclaredReqs.has('TC1.3') ||
+      allDeclaredReqs.has('ethics-party') ||
+      allDeclaredReqs.has('TC1.4') ||
+      allDeclaredReqs.has('ethics-politics-team') ||
+      allDeclaredReqs.has('TC1.5') ||
+      allDeclaredReqs.has('ethics-politics-paper') ||
+      allDeclaredReqs.has('TC1.6') ||
+      allDeclaredReqs.has('ethics-commendation');
 
-    if (hasEthicsScore && hasEthicsLaw) {
+    if (hasEthicsScore && hasEthicsLaw && hasEthicsSupplement) {
       results.ETHICS.isMet = true;
     } else {
-      if (!hasEthicsScore) missingRequirements.push('Đạo đức: Điểm rèn luyện cả năm từ 80/100 trở lên (TC1.1)');
+      if (!hasEthicsScore) missingRequirements.push('Đạo đức: Điểm rèn luyện cả năm từ 80/100 trở lên hoặc xếp loại Giỏi (TC1.1)');
       if (!hasEthicsLaw) missingRequirements.push('Đạo đức: Không vi phạm pháp luật và các quy chế, nội quy (TC1.2)');
-      results.ETHICS.warnings.push('Chưa hoàn thành đủ các điều kiện bắt buộc của Tiêu chí 1: Đạo đức tốt.');
+      if (!hasEthicsSupplement) missingRequirements.push('Đạo đức: Đạt thêm ít nhất 01 trong 04 tiêu chuẩn bổ sung (TC1.3–TC1.6)');
+      results.ETHICS.warnings.push('Chưa hoàn thành đủ các điều kiện bắt buộc và bổ sung của Tiêu chí 1: Đạo đức tốt.');
     }
 
-    // 2. ACADEMIC Evaluation (2.2 QĐ 12/ĐHĐN-HSV: TC2.1 bắt buộc + Đạt 01 trong 07 tiêu chuẩn TC2.2–TC2.8):
+    // 2. ACADEMIC Evaluation (Hướng dẫn 14-HD/BTK-HSVTP: TC2.1 bắt buộc + Đạt ít nhất 01 trong 06 tiêu chuẩn TC2.2–TC2.7):
     const hasAcademicGpa = allDeclaredReqs.has('TC2.1') || allDeclaredReqs.has('academic-gpa');
     const hasAcademicAch =
       allDeclaredReqs.has('TC2.2') ||
       allDeclaredReqs.has('academic-nckh') ||
       allDeclaredReqs.has('TC2.3') ||
-      allDeclaredReqs.has('academic-thesis') ||
-      allDeclaredReqs.has('TC2.4') ||
       allDeclaredReqs.has('academic-paper') ||
-      allDeclaredReqs.has('TC2.5') ||
+      allDeclaredReqs.has('TC2.4') ||
       allDeclaredReqs.has('academic-presentation') ||
-      allDeclaredReqs.has('TC2.6') ||
+      allDeclaredReqs.has('TC2.5') ||
       allDeclaredReqs.has('academic-product') ||
-      allDeclaredReqs.has('TC2.7') ||
+      allDeclaredReqs.has('TC2.6') ||
       allDeclaredReqs.has('academic-team') ||
-      allDeclaredReqs.has('TC2.8') ||
+      allDeclaredReqs.has('TC2.7') ||
       allDeclaredReqs.has('academic-innovation');
 
     if (hasAcademicGpa && hasAcademicAch) {
       results.ACADEMIC.isMet = true;
     } else {
-      if (!hasAcademicGpa) missingRequirements.push('Học tập: Điểm trung bình học tập cả năm từ 3,2/4 trở lên (TC2.1)');
-      if (!hasAcademicAch) missingRequirements.push('Học tập: Đạt ít nhất 01 trong các tiêu chuẩn NCKH / học thuật (TC2.2–TC2.8)');
+      if (!hasAcademicGpa) missingRequirements.push('Học tập: Điểm trung bình học tập cả năm đạt chuẩn ĐH >= 3.2/4 (8.0/10) hoặc CĐ >= 3.0/4 (7.5/10) (TC2.1)');
+      if (!hasAcademicAch) missingRequirements.push('Học tập: Đạt ít nhất 01 trong 06 tiêu chuẩn NCKH / học thuật (TC2.2–TC2.7)');
       results.ACADEMIC.warnings.push('Chưa hoàn thành đủ điều kiện điểm GPA hoặc tiêu chuẩn NCKH / học thuật.');
     }
 
-    // 3. PHYSICAL Evaluation (2.3 QĐ 12/ĐHĐN-HSV: Đạt 01 trong 04 tiêu chuẩn TC3.1–TC3.4):
+    // 3. PHYSICAL Evaluation (Hướng dẫn 14-HD/BTK-HSVTP: Đạt ít nhất 01 trong 02 tiêu chuẩn TC3.1–TC3.2):
     const hasPhysicalMet =
       allDeclaredReqs.has('TC3.1') ||
       allDeclaredReqs.has('physical-khoe') ||
       allDeclaredReqs.has('TC3.2') ||
-      allDeclaredReqs.has('physical-club') ||
-      allDeclaredReqs.has('TC3.3') ||
-      allDeclaredReqs.has('physical-sport') ||
-      allDeclaredReqs.has('TC3.4') ||
-      allDeclaredReqs.has('physical-pe-grade');
+      allDeclaredReqs.has('physical-sport');
 
     if (hasPhysicalMet) {
       results.PHYSICAL.isMet = true;
     } else {
-      missingRequirements.push('Thể lực: Đạt ít nhất 01 trong các tiêu chuẩn thể lực (TC3.1–TC3.4)');
+      missingRequirements.push('Thể lực: Đạt danh hiệu Thanh niên khỏe / Sinh viên khỏe cấp Trường+ hoặc đạt giải thể thao phong trào cấp Khoa+ (TC3.1–TC3.2)');
       results.PHYSICAL.warnings.push('Chưa kê khai tiêu chuẩn thể lực hợp lệ.');
     }
 
-    // 4. VOLUNTEER Evaluation (2.4 QĐ 12/ĐHĐN-HSV: Đạt 01 trong 03 tiêu chuẩn TC4.1–TC4.3, tối thiểu 03 ngày TN/năm):
+    // 4. VOLUNTEER Evaluation (Hướng dẫn 14-HD/BTK-HSVTP: Tích lũy >= 05 ngày tình nguyện/năm TC4.1 HOẶC khen thưởng tình nguyện cấp Khoa+ TC4.2):
     const hasVolMet =
       allDeclaredReqs.has('TC4.1') ||
-      allDeclaredReqs.has('volunteer-campaign') ||
-      allDeclaredReqs.has('TC4.2') ||
       allDeclaredReqs.has('volunteer-activities') ||
-      allDeclaredReqs.has('TC4.3') ||
+      allDeclaredReqs.has('TC4.2') ||
       allDeclaredReqs.has('volunteer-award');
 
     if (hasVolMet) {
       results.VOLUNTEER.isMet = true;
     } else {
-      missingRequirements.push('Tình nguyện: Tham gia chiến dịch tình nguyện, tích lũy ít nhất 03 ngày tình nguyện/năm hoặc được giấy khen tình nguyện (TC4.1–TC4.3)');
+      missingRequirements.push('Tình nguyện: Tích lũy ít nhất 05 ngày tình nguyện/năm hoặc được khen thưởng hoạt động tình nguyện từ cấp khoa trở lên (TC4.1–TC4.2)');
       results.VOLUNTEER.warnings.push('Chưa kê khai tiêu chuẩn tình nguyện hợp lệ.');
     }
 
-    // 5. INTEGRATION Evaluation (2.5 QĐ 12/ĐHĐN-HSV):
+    // 5. INTEGRATION Evaluation (Hướng dẫn 14-HD/BTK-HSVTP: Cả Nhóm A [TC5.1–TC5.2] VÀ Nhóm B [TC5.3–TC5.5]):
     const hasIntGroupA =
       allDeclaredReqs.has('TC5.1') ||
       allDeclaredReqs.has('integration-skills') ||
       allDeclaredReqs.has('TC5.2') ||
-      allDeclaredReqs.has('integration-union-award') ||
-      allDeclaredReqs.has('TC5.3') ||
-      allDeclaredReqs.has('integration-activity');
+      allDeclaredReqs.has('integration-union-award');
 
     const hasIntGroupB =
-      allDeclaredReqs.has('TC5.4') ||
+      allDeclaredReqs.has('TC5.3') ||
       allDeclaredReqs.has('integration-lang') ||
-      allDeclaredReqs.has('TC5.5') ||
+      allDeclaredReqs.has('TC5.4') ||
       allDeclaredReqs.has('integration-intl') ||
-      allDeclaredReqs.has('TC5.6') ||
+      allDeclaredReqs.has('TC5.5') ||
       allDeclaredReqs.has('integration-contest');
 
     if (hasIntGroupA && hasIntGroupB) {
       results.INTEGRATION.isMet = true;
     } else {
-      if (!hasIntGroupA) missingRequirements.push('Hội nhập: Khóa kỹ năng thực hành xã hội / khen thưởng Đoàn – Hội (TC5.1–TC5.2) và hoạt động hội nhập (TC5.3)');
-      if (!hasIntGroupB) missingRequirements.push('Hội nhập: Ngoại ngữ, Giao lưu quốc tế hoặc Cuộc thi kiến thức hội nhập (TC5.4–TC5.6)');
-      results.INTEGRATION.warnings.push('Chưa hoàn thành đủ các nhóm điều kiện của Tiêu chí Hội nhập tốt.');
+      if (!hasIntGroupA) missingRequirements.push('Hội nhập (Nhóm A): Khóa kỹ năng thực hành xã hội hoặc khen thưởng Đoàn – Hội từ cấp khoa trở lên (TC5.1–TC5.2)');
+      if (!hasIntGroupB) missingRequirements.push('Hội nhập (Nhóm B): Ngoại ngữ, Giao lưu quốc tế hoặc Cuộc thi ngoại ngữ/kiến thức từ giải Ba trở lên (TC5.3–TC5.5)');
+      results.INTEGRATION.warnings.push('Chưa hoàn thành đủ cả hai nhóm điều kiện của Tiêu chí Hội nhập tốt.');
     }
 
     const metCount = criteriaCodes.filter((code) => results[code].isMet).length;

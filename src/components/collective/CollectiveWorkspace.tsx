@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Collective Application Workspace (FSD Modular Composition)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Collective Application Workspace (FSD Modular Composition)
+ * Cơ quan chỉ đạo: Thành Đoàn Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  * Niên khóa áp dụng: Năm học 2025–2026
  *
  * Implements Prompt S4.8.7A-R2:
@@ -204,7 +204,7 @@ export const CollectiveWorkspace: React.FC<CollectiveWorkspaceProps> = ({
           <div className="p-3.5 rounded-[12px] bg-[#FFFBEB] border border-[#FDE68A] text-[#92400E] flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-1 text-[12.5px]">
               <div className="font-extrabold flex items-center gap-2">
-                <span>Yêu cầu bổ sung hồ sơ từ Cán bộ xét duyệt cấp Đại học Đà Nẵng:</span>
+                <span>Yêu cầu bổ sung hồ sơ từ Cán bộ xét duyệt cấp Thành phố:</span>
               </div>
               {(currentApp.supplementRequests || [])
                 .filter((s) => s.status === 'pending')
@@ -222,7 +222,7 @@ export const CollectiveWorkspace: React.FC<CollectiveWorkspaceProps> = ({
                 )}
             </div>
             <div className="text-[11.5px] font-semibold text-[#B45309]">
-              Sau khi cập nhật kê khai/minh chứng, bấm &ldquo;Gửi hồ sơ bổ sung lên ĐHĐN&rdquo; ở góc phải trên cùng.
+              Sau khi cập nhật kê khai/minh chứng, bấm &ldquo;Gửi hồ sơ bổ sung lên Thành phố&rdquo; ở góc phải trên cùng.
             </div>
           </div>
         </div>

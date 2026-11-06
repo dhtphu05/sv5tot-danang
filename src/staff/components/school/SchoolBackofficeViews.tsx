@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — School Officer Backoffice Views (Refactored into FSD Pages)
+ * 5TOT Đà Nẵng — School Officer Backoffice Views (Refactored into FSD Pages)
  * Production Lean School Preliminary Review, Recommendation Selection & One-Time City Forwarding (LEAN-4)
  * "The School reviewer manages applications, not forwarding engine states."
  */
@@ -31,6 +31,7 @@ import {
   SCHOOL_PRELIMINARY_STATUS_META,
   SchoolForwardingRecommendation,
 } from '../../schoolReviewTypes';
+import { INITIAL_INSTITUTIONS } from '../../fixtures/admin/institutions';
 import {
   getApplicationsForSchoolOfficer,
   getSchoolOperationalMetrics,
@@ -88,13 +89,13 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
   onRecordRecommendation,
   onForwardToCity,
 }) => {
-  const userUnitId = currentUser.schoolReviewUnitId || 'unit-dut';
-  const isUdn = false;
+  const userUnitId = currentUser.schoolReviewUnitId || 'unit-udn';
+  const isUdn = userUnitId === 'unit-udn';
   const unitConfig = AUTHORITATIVE_SCHOOL_REVIEW_UNITS.find(
     (u) => u.id === userUnitId
   );
   const unitName =
-    unitConfig?.officialName || currentUser.unitLabel || 'Trường Đại học Bách khoa – ĐHĐN';
+    unitConfig?.officialName || currentUser.unitLabel || 'Đại học Đà Nẵng';
   const activeSeasonCode = currentSeason?.schoolYear || '2025–2026';
   const activeSeasonLabel = formatAcademicYearLabel(activeSeasonCode);
 
@@ -157,11 +158,17 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
 
   const memberInstitutions = useMemo(() => {
     const map = new Map<string, string>();
+    if (unitConfig?.memberInstitutionIds?.length) {
+      for (const instId of unitConfig.memberInstitutionIds) {
+        const inst = INITIAL_INSTITUTIONS.find((i) => i.id === instId);
+        if (inst) map.set(inst.id, inst.officialName);
+      }
+    }
     for (const a of schoolApps) {
       map.set(a.institution.id, a.institution.officialName);
     }
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
-  }, [schoolApps]);
+  }, [schoolApps, unitConfig]);
 
   const filteredApps = useMemo(() => {
     return schoolApps.filter((app) => {
@@ -510,7 +517,7 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             {isForwarded ? (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[6px] text-[11.5px] font-bold bg-[#FAF5FF] text-[#7E22CE] border border-[#F3E8FF]">
-                Đã trình ĐHĐN
+                Đã trình Thành phố
               </span>
             ) : rec === 'recommended' ? (
               <div className="flex items-center gap-1.5">
@@ -603,7 +610,7 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
         const isForwarded = st === 'forwarded_to_city';
         const isNotStarted = st === 'pending_intake';
         return (
-          <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-end gap-1.5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
             <Button
               variant={
                 isNotStarted ? 'primary' : isForwarded ? 'secondary' : 'primary'
@@ -616,10 +623,10 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
               }}
             >
               {isNotStarted
-                ? 'Bắt đầu xét sơ tuyển'
+                ? 'Xét sơ tuyển'
                 : isForwarded
                 ? 'Xem lịch sử'
-                : 'Mở xét sơ tuyển'}
+                : 'Mở xét sơ'}
             </Button>
           </div>
         );
@@ -733,7 +740,7 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#DCE7EE] pb-4">
         <div>
           <div className="text-[12px] font-semibold text-[#526B7C]">
-            {unitName} · Xét sơ tuyển cấp Trường · {activeSeasonLabel}
+            {unitName} · {isUdn ? 'Xét sơ tuyển đầu mối ĐHĐN' : 'Xét sơ tuyển cấp Trường'} · {activeSeasonLabel}
           </div>
           <h1 className="text-[20px] font-extrabold text-[#0F2335] mt-0.5">
             {activeRouteId === 'school_pending'
@@ -741,7 +748,7 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
               : 'Hồ sơ sơ tuyển'}
           </h1>
           <p className="text-[13px] text-[#526B7C] mt-0.5">
-            Xét sơ tuyển 05 tiêu chí Sinh viên 5 tốt và lập danh sách đề xuất trình cấp Đại học Đà Nẵng.
+            Xét sơ tuyển 05 tiêu chí Sinh viên 5 tốt và lập danh sách đề xuất trình cấp Thành phố Đà Nẵng.
           </p>
         </div>
 
@@ -853,6 +860,7 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
 
       <SharedOperationalTable
         variant="operational"
+        density="compact"
         ariaLabel="Bảng danh sách hồ sơ sinh viên cấp Trường"
         columns={registryColumns}
         data={filteredApps}
@@ -897,7 +905,7 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
                 onSelectRoute('school_awaiting_forward');
               }}
             >
-              Chuẩn bị trình ĐHĐN ({selectedAppIds.length})
+              Chuẩn bị trình Thành phố ({selectedAppIds.length})
             </Button>
           </div>
         </div>

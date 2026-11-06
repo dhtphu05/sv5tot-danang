@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — School Consolidated Batch Forwarding Page (FSD Pages Layer)
+ * 5TOT Đà Nẵng — School Consolidated Batch Forwarding Page (FSD Pages Layer)
  * LEAN-4.1 Correction: Direct School Finalization — Select, Attach and Forward
  * One Review Unit + One Season = One Consolidated List + One Decision Document + One Final Submission
  * The School Reviewer operating this page is the authorized person responsible for finalizing the proposed list.
@@ -105,8 +105,8 @@ export const SchoolRecommendationForwardingPage: React.FC<
   const onSetInstitutionFilter =
     externalOnSetInstitutionFilter ?? setInternalInstitutionFilter;
 
-  const userUnitId = currentUser.schoolReviewUnitId || 'unit-dut';
-  const isUdn = false;
+  const userUnitId = currentUser.schoolReviewUnitId || 'unit-udn';
+  const isUdn = userUnitId === 'unit-udn';
 
   // Consolidate full pool of applications in unit
   const allUnitApplications = useMemo(() => {
@@ -329,7 +329,7 @@ export const SchoolRecommendationForwardingPage: React.FC<
       signedByTitle: decisionDoc?.signedByTitle,
     };
     setDecisionDoc(baseDoc);
-    if (file.size <= 10 * 1024 * 1024) {
+    if (file.size <= 20 * 1024 * 1024) {
       const reader = new FileReader();
       reader.onload = () => {
         if (typeof reader.result === 'string') {
@@ -394,7 +394,7 @@ export const SchoolRecommendationForwardingPage: React.FC<
       passed: hasSelected,
       message: hasSelected
         ? undefined
-        : 'Chưa có hồ sơ nào được chọn để trình lên Đại học Đà Nẵng.',
+        : 'Chưa có hồ sơ nào được chọn để trình lên cấp Thành phố Đà Nẵng.',
     });
 
     // 2. Decision document attached (.PDF file)
@@ -413,12 +413,12 @@ export const SchoolRecommendationForwardingPage: React.FC<
     const notForwarded = batchStatus === 'DRAFT';
     checks.push({
       label: notForwarded
-        ? 'Danh sách chưa trình lên Đại học Đà Nẵng'
-        : 'Danh sách đã trình lên Đại học Đà Nẵng',
+        ? 'Danh sách chưa trình lên cấp Thành phố Đà Nẵng'
+        : 'Danh sách đã trình lên cấp Thành phố Đà Nẵng',
       passed: notForwarded,
       message: notForwarded
         ? undefined
-        : 'Đơn vị đã trình danh sách lên Đại học Đà Nẵng trước đó.',
+        : 'Đơn vị đã trình danh sách lên cấp Thành phố Đà Nẵng trước đó.',
     });
 
     // 4. All selected belong to current unit
@@ -500,7 +500,7 @@ export const SchoolRecommendationForwardingPage: React.FC<
       setIsBatchConfirmOpen(false);
       setStatusFilter('selected');
       setActionSuccessNotice(
-        `Đã trình danh sách gồm ${selectedAppIds.length} hồ sơ của ${unitName} lên Hội Sinh viên Đại học Đà Nẵng.`
+        `Đã trình danh sách gồm ${selectedAppIds.length} hồ sơ của ${unitName} lên Hội Sinh viên Thành phố Đà Nẵng.`
       );
     } catch (err: any) {
       setUploadError(

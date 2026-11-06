@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Shared Operational Table Primitive (variant="operational")
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Shared Operational Table Primitive (variant="operational")
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements Prompt 19 Sections 0–9, 85–88, 104–112, 114 & Prompt 20 Sections 56, 59, 73, 76, 96–97, 101–103:
  * - Applies a unified, high-legibility operational table treatment across Staff Backoffice:
@@ -125,7 +125,7 @@ export function SharedOperationalTable<T>({
     density === 'compact' ? 'min-h-[52px]' : 'min-h-[60px]';
 
   return (
-    <div className="bg-white rounded-[12px] border border-[#D4E2EC] shadow-2xs overflow-hidden flex flex-col print:border-[#94A3B8] print:shadow-none">
+    <div className="bg-white rounded-[6px] border border-[#DFE5EC] overflow-hidden flex flex-col print:border-[#94A3B8]">
       <div
         ref={scrollContainerRef}
         className={`overflow-x-auto ${
@@ -136,9 +136,9 @@ export function SharedOperationalTable<T>({
           aria-label={ariaLabel}
           className="w-full text-left border-collapse"
         >
-          {/* Sticky Operational Header (Sections 5 & 111, Prompt 20 Section 102) */}
-          <thead className="sticky top-0 z-10 bg-[#EEF4F8] border-b border-[#CFE0EC]">
-            <tr className="text-[11.5px] font-bold text-[#334E68] tracking-[0.01em]">
+          {/* Sticky Operational Header */}
+          <thead className="sticky top-0 z-10 bg-[#F8FAFC] border-b border-[#DFE5EC]">
+            <tr className="text-[11.5px] font-bold text-[#1E293B] tracking-[0.01em]">
               {selectableRows && (
                 <th
                   scope="col"
@@ -154,7 +154,7 @@ export function SharedOperationalTable<T>({
                     onChange={(e) => {
                       onToggleSelectAll?.(allDataKeys, e.target.checked);
                     }}
-                    className="w-4 h-4 rounded border-[#9FB3C8] text-[#0D78AE] focus:ring-[#0D78AE] cursor-pointer align-middle"
+                    className="w-4 h-4 rounded-[3px] border-[#94A3B8] text-[#10A37F] focus:ring-[#10A37F] cursor-pointer align-middle"
                   />
                 </th>
               )}
@@ -185,19 +185,19 @@ export function SharedOperationalTable<T>({
                       <button
                         type="button"
                         onClick={() => onSortColumn(col.key)}
-                        className="inline-flex items-center gap-1 hover:text-[#0F2335] transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1 hover:text-[#0F172A] transition-colors cursor-pointer"
                       >
                         <span>{col.header}</span>
                         {isSorted ? (
                           sortDirection === 'asc' ? (
-                            <ArrowUp size={12} className="text-[#0D78AE]" />
+                            <ArrowUp size={12} className="text-[#10A37F]" />
                           ) : (
-                            <ArrowDown size={12} className="text-[#0D78AE]" />
+                            <ArrowDown size={12} className="text-[#10A37F]" />
                           )
                         ) : (
                           <ArrowUpDown
                             size={12}
-                            className="text-[#829AB1] opacity-70"
+                            className="text-[#94A3B8] opacity-75"
                           />
                         )}
                       </button>
@@ -210,16 +210,16 @@ export function SharedOperationalTable<T>({
             </tr>
           </thead>
 
-          {/* Operational Zebra Body (Sections 1–9, 105–106, Prompt 20 Section 101) */}
-          <tbody className="divide-y divide-[#E6EFF5] text-[13px] text-[#172A3A]">
+          {/* Operational Body */}
+          <tbody className="divide-y divide-[#E2E8F0] text-[13px] text-[#1E293B]">
             {isLoading ? (
               <tr>
                 <td
                   colSpan={columns.length + (selectableRows ? 1 : 0)}
-                  className="py-12 px-4 text-center text-[#526B7C]"
+                  className="py-12 px-4 text-center text-[#64748B]"
                 >
                   <div className="inline-flex items-center gap-2.5 text-[13px] font-semibold">
-                    <Loader2 size={16} className="animate-spin text-[#0D78AE]" />
+                    <Loader2 size={16} className="animate-spin text-[#007EE5]" />
                     <span>{loadingLabel}</span>
                   </div>
                 </td>
@@ -230,11 +230,11 @@ export function SharedOperationalTable<T>({
                   colSpan={columns.length + (selectableRows ? 1 : 0)}
                   className="py-12 px-4 text-center"
                 >
-                  <div className="text-[13.5px] font-bold text-[#334E68]">
+                  <div className="text-[13.5px] font-bold text-[#334155]">
                     {emptyStateTitle}
                   </div>
                   {emptyStateDescription && (
-                    <div className="text-[12.5px] text-[#607483] mt-1">
+                    <div className="text-[12.5px] text-[#64748B] mt-1">
                       {emptyStateDescription}
                     </div>
                   )}
@@ -253,25 +253,23 @@ export function SharedOperationalTable<T>({
                   : null;
                 const isEven = idx % 2 === 1;
 
-                // Zebra base + Hover + Selected states
-                let rowBgClass = isEven ? 'bg-[#F7FAFC]' : 'bg-white';
+                let rowBgClass = isEven ? 'bg-[#FAFBFD]' : 'bg-white';
                 if (isDisabled) {
-                  rowBgClass = 'bg-[#F5F8FA] opacity-65';
+                  rowBgClass = 'bg-[#F8FAFC] opacity-65';
                 } else if (isSelected) {
-                  rowBgClass = 'bg-[#DFF0FA] hover:bg-[#D5EBF8]';
+                  rowBgClass = 'bg-[#ECFDF5] hover:bg-[#E2FBF0]';
                 } else {
                   rowBgClass = `${
-                    isEven ? 'bg-[#F7FAFC]' : 'bg-white'
-                  } hover:bg-[#EBF5FB]`;
+                    isEven ? 'bg-[#FAFBFD]' : 'bg-white'
+                  } hover:bg-[#F1F5F9]`;
                 }
 
-                // Left attention marker without coloring the entire row
                 const leftMarkerClass = isSelected
-                  ? 'border-l-[3px] border-l-[#0B64A0]'
+                  ? 'border-l-[3px] border-l-[#10A37F]'
                   : attentionTone === 'warning'
                   ? 'border-l-[3px] border-l-[#D97706]'
                   : attentionTone === 'brand'
-                  ? 'border-l-[3px] border-l-[#0D78AE]'
+                  ? 'border-l-[3px] border-l-[#007EE5]'
                   : 'border-l-[3px] border-l-transparent';
 
                 return (
@@ -298,7 +296,7 @@ export function SharedOperationalTable<T>({
                     }}
                     className={`${rowMinHeightClass} transition-colors duration-100 ${rowBgClass} ${leftMarkerClass} ${
                       onSelectRow && !isDisabled ? 'cursor-pointer' : ''
-                    } focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#0D78AE]`}
+                    } focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#007EE5]`}
                   >
                     {selectableRows && (
                       <td
@@ -310,7 +308,7 @@ export function SharedOperationalTable<T>({
                           aria-label={`Chọn dòng ${startIndex + idx + 1}`}
                           checked={isChecked}
                           onChange={() => onToggleRowSelection?.(rowKey)}
-                          className="w-4 h-4 rounded border-[#9FB3C8] text-[#0D78AE] focus:ring-[#0D78AE] cursor-pointer align-middle"
+                          className="w-4 h-4 rounded-[3px] border-[#94A3B8] text-[#10A37F] focus:ring-[#10A37F] cursor-pointer align-middle"
                         />
                       </td>
                     )}
@@ -346,20 +344,20 @@ export function SharedOperationalTable<T>({
         </table>
       </div>
 
-      {/* Realistic Pagination Bar (Section 88) */}
+      {/* Realistic Pagination Bar */}
       {!isLoading && totalCount > 0 && (
-        <div className="px-4 py-2.5 bg-[#F8FBFD] border-t border-[#DCE7EE] flex flex-wrap items-center justify-between gap-3 text-[12px] text-[#526B7C] print:hidden">
+        <div className="px-4 py-2.5 bg-[#F8FAFC] border-t border-[#DFE5EC] flex flex-wrap items-center justify-between gap-3 text-[12px] text-[#475569] print:hidden">
           <div className="font-medium tabular-nums flex items-center gap-3">
             <span>
               Hiển thị{' '}
-              <strong className="font-bold text-[#172A3A]">
+              <strong className="font-bold text-[#0F172A]">
                 {startIndex + 1}–{endIndex}
               </strong>{' '}
-              / <strong className="font-bold text-[#172A3A]">{totalCount}</strong>{' '}
+              / <strong className="font-bold text-[#0F172A]">{totalCount}</strong>{' '}
               {unitLabel}
             </span>
             {selectableRows && selectedInDataCount > 0 && (
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] bg-[#EAF6FC] text-[#0B64A0] font-bold border border-[#CBE5F6]">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] bg-[#ECFDF5] text-[#0F766E] font-bold border border-[#A7F3D0]">
                 Đã chọn {selectedInDataCount} {unitLabel}
               </span>
             )}
@@ -370,19 +368,19 @@ export function SharedOperationalTable<T>({
               type="button"
               disabled={currentPage <= 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="inline-flex items-center gap-1 h-[28px] px-2.5 rounded-[6px] border border-[#CFE0EC] bg-white hover:bg-[#F1F7FB] disabled:opacity-45 disabled:pointer-events-none text-[#172A3A] font-semibold transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 h-[28px] px-2.5 rounded-[4px] border border-[#CBD5E1] bg-white hover:bg-[#F1F5F9] disabled:opacity-45 disabled:pointer-events-none text-[#1E293B] font-semibold transition-colors cursor-pointer"
             >
               <ChevronLeft size={13} />
               <span>Trước</span>
             </button>
-            <span className="px-2 font-bold text-[#172A3A] tabular-nums">
+            <span className="px-2 font-bold text-[#0F172A] tabular-nums">
               Trang {currentPage} / {totalPages}
             </span>
             <button
               type="button"
               disabled={currentPage >= totalPages}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="inline-flex items-center gap-1 h-[28px] px-2.5 rounded-[6px] border border-[#CFE0EC] bg-white hover:bg-[#F1F7FB] disabled:opacity-45 disabled:pointer-events-none text-[#172A3A] font-semibold transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 h-[28px] px-2.5 rounded-[4px] border border-[#CBD5E1] bg-white hover:bg-[#F1F5F9] disabled:opacity-45 disabled:pointer-events-none text-[#1E293B] font-semibold transition-colors cursor-pointer"
             >
               <span>Sau</span>
               <ChevronRight size={13} />

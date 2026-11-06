@@ -1,6 +1,6 @@
 /**
- * 5TOT ĐHĐN — Design Tokens & Core Primitives
- * Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Design Tokens & Core Primitives
+ * Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  */
 
 export interface CriterionDefinition {
@@ -26,10 +26,10 @@ export const CRITERIA: Record<CriterionDefinition['id'], CriterionDefinition> = 
     name: 'Đạo đức tốt',
     vietnameseTitle: 'Tiêu chí 1: Đạo đức tốt',
     shortDescription: 'Rèn luyện đạo đức, lối sống, chấp hành pháp luật và nội quy nhà trường',
-    accentColor: '#3182CE',
-    accentSoft: 'rgba(49, 130, 206, 0.10)',
-    bgTint: '#F0F6FC',
-    groupBgTint: '#F7FAFD',
+    accentColor: '#007EE5',
+    accentSoft: 'rgba(0, 126, 229, 0.08)',
+    bgTint: '#F8FAFC',
+    groupBgTint: '#F8FAFC',
   },
   academic: {
     id: 'academic',
@@ -37,10 +37,10 @@ export const CRITERIA: Record<CriterionDefinition['id'], CriterionDefinition> = 
     name: 'Học tập tốt',
     vietnameseTitle: 'Tiêu chí 2: Học tập tốt',
     shortDescription: 'Kết quả học tập, nghiên cứu khoa học và kỹ năng chuyên môn',
-    accentColor: '#7C5CFC',
-    accentSoft: 'rgba(124, 92, 252, 0.10)',
-    bgTint: '#F5F1FE',
-    groupBgTint: '#FAF8FF',
+    accentColor: '#0284C7',
+    accentSoft: 'rgba(2, 132, 199, 0.08)',
+    bgTint: '#F8FAFC',
+    groupBgTint: '#F8FAFC',
   },
   physical: {
     id: 'physical',
@@ -48,10 +48,10 @@ export const CRITERIA: Record<CriterionDefinition['id'], CriterionDefinition> = 
     name: 'Thể lực tốt',
     vietnameseTitle: 'Tiêu chí 3: Thể lực tốt',
     shortDescription: 'Tiêu chuẩn rèn luyện thể thao, chứng nhận thể lực sinh viên',
-    accentColor: '#E99A18',
-    accentSoft: 'rgba(233, 154, 24, 0.10)',
-    bgTint: '#FEF6E9',
-    groupBgTint: '#FFFBF5',
+    accentColor: '#D97706',
+    accentSoft: 'rgba(217, 119, 6, 0.08)',
+    bgTint: '#F8FAFC',
+    groupBgTint: '#F8FAFC',
   },
   volunteer: {
     id: 'volunteer',
@@ -59,10 +59,10 @@ export const CRITERIA: Record<CriterionDefinition['id'], CriterionDefinition> = 
     name: 'Tình nguyện tốt',
     vietnameseTitle: 'Tiêu chí 4: Tình nguyện tốt',
     shortDescription: 'Tham gia các hoạt động tình nguyện vì cộng đồng và phong trào Đoàn - Hội',
-    accentColor: '#22A06B',
-    accentSoft: 'rgba(34, 160, 107, 0.10)',
-    bgTint: '#EDF8F2',
-    groupBgTint: '#F6FCF9',
+    accentColor: '#10A37F',
+    accentSoft: 'rgba(16, 163, 127, 0.08)',
+    bgTint: '#F8FAFC',
+    groupBgTint: '#F8FAFC',
   },
   integration: {
     id: 'integration',
@@ -70,10 +70,10 @@ export const CRITERIA: Record<CriterionDefinition['id'], CriterionDefinition> = 
     name: 'Hội nhập tốt',
     vietnameseTitle: 'Tiêu chí 5: Hội nhập tốt',
     shortDescription: 'Kỹ năng ngoại ngữ, tin học, giao lưu quốc tế và hoạt động hội nhập',
-    accentColor: '#0E9F9A',
-    accentSoft: 'rgba(14, 159, 154, 0.10)',
-    bgTint: '#E8F7F6',
-    groupBgTint: '#F4FBFA',
+    accentColor: '#0D9488',
+    accentSoft: 'rgba(13, 148, 136, 0.08)',
+    bgTint: '#F8FAFC',
+    groupBgTint: '#F8FAFC',
   },
 };
 
@@ -90,8 +90,8 @@ export type ApplicationStatus =
   | 'under_review'        // Đang xét hồ sơ
   | 'supplement_required' // Cần bổ sung minh chứng
   | 'waiting_final'       // Đã hoàn tất xét 5 tiêu chí · Đang chờ kết quả chính thức
-  | 'final_awarded'       // Đạt danh hiệu Sinh viên 5 tốt cấp Đại học Đà Nẵng
-  | 'final_not_awarded';  // Chưa đạt chuẩn cấp Đại học Đà Nẵng năm nay
+  | 'final_awarded'       // Đạt danh hiệu Sinh viên 5 tốt cấp Thành phố Đà Nẵng
+  | 'final_not_awarded';  // Chưa đạt chuẩn cấp Thành phố Đà Nẵng năm nay
 
 export const APPLICATION_STATUS_MAP: Record<ApplicationStatus, { label: string; tone: 'neutral' | 'brand' | 'amber' | 'green' }> = {
   draft: { label: 'Đang hoàn thiện', tone: 'neutral' },

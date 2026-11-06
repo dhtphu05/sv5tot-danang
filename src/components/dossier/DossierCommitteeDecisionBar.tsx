@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Committee Decision Controls Bar (SRW-2)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Committee Decision Controls Bar (SRW-2)
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements concise, authorized Committee controls over the shared canonical dossier:
  * - Read-only inspection of student submission
@@ -89,7 +89,7 @@ export const DossierCommitteeDecisionBar: React.FC<
           <div className="flex items-center gap-2">
             <Award size={18} className="text-[#0D78AE]" />
             <span className="text-[13.5px] font-bold text-[#172A3A]">
-              Hội đồng xét chọn cấp Đại học Đà Nẵng
+              Hội đồng xét chọn cấp Thành phố Đà Nẵng
             </span>
           </div>
 
@@ -97,7 +97,7 @@ export const DossierCommitteeDecisionBar: React.FC<
           <span className="text-[12px] text-[#526B7C]">
             Cán bộ thẩm định:{' '}
             <strong className="text-[#172A3A]">
-              {application.assignment?.officerName || 'Cán bộ xét duyệt cấp ĐHĐN'}
+              {application.assignment?.officerName || 'Cán bộ xét duyệt cấp Thành phố'}
             </strong>
           </span>
 

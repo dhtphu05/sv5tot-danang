@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Student Application Main Body Section Widget (FSD Widgets Layer)
+ * 5TOT Đà Nẵng — Student Application Main Body Section Widget (FSD Widgets Layer)
  * Renders loading/empty/error states, declaration search bar, summary bar,
  * 5 criteria sections table, recent activity timeline, pre-submit summary, and supplement dev toolbar.
  */
@@ -169,7 +169,7 @@ export const StudentApplicationBodySection: React.FC<
       <div className="bg-white rounded-[14px] p-12 border border-[#DCE7EE] shadow-2xs">
         <EmptyState
           title="Bạn chưa bắt đầu hồ sơ Sinh viên 5 tốt"
-          description="Năm học 2025–2026 đang mở đợt nhận hồ sơ đề nghị xét chọn danh hiệu Sinh viên 5 tốt cấp Đại học Đà Nẵng."
+          description="Năm học 2025–2026 đang mở đợt nhận hồ sơ đề nghị xét chọn danh hiệu Sinh viên 5 tốt cấp Thành phố Đà Nẵng."
           action={{
             label: 'Bắt đầu tạo hồ sơ',
             onClick: onResetViewStateToNormal,
@@ -184,7 +184,7 @@ export const StudentApplicationBodySection: React.FC<
       <div className="bg-white rounded-[14px] p-12 border border-[#DCE7EE] shadow-2xs">
         <ErrorState
           title="Chưa thể tải hồ sơ"
-          description="Hệ thống chưa thể nạp dữ liệu hồ sơ của bạn từ máy chủ Hội Sinh viên Đại học Đà Nẵng. Vui lòng thử lại sau giây lát."
+          description="Hệ thống chưa thể nạp dữ liệu hồ sơ của bạn từ máy chủ Hội Sinh viên Thành phố Đà Nẵng. Vui lòng thử lại sau giây lát."
           onRetry={onResetViewStateToNormal}
         />
       </div>
@@ -238,8 +238,8 @@ export const StudentApplicationBodySection: React.FC<
         </div>
       </div>
 
-      <div className="w-full bg-white rounded-[14px] border border-[#DCE7EE] shadow-2xs min-w-0 overflow-x-auto">
-        <div className="min-w-[680px] md:min-w-0">
+      <div className="w-full bg-white rounded-[4px] border border-[#DFE5EC] min-w-0 overflow-x-auto">
+        <div className="min-w-[740px] md:min-w-0">
           <ApplicationTableHeader isSticky={false} isCompact={isScrolledCompact} />
 
           <div>

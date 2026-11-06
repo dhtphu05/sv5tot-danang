@@ -96,7 +96,7 @@ export const PreSubmitReviewContent: React.FC<PreSubmitReviewContentProps> = ({
     <div className="flex flex-col gap-6 select-none pb-6">
       {/* Supporting Intro Copy (Section 4) */}
       <div className="p-3.5 bg-[#EAF6FC] rounded-[10px] border border-[#D0E8F5] text-[13px] text-[#466474] leading-relaxed">
-        Rà soát một vài thông tin trước khi gửi hồ sơ Sinh viên 5 tốt cấp Đại học Đà Nẵng.
+        Rà soát một vài thông tin trước khi gửi hồ sơ Sinh viên 5 tốt cấp Thành phố Đà Nẵng.
       </div>
 
       {/* ========================================================================= */}
@@ -323,10 +323,10 @@ export const PreSubmitReviewContent: React.FC<PreSubmitReviewContentProps> = ({
             <CheckCircle2 size={17} className="text-[#0D78AE] shrink-0 mt-0.5" />
             <div className="flex flex-col text-[12.5px] leading-relaxed">
               <span className="font-bold text-[#0D78AE]">
-                ✓ Có thể gửi hồ sơ cấp Đại học Đà Nẵng
+                ✓ Có thể gửi hồ sơ cấp Thành phố Đà Nẵng
               </span>
               <span className="text-[#466474] mt-0.5">
-                Hồ sơ của bạn có thể được gửi trực tiếp đến quy trình xét cấp Đại học Đà Nẵng.
+                Hồ sơ của bạn có thể được gửi trực tiếp đến quy trình xét cấp Thành phố Đà Nẵng.
               </span>
             </div>
           </div>
@@ -413,7 +413,7 @@ export const PreSubmitReviewContent: React.FC<PreSubmitReviewContentProps> = ({
               </span>
             </div>
             <span className="text-[11.5px] text-[#466474]">
-              Hạn chung toàn Đại học Đà Nẵng: {submissionDeadlineText || '10/11/2026 · 20:00'}.
+              Hạn chung toàn Thành phố Đà Nẵng: {submissionDeadlineText || '10/11/2026 · 20:00'}.
             </span>
           </div>
         )}

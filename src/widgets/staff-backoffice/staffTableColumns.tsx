@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Staff Backoffice Table Column Builders & Workload Selector (FSD Widgets Layer)
+ * 5TOT Đà Nẵng — Staff Backoffice Table Column Builders & Workload Selector (FSD Widgets Layer)
  */
 
 import React from 'react';
@@ -176,13 +176,13 @@ export function buildCollectiveTableColumns(params: {
     },
     {
       key: 'status',
-      header: 'Trạng thái cấp ĐHĐN',
+      header: 'Trạng thái cấp Thành phố',
       renderCell: (app) => {
         const prg = getCollectiveReviewProgress(app);
         let label = 'Đang kê khai';
         let style = 'bg-[#EAF6FC] text-[#0D78AE] border-[#CFE3F0]';
         if (app.status === 'city_unassigned') {
-          label = 'ĐHĐN tiếp nhận';
+          label = 'Thành phố tiếp nhận';
           style = 'bg-[#EDF9F1] text-[#16A34A] border-[#C6EED5]';
         } else if (app.status === 'city_assigned') {
           if (prg.reviewedRequirementsCount > 0) {
@@ -292,7 +292,7 @@ export function buildIndividualApplicationTableColumns(params: {
             <div>
               <span className="inline-flex items-center gap-1 text-[11.5px] font-bold text-[#0B64A0] bg-[#EAF5FC] border border-[#CBE5F6] px-2 py-0.5 rounded-[5px]">
                 <CheckCircle2 size={12} className="text-[#0D78AE]" />
-                <span>Đề xuất trình ĐHĐN</span>
+                <span>Đề xuất trình Thành phố</span>
               </span>
               <div className="text-[11px] text-[#607483] tabular-nums mt-0.5">
                 {docNumber ? `Theo ${docNumber}` : 'Đã kèm văn bản PDF'}

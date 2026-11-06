@@ -1,13 +1,7 @@
 /**
- * 5TOT ĐHĐN — Authority Meta Row (Approved Visual Reference)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
- *
- * Implements Sections 13, 30, 45, 48:
- * - Clean horizontal row (not boxed cards; uses whitespace + subtle vertical separator).
- * - Part A: Soft blue circle icon + Cơ quan quản lý / THÀNH ĐOÀN ĐÀ NẴNG
- * - Part B: Soft blue circle icon + Đơn vị tổ chức / vận hành nghiệp vụ / HỘI SINH VIÊN VIỆT NAM THÀNH PHỐ ĐÀ NẴNG
- * - Part C: Compact outlined pill [Năm học 2026–2027]
+ * 5TOT Đà Nẵng — Authority Meta Row (Approved Visual Reference)
+ * Cơ quan quản lý: Thành Đoàn Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  */
 
 import React from 'react';
@@ -29,7 +23,7 @@ export const AuthorityMeta: React.FC = () => {
             Cơ quan quản lý
           </div>
           <div className="text-[14.5px] sm:text-[15px] font-extrabold uppercase tracking-[0.01em] text-[#0F2335]">
-            ĐẠI HỌC ĐÀ NẴNG
+            THÀNH ĐOÀN ĐÀ NẴNG
           </div>
         </div>
       </div>
@@ -50,7 +44,7 @@ export const AuthorityMeta: React.FC = () => {
             Đơn vị tổ chức / vận hành nghiệp vụ
           </div>
           <div className="text-[14.5px] sm:text-[15px] font-extrabold uppercase tracking-[0.01em] text-[#0F2335]">
-            HỘI SINH VIÊN VIỆT NAM ĐẠI HỌC ĐÀ NẴNG
+            HỘI SINH VIÊN VIỆT NAM THÀNH PHỐ ĐÀ NẴNG
           </div>
         </div>
       </div>

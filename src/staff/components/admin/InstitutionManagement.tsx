@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Institution Registry Management (Đơn vị đào tạo)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Institution Registry Management (Đơn vị đào tạo)
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements Prompt 21 Sections 10–20, 110, 126:
  * - Authoritative Da Nang institution registry (universities, academies, colleges).
@@ -94,8 +94,8 @@ export const InstitutionManagement: React.FC<InstitutionManagementProps> = ({
     institutionType: 'university' as InstitutionType,
     organizationContext: 'Đại học Đà Nẵng',
     isUnderUdn: true,
-    schoolReviewUnitId: 'unit-dut',
-    schoolReviewUnitName: 'Trường Đại học Bách khoa – ĐHĐN',
+    schoolReviewUnitId: 'unit-udn',
+    schoolReviewUnitName: 'Đại học Đà Nẵng',
     eligibilityMode: 'SCHOOL_PRELIMINARY_FIRST' as InstitutionEligibilityMode,
     status: 'active' as InstitutionStatus,
     contactEmail: '',
@@ -144,7 +144,7 @@ export const InstitutionManagement: React.FC<InstitutionManagementProps> = ({
       `"${inst.officialName.replace(/"/g, '""')}"`,
       `"${inst.shortName}"`,
       `"${inst.organizationContext}"`,
-      `"${inst.schoolReviewUnitId || 'unit-dut'}"`,
+      `"${inst.schoolReviewUnitId || 'unit-udn'}"`,
       inst.status === 'active' ? 'Hoạt động' : 'Tạm ngưng',
       inst.applicationCount,
     ]);
@@ -215,7 +215,7 @@ export const InstitutionManagement: React.FC<InstitutionManagementProps> = ({
             </span>
           </span>
           <div className="text-[10.5px] text-[#64748B] mt-0.5 font-mono">
-            {inst.schoolReviewUnitId || 'unit-dut'}
+            {inst.schoolReviewUnitId || 'unit-udn'}
           </div>
         </div>
       ),
@@ -299,7 +299,7 @@ export const InstitutionManagement: React.FC<InstitutionManagementProps> = ({
       <div className="border-b border-[#DCE7EE] pb-4 flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="text-[12px] font-semibold text-[#526B7C]">
-            Quản trị danh mục · Cấp Đại học Đà Nẵng
+            Quản trị danh mục · Cấp Thành phố Đà Nẵng
           </div>
           <h1 className="text-[20px] font-extrabold text-[#0F2335] mt-0.5 flex items-center gap-2">
             <Building2 size={20} className="text-[#0D78AE]" />
@@ -484,7 +484,7 @@ export const InstitutionManagement: React.FC<InstitutionManagementProps> = ({
                       : 'Hội đồng Sơ tuyển trực tiếp')}
                 </div>
                 <div className="text-[11px] font-mono text-[#0D78AE]">
-                  Mã đơn vị: {selectedInstitution.schoolReviewUnitId || 'unit-dut'}
+                  Mã đơn vị: {selectedInstitution.schoolReviewUnitId || 'unit-udn'}
                 </div>
               </div>
 
@@ -492,10 +492,10 @@ export const InstitutionManagement: React.FC<InstitutionManagementProps> = ({
                 <div className="p-3 rounded-[8px] bg-[#EBF6FC] border border-[#CCE7F6] text-[11.5px] text-[#0A527A] space-y-1">
                   <div className="font-bold flex items-center gap-1.5">
                     <Info size={13} className="text-[#0D78AE]" />
-                    <span>Quy tắc trình hồ sơ cấp Đại học Đà Nẵng</span>
+                    <span>Quy tắc định tuyến khối Đại học Đà Nẵng</span>
                   </div>
                   <p className="leading-relaxed text-[#355870]">
-                    Mỗi trường/đơn vị thành viên Đại học Đà Nẵng (09 đơn vị) tổ chức xét sơ tuyển độc lập tại Hội đồng Sơ tuyển cấp Trường của mình ({selectedInstitution.schoolReviewUnitId}), lập <strong>01 danh sách đề nghị</strong> kèm <strong>01 văn bản quyết định/tờ trình (.PDF)</strong> trình lên <strong>Hội Sinh viên Đại học Đà Nẵng</strong>.
+                    08 trường/viện thành viên Đại học Đà Nẵng dùng chung đầu mối <strong>Đại học Đà Nẵng (unit-udn)</strong> để tổng hợp <strong>01 danh sách đề nghị</strong> kèm <strong>01 văn bản quyết định (.PDF)</strong> trình lên <strong>Hội Sinh viên Việt Nam TP. Đà Nẵng</strong>.
                   </p>
                 </div>
               )}

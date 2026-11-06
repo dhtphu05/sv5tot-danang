@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — School Review Unit Domain Service (Backend V2)
+ * 5TOT Đà Nẵng — School Review Unit Domain Service (Backend V2)
  * Implements authoritative routing, resolution, and authorization boundaries.
  */
 
@@ -19,27 +19,59 @@ import { ApiError } from '../../shared/errors/apiError';
 /**
  * Authoritative Canonical Routing Mapping:
  * Maps training institution ID -> authoritative School Review Unit ID
- * - UDN member institutions -> `unit-udn` ('Đại học Đà Nẵng')
- * - Independent institutions -> their respective university units
+ * - 08 UDN member institutions in Da Nang -> `unit-udn` ('Đại học Đà Nẵng')
+ * - 23+1 Standalone universities/academies/colleges -> their respective `unit-*`
  */
+export const AUTHORITATIVE_UDN_MEMBER_INSTITUTION_IDS = [
+  'inst-dut',
+  'inst-due',
+  'inst-ued',
+  'inst-ufl',
+  'inst-ute',
+  'inst-vku',
+  'inst-smp',
+  'inst-vnuk',
+] as const;
+
 export const CANONICAL_INSTITUTION_TO_REVIEW_UNIT: Record<string, string> = {
-  // Đại học Đà Nẵng member universities
+  // 08 Đại học Đà Nẵng member universities/institutes in Da Nang (+ inst-ufls legacy alias)
   'inst-dut': 'unit-udn',
   'inst-due': 'unit-udn',
   'inst-ued': 'unit-udn',
   'inst-ufl': 'unit-udn',
+  'inst-ufls': 'unit-udn',
   'inst-ute': 'unit-udn',
   'inst-vku': 'unit-udn',
   'inst-smp': 'unit-udn',
   'inst-vnuk': 'unit-udn',
 
-  // Independent universities
+  // 23 Active Standalone Universities / Academies / Campuses / Colleges in Da Nang
   'inst-dtu': 'unit-dtu',
   'inst-donga': 'unit-donga',
   'inst-dau': 'unit-dau',
   'inst-upes3': 'unit-upes3',
   'inst-tyd': 'unit-tyd',
   'inst-fpt': 'unit-fpt',
+  'inst-dh-ngan-hang-dn': 'unit-dh-ngan-hang-dn',
+  'inst-dh-luat-hanoi-dn': 'unit-dh-luat-hanoi-dn',
+  'inst-dh-mo-hn-dn': 'unit-dh-mo-hn-dn',
+  'inst-hv-chinhtri-kv3': 'unit-hv-chinhtri-kv3',
+  'inst-hv-toa-an': 'unit-hv-toa-an',
+  'inst-cd-thuongmai': 'unit-cd-thuongmai',
+  'inst-cd-dulich': 'unit-cd-dulich',
+  'inst-cd-congnghe': 'unit-cd-congnghe',
+  'inst-cd-fptpoly': 'unit-cd-fptpoly',
+  'inst-cd-nghe-dn': 'unit-cd-nghe-dn',
+  'inst-cd-gtvt-tw5': 'unit-cd-gtvt-tw5',
+  'inst-cd-kinhte-kh': 'unit-cd-kinhte-kh',
+  'inst-cd-vhtt-dl': 'unit-cd-vhtt-dl',
+  'inst-cd-luongthuc': 'unit-cd-luongthuc',
+  'inst-cd-ptth': 'unit-cd-ptth',
+  'inst-cd-supham-maugiao': 'unit-cd-supham-maugiao',
+  'inst-cd-yduoc-pasteur': 'unit-cd-yduoc-pasteur',
+
+  // 01 Suspended College in Da Nang
+  'inst-cd-lacviet': 'unit-cd-lacviet',
 };
 
 export class SchoolReviewUnitService {
@@ -83,7 +115,7 @@ export class SchoolReviewUnitService {
         unit: null,
         trainingInstitutionId,
         errorCode: 'COLLECTIVE_NOT_APPLICABLE',
-        errorMessage: 'Hồ sơ Tập thể nộp trực tiếp Cấp Đại học Đà Nẵng, không qua xét sơ cấp Trường.',
+        errorMessage: 'Hồ sơ Tập thể nộp trực tiếp Cấp Thành phố Đà Nẵng, không qua xét sơ cấp Trường.',
       };
     }
 
@@ -101,14 +133,14 @@ export class SchoolReviewUnitService {
       }
     }
 
-    // 3. Resolve via authoritative mapping
+    // 3. Resolve via authoritative mapping, falling back to memberInstitutionId lookup
     const mappedUnitId = CANONICAL_INSTITUTION_TO_REVIEW_UNIT[trainingInstitutionId];
     let unit: SchoolReviewUnitDto | null = null;
 
     if (mappedUnitId) {
       unit = await this.unitRepo.findById(mappedUnitId);
-    } else {
-      // Fallback: Check if unit itself is associated with this institution
+    }
+    if (!unit) {
       unit = await this.unitRepo.findByMemberInstitutionId(trainingInstitutionId);
     }
 
@@ -189,7 +221,7 @@ export class SchoolReviewUnitService {
     }
     if (application.track === 'COLLECTIVE') {
       throw ApiError.forbidden(
-        'Hồ sơ Tập thể nộp trực tiếp Cấp Đại học Đà Nẵng, không thuộc thẩm quyền xét sơ cấp Trường.'
+        'Hồ sơ Tập thể nộp trực tiếp Cấp Thành phố Đà Nẵng, không thuộc thẩm quyền xét sơ cấp Trường.'
       );
     }
     if (officerSchoolReviewUnitId !== application.schoolReviewUnitId) {
@@ -291,10 +323,9 @@ export class SchoolReviewUnitService {
   public async updateUnit(id: string, data: UpdateSchoolReviewUnitInput): Promise<SchoolReviewUnitDto> {
     await this.getUnitById(id);
     if (id === 'unit-udn' && data.memberInstitutionIds) {
-      const requiredUdnInstIds = Object.entries(CANONICAL_INSTITUTION_TO_REVIEW_UNIT)
-        .filter(([, unitId]) => unitId === 'unit-udn')
-        .map(([instId]) => instId);
-      const missing = requiredUdnInstIds.filter((reqId) => !data.memberInstitutionIds!.includes(reqId));
+      const missing = AUTHORITATIVE_UDN_MEMBER_INSTITUTION_IDS.filter(
+        (reqId) => !data.memberInstitutionIds!.includes(reqId)
+      );
       if (missing.length > 0) {
         throw ApiError.badRequest(
           `Đơn vị xét sơ tuyển Đại học Đà Nẵng (unit-udn) bắt buộc phải bao gồm đầy đủ 8 cơ sở đào tạo thành viên (${missing.join(', ')}).`,
@@ -327,9 +358,7 @@ export class SchoolReviewUnitService {
   }> {
     const units = await this.unitRepo.list();
     const errors: string[] = [];
-    const udnMemberIds = Object.entries(CANONICAL_INSTITUTION_TO_REVIEW_UNIT)
-      .filter(([, u]) => u === 'unit-udn')
-      .map(([instId]) => instId);
+    const udnMemberIds = [...AUTHORITATIVE_UDN_MEMBER_INSTITUTION_IDS];
 
     const udnUnit = units.find((u) => u.id === 'unit-udn');
     if (!udnUnit || !udnUnit.isActive) {

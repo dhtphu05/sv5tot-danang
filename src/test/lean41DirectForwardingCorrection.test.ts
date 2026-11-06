@@ -124,19 +124,19 @@ describe('5TOT ĐHĐN — LEAN-4.1 Direct School Finalization Specification Suit
   // ---------------------------------------------------------------------------
   // L4.1-04: One Official Decision Document For Entire Unit
   // ---------------------------------------------------------------------------
-  it('L4.1-04: Single official document attached for the member school unit', async () => {
+  it('L4.1-04: Single official document attached for the UDN review unit', async () => {
     const services = resolveDomainServices('DEMO');
     const actor = {
       id: udnOfficer.id,
       name: udnOfficer.fullName,
       role: udnOfficer.primaryRole,
-      unitId: 'unit-dut',
+      unitId: 'unit-udn',
     };
 
     const batch = await services.schoolReview.attachSchoolDecisionDocument({
-      seasonId: 'season-2026-2027',
+      seasonId: 'season-2025-2026',
       decisionNumber: '182/QĐ-ĐHĐN',
-      decisionTitle: 'Quyết định đề xuất danh sách SV5T cấp Đại học Đà Nẵng',
+      decisionTitle: 'Quyết định đề xuất danh sách SV5T cấp Thành phố Đà Nẵng',
       decisionDate: '2026-10-18',
       signedByName: 'PGS.TS. Nguyễn Ngọc Vũ',
       signedByTitle: 'Giám đốc Đại học Đà Nẵng',
@@ -147,7 +147,7 @@ describe('5TOT ĐHĐN — LEAN-4.1 Direct School Finalization Specification Suit
     });
 
     assert.equal(batch.decisionNumber, '182/QĐ-ĐHĐN');
-    assert.equal(batch.schoolReviewUnitId, 'unit-dut');
+    assert.equal(batch.schoolReviewUnitId, 'unit-udn');
     assert.ok(batch.decisionFileName && batch.decisionFileName.endsWith('.pdf'));
   });
 

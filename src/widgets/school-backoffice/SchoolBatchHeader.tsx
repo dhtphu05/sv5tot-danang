@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — School Batch Forwarding Header Widget (FSD Widgets Layer)
+ * 5TOT Đà Nẵng — School Batch Forwarding Header Widget (FSD Widgets Layer)
  * Renders Review Unit title, season code, natural status badge, and alerts.
  */
 
@@ -41,7 +41,7 @@ export const SchoolBatchHeader: React.FC<SchoolBatchHeaderProps> = ({
               {unitName}
             </span>
             <span>·</span>
-            <span>Sơ tuyển cấp Trường</span>
+            <span>{isUdn ? 'Sơ tuyển đầu mối ĐHĐN' : 'Sơ tuyển cấp Trường'}</span>
             <span>·</span>
             <span className="font-semibold text-[#0B64A0] bg-[#EAF6FC] px-2 py-0.5 rounded">
               {seasonCode.startsWith('Năm học') ? seasonCode : `Năm học ${seasonCode}`}
@@ -57,10 +57,10 @@ export const SchoolBatchHeader: React.FC<SchoolBatchHeaderProps> = ({
           </div>
 
           <h1 className="text-[22px] sm:text-[24px] font-extrabold text-[#0F2335] tracking-tight">
-            Danh sách đề nghị xét chọn cấp Đại học Đà Nẵng
+            Danh sách đề nghị xét chọn cấp Thành phố Đà Nẵng
           </h1>
           <p className="text-[13px] text-[#526B7C]">
-            Kiểm tra danh sách sinh viên và văn bản đề nghị trước khi trình lên Hội Sinh viên Đại học Đà Nẵng.
+            Kiểm tra danh sách sinh viên và văn bản đề nghị trước khi trình lên Hội Sinh viên Thành phố Đà Nẵng.
           </p>
         </div>
 
@@ -68,7 +68,7 @@ export const SchoolBatchHeader: React.FC<SchoolBatchHeaderProps> = ({
           {batchStatus === 'FORWARDED' && (
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#F0FDF4] border border-[#BBF7D0] rounded-[8px] text-[12.5px] font-bold text-[#15803D]">
               <Check size={15} />
-              <span>Đã trình lên ĐHĐN</span>
+              <span>Đã trình lên Thành phố</span>
             </div>
           )}
 

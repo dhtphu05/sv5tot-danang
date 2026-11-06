@@ -42,7 +42,7 @@ export class CityWorkflowController {
   public assignOfficer: RequestHandler = asyncHandler(async (req: Request, _res: Response): Promise<void> => {
     if (!req.actor) throw ApiError.unauthorized('Yêu cầu xác thực tài khoản.');
     throw ApiError.badRequest(
-      'Quy trình phân công cá nhân bắt buộc đã được bãi bỏ theo mô hình hàng đợi thẩm định chung cấp Đại học Đà Nẵng (Shared City Review Queue). Cán bộ Hội Sinh viên Đại học Đà Nẵng có thể trực tiếp thẩm định các hồ sơ trong hàng đợi.',
+      'Quy trình phân công cá nhân bắt buộc đã được bãi bỏ theo mô hình hàng đợi thẩm định chung cấp Thành phố Đà Nẵng (Shared City Review Queue). Cán bộ Hội Sinh viên TP. Đà Nẵng có thể trực tiếp thẩm định các hồ sơ trong hàng đợi.',
       'ASSIGNMENT_WORKFLOW_RETIRED'
     );
   });

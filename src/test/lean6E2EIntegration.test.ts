@@ -97,11 +97,11 @@ describe('5TOT ĐHĐN — LEAN-6 Full End-to-End System Integration Suite', () =
       assert.ok(studentProfile.fullName.includes('Nguyễn'), 'Supports Vietnamese diacritics');
     });
 
-    it('ST04: Routes Student Application from UDN member to unit-dut Review Unit', () => {
+    it('ST04: Routes Student Application from UDN member to unit-udn Review Unit', () => {
       const routing = resolveSchoolReviewUnit('inst-dut');
       assert.strictEqual(routing.resolved, true);
-      assert.strictEqual(routing.unit?.id, 'unit-dut');
-      assert.strictEqual(routing.unit?.officialName, 'Trường Đại học Bách khoa – ĐHĐN');
+      assert.strictEqual(routing.unit?.id, 'unit-udn');
+      assert.strictEqual(routing.unit?.officialName, 'Đại học Đà Nẵng');
     });
 
     it('ST05 & ST06: LEAN declaration entry supports compact forms and stable numbering', () => {
@@ -306,19 +306,18 @@ describe('5TOT ĐHĐN — LEAN-6 Full End-to-End System Integration Suite', () =
   // 4. UDN01–UDN09 & FW01–FW17: UDN Consolidation & One-Time Batch Forwarding
   // =========================================================================
   describe('UDN01–UDN09 & FW01–FW17: UDN Consolidation & One-Time Forwarding', () => {
-    it('UDN01–UDN03: All 9 UDN member institutions resolve to their 9 respective units while preserving student identity', () => {
+    it('UDN01–UDN03: All 8 UDN member institutions consolidate into shared unit-udn while preserving student identity', () => {
       const udnMembers: Array<[string, string]> = [
-        ['inst-dut', 'unit-dut'],
-        ['inst-due', 'unit-due'],
-        ['inst-ued', 'unit-ued'],
-        ['inst-ufl', 'unit-ufl'],
-        ['inst-ute', 'unit-ute'],
-        ['inst-vku', 'unit-vku'],
-        ['inst-vnuk', 'unit-vnuk'],
-        ['inst-smp', 'unit-smp'],
-        ['inst-kontum', 'unit-kontum'],
+        ['inst-dut', 'unit-udn'],
+        ['inst-due', 'unit-udn'],
+        ['inst-ued', 'unit-udn'],
+        ['inst-ufl', 'unit-udn'],
+        ['inst-ute', 'unit-udn'],
+        ['inst-vku', 'unit-udn'],
+        ['inst-vnuk', 'unit-udn'],
+        ['inst-smp', 'unit-udn'],
       ];
-      assert.strictEqual(udnMembers.length, 9);
+      assert.strictEqual(udnMembers.length, 8);
 
       for (const [instId, expectedUnitId] of udnMembers) {
         const r = resolveSchoolReviewUnit(instId);
@@ -327,8 +326,8 @@ describe('5TOT ĐHĐN — LEAN-6 Full End-to-End System Integration Suite', () =
       }
     });
 
-    it('UDN09: Independent universities resolve to their own isolated Review Units', () => {
-      assert.strictEqual(AUTHORITATIVE_SCHOOL_REVIEW_UNITS.length, 9, 'Must have 9 member review units');
+    it('UDN09: Independent universities resolve to their own isolated Review Units across 24 active units', () => {
+      assert.strictEqual(AUTHORITATIVE_SCHOOL_REVIEW_UNITS.length, 24, 'Must have 24 active review units');
       for (const unit of AUTHORITATIVE_SCHOOL_REVIEW_UNITS) {
         assert.ok(unit.memberInstitutionIds.length > 0);
       }
@@ -491,7 +490,7 @@ describe('5TOT ĐHĐN — LEAN-6 Full End-to-End System Integration Suite', () =
       };
 
       const proj = getRoleAwareStatusProjection(appRecord, 'CITY_COMMITTEE');
-      assert.strictEqual(proj.schoolPreliminary.label, 'Đã gửi cấp ĐHĐN');
+      assert.strictEqual(proj.schoolPreliminary.label, 'Đã gửi cấp Thành phố');
       assert.strictEqual(proj.cityReview.label, 'Đã thẩm định');
       assert.strictEqual(proj.committeeDecision.label, 'Chờ quyết định');
     });

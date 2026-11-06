@@ -1,6 +1,6 @@
 /**
- * 5TOT ĐHĐN — Public Entry Types (Prompt 14)
- * Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Public Entry Types (Prompt 14)
+ * Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  */
 
 export type PublicEntryRoute =

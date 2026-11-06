@@ -45,9 +45,9 @@ const ROLE_LABELS_VI: Record<SystemRoleCode, string> = {
   STUDENT: 'Sinh viên / Ứng viên',
   COLLECTIVE_PREPARER: 'Người lập hồ sơ Tập thể',
   SCHOOL_OFFICER: 'Cán bộ Hội Sinh viên Cấp Trường / ĐHĐN',
-  CITY_OFFICER: 'Cán bộ Thẩm định Cấp Đại học Đà Nẵng',
-  CITY_MANAGER: 'Tổ Thư ký / Điều phối Cấp Đại học Đà Nẵng',
-  CITY_COMMITTEE: 'Thành viên Hội đồng Xét chọn Đại học Đà Nẵng',
+  CITY_OFFICER: 'Cán bộ Thẩm định Cấp Thành phố Đà Nẵng',
+  CITY_MANAGER: 'Tổ Thư ký / Điều phối Cấp Thành phố Đà Nẵng',
+  CITY_COMMITTEE: 'Thành viên Hội đồng Xét chọn Cấp Thành phố Đà Nẵng',
   ADMIN: 'Quản trị viên Hệ thống',
 };
 
@@ -177,7 +177,7 @@ export class AdminService {
       roleCode: 'ADMIN',
       roleLabelVi: ROLE_LABELS_VI.ADMIN,
       schoolReviewUnitId: null,
-      schoolReviewUnitLabelVi: 'Toàn hệ thống (Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng)',
+      schoolReviewUnitLabelVi: 'Toàn hệ thống (Thành Đoàn - Hội Sinh viên TP. Đà Nẵng)',
       institutionId: null,
       inviteCode: null,
       inviteStatus: 'ACTIVATED',
@@ -282,13 +282,13 @@ export class AdminService {
       },
       {
         code: 'STAFF_PROVISIONED',
-        labelVi: 'Nhân sự Cấp Trường, Cấp Đại học Đà Nẵng & Hội đồng',
+        labelVi: 'Nhân sự Cấp Trường, Cấp Thành phố & Hội đồng',
         passed: hasSchoolOfficer && hasCityReviewer && hasCommittee,
         severity: 'WARNING',
         detailVi:
           hasSchoolOfficer && hasCityReviewer && hasCommittee
-            ? `Đã cấp quyền Cán bộ Trường, Cán bộ cấp Đại học Đà Nẵng và Hội đồng xét chọn (${activeStaff.length} tài khoản hoạt động).`
-            : 'Khuyến nghị cấp đủ tài khoản Cán bộ Trường (SCHOOL_OFFICER), Cấp ĐHĐN (CITY_OFFICER) và Hội đồng (CITY_COMMITTEE).',
+            ? `Đã cấp quyền Cán bộ Trường, Cán bộ cấp Thành phố Đà Nẵng và Hội đồng xét chọn (${activeStaff.length} tài khoản hoạt động).`
+            : 'Khuyến nghị cấp đủ tài khoản Cán bộ Trường (SCHOOL_OFFICER), Cấp Thành phố (CITY_OFFICER) và Hội đồng (CITY_COMMITTEE).',
         actionRoute: '/staff/admin/staff',
       },
       {
@@ -411,7 +411,7 @@ export class AdminService {
         ? unitMap.get(unitId) || unitId
         : roleCode === 'SCHOOL_OFFICER'
           ? 'Chưa gán đơn vị xét sơ tuyển'
-          : 'Cấp Đại học Đà Nẵng / Toàn hệ thống';
+          : 'Cấp Thành phố Đà Nẵng / Toàn hệ thống';
 
       const invitation = await this.adminRepo.getInvitationByUserId(user.id);
 
@@ -607,9 +607,21 @@ export class AdminService {
   public async resetStaffPassword(
     actor: AuthenticatedActor,
     userId: string,
-    newTemporaryPassword?: string
+    newTemporaryPassword?: string,
+    fallbackEmail?: string,
+    reason?: string
   ): Promise<{ passwordResetCompleted: boolean; sessionsRevoked: boolean }> {
-    const user = await this.identityRepo.findById(userId);
+    let user = await this.identityRepo.findById(userId);
+    if (!user && fallbackEmail) {
+      user = await this.identityRepo.findByEmail(fallbackEmail.trim().toLowerCase());
+    }
+    if (!user) {
+      const { STAFF_SEED_ACCOUNTS } = await import('../domainPortal/domainPortal.state');
+      const seedStaff = STAFF_SEED_ACCOUNTS.find((s) => s.id === userId);
+      if (seedStaff) {
+        user = await this.identityRepo.findByEmail(seedStaff.email.toLowerCase());
+      }
+    }
     if (!user) throw ApiError.notFound('Tài khoản cán bộ');
 
     const tempPwd =
@@ -617,8 +629,29 @@ export class AdminService {
       `Reset@${Math.random().toString(36).substring(2, 10).toUpperCase()}!`;
     const passwordHash = await this.passwordHasher.hash(tempPwd);
 
-    await this.identityRepo.updatePasswordHash(userId, passwordHash);
-    await this.sessionService.revokeAllUserSessions(userId, 'PASSWORD_RESET');
+    await this.identityRepo.updatePasswordHash(user.id, passwordHash);
+    await this.sessionService.revokeAllUserSessions(user.id, 'PASSWORD_RESET');
+
+    const { portalState, appendPortalAuditLog } = await import('../domainPortal/domainPortal.state');
+    const normalizedEmail = user.email.toLowerCase();
+    for (const [tokenKey, sess] of portalState.sessions.entries()) {
+      if (
+        sess?.user &&
+        (sess.user.id === user.id ||
+          sess.user.id === userId ||
+          sess.user.email.toLowerCase() === normalizedEmail)
+      ) {
+        portalState.sessions.delete(tokenKey);
+      }
+    }
+    appendPortalAuditLog({
+      track: 'SYSTEM',
+      action: 'STAFF_PASSWORD_RESET',
+      actorId: actor.userId,
+      actorName: actor.fullName,
+      actorRole: actor.activeRole,
+      details: `Đặt lại mật khẩu và thu hồi toàn bộ phiên đăng nhập của ${user.email}${reason ? ` (Lý do: ${reason})` : ''}`,
+    });
 
     await this.adminRepo.recordAdminAuditEvent({
       actorUserId: actor.userId,
@@ -626,8 +659,8 @@ export class AdminService {
       actorRole: actor.activeRole,
       actionCode: 'STAFF_PASSWORD_RESET',
       targetEntity: user.id,
-      summaryVi: `Đặt lại mật khẩu và thu hồi toàn bộ phiên đăng nhập của cán bộ ${user.email}.`,
-      metadata: { password: '[REDACTED]' },
+      summaryVi: `Đặt lại mật khẩu và thu hồi toàn bộ phiên đăng nhập của cán bộ ${user.email}.${reason ? ` Lý do: ${reason}` : ''}`,
+      metadata: { password: '[REDACTED]', ...(reason ? { reason } : {}) },
     });
 
     return { passwordResetCompleted: true, sessionsRevoked: true };

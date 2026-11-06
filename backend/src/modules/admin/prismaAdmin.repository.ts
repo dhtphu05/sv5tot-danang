@@ -17,7 +17,7 @@ const DEFAULT_NOTIFICATION_TEMPLATES: NotificationTemplateConfigDto[] = [
     code: 'SUBMISSION_CONFIRMATION',
     nameVi: 'Xác nhận nộp hồ sơ thành công',
     channel: 'IN_APP_AND_EMAIL',
-    subjectTemplateVi: '[5TOT ĐHĐN] Xác nhận nộp hồ sơ – {{applicationCode}}',
+    subjectTemplateVi: '[5TOT Đà Nẵng] Xác nhận nộp hồ sơ – {{applicationCode}}',
     bodyTemplateVi:
       'Kính gửi {{studentName}}, Hệ thống đã tiếp nhận hồ sơ đăng ký xét chọn của bạn (Mã hồ sơ: {{applicationCode}}, Năm học: {{seasonName}}, Đơn vị: {{institutionName}}). Hồ sơ sẽ được đơn vị phụ trách xem xét theo quy trình xét chọn.',
     enabled: true,
@@ -29,7 +29,7 @@ const DEFAULT_NOTIFICATION_TEMPLATES: NotificationTemplateConfigDto[] = [
     code: 'SUPPLEMENT_REQUEST',
     nameVi: 'Yêu cầu bổ sung / giải trình minh chứng',
     channel: 'IN_APP_AND_EMAIL',
-    subjectTemplateVi: '[5TOT ĐHĐN] Yêu cầu bổ sung minh chứng – {{applicationCode}}',
+    subjectTemplateVi: '[5TOT Đà Nẵng] Yêu cầu bổ sung minh chứng – {{applicationCode}}',
     bodyTemplateVi:
       'Kính gửi {{studentName}}, Trong quá trình xét duyệt hồ sơ {{applicationCode}}, đơn vị phụ trách đề nghị bạn bổ sung hoặc làm rõ minh chứng trước thời hạn {{deadline}}.',
     enabled: true,
@@ -39,11 +39,11 @@ const DEFAULT_NOTIFICATION_TEMPLATES: NotificationTemplateConfigDto[] = [
   {
     id: 'tpl-school-forwarded',
     code: 'SCHOOL_FORWARDED',
-    nameVi: 'Thông báo Cấp Trường đã đề xuất hồ sơ lên Cấp Đại học Đà Nẵng',
+    nameVi: 'Thông báo Cấp Trường đã đề xuất hồ sơ lên Cấp Thành phố Đà Nẵng',
     channel: 'IN_APP_AND_EMAIL',
-    subjectTemplateVi: '[5TOT ĐHĐN] Hồ sơ {{applicationCode}} đã được đề xuất lên Cấp Đại học Đà Nẵng',
+    subjectTemplateVi: '[5TOT Đà Nẵng] Hồ sơ {{applicationCode}} đã được đề xuất lên Cấp Thành phố Đà Nẵng',
     bodyTemplateVi:
-      'Kính gửi {{studentName}}, Hồ sơ {{applicationCode}} của bạn đã hoàn thành bước xét sơ tuyển tại {{institutionName}} và được đề xuất lên Hội đồng cấp Đại học Đà Nẵng xét chọn.',
+      'Kính gửi {{studentName}}, Hồ sơ {{applicationCode}} của bạn đã hoàn thành bước xét sơ tuyển tại {{institutionName}} và được đề xuất lên Hội đồng cấp Thành phố Đà Nẵng xét chọn.',
     enabled: true,
     supportedVariables: ['studentName', 'applicationCode', 'seasonName', 'institutionName'],
     updatedAt: '2026-09-01T00:00:00.000Z',
@@ -53,9 +53,9 @@ const DEFAULT_NOTIFICATION_TEMPLATES: NotificationTemplateConfigDto[] = [
     code: 'RESULT_PUBLISHED',
     nameVi: 'Thông báo công bố Quyết định công nhận chính thức',
     channel: 'IN_APP_AND_EMAIL',
-    subjectTemplateVi: '[5TOT ĐHĐN] Công bố kết quả xét chọn chính thức – {{applicationCode}}',
+    subjectTemplateVi: '[5TOT Đà Nẵng] Công bố kết quả xét chọn chính thức – {{applicationCode}}',
     bodyTemplateVi:
-      'Chào {{studentName}}, Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng trân trọng thông báo kết quả xét chọn danh hiệu "{{seasonName}}" đối với hồ sơ {{applicationCode}}. Vui lòng tra cứu Quyết định công nhận trên cổng thông tin.',
+      'Chào {{studentName}}, Ban Thư ký Hội Sinh viên Việt Nam Thành phố Đà Nẵng trân trọng thông báo kết quả xét chọn danh hiệu "{{seasonName}}" đối với hồ sơ {{applicationCode}}. Vui lòng tra cứu Quyết định công nhận trên cổng thông tin.',
     enabled: true,
     supportedVariables: ['studentName', 'applicationCode', 'seasonName'],
     updatedAt: '2026-09-01T00:00:00.000Z',

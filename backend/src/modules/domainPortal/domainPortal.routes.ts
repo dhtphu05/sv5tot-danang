@@ -1,7 +1,7 @@
 /**
- * 5TOT Đại học Đà Nẵng — Frontend Domain Portal V2 Router (Backend V2)
- * Cơ quan quản lý: Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Frontend Domain Portal V2 Router (Backend V2)
+ * Cơ quan chỉ đạo: Thành Đoàn Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Thin orchestrator mounting domain-specific sub-routers for `/api/v2/portal/*`
  * (`src/entities/services/backendAdapter.ts`) with Zero-Trust JWT sessions issued
@@ -9,7 +9,7 @@
  * - `domainPortal.auth.routes.ts`: Authentication & session lifecycle
  * - `domainPortal.individual.student.routes.ts`: Student-facing Individual Application flows
  * - `domainPortal.individual.review.routes.ts`: School review, Officer workspace, Committee decisions
- * - `domainPortal.collective.routes.ts`: Collective 5 Tốt, White Bird Award, Evidence & Audit Logs
+ * - `domainPortal.collective.routes.ts`: Collective 5 Tốt, Giải thưởng 9/1, Evidence & Audit Logs
  */
 
 import { Router } from 'express';
@@ -20,6 +20,7 @@ import {
   resetDomainPortalState,
   clearDomainPortalStateForSeed,
   appendPortalAuditLog,
+  requirePortalAuthenticatedMiddleware,
   type PortalAuditLogRecord,
 } from './domainPortal.state';
 import { ensurePortalStateHydratedFromNeonDb } from './domainPortal.dbSync';
@@ -43,6 +44,8 @@ export interface DomainPortalRouterDeps {
 
 export function createDomainPortalRouter(deps: DomainPortalRouterDeps): Router {
   const router = Router();
+
+  router.use(requirePortalAuthenticatedMiddleware);
 
   router.use(async (_req, _res, next) => {
     await ensurePortalStateHydratedFromNeonDb().catch(() => {});

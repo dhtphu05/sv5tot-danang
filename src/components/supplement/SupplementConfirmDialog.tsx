@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Supplement Confirmation Dialog
+ * 5TOT Đà Nẵng — Supplement Confirmation Dialog
  * Implements Prompt 10: Section 26 & Section 33 with robust Student Explanation field.
  */
 

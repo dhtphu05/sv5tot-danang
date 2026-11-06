@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Staff Collective Review Route Widget (FSD Widgets Layer)
+ * 5TOT Đà Nẵng — Staff Collective Review Route Widget (FSD Widgets Layer)
  */
 
 import React from 'react';
@@ -11,13 +11,15 @@ import {
   SharedOperationalTable,
 } from '../../staff/components/shared/SharedOperationalTable';
 import { CollectiveOfficerReviewWorkspace } from '../../staff/components/review/CollectiveOfficerReviewWorkspace';
+import { CollectiveCommitteeWorkspace } from '../../staff/components/committee/CollectiveCommitteeWorkspace';
 import {
   getAllCollectiveApplications,
-  INITIAL_DEMO_COLLECTIVE_APPLICATION,
 } from '../../staff/collectiveStore';
-import { CollectiveApplication } from '../../staff/collectiveTypes';
+import {
+  CollectiveApplication,
+  COLLECTIVE_STATUS_LABELS,
+} from '../../staff/collectiveTypes';
 import { Button } from '../../components/buttons/Button';
-import { isBackendMode } from '../../shared/config/executionMode';
 
 export interface StaffCollectiveReviewRouteProps {
   currentUser: StaffUser;
@@ -40,7 +42,6 @@ export const StaffCollectiveReviewRoute: React.FC<
   StaffCollectiveReviewRouteProps
 > = ({
   currentUser,
-  isOfficer,
   isManager,
   selectedCollectiveId,
   onSelectCollectiveId,
@@ -54,15 +55,13 @@ export const StaffCollectiveReviewRoute: React.FC<
   onSelectRoute,
   activeSeasonLabel,
 }) => {
+  const isCommitteeRole = currentUser.primaryRole === 'CITY_COMMITTEE';
   const allCollectiveApps = getAllCollectiveApplications();
-  const collectiveApps = isBackendMode()
-    ? allCollectiveApps.filter((a) => a.status !== 'draft')
-    : allCollectiveApps;
+  const collectiveApps = allCollectiveApps.filter((a) => a.status !== 'draft');
   const currentApp =
     collectiveApps.find((a) => a.id === selectedCollectiveId) ||
     collectiveApps.find((a) => a.assignedOfficerId === currentUser.id) ||
-    collectiveApps[0] ||
-    (isBackendMode() ? undefined : INITIAL_DEMO_COLLECTIVE_APPLICATION);
+    collectiveApps[0];
 
   // Simplified for SRW-4 Business Correction: All authorized City reviewers access the shared collective review queue
   const assignedCollectiveApps = collectiveApps;
@@ -93,7 +92,8 @@ export const StaffCollectiveReviewRoute: React.FC<
             >
               {collectiveApps.map((a) => (
                 <option key={a.id} value={a.id}>
-                  {a.collectiveName} ({a.institutionName}) — {a.status}
+                  {a.collectiveName} ({a.institutionName}) —{' '}
+                  {COLLECTIVE_STATUS_LABELS[a.status] || a.status}
                 </option>
               ))}
             </select>
@@ -109,14 +109,22 @@ export const StaffCollectiveReviewRoute: React.FC<
           </Button>
         </div>
 
-        <CollectiveOfficerReviewWorkspace
-          application={currentApp}
-          onBackToQueue={() => onSetCollectiveWorkspaceOpen(false)}
-          currentOfficerName={currentUser.fullName}
-          currentOfficerId={currentUser.id}
-          currentUserRole={currentUser.roleLabel}
-          isManager={isManager}
-        />
+        {isCommitteeRole ? (
+          <CollectiveCommitteeWorkspace
+            application={currentApp}
+            onBackToQueue={() => onSetCollectiveWorkspaceOpen(false)}
+            currentUser={currentUser}
+          />
+        ) : (
+          <CollectiveOfficerReviewWorkspace
+            application={currentApp}
+            onBackToQueue={() => onSetCollectiveWorkspaceOpen(false)}
+            currentOfficerName={currentUser.fullName}
+            currentOfficerId={currentUser.id}
+            currentUserRole={currentUser.roleLabel}
+            isManager={isManager}
+          />
+        )}
       </div>
     );
   }
@@ -131,7 +139,7 @@ export const StaffCollectiveReviewRoute: React.FC<
           </div>
           <h1 className="text-[20px] font-extrabold text-[#0F2335] mt-0.5 flex items-center gap-2">
             <Users size={20} className="text-[#0D78AE]" />
-            <span>Xét Tập thể Sinh viên 5 tốt cấp Đại học Đà Nẵng</span>
+            <span>Xét Tập thể Sinh viên 5 tốt cấp Thành phố Đà Nẵng</span>
           </h1>
         </div>
 
@@ -152,7 +160,10 @@ export const StaffCollectiveReviewRoute: React.FC<
               onClick={() => onSetCollectiveWorkspaceOpen(true)}
               className="gap-1.5"
             >
-              <span>Vào bàn thẩm định: {currentApp.collectiveName}</span>
+              <span>
+                {isCommitteeRole ? 'Vào bàn xét chọn Hội đồng' : 'Vào bàn thẩm định'}:{' '}
+                {currentApp.collectiveName}
+              </span>
               <ArrowRight size={14} />
             </Button>
           )}

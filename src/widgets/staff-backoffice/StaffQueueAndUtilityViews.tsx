@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Staff Notifications, Deadlines & Officer/Manager Application Queue Widgets (FSD Widgets Layer)
+ * 5TOT Đà Nẵng — Staff Notifications, Deadlines & Officer/Manager Application Queue Widgets (FSD Widgets Layer)
  */
 
 import React, { useState } from 'react';
@@ -78,7 +78,7 @@ export const StaffNotificationsRouteView: React.FC<
             Thông báo nghiệp vụ
           </h1>
           <p className="text-[13px] text-[#526B7C] mt-0.5">
-            Cập nhật phân công xét duyệt, phản hồi bổ sung của sinh viên, tiến độ Hội đồng và mốc thời gian cấp Đại học Đà Nẵng.
+            Cập nhật phân công xét duyệt, phản hồi bổ sung của sinh viên, tiến độ Hội đồng và mốc thời gian cấp Thành phố Đà Nẵng.
           </p>
         </div>
       </div>
@@ -293,6 +293,13 @@ export const StaffApplicationQueueRouteView: React.FC<
     if (statusFilter !== 'all') {
       if (statusFilter === 'active_queue') {
         if (app.workflowStatus === 'review_completed') return false;
+      } else if (statusFilter === 'assigned_not_started') {
+        if (
+          app.workflowStatus !== 'assigned_not_started' &&
+          app.workflowStatus !== 'unassigned'
+        ) {
+          return false;
+        }
       } else if (app.workflowStatus !== statusFilter) {
         return false;
       }
@@ -340,7 +347,7 @@ export const StaffApplicationQueueRouteView: React.FC<
           schoolYear: app.schoolYear || '2025–2026',
           submittedAt: app.submittedAt,
           workflowStatusLabel: statusMeta.label,
-          officerName: app.assignment?.officerName || 'Tổ thẩm định ĐHĐN',
+          officerName: app.assignment?.officerName || 'Tổ thẩm định Thành phố',
           assignedAt: app.assignment?.assignedAt || '—',
           reviewProgressLabel: progress.compactProgressLabel,
           supplementStatusLabel:
@@ -372,7 +379,7 @@ export const StaffApplicationQueueRouteView: React.FC<
       const xlsxBytes = generateXlsxBinary({
         report: {
           id: 'ALL_SUBMITTED_APPLICATIONS',
-          label: 'Danh sách hồ sơ Sinh viên 5 tốt cấp Đại học Đà Nẵng',
+          label: 'Danh sách hồ sơ Sinh viên 5 tốt cấp Thành phố Đà Nẵng',
           defaultColumns: [],
         } as any,
         columns: reportCols,
@@ -388,7 +395,7 @@ export const StaffApplicationQueueRouteView: React.FC<
       });
       triggerBrowserDownload(
         blob,
-        `DanhSach_SV5T_DHDN_${new Date().toISOString().slice(0, 10)}.xlsx`
+        `DanhSach_SV5T_DaNang_${new Date().toISOString().slice(0, 10)}.xlsx`
       );
     } finally {
       setIsExporting(false);
@@ -400,7 +407,7 @@ export const StaffApplicationQueueRouteView: React.FC<
       ? 'Hồ sơ cần xử lý'
       : activeRouteId === 'supplements'
       ? 'Theo dõi yêu cầu bổ sung'
-      : 'Hồ sơ xét duyệt cấp Đại học Đà Nẵng';
+      : 'Hồ sơ xét duyệt cấp Thành phố Đà Nẵng';
 
   return (
     <div className="p-6 max-w-[1360px] w-full mx-auto space-y-5">
@@ -527,12 +534,7 @@ export const StaffApplicationQueueRouteView: React.FC<
           <Users size={14} />
           <span>Tập thể Sinh viên 5 tốt</span>
           <span className="px-1.5 py-0.2 rounded-full bg-[#0D78AE]/15 text-[#0D78AE] text-[11px] font-extrabold">
-            {
-              (isBackendMode()
-                ? getAllCollectiveApplications().filter((a) => a.status !== 'draft')
-                : getAllCollectiveApplications()
-              ).length
-            }
+            {getAllCollectiveApplications().filter((a) => a.status !== 'draft').length}
           </span>
         </button>
       </div>
@@ -568,7 +570,7 @@ export const StaffApplicationQueueRouteView: React.FC<
             </option>
             <option value="active_queue">Đang cần xử lý (Chưa hoàn tất)</option>
             <option value="assigned_not_started">
-              Đã phân công · Chưa bắt đầu
+              Chờ thẩm định · Chưa bắt đầu
             </option>
             <option value="under_review">Đang xét</option>
             <option value="supplement_requested">Cần bổ sung (Chờ SV)</option>
@@ -630,10 +632,9 @@ export const StaffApplicationQueueRouteView: React.FC<
           ariaLabel="Danh sách hồ sơ Tập thể Sinh viên 5 tốt"
           columns={collectiveTableColumns}
           data={(() => {
-            const rawCol = getAllCollectiveApplications();
-            const allCol = isBackendMode()
-              ? rawCol.filter((a) => a.status !== 'draft')
-              : rawCol;
+            const allCol = getAllCollectiveApplications().filter(
+              (a) => a.status !== 'draft'
+            );
             return allCol.filter((app) => {
               if (
                 institutionFilter !== 'all' &&
@@ -736,7 +737,7 @@ export const StaffApplicationQueueRouteView: React.FC<
                       {isRecommended && (
                         <div className="text-[11px] text-[#0B64A0] font-bold mt-1 flex items-center gap-1">
                           <CheckCircle2 size={12} className="text-[#0D78AE]" />
-                          <span>Đề xuất cấp ĐHĐN (Đã kèm văn bản PDF)</span>
+                          <span>Đề xuất cấp Thành phố (Đã kèm văn bản PDF)</span>
                         </div>
                       )}
                     </div>

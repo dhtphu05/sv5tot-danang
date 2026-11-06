@@ -49,9 +49,9 @@ function createMockSchoolApp(overrides: Partial<StaffApplicationRecord> = {}): S
       id: 'inst-dut',
       officialName: 'Trường Đại học Bách khoa — ĐHĐN',
     },
-    schoolReviewUnitId: 'unit-dut',
-    schoolYear: '2026–2027',
-    levelLabel: 'Cấp Đại học Đà Nẵng',
+    schoolReviewUnitId: 'unit-udn',
+    schoolYear: '2025–2026',
+    levelLabel: 'Cấp Thành phố Đà Nẵng',
     submittedAt: '12/10/2026 · 09:30',
     submittedDateSortKey: '2026-10-12T09:30',
     updatedAt: '15/10/2026 · 14:00',
@@ -80,49 +80,48 @@ function createMockSchoolApp(overrides: Partial<StaffApplicationRecord> = {}): S
 }
 
 const UDN_OFFICER: StaffUser = {
-  id: 'usr-school-dut',
-  fullName: 'ThS. Nguyễn Hoàng Nam',
-  email: 'canbo.dut@udn.vn',
+  id: 'staff-sch-udn',
+  fullName: 'Ban Thư ký HSV Đại học Đà Nẵng',
+  email: 'canbo.udn@udn.vn',
   primaryRole: 'SCHOOL_OFFICER',
   roles: ['SCHOOL_OFFICER'],
-  schoolReviewUnitId: 'unit-dut',
-  unitLabel: 'Trường Đại học Bách khoa – ĐHĐN',
+  schoolReviewUnitId: 'unit-udn',
+  unitLabel: 'Đại học Đà Nẵng',
+  roleLabel: 'Cán bộ xét sơ tuyển cấp Đơn vị',
+};
+
+const DTU_OFFICER: StaffUser = {
+  id: 'staff-sch-dtu',
+  fullName: 'Cán bộ HSV Đại học Duy Tân',
+  email: 'canbo.dtu@duytan.edu.vn',
+  primaryRole: 'SCHOOL_OFFICER',
+  roles: ['SCHOOL_OFFICER'],
+  schoolReviewUnitId: 'unit-dtu',
+  unitLabel: 'Đại học Duy Tân',
   roleLabel: 'Cán bộ xét sơ tuyển cấp Trường',
 };
 
-const DU_OFFICER: StaffUser = {
-  id: 'usr-school-due',
-  fullName: 'ThS. Lê Thanh Hải',
-  email: 'canbo.due@udn.vn',
-  primaryRole: 'SCHOOL_OFFICER',
-  roles: ['SCHOOL_OFFICER'],
-  schoolReviewUnitId: 'unit-due',
-  unitLabel: 'Trường Đại học Kinh tế – ĐHĐN',
-  roleLabel: 'Cán bộ xét sơ tuyển cấp Trường',
-};
-
-describe('5TOT ĐHĐN — LEAN-4 Production Lean School Review Suite (SF01–SF42)', () => {
+describe('5TOT Đà Nẵng — LEAN-4 Production Lean School Review Suite (SF01–SF42)', () => {
   beforeEach(() => {
     resetDemoBatchState();
   });
 
   // =========================================================================
-  // GROUP 1: 9 Member School Review Units & Unit Isolation (SF01–SF08)
+  // GROUP 1: 24 School Review Units & Unit Isolation (SF01–SF08)
   // =========================================================================
-  describe('Group 1: 9 Member School Review Units & Unit Isolation (SF01–SF08)', () => {
+  describe('Group 1: 24 School Review Units & Unit Isolation (SF01–SF08)', () => {
     const udnMemberPairs: Array<[string, SchoolReviewUnitId]> = [
-      ['inst-dut', 'unit-dut'],
-      ['inst-due', 'unit-due'],
-      ['inst-ued', 'unit-ued'],
-      ['inst-ufl', 'unit-ufl'],
-      ['inst-ute', 'unit-ute'],
-      ['inst-vku', 'unit-vku'],
-      ['inst-vnuk', 'unit-vnuk'],
-      ['inst-smp', 'unit-smp'],
-      ['inst-kontum', 'unit-kontum'],
+      ['inst-dut', 'unit-udn'],
+      ['inst-due', 'unit-udn'],
+      ['inst-ued', 'unit-udn'],
+      ['inst-ufl', 'unit-udn'],
+      ['inst-ute', 'unit-udn'],
+      ['inst-vku', 'unit-udn'],
+      ['inst-vnuk', 'unit-udn'],
+      ['inst-smp', 'unit-udn'],
     ];
 
-    test('SF01: All 9 UDN member institutions resolve strictly to their 9 respective review units', () => {
+    test('SF01: All 8 UDN member institutions resolve strictly to shared unit-udn hub', () => {
       for (const [instId, expectedUnitId] of udnMemberPairs) {
         const app = createMockSchoolApp({
           institution: { id: instId, officialName: `Đơn vị ${instId}` },
@@ -133,17 +132,17 @@ describe('5TOT ĐHĐN — LEAN-4 Production Lean School Review Suite (SF01–SF4
       }
     });
 
-    test('SF02: Member school DUE resolves to unit-due and does not leak to DUT', () => {
-      const appDue = createMockSchoolApp({
-        institution: { id: 'inst-due', officialName: 'Trường Đại học Kinh tế – ĐHĐN' },
-        schoolReviewUnitId: 'unit-due',
+    test('SF02: Standalone university DTU resolves to unit-dtu and does not leak to UDN', () => {
+      const appDtu = createMockSchoolApp({
+        institution: { id: 'inst-dtu', officialName: 'Đại học Duy Tân' },
+        schoolReviewUnitId: 'unit-dtu',
       });
-      assert.equal(getApplicationSchoolReviewUnitId(appDue), 'unit-due');
-      assert.equal(isApplicationInSchoolScope(UDN_OFFICER, appDue), false);
-      assert.equal(isApplicationInSchoolScope(DU_OFFICER, appDue), true);
+      assert.equal(getApplicationSchoolReviewUnitId(appDtu), 'unit-dtu');
+      assert.equal(isApplicationInSchoolScope(UDN_OFFICER, appDtu), false);
+      assert.equal(isApplicationInSchoolScope(DTU_OFFICER, appDtu), true);
     });
 
-    test('SF03: DUT School Officer retrieves applications strictly in unit-dut scope', () => {
+    test('SF03: UDN School Officer retrieves applications strictly in unit-udn scope across all 8 UDN schools', () => {
       const mixedApps: StaffApplicationRecord[] = [
         ...udnMemberPairs.map(([instId, unitId], idx) =>
           createMockSchoolApp({
@@ -152,58 +151,64 @@ describe('5TOT ĐHĐN — LEAN-4 Production Lean School Review Suite (SF01–SF4
             schoolReviewUnitId: unitId,
           })
         ),
+        createMockSchoolApp({
+          applicationId: 'APP-DTU-standalone-1',
+          institution: { id: 'inst-dtu', officialName: 'Đại học Duy Tân' },
+          schoolReviewUnitId: 'unit-dtu',
+        }),
       ];
 
-      const dutScoped = getApplicationsForSchoolOfficer(mixedApps, UDN_OFFICER);
-      assert.equal(dutScoped.length, 1);
-      assert.equal(dutScoped[0].institution.id, 'inst-dut');
-      assert.ok(!dutScoped.some((a) => a.institution.id === 'inst-due'));
+      const udnScoped = getApplicationsForSchoolOfficer(mixedApps, UDN_OFFICER);
+      assert.equal(udnScoped.length, 8);
+      assert.ok(udnScoped.some((a) => a.institution.id === 'inst-dut'));
+      assert.ok(udnScoped.some((a) => a.institution.id === 'inst-due'));
+      assert.ok(!udnScoped.some((a) => a.institution.id === 'inst-dtu'));
     });
 
     test('SF04: School scoping preserves original student institution identities', () => {
       const appDut1 = createMockSchoolApp({
         applicationId: 'APP-DUT-1',
         institution: { id: 'inst-dut', officialName: 'Trường Đại học Bách khoa — ĐHĐN' },
-        schoolReviewUnitId: 'unit-dut',
+        schoolReviewUnitId: 'unit-udn',
       });
-      const appDut2 = createMockSchoolApp({
-        applicationId: 'APP-DUT-2',
-        institution: { id: 'inst-dut', officialName: 'Trường Đại học Bách khoa — ĐHĐN' },
-        schoolReviewUnitId: 'unit-dut',
+      const appDue1 = createMockSchoolApp({
+        applicationId: 'APP-DUE-1',
+        institution: { id: 'inst-due', officialName: 'Trường Đại học Kinh tế — ĐHĐN' },
+        schoolReviewUnitId: 'unit-udn',
       });
 
-      const scoped = getApplicationsForSchoolOfficer([appDut1, appDut2], UDN_OFFICER);
+      const scoped = getApplicationsForSchoolOfficer([appDut1, appDue1], UDN_OFFICER);
       assert.equal(scoped.length, 2);
       assert.equal(scoped[0].institution.id, 'inst-dut');
-      assert.equal(scoped[0].institution.officialName, 'Trường Đại học Bách khoa — ĐHĐN');
+      assert.equal(scoped[1].institution.id, 'inst-due');
     });
 
-    test('SF05: Cross-unit access check forbids DUT officer from reviewing DUE unit application', () => {
-      const appDue = createMockSchoolApp({
-        institution: { id: 'inst-due', officialName: 'Trường Đại học Kinh tế – ĐHĐN' },
-        schoolReviewUnitId: 'unit-due',
+    test('SF05: Cross-unit access check forbids UDN officer from reviewing DTU unit application', () => {
+      const appDtu = createMockSchoolApp({
+        institution: { id: 'inst-dtu', officialName: 'Đại học Duy Tân' },
+        schoolReviewUnitId: 'unit-dtu',
       });
-      const check = canSchoolOfficerReviewApplication(UDN_OFFICER, appDue);
+      const check = canSchoolOfficerReviewApplication(UDN_OFFICER, appDtu);
       assert.equal(check.allowed, false);
       assert.equal(check.reason, 'cross_unit_forbidden');
     });
 
-    test('SF06: DUT officer has full permission to review DUT application', () => {
+    test('SF06: UDN officer has full permission to review UDN member school application', () => {
       const appDut = createMockSchoolApp({
         institution: { id: 'inst-dut', officialName: 'Trường Đại học Bách khoa — ĐHĐN' },
-        schoolReviewUnitId: 'unit-dut',
+        schoolReviewUnitId: 'unit-udn',
       });
       const check = canSchoolOfficerReviewApplication(UDN_OFFICER, appDut);
       assert.equal(check.allowed, true);
       assert.equal(check.canMutate, true);
     });
 
-    test('SF07: Unit configuration defines 9 authoritative scopes for 9 UDN member institutions', () => {
-      assert.equal(AUTHORITATIVE_SCHOOL_REVIEW_UNITS.length, 9);
-      const dutConfig = AUTHORITATIVE_SCHOOL_REVIEW_UNITS.find((u) => u.id === 'unit-dut');
-      assert.ok(dutConfig);
-      assert.equal(dutConfig.code, 'DUT');
-      assert.equal(dutConfig.memberInstitutionIds.length, 1);
+    test('SF07: Unit configuration defines 24 authoritative scopes across Da Nang (unit-udn + 23 standalone units)', () => {
+      assert.equal(AUTHORITATIVE_SCHOOL_REVIEW_UNITS.length, 24);
+      const udnConfig = AUTHORITATIVE_SCHOOL_REVIEW_UNITS.find((u) => u.id === 'unit-udn');
+      assert.ok(udnConfig);
+      assert.equal(udnConfig.code, 'UDN');
+      assert.equal(udnConfig.memberInstitutionIds.length, 8);
     });
 
     test('SF08: Non-school role (e.g. CITY_OFFICER) cannot review school applications', () => {
@@ -878,11 +883,11 @@ describe('5TOT ĐHĐN — LEAN-4 Production Lean School Review Suite (SF01–SF4
       assert.equal(cityIntakeApps[0].applicationId, 'CITY-INTAKE-1');
     });
 
-    test('SF42: Active season canonicalization enforces season-2026-2027 as default', async () => {
+    test('SF42: Active season canonicalization enforces season-2025-2026 as default', async () => {
       const services = resolveDomainServices('DEMO');
       const batchSummary = await services.schoolReview.getSchoolForwardingBatchSummary();
-      assert.equal(batchSummary.seasonCode, '2026–2027');
-      assert.equal(batchSummary.seasonId, 'season-2026-2027');
+      assert.equal(batchSummary.seasonCode, '2025–2026');
+      assert.equal(batchSummary.seasonId, 'season-2025-2026');
     });
   });
 });

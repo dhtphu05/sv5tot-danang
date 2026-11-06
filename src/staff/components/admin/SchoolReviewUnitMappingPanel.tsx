@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — School Review Unit Mapping Panel (Phân tuyến Đơn vị xét sơ tuyển cấp Trường)
+ * 5TOT Đà Nẵng — School Review Unit Mapping Panel (Phân tuyến Đơn vị xét sơ tuyển cấp Trường)
  * Extracted subcomponent for InstitutionManagement.tsx to keep file size modular (<1,000 lines).
  *
  * Enforces ADMIN-REVAMP Section 9:
@@ -53,9 +53,9 @@ export const SchoolReviewUnitMappingPanel: React.FC<
             </span>
           </div>
           <p className="text-[12px] text-[#526B7C] mt-0.5">
-            Mỗi trường/đơn vị đào tạo thành viên Đại học Đà Nẵng (09 đơn vị) có
-            01 Hội đồng Sơ tuyển cấp Trường độc lập (01 đợt trình danh sách/mùa)
-            lập tờ trình đề nghị lên Hội Sinh viên Đại học Đà Nẵng.
+            08 đơn vị thành viên Đại học Đà Nẵng phân tuyến về Cụm ĐHĐN (unit-udn) và
+            23 cơ sở đào tạo độc lập có Hội đồng Sơ tuyển cấp Trường riêng (01 đợt trình
+            danh sách/mùa) lập tờ trình đề nghị lên Hội Sinh viên TP. Đà Nẵng.
           </p>
         </div>
 
@@ -70,8 +70,8 @@ export const SchoolReviewUnitMappingPanel: React.FC<
             <>
               <CheckCircle2 size={14} />
               <span>
-                Phân tuyến hợp lệ ({mappingValidation.udnMemberCount}/9 đơn vị
-                thành viên ĐHĐN)
+                Phân tuyến hợp lệ ({mappingValidation.udnMemberCount}/8 đơn vị
+                thành viên ĐHĐN · {units.length} đơn vị sơ tuyển)
               </span>
             </>
           ) : (
@@ -93,7 +93,7 @@ export const SchoolReviewUnitMappingPanel: React.FC<
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-[12px]">
         {units.map((unit) => {
-          const isUdn = true;
+          const isUdn = unit.id === 'unit-udn';
           return (
             <div
               key={unit.id}

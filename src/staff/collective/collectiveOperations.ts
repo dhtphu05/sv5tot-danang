@@ -41,9 +41,9 @@ export function createCollectiveApplication(payload: {
   }
 
   const routing = resolveSchoolReviewUnit(payload.institutionId);
-  const resolvedUnitId = payload.schoolReviewUnitId || routing.unit?.id || 'unit-dut';
+  const resolvedUnitId = payload.schoolReviewUnitId || routing.unit?.id || 'unit-udn';
   const resolvedUnitName =
-    payload.schoolReviewUnitName || routing.unit?.officialName || 'Trường Đại học Bách khoa – ĐHĐN';
+    payload.schoolReviewUnitName || routing.unit?.officialName || 'Đại học Đà Nẵng';
   const resolvedInstName =
     payload.institutionName || 'Trường Đại học Bách khoa – ĐHĐN';
 
@@ -342,8 +342,8 @@ export interface CollectiveSubmissionResult {
 }
 
 /**
- * Nộp hồ sơ trực tiếp lên cấp Đại học Đà Nẵng (Prompt S4.8.2 Sections 44–49)
- * - Nộp trực tiếp lên Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * Nộp hồ sơ trực tiếp lên cấp Thành phố (Prompt S4.8.2 Sections 44–49)
+ * - Nộp trực tiếp lên Hội Sinh viên Việt Nam TP. Đà Nẵng
  * - KHÔNG qua khâu xác nhận hoặc phê duyệt của Trường
  * - Kiểm tra tính toàn vẹn và đảm bảo tính Idempotent
  */
@@ -365,7 +365,7 @@ export function submitCollectiveDirectlyToCity(
   ) {
     return {
       success: true,
-      message: 'Hồ sơ đã được nộp lên cấp Đại học Đà Nẵng trước đó.',
+      message: 'Hồ sơ đã được nộp lên cấp Thành phố trước đó.',
       application: app,
       alreadySubmitted: true,
     };
@@ -446,13 +446,13 @@ export function submitCollectiveDirectlyToCity(
         id: `aud-${Date.now()}`,
         action: isSupplementResubmission
           ? 'Gửi lại hồ sơ tập thể sau khi bổ sung minh chứng'
-          : 'Nộp hồ sơ trực tiếp lên cấp Đại học Đà Nẵng',
+          : 'Nộp hồ sơ trực tiếp lên cấp Thành phố',
         actorName: actor.name,
         actorRole: actor.role || 'Người lập hồ sơ tập thể',
         timestamp: now,
         details: isSupplementResubmission
-          ? 'Đại diện tập thể đã hoàn tất cập nhật kê khai/minh chứng theo yêu cầu bổ sung và gửi lại cấp Đại học Đà Nẵng thẩm định.'
-          : 'Hồ sơ đã được nộp trực tiếp đến Hội Sinh viên Việt Nam Đại học Đà Nẵng để tiếp nhận và xét chọn (không qua khâu trung gian của Trường).',
+          ? 'Đại diện tập thể đã hoàn tất cập nhật kê khai/minh chứng theo yêu cầu bổ sung và gửi lại cấp Thành phố thẩm định.'
+          : 'Hồ sơ đã được nộp trực tiếp đến Hội Sinh viên Việt Nam Thành phố Đà Nẵng để tiếp nhận và xét chọn (không qua khâu trung gian của Trường).',
       },
     ],
   };
@@ -461,8 +461,8 @@ export function submitCollectiveDirectlyToCity(
   return {
     success: true,
     message: isSupplementResubmission
-      ? 'Đã gửi hồ sơ bổ sung lên cấp Đại học Đà Nẵng thành công!'
-      : 'Nộp hồ sơ trực tiếp lên cấp Đại học Đà Nẵng thành công!',
+      ? 'Đã gửi hồ sơ bổ sung lên cấp Thành phố thành công!'
+      : 'Nộp hồ sơ trực tiếp lên cấp Thành phố thành công!',
     application: updatedApp,
   };
 }
@@ -585,18 +585,18 @@ export function confirmAndForwardToCity(
       schoolReviewUnitName: actor.unitName,
       institutionId: app.institutionId,
       institutionName: app.institutionName,
-      forwardingDestination: 'Hội Sinh viên Việt Nam Đại học Đà Nẵng',
-      signOffNote: 'Xác nhận hồ sơ tập thể hợp lệ, chuyển cấp ĐHĐN xét duyệt.',
+      forwardingDestination: 'Hội Sinh viên Việt Nam Thành phố Đà Nẵng',
+      signOffNote: 'Xác nhận hồ sơ tập thể hợp lệ, chuyển cấp Thành phố xét duyệt.',
     },
     auditHistory: [
       ...app.auditHistory,
       {
         id: `aud-${Date.now()}`,
-        action: 'Đơn vị xác nhận & Chuyển cấp ĐHĐN',
+        action: 'Đơn vị xác nhận & Chuyển cấp Thành phố',
         actorName: actor.name,
         actorRole: actor.role,
         timestamp: now,
-        details: `Đơn vị ${actor.unitName} đã ký xác nhận và chuyển hồ sơ lên Hội Sinh viên Việt Nam Đại học Đà Nẵng.`,
+        details: `Đơn vị ${actor.unitName} đã ký xác nhận và chuyển hồ sơ lên Hội Sinh viên Việt Nam Thành phố Đà Nẵng.`,
       },
     ],
   };

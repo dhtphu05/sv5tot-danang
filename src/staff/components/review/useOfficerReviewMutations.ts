@@ -2,7 +2,7 @@ import { isMatchingDeclarationId, isMatchingRequirementId } from '../../../compo
 import { parseFlexibleDateTime } from '../../../utils/dateUtils';
 import { apiRequest } from '../../../shared/api/httpClient';
 /**
- * 5TOT ĐHĐN — Officer Review Mutations Hook
+ * 5TOT Đà Nẵng — Officer Review Mutations Hook
  * Extracted mutation handlers for OfficerReviewWorkspace:
  * - Start review session
  * - Update scope status
@@ -101,13 +101,15 @@ export function useOfficerReviewMutations({
       const targetAppId = applicationRecord?.applicationId || studentApp.applicationId;
       const targetStaffToken =
         (currentUser as any).token ||
-        `staff-token-${currentUser.id || (isSchoolStage ? 'staff-sch-dut' : 'staff-off-nam')}`;
+        `staff-token-${currentUser.id || (isSchoolStage ? 'staff-sch-udn' : 'staff-off-nam')}`;
       const staffActor = {
-        userId: currentUser.id || (isSchoolStage ? 'staff-sch-dut' : 'staff-off-nam'),
+        userId: currentUser.id || (isSchoolStage ? 'staff-sch-udn' : 'staff-off-nam'),
         userName: currentUser.fullName,
-        userEmail: currentUser.email || (isSchoolStage ? 'canbo.dut@udn.vn' : 'canbo.dhdn@udn.vn'),
+        userEmail:
+          currentUser.email ||
+          (isSchoolStage ? 'canbo.udn@udn.vn' : 'canbo.thanhpho@hsvdanang.vn'),
         role: currentUser.primaryRole || (isSchoolStage ? 'SCHOOL_OFFICER' : 'CITY_OFFICER'),
-        unitId: currentUser.schoolReviewUnitId || (isSchoolStage ? 'unit-dut' : undefined),
+        unitId: currentUser.schoolReviewUnitId || (isSchoolStage ? 'unit-udn' : undefined),
         token: targetStaffToken,
       };
 
@@ -288,13 +290,15 @@ export function useOfficerReviewMutations({
       const targetAppId = applicationRecord?.applicationId || studentApp.applicationId;
       const targetStaffToken =
         (currentUser as any).token ||
-        `staff-token-${currentUser.id || (isSchoolStage ? 'staff-sch-dut' : 'staff-off-nam')}`;
+        `staff-token-${currentUser.id || (isSchoolStage ? 'staff-sch-udn' : 'staff-off-nam')}`;
       const staffActor = {
-        userId: currentUser.id || (isSchoolStage ? 'staff-sch-dut' : 'staff-off-nam'),
+        userId: currentUser.id || (isSchoolStage ? 'staff-sch-udn' : 'staff-off-nam'),
         userName: currentUser.fullName,
-        userEmail: currentUser.email || (isSchoolStage ? 'canbo.dut@udn.vn' : 'canbo.dhdn@udn.vn'),
+        userEmail:
+          currentUser.email ||
+          (isSchoolStage ? 'canbo.udn@udn.vn' : 'canbo.thanhpho@hsvdanang.vn'),
         role: currentUser.primaryRole || (isSchoolStage ? 'SCHOOL_OFFICER' : 'CITY_OFFICER'),
-        unitId: currentUser.schoolReviewUnitId || (isSchoolStage ? 'unit-dut' : undefined),
+        unitId: currentUser.schoolReviewUnitId || (isSchoolStage ? 'unit-udn' : undefined),
         token: targetStaffToken,
       };
 
@@ -413,7 +417,7 @@ export function useOfficerReviewMutations({
     );
     showToast(
       isSchoolStage
-        ? 'Đã hoàn tất xét sơ tuyển cấp Trường. Hồ sơ đã được cập nhật sang danh sách Chờ đề xuất chuyển cấp ĐHĐN.'
+        ? 'Đã hoàn tất xét sơ tuyển cấp Trường. Hồ sơ đã được cập nhật sang danh sách Chờ đề xuất chuyển cấp Thành phố.'
         : 'Đã hoàn tất phần xét hồ sơ. Hồ sơ đã được chuyển sang bước xử lý tiếp theo.'
     );
     return true;

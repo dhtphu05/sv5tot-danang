@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Real Backend Mode API Service Adapter
+ * 5TOT Đà Nẵng — Real Backend Mode API Service Adapter
  * Implements DomainServicesBundle backed strictly by Express REST APIs,
  * server-side database persistence, secure file storage, and RBAC middleware.
  *
@@ -100,6 +100,34 @@ export const backendServicesAdapter: DomainServicesBundle = {
         });
       }
       return res.data;
+    },
+
+    async changePassword({ currentPassword, newPassword }) {
+      const res = await apiRequest<{
+        success: boolean;
+        message?: string;
+        data?: AuthSessionPayload;
+      }>('/api/v2/portal/auth/change-password', {
+        method: 'POST',
+        body: { currentPassword, newPassword },
+      });
+      if (res.data?.user && res.data.token) {
+        setApiActorContext({
+          userId: res.data.user.id,
+          userName: res.data.user.fullName,
+          userEmail: res.data.user.email,
+          role: res.data.user.role,
+          unitId: res.data.user.unitId,
+          studentCode: res.data.user.studentCode,
+          institutionName: res.data.user.institutionName,
+          token: res.data.token,
+        });
+      }
+      return {
+        success: true,
+        message: res.message || 'Đổi mật khẩu thành công.',
+        session: res.data,
+      };
     },
 
     async getCurrentSession() {

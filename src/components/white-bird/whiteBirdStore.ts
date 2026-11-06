@@ -1,7 +1,7 @@
 /**
- * 5TOT Đại học Đà Nẵng — Giải thưởng "Cánh chim trắng" Store & Backend Sync
- * Căn cứ Quyết định số 14-QĐ/ĐHĐN-HSV ngày 04/10/2022 của Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng.
- * Hồ sơ Giải thưởng Cánh chim trắng được nộp thẳng lên Văn phòng Hội Sinh viên Việt Nam Đại học Đà Nẵng.
+ * 5TOT Đà Nẵng — Giải thưởng "9/1" Cấp Thành phố Store & Backend Sync
+ * Đơn vị tổ chức: Ban Thư ký Hội Sinh viên Việt Nam Thành phố Đà Nẵng.
+ * Hồ sơ Giải thưởng 9/1 được nộp thẳng lên Văn phòng Hội Sinh viên Việt Nam Thành phố Đà Nẵng.
  */
 
 import { isBackendMode } from '../../shared/config/executionMode';
@@ -88,8 +88,8 @@ export function getAllWhiteBirdApplications(): WhiteBirdApplication[] {
 }
 
 /**
- * Trả về danh sách hồ sơ Giải thưởng Cánh chim trắng đã nộp thẳng lên Đại học Đà Nẵng.
- * Tuyệt đối không hiển thị hồ sơ đang lưu nháp ('draft') của sinh viên ở cổng cán bộ / Hội đồng ĐHĐN.
+ * Trả về danh sách hồ sơ Giải thưởng 9/1 đã nộp thẳng lên cấp Thành phố.
+ * Tuyệt đối không hiển thị hồ sơ đang lưu nháp ('draft') của sinh viên ở cổng cán bộ / Hội đồng Thành phố.
  */
 export function getSubmittedWhiteBirdApplicationsForUdn(): WhiteBirdApplication[] {
   return storeApps.filter((app) => app.status !== 'draft');
@@ -134,15 +134,30 @@ export function createWhiteBirdApplication(payload: {
   preparedByUserEmail?: string;
 }): WhiteBirdApplication {
   const now = new Date().toISOString();
-  const id = `CCT-2026-DN-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+  const id = `GT91-2026-DN-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
   const academicYear = payload.academicYear || '2025–2026';
   const resolvedNominationTitle =
     payload.category === 'TRUYEN_LUA'
       ? (payload.nominationTitle?.trim() || `Báo cáo thành tích cá nhân – ${payload.nomineeName.trim()}`)
-      : (payload.nominationTitle?.trim() || 'Hồ sơ đề cử Giải thưởng Cánh chim trắng');
+      : (payload.nominationTitle?.trim() || 'Hồ sơ đề cử Giải thưởng 9/1 cấp Thành phố');
 
-  const institutionId = payload.institutionId || 'DUT';
-  const institutionName = payload.institutionName || 'Trường Đại học Bách khoa – ĐHĐN';
+  const institutionId = payload.institutionId || 'inst-dut';
+  const institutionName = payload.institutionName || 'Trường Đại học Bách khoa - Đại học Đà Nẵng';
+
+  const udnInstIds = new Set([
+    'inst-dut',
+    'inst-due',
+    'inst-ued',
+    'inst-ufl',
+    'inst-ufls',
+    'inst-ute',
+    'inst-vku',
+    'inst-smp',
+    'inst-vnuk',
+  ]);
+  const derivedUnitId = udnInstIds.has(institutionId.toLowerCase())
+    ? 'unit-udn'
+    : `unit-${institutionId.toLowerCase().replace(/^inst-/, '')}`;
 
   const newApp: WhiteBirdApplication = {
     id,
@@ -153,7 +168,7 @@ export function createWhiteBirdApplication(payload: {
     studentId: (payload.studentId || '').trim(),
     institutionId,
     institutionName,
-    schoolReviewUnitId: payload.schoolReviewUnitId || `unit-${institutionId.toLowerCase()}`,
+    schoolReviewUnitId: payload.schoolReviewUnitId || derivedUnitId,
     schoolReviewUnitName: payload.schoolReviewUnitName || `Hội Sinh viên ${institutionName}`,
     facultyName: (payload.facultyName || '').trim(),
     className: (payload.className || '').trim(),
@@ -161,7 +176,7 @@ export function createWhiteBirdApplication(payload: {
     contactPhone: (payload.contactPhone || '').trim(),
     preparedByUserId: payload.preparedByUserId || 'std-user',
     preparedByUserName: payload.preparedByUserName || payload.nomineeName.trim() || 'Sinh viên nộp hồ sơ',
-    preparedByUserEmail: payload.preparedByUserEmail || 'sinhvien@udn.vn',
+    preparedByUserEmail: payload.preparedByUserEmail || 'sinhvien@danang.edu.vn',
     status: 'draft',
     createdAt: now,
     updatedAt: now,
@@ -757,8 +772,8 @@ export function validateWhiteBirdReadiness(app: WhiteBirdApplication): WhiteBird
       } else {
         missingReasons.push(
           app.category === 'TRUYEN_LUA'
-            ? 'WB03: Cần đính kèm tài liệu minh chứng chức vụ / thành tích tiêu biểu (Khoản 6.2 Điều 6).'
-            : 'WB03: Cần kê khai tóm tắt giải thưởng đạt được và đính kèm minh chứng từ cấp ĐHĐN trở lên (Khoản 6.3 Điều 6).'
+            ? 'WB03: Cần đính kèm tài liệu minh chứng chức vụ / thành tích tiêu biểu theo Quy chế Giải thưởng 9/1.'
+            : 'WB03: Cần kê khai tóm tắt giải thưởng / kết quả áp dụng và đính kèm minh chứng từ cấp Trường trở lên.'
         );
       }
     }
@@ -786,15 +801,15 @@ export function submitWhiteBirdApplication(appId: string): {
 } {
   const idx = storeApps.findIndex((a) => a.id === appId);
   if (idx < 0) {
-    return { success: false, error: 'Không tìm thấy hồ sơ Giải thưởng Cánh chim trắng.' };
+    return { success: false, error: 'Không tìm thấy hồ sơ Giải thưởng 9/1.' };
   }
   const current = storeApps[idx];
   const readiness = validateWhiteBirdReadiness(current);
   if (!readiness.canSubmit) {
     const defaultMsg =
       current.category === 'UOM_MAM'
-        ? 'Hồ sơ chưa hoàn thiện đủ 2 thành phần bắt buộc (WB01, WB02) theo Điều 6.'
-        : 'Hồ sơ chưa hoàn thiện đủ 3 thành phần theo Điều 6.';
+        ? 'Hồ sơ chưa hoàn thiện đủ 2 thành phần bắt buộc (WB01, WB02) theo quy định.'
+        : 'Hồ sơ chưa hoàn thiện đủ 3 thành phần theo quy định.';
     return {
       success: false,
       error: readiness.missingReasons[0] || defaultMsg,
@@ -832,7 +847,7 @@ export function submitWhiteBirdApplication(appId: string): {
 }
 
 /**
- * Cán bộ xét duyệt cấp Đại học Đà Nẵng chấm từng thành phần WB01, WB02, WB03
+ * Cán bộ xét duyệt cấp Thành phố chấm từng thành phần WB01, WB02, WB03
  */
 export function reviewWhiteBirdRequirement(
   appId: string,
@@ -882,7 +897,7 @@ export function reviewWhiteBirdRequirement(
 }
 
 /**
- * Cán bộ / Quản lý cấp Đại học Đà Nẵng yêu cầu sinh viên bổ sung hồ sơ Giải thưởng Cánh chim trắng
+ * Cán bộ / Quản lý cấp Thành phố yêu cầu sinh viên bổ sung hồ sơ Giải thưởng 9/1
  */
 export function requestWhiteBirdSupplementFromUdn(
   appId: string,
@@ -911,7 +926,7 @@ export function requestWhiteBirdSupplementFromUdn(
 }
 
 /**
- * Cán bộ / Quản lý cấp Đại học Đà Nẵng hoàn tất thẩm định và trình Hội đồng xét duyệt Giải thưởng Cánh chim trắng
+ * Cán bộ / Quản lý cấp Thành phố hoàn tất thẩm định và trình Hội đồng xét duyệt Giải thưởng 9/1
  */
 export function completeWhiteBirdOfficerReviewForCommittee(
   appId: string,
@@ -944,7 +959,7 @@ export function completeWhiteBirdOfficerReviewForCommittee(
 }
 
 /**
- * Hội đồng xét duyệt cấp Đại học Đà Nẵng ra quyết định Công nhận / Không công nhận Giải thưởng Cánh chim trắng
+ * Hội đồng xét duyệt cấp Thành phố ra quyết định Công nhận / Không công nhận Giải thưởng 9/1
  */
 export function recordWhiteBirdCommitteeDecision(
   appId: string,
@@ -962,7 +977,7 @@ export function recordWhiteBirdCommitteeDecision(
     ...current,
     status: outcome,
     decisionNumber:
-      decisionNumber.trim() || (outcome === 'recognized' ? '14-QĐ/ĐHĐN-HSV-CCT' : ''),
+      decisionNumber.trim() || (outcome === 'recognized' ? '09/QĐ-HSVTP' : ''),
     decisionDate: now,
     councilNote: councilNote.trim(),
     decidedByName,

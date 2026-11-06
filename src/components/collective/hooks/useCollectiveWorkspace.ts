@@ -187,7 +187,7 @@ export function useCollectiveWorkspace({
         return { label: 'Đang hoàn thiện hồ sơ', style: 'text-[#0D78AE] bg-[#EAF6FC] border-[#CFE3F0]' };
       case 'city_supplement_pending':
       case 'returned_for_correction':
-        return { label: 'Cần bổ sung hồ sơ theo yêu cầu ĐHĐN', style: 'text-[#B45309] bg-[#FFFBEB] border-[#FDE68A]' };
+        return { label: 'Cần bổ sung hồ sơ theo yêu cầu Thành phố', style: 'text-[#B45309] bg-[#FFFBEB] border-[#FDE68A]' };
       case 'city_supplement_returned':
         return { label: 'Đã gửi bổ sung — Chờ thẩm định lại', style: 'text-[#0D78AE] bg-[#EAF6FC] border-[#CFE3F0]' };
       case 'city_unassigned':
@@ -486,8 +486,8 @@ export function useCollectiveWorkspace({
       setIsPreSubmitOpen(false);
       showToast(
         isResubmittingSupplement
-          ? 'Đã gửi hồ sơ bổ sung lên Hội Sinh viên Việt Nam Đại học Đà Nẵng thành công!'
-          : 'Hồ sơ đã được nộp trực tiếp lên Hội Sinh viên Việt Nam Đại học Đà Nẵng thành công!'
+          ? 'Đã gửi hồ sơ bổ sung lên Hội Sinh viên Việt Nam Thành phố Đà Nẵng thành công!'
+          : 'Hồ sơ đã được nộp trực tiếp lên Hội Sinh viên Việt Nam Thành phố Đà Nẵng thành công!'
       );
       if (onApplicationUpdated) {
         onApplicationUpdated(result.application);

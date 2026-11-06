@@ -90,7 +90,7 @@ describe('5TOT ĐHĐN — AI Review Copilot (AI-UX2 Suite)', () => {
     it('Regulation citations are grounded in official 2025–2026 SV5T regulations', () => {
       for (const key of Object.keys(DEMO_AI_FINDINGS)) {
         const f = DEMO_AI_FINDINGS[key];
-        assert.match(f.applicableRegulation, /Quy chế SV5T cấp Đại học Đà Nẵng 2025–2026/);
+        assert.match(f.applicableRegulation, /Quy chế SV5T cấp Thành phố Đà Nẵng 2025–2026/);
       }
     });
   });
@@ -352,9 +352,9 @@ describe('5TOT ĐHĐN — AI Review Copilot (AI-UX2 Suite)', () => {
       assert.ok(volAgg);
       assert.equal(volAgg.activityCount, 3);
       assert.equal(volAgg.bloodDonationCount, 1);
-      assert.equal(volAgg.threshold, 3);
+      assert.equal(volAgg.threshold, 5);
       assert.equal(volAgg.thresholdMet, true);
-      assert.ok(volAgg.totalDaysDeclared >= 3);
+      assert.ok(volAgg.totalDaysDeclared >= 5);
     });
   });
 });

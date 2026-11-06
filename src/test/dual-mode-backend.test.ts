@@ -590,7 +590,7 @@ describe('5TOT ĐHĐN — Dual-Mode Architecture & Real Backend E2E Suite', () =
     const { getDeclarationsForRequirement } = await import('../staff/reviewSelectors');
     const { buildCleanStudentApplication } = await import('../demo/fixtures/studentApplication');
 
-    // 1. Student logs in & creates clean application for Trường Đại học Kinh tế - ĐHĐN (inst-due -> unit-due)
+    // 1. Student logs in & creates clean application for Trường Đại học Kinh tế - ĐHĐN (inst-due -> unit-udn)
     const studentApp = buildCleanStudentApplication({
       fullName: 'Lê Thị Thu Hà',
       studentId: '201122334',
@@ -600,7 +600,7 @@ describe('5TOT ĐHĐN — Dual-Mode Architecture & Real Backend E2E Suite', () =
       academicYear: '2025–2026',
     });
     assert.equal(studentApp.applicationId, 'APP-2026-DN-201122334');
-    assert.equal(studentApp.schoolReviewUnitId, 'unit-due');
+    assert.equal(studentApp.schoolReviewUnitId, 'unit-udn');
     assert.equal(studentApp.applicantProfileSnapshot?.institutionId, 'inst-due');
 
     await services.individual.createStudentApplication({
@@ -624,16 +624,16 @@ describe('5TOT ĐHĐN — Dual-Mode Architecture & Real Backend E2E Suite', () =
         id: clientEvId,
         ownerTrack: 'INDIVIDUAL',
         applicationId: studentApp.applicationId,
-        requirementOrCriterionId: 'academic-thesis',
-        fileName: 'khoa-luan-tot-nghiep-9.2.pdf',
+        requirementOrCriterionId: 'academic-paper',
+        fileName: 'bai-bao-khoa-hoc-qtkd-2026.pdf',
         fileType: 'pdf',
         fileSizeBytes: 2048,
-        base64Content: Buffer.from('%PDF-1.4 Khoa luan tot nghiep 9.2').toString('base64'),
+        base64Content: Buffer.from('%PDF-1.4 Bai bao khoa hoc QTKD 2026').toString('base64'),
       },
     });
     assert.equal(uploadedEvRes.data.id, clientEvId);
 
-    // 3. Populate declarations in separated QĐ 12 requirement IDs (inside crit.groups) + metadata + evidence
+    // 3. Populate declarations in City 17-item requirement IDs (inside crit.groups) + metadata + evidence
     const addDeclToGroupReq = (
       criterionId: 'ethics' | 'academic' | 'physical' | 'volunteer' | 'integration',
       requirementId: string,
@@ -672,16 +672,16 @@ describe('5TOT ĐHĐN — Dual-Mode Architecture & Real Backend E2E Suite', () =
       metadata: { gpaSem1: '3.65', gpaSem2: '3.71', gpaYear: '3.68' },
       evidence: [],
     });
-    addDeclToGroupReq('academic', 'academic-thesis', {
-      id: 'decl-due-thesis',
-      requirementId: 'academic-thesis',
-      title: 'Khóa luận tốt nghiệp đạt 9.2/10 điểm',
-      description: 'Bảo vệ xuất sắc trước Hội đồng Khoa QTKD',
-      metadata: { thesisScore: '9.2' },
+    addDeclToGroupReq('academic', 'academic-paper', {
+      id: 'decl-due-paper',
+      requirementId: 'academic-paper',
+      title: 'Bài báo đăng Tạp chí Khoa học Kinh tế & Quản trị 2026',
+      description: 'ISSN 1859-1531 · Tác giả chính',
+      metadata: { issnCode: '1859-1531' },
       evidence: [
         {
           id: clientEvId,
-          fileName: 'khoa-luan-tot-nghiep-9.2.pdf',
+          fileName: 'bai-bao-khoa-hoc-qtkd-2026.pdf',
           fileType: 'pdf',
           fileSize: '2 KB',
           uploadedAt: '27/10/2026',
@@ -689,16 +689,16 @@ describe('5TOT ĐHĐN — Dual-Mode Architecture & Real Backend E2E Suite', () =
         },
       ],
     });
-    addDeclToGroupReq('physical', 'physical-club', {
-      id: 'decl-due-club',
-      requirementId: 'physical-club',
-      title: 'Thành viên tích cực CLB Cầu lông ĐH Kinh tế',
-      description: 'Sinh hoạt định kỳ hàng tuần năm học 2025–2026',
+    addDeclToGroupReq('physical', 'physical-khoe', {
+      id: 'decl-due-khoe',
+      requirementId: 'physical-khoe',
+      title: 'Đạt danh hiệu Thanh niên khỏe cấp Trường năm học 2025–2026',
+      description: 'Hội Sinh viên ĐH Kinh tế chứng nhận',
       evidence: [],
     });
-    addDeclToGroupReq('volunteer', 'volunteer-campaign', {
+    addDeclToGroupReq('volunteer', 'volunteer-activities', {
       id: 'decl-due-vol',
-      requirementId: 'volunteer-campaign',
+      requirementId: 'volunteer-activities',
       title: 'Chiến dịch Mùa hè xanh 2026 (05 ngày tình nguyện)',
       description: 'Tham gia đội hình tình nguyện tại huyện Hòa Vang',
       metadata: { volunteerDays: '5' },
@@ -711,10 +711,10 @@ describe('5TOT ĐHĐN — Dual-Mode Architecture & Real Backend E2E Suite', () =
       description: 'Chứng nhận Hội Sinh viên ĐH Kinh tế',
       evidence: [],
     });
-    addDeclToGroupReq('integration', 'integration-activity', {
+    addDeclToGroupReq('integration', 'integration-intl', {
       id: 'decl-due-act',
-      requirementId: 'integration-activity',
-      title: 'Tham gia Ngày hội Giao lưu Văn hóa Quốc tế ĐHĐN 2026',
+      requirementId: 'integration-intl',
+      title: 'Tham gia Diễn đàn Giao lưu Sinh viên Quốc tế Đà Nẵng 2026',
       description: 'Tham gia tích cực',
       evidence: [],
     });
@@ -738,7 +738,7 @@ describe('5TOT ĐHĐN — Dual-Mode Architecture & Real Backend E2E Suite', () =
         evidenceFiles: [
           {
             id: clientEvId,
-            name: 'khoa-luan-tot-nghiep-9.2.pdf',
+            name: 'bai-bao-khoa-hoc-qtkd-2026.pdf',
             fileType: 'pdf',
             size: '2 KB',
             uploadedAt: '27/10/2026',
@@ -757,8 +757,8 @@ describe('5TOT ĐHĐN — Dual-Mode Architecture & Real Backend E2E Suite', () =
     // Also add a 2nd "Thành tích khác" declaration via incremental PUT /declarations endpoint
     const secondOtherDecl = {
       id: 'decl-due-other-2',
-      value: 'Giải Nhất Cuộc thi Khởi nghiệp Đổi mới Sáng tạo ĐHĐN 2026',
-      detail: 'Đạt Giải Nhất toàn đoàn · Cấp Đại học Đà Nẵng',
+      value: 'Giải Nhất Cuộc thi Khởi nghiệp Đổi mới Sáng tạo Đà Nẵng 2026',
+      detail: 'Đạt Giải Nhất toàn đoàn · Cấp Thành phố',
       date: '02/10/2026',
       status: 'declared' as const,
       evidenceFiles: [],
@@ -792,16 +792,16 @@ describe('5TOT ĐHĐN — Dual-Mode Architecture & Real Backend E2E Suite', () =
     );
     assert.equal(submitRes.success, true);
 
-    // 5. School Officer logs in and fetches review-workspace -> verify 100% of declarations, otherAchievements, metadata, and evidence are preserved
+    // 5. School Officer (unit-udn) logs in and fetches review-workspace
     const schoolAuth = await services.auth.loginWithCredentials({
-      email: 'an.nv@udn.vn',
+      email: 'canbo.udn@udn.vn',
       preferredTrack: 'STAFF',
     });
     const schoolActor = {
       id: schoolAuth.user.id,
       name: schoolAuth.user.fullName,
       role: 'SCHOOL_OFFICER',
-      unitId: 'unit-due',
+      unitId: 'unit-udn',
     };
 
     const schoolWsRes = await apiRequest<{
@@ -821,26 +821,26 @@ describe('5TOT ĐHĐN — Dual-Mode Architecture & Real Backend E2E Suite', () =
     );
     assert.equal(
       schoolWsBundle.studentApplication.otherAchievements?.[1].value,
-      'Giải Nhất Cuộc thi Khởi nghiệp Đổi mới Sáng tạo ĐHĐN 2026'
+      'Giải Nhất Cuộc thi Khởi nghiệp Đổi mới Sáng tạo Đà Nẵng 2026'
     );
     assert.equal(
       schoolWsBundle.studentApplication.otherAchievements?.[0].evidenceFiles?.[0]?.id,
       clientEvId
     );
-    const thesisDecls = getDeclarationsForRequirement(
+    const paperDecls = getDeclarationsForRequirement(
       schoolWsBundle.studentApplication,
       'academic',
-      'academic-thesis'
+      'academic-paper'
     );
-    assert.equal(thesisDecls.length, 1);
+    assert.equal(paperDecls.length, 1);
     assert.equal(
-      (thesisDecls[0] as any).title || thesisDecls[0].value,
-      'Khóa luận tốt nghiệp đạt 9.2/10 điểm'
+      (paperDecls[0] as any).title || paperDecls[0].value,
+      'Bài báo đăng Tạp chí Khoa học Kinh tế & Quản trị 2026'
     );
-    assert.equal(thesisDecls[0].metadata?.thesisScore, '9.2');
-    const thesisEvList = thesisDecls[0].evidence || thesisDecls[0].evidenceFiles || [];
-    assert.equal(thesisEvList.length, 1);
-    assert.equal(thesisEvList[0].id, clientEvId);
+    assert.equal(paperDecls[0].metadata?.issnCode, '1859-1531');
+    const paperEvList = paperDecls[0].evidence || paperDecls[0].evidenceFiles || [];
+    assert.equal(paperEvList.length, 1);
+    assert.equal(paperEvList[0].id, clientEvId);
 
     const langDecls = getDeclarationsForRequirement(
       schoolWsBundle.studentApplication,
@@ -860,8 +860,8 @@ describe('5TOT ĐHĐN — Dual-Mode Architecture & Real Backend E2E Suite', () =
       criterionId: 'volunteer',
       criterionName: 'Tình nguyện tốt',
       criterionNumber: 4,
-      requirementId: 'volunteer-campaign',
-      requirementTitle: 'Tham gia chiến dịch Mùa hè xanh / Tiếp sức mùa thi',
+      requirementId: 'volunteer-activities',
+      requirementTitle: 'Hoạt động tình nguyện tích lũy (Tối thiểu 05 ngày/năm)',
       declarationId: 'decl-due-vol',
       declarationTitle: 'Chiến dịch Mùa hè xanh 2026 (05 ngày tình nguyện)',
       scopeLevel: 'declaration',
@@ -880,7 +880,7 @@ describe('5TOT ĐHĐN — Dual-Mode Architecture & Real Backend E2E Suite', () =
           ...(schoolWsBundle.workspace || {
             applicationId: studentApp.applicationId,
             reviewStage: 'SCHOOL',
-            reviewUnitId: 'unit-due',
+            reviewUnitId: 'unit-udn',
             hasStartedReview: true,
             isCitySupplementWindowClosed: false,
             scopeRecords: {},
@@ -895,10 +895,10 @@ describe('5TOT ĐHĐN — Dual-Mode Architecture & Real Backend E2E Suite', () =
               scopeKey: 'decl:decl-due-vol',
               applicationId: studentApp.applicationId,
               criterionId: 'volunteer',
-              requirementId: 'volunteer-campaign',
+              requirementId: 'volunteer-activities',
               declarationId: 'decl-due-vol',
-              reviewerId: 'staff-school-due',
-              reviewerName: 'Cán bộ Trường ĐH Kinh tế',
+              reviewerId: 'staff-sch-udn',
+              reviewerName: 'Ban Thư ký HSV Đại học Đà Nẵng',
               status: 'needs_supplement',
               internalNote: supReq.message,
             },
@@ -920,9 +920,9 @@ describe('5TOT ĐHĐN — Dual-Mode Architecture & Real Backend E2E Suite', () =
     assert.equal(reloadedStudentApp?.otherAchievements?.length, 2);
 
     // Student submits supplement response
-    addDeclToGroupReq('volunteer', 'volunteer-campaign', {
+    addDeclToGroupReq('volunteer', 'volunteer-activities', {
       id: 'decl-due-vol',
-      requirementId: 'volunteer-campaign',
+      requirementId: 'volunteer-activities',
       title: 'Chiến dịch Mùa hè xanh 2026 (05 ngày tình nguyện - QĐ số 45/QĐ-HSV)',
       description: 'Đã bổ sung số QĐ công nhận chiến sĩ Mùa hè xanh 2026',
       metadata: { volunteerDays: '5', decisionNo: '45/QĐ-HSV' },
@@ -946,7 +946,7 @@ describe('5TOT ĐHĐN — Dual-Mode Architecture & Real Backend E2E Suite', () =
     await services.schoolReview.completeSchoolPreliminaryReview({
       applicationId: studentApp.applicationId,
       recommendation: 'recommended',
-      summaryNote: 'Hồ sơ đầy đủ minh chứng hợp lệ theo QĐ 12/ĐHĐN-HSV.',
+      summaryNote: 'Hồ sơ đầy đủ minh chứng hợp lệ theo Hướng dẫn 14-HD/BTK-HSVTP.',
       actor: schoolActor,
     });
 
@@ -980,20 +980,20 @@ describe('5TOT ĐHĐN — Dual-Mode Architecture & Real Backend E2E Suite', () =
     const cityVolDecls = getDeclarationsForRequirement(
       (cityRecord as any).studentApplication,
       'volunteer',
-      'volunteer-campaign'
+      'volunteer-activities'
     );
     assert.equal(cityVolDecls.length, 1);
     const cityVolTitle = (cityVolDecls[0] as any).title || cityVolDecls[0].value || '';
     assert.ok(cityVolTitle.includes('QĐ số 45/QĐ-HSV'));
     assert.equal(cityVolDecls[0].metadata?.decisionNo, '45/QĐ-HSV');
 
-    const cityThesisDecls = getDeclarationsForRequirement(
+    const cityPaperDecls = getDeclarationsForRequirement(
       (cityRecord as any).studentApplication,
       'academic',
-      'academic-thesis'
+      'academic-paper'
     );
-    assert.equal(cityThesisDecls.length, 1);
-    const cityThesisEvList = cityThesisDecls[0].evidence || cityThesisDecls[0].evidenceFiles || [];
-    assert.equal(cityThesisEvList[0].id, clientEvId);
+    assert.equal(cityPaperDecls.length, 1);
+    const cityPaperEvList = cityPaperDecls[0].evidence || cityPaperDecls[0].evidenceFiles || [];
+    assert.equal(cityPaperEvList[0].id, clientEvId);
   });
 });

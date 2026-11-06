@@ -153,7 +153,7 @@ export class FeedbackService {
     return {
       success: true,
       id: feedbackId,
-      message: 'Cảm ơn bạn đã đóng góp ý kiến giúp hoàn thiện hệ thống Sinh viên 5 tốt Đại học Đà Nẵng.',
+      message: 'Cảm ơn bạn đã đóng góp ý kiến giúp hoàn thiện hệ thống 5TOT Đà Nẵng.',
     };
   }
 

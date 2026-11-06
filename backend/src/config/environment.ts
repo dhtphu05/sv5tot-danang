@@ -129,7 +129,7 @@ export function parseEnvironment(env: Record<string, string | undefined> = proce
   const resendApiKey = env.RESEND_API_KEY?.trim() || undefined;
   const resendFromEmail =
     env.RESEND_FROM_EMAIL?.trim() ||
-    'Hội Sinh viên Đại học Đà Nẵng <no-reply@sv5t.lcdkhoacntt-dut.page>';
+    'Hội Sinh viên TP. Đà Nẵng <no-reply@sv5t.lcdkhoacntt-dut.page>';
   const rawResendMode = (env.RESEND_MODE || 'safe').toLowerCase();
   const resendMode = (['mock', 'safe', 'live'].includes(rawResendMode) ? rawResendMode : 'safe') as
     | 'mock'
@@ -137,7 +137,7 @@ export function parseEnvironment(env: Record<string, string | undefined> = proce
     | 'live';
   const resendSafeOverride = env.RESEND_SAFE_OVERRIDE_EMAIL?.trim() || '';
   // Public Frontend URL Configuration (P0 - Production Hardening)
-  const defaultPublicUrl = nodeEnv === 'production' ? 'https://sinhvien5tot.udn.vn' : 'http://localhost:5173';
+  const defaultPublicUrl = nodeEnv === 'production' ? 'https://sv5tot.thanhdoandanang.org.vn' : 'http://localhost:5173';
   const rawAppPublicUrl = env.APP_PUBLIC_URL?.trim() || env.APP_URL?.trim() || env.FRONTEND_URL?.trim() || defaultPublicUrl;
   const appPublicUrl = rawAppPublicUrl.replace(/\/+$/, '');
 

@@ -52,8 +52,8 @@ describe('5TOT ĐHĐN — UX-S5 Final Integration & Acceptance Suite', () => {
     assert.strictEqual(CRITERIA.integration.number, 5);
   });
 
-  test('UX5-02: UDN 9 member institutions all resolve to their 9 respective units while preserving school identities', () => {
-    assert.strictEqual(AUTHORITATIVE_SCHOOL_REVIEW_UNITS.length, 9);
+  test('UX5-02: All 31 active Da Nang institutions resolve to their 24 respective units while preserving school identities', () => {
+    assert.strictEqual(AUTHORITATIVE_SCHOOL_REVIEW_UNITS.length, 24);
 
     for (const unit of AUTHORITATIVE_SCHOOL_REVIEW_UNITS) {
       for (const instId of unit.memberInstitutionIds) {
@@ -64,11 +64,12 @@ describe('5TOT ĐHĐN — UX-S5 Final Integration & Acceptance Suite', () => {
     }
   });
 
-  test('UX5-03: Member schools resolve to their respective review units', () => {
-    assert.strictEqual(resolveSchoolReviewUnit('inst-dut').unit?.id, 'unit-dut');
-    assert.strictEqual(resolveSchoolReviewUnit('inst-due').unit?.id, 'unit-due');
-    assert.strictEqual(resolveSchoolReviewUnit('inst-vku').unit?.id, 'unit-vku');
-    assert.strictEqual(resolveSchoolReviewUnit('inst-kontum').unit?.id, 'unit-kontum');
+  test('UX5-03: UDN member schools consolidate to unit-udn and standalone schools resolve 1:1', () => {
+    assert.strictEqual(resolveSchoolReviewUnit('inst-dut').unit?.id, 'unit-udn');
+    assert.strictEqual(resolveSchoolReviewUnit('inst-due').unit?.id, 'unit-udn');
+    assert.strictEqual(resolveSchoolReviewUnit('inst-vku').unit?.id, 'unit-udn');
+    assert.strictEqual(resolveSchoolReviewUnit('inst-dtu').unit?.id, 'unit-dtu');
+    assert.strictEqual(resolveSchoolReviewUnit('inst-kontum').resolved, false);
   });
 
   test('UX5-04: Collective Track uses TT01-TT04 and has canonical requirement metadata', () => {

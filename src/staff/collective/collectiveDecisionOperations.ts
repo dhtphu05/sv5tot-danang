@@ -87,7 +87,7 @@ export function requestCollectiveSupplement(
       ...app.auditHistory,
       {
         id: `aud-${Date.now()}`,
-        action: 'Cán bộ cấp Đại học Đà Nẵng yêu cầu bổ sung',
+        action: 'Cán bộ cấp Thành phố yêu cầu bổ sung',
         actorName: actor.name,
         actorRole: actor.role || 'Cán bộ xét duyệt',
         timestamp: now,
@@ -378,10 +378,10 @@ export function publishCollectiveResultRecord(
     institutionName: app.institutionName,
     academicYear: app.academicYear,
     outcome,
-    awardTitle: 'Tập thể Sinh viên 5 tốt cấp Đại học Đà Nẵng',
-    decisionNumber: decisionNumber?.trim() || '86/QĐ-HSV-ĐHĐN',
+    awardTitle: 'Tập thể Sinh viên 5 tốt cấp Thành phố',
+    decisionNumber: decisionNumber?.trim() || '86/QĐ-HSVTP',
     decisionDate,
-    signedBy: 'TM. BAN THƯ KÝ — CHỦ TỊCH HỘI SINH VIÊN ĐẠI HỌC ĐÀ NẴNG',
+    signedBy: 'TM. BAN THƯ KÝ — CHỦ TỊCH HỘI SINH VIÊN TP. ĐÀ NẴNG',
     isPublished: true,
     publishedAt: now,
   };

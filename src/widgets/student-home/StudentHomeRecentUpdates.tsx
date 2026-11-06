@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Student Home Recent Updates & Notifications Preview (FSD Widgets Layer)
+ * 5TOT Đà Nẵng — Student Home Recent Updates & Notifications Preview (FSD Widgets Layer)
  */
 
 import React from 'react';
@@ -29,16 +29,16 @@ export const StudentHomeRecentUpdates: React.FC<StudentHomeRecentUpdatesProps> =
   return (
     <section
       aria-label="Cập nhật gần đây"
-      className="bg-white rounded-[15px] border border-[#DCE7EE] shadow-2xs overflow-hidden"
+      className="bg-white rounded-[6px] border border-[#DFE5EC] overflow-hidden"
     >
-      <div className="px-5 py-3.5 border-b border-[#E6EFF5] flex items-center justify-between gap-3 flex-wrap">
+      <div className="px-5 py-3 border-b border-[#DFE5EC] bg-[#F8FAFC] flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
-          <Bell size={15} className="text-[#0D78AE]" />
-          <h2 className="text-[15px] font-bold text-[#172A3A]">
-            Cập nhật & Thông báo gần đây
+          <Bell size={15} className="text-[#007EE5]" />
+          <h2 className="text-[14.5px] font-bold text-[#0F172A]">
+            Cập nhật &amp; Thông báo gần đây
           </h2>
           {unresolvedActionableCount > 0 && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-[5px] text-[11px] font-bold bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D]">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-[4px] text-[11px] font-bold bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D]">
               {unresolvedActionableCount} cần xử lý
             </span>
           )}
@@ -47,7 +47,7 @@ export const StudentHomeRecentUpdates: React.FC<StudentHomeRecentUpdatesProps> =
         <button
           type="button"
           onClick={onOpenNotifications}
-          className="inline-flex items-center gap-1 text-[12.5px] font-bold text-[#0D78AE] hover:text-[#126A9C] hover:underline cursor-pointer"
+          className="inline-flex items-center gap-1 text-[12.5px] font-bold text-[#10A37F] hover:text-[#0D8A6B] hover:underline cursor-pointer"
         >
           <span>Xem tất cả thông báo</span>
           <ChevronRight size={14} />
@@ -57,14 +57,14 @@ export const StudentHomeRecentUpdates: React.FC<StudentHomeRecentUpdatesProps> =
       {isUpdatesError ? (
         <div className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#FFFDFB]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#FEF2F2] text-[#DC2626] flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-[4px] bg-[#FEF2F2] text-[#DC2626] flex items-center justify-center shrink-0">
               <AlertCircle size={16} />
             </div>
             <div>
-              <h3 className="text-[13.5px] font-bold text-[#172A3A]">
+              <h3 className="text-[13.5px] font-bold text-[#0F172A]">
                 Chưa thể tải danh sách cập nhật gần đây
               </h3>
-              <p className="text-[12.5px] text-[#607483]">
+              <p className="text-[12.5px] text-[#64748B]">
                 Trạng thái hồ sơ và 5 tiêu chí phía trên vẫn hiển thị bình thường.
               </p>
             </div>
@@ -79,11 +79,11 @@ export const StudentHomeRecentUpdates: React.FC<StudentHomeRecentUpdatesProps> =
           </Button>
         </div>
       ) : recentUpdates.length === 0 ? (
-        <div className="p-6 text-center text-[13px] text-[#607483]">
+        <div className="p-6 text-center text-[13px] text-[#64748B]">
           Hiện chưa có thông báo hoặc cập nhật mới.
         </div>
       ) : (
-        <div className="divide-y divide-[#EEF4F8]">
+        <div className="divide-y divide-[#E2E8F0]">
           {recentUpdates.map((item) => {
             const isUnresolvedAction =
               item.isActionable && !item.isActionResolved;
@@ -92,21 +92,21 @@ export const StudentHomeRecentUpdates: React.FC<StudentHomeRecentUpdatesProps> =
                 key={item.id}
                 type="button"
                 onClick={() => onActivateNotification(item)}
-                className={`w-full px-5 py-3.5 text-left flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors cursor-pointer group ${
+                className={`w-full px-5 py-3 text-left flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors cursor-pointer group ${
                   isUnresolvedAction
                     ? 'bg-[#FFFDF7] hover:bg-[#FEF7E6]'
-                    : 'hover:bg-[#F8FBFD]'
+                    : 'hover:bg-[#F8FAFC]'
                 }`}
               >
                 <div className="space-y-0.5 min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-[5px] text-[11px] font-bold ${
+                      className={`inline-flex items-center px-2 py-0.5 rounded-[4px] text-[11px] font-bold ${
                         isUnresolvedAction
                           ? 'bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D]'
                           : item.isActionable && item.isActionResolved
-                          ? 'bg-[#EAFBF1] text-[#136F3A] border border-[#B6E6C9]'
-                          : 'bg-[#EAF6FC] text-[#0D78AE]'
+                          ? 'bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0]'
+                          : 'bg-[#F0F9FF] text-[#0369A1] border border-[#BAE6FD]'
                       }`}
                     >
                       {item.isActionable && item.isActionResolved
@@ -114,19 +114,19 @@ export const StudentHomeRecentUpdates: React.FC<StudentHomeRecentUpdatesProps> =
                         : item.criterionName ||
                           (item.isActionable ? 'Cần xử lý' : 'Cập nhật')}
                     </span>
-                    <span className="text-[13.5px] font-bold text-[#172A3A] group-hover:text-[#0D78AE] transition-colors">
+                    <span className="text-[13.5px] font-bold text-[#0F172A] group-hover:text-[#007EE5] transition-colors">
                       {item.title}
                     </span>
-                    <span className="text-[11.5px] text-[#728391] tabular-nums">
+                    <span className="text-[11.5px] text-[#64748B] tabular-nums">
                       · {item.timestamp}
                     </span>
                   </div>
-                  <p className="text-[12.5px] text-[#607483] line-clamp-1">
+                  <p className="text-[12.5px] text-[#64748B] line-clamp-1">
                     {item.message}
                   </p>
                 </div>
 
-                <div className="inline-flex items-center gap-1 text-[12px] font-bold text-[#0D78AE] shrink-0 self-end sm:self-center">
+                <div className="inline-flex items-center gap-1 text-[12px] font-bold text-[#10A37F] shrink-0 self-end sm:self-center">
                   <span>
                     {submissionState !== 'draft' && item.actionLabel === 'Tiếp tục hồ sơ'
                       ? 'Xem hồ sơ'

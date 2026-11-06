@@ -578,9 +578,11 @@ export class IndividualApplicationService {
           to: profileSnapshot.email,
           studentName: profileSnapshot.fullName || app.fullNameSnapshot,
           applicationCode: app.applicationCode,
-          awardTitle: 'danh hiệu Sinh viên 5 tốt Đại học Đà Nẵng',
+          awardTitle: 'danh hiệu Sinh viên 5 tốt cấp Thành phố Đà Nẵng',
           seasonName: season.name,
-          institutionName: app.institutionId,
+          institutionName:
+            (typeof profileSnapshot.institutionName === 'string' && profileSnapshot.institutionName.trim()) ||
+            app.institutionId,
           submittedAt: submitted.submittedToSchoolAt || new Date(),
           statusName: 'Chờ xét sơ tuyển',
         })

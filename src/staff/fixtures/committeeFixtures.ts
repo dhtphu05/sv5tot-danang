@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Committee Review, Decision & Publication Fixtures
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Committee Review, Decision & Publication Fixtures
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements Prompt 19 Sections 16, 17, 28–31, 71–78, 98–103:
  * - Provides 5 canonical Committee demo scenarios led by Lê Minh Quân (Hội đồng xét chọn).
@@ -75,7 +75,7 @@ export const COMMITTEE_DEMO_SCENARIOS: CommitteeDemoScenarioConfig[] = [
     label: 'Đã công bố kết quả',
     shortToolbarLabel: 'Đã công bố',
     description:
-      'Kết quả xét chọn cấp Đại học Đà Nẵng đã được công bố chính thức. Hồ sơ bất biến và đồng bộ trực tiếp sang màn hình Kết quả của Sinh viên.',
+      'Kết quả xét chọn cấp Thành phố Đà Nẵng đã được công bố chính thức. Hồ sơ bất biến và đồng bộ trực tiếp sang màn hình Kết quả của Sinh viên.',
     defaultRoute: 'results',
   },
 ];
@@ -197,7 +197,7 @@ export function buildStudentApplicationForCommitteeRecord(
         'Đề tài: Hệ thống cảnh báo ngập lụt đô thị thông minh tại TP. Đà Nẵng · Hội Sinh viên & Sở KH&CN phối hợp tổ chức';
     }
     const vol = cloned.criteria.find((c) => c.id === 'volunteer');
-    const volReq = vol?.requirements.find((r) => r.id === 'volunteer-campaigns');
+    const volReq = vol?.requirements.find((r) => r.id === 'volunteer-activities');
     if (volReq && volReq.declarations[0]) {
       volReq.declarations[0].value =
         'Đội hình ứng cứu công nghệ số cộng đồng tại huyện Hòa Vang';
@@ -207,7 +207,7 @@ export function buildStudentApplicationForCommitteeRecord(
   } else if (app.applicationId === 'APP-2026-DN-471102012') {
     const integ = cloned.criteria.find((c) => c.id === 'integration');
     const actReq = integ?.requirements.find(
-      (r) => r.id === 'integration-activities'
+      (r) => r.id === 'integration-intl'
     );
     if (actReq && actReq.declarations[0]) {
       actReq.declarations[0].value =
@@ -282,7 +282,7 @@ function buildInitialFlaggedItemsForApp(
         criterionId: 'volunteer',
         criterionNumber: 4,
         criterionName: 'Tình nguyện tốt',
-        requirementId: 'volunteer-campaigns',
+        requirementId: 'volunteer-activities',
         requirementTitle: 'Hoạt động tình nguyện',
         declarationId: 'decl-vol-camp-1',
         declarationTitle:
@@ -293,7 +293,7 @@ function buildInitialFlaggedItemsForApp(
         escalatedAt: '16/10/2026 · 10:28',
         status: allResolved ? 'considered' : 'pending_consideration',
         committeeResolutionNote: allResolved
-          ? 'Đủ 05 ngày tình nguyện theo quy định đối với chiến dịch cao điểm cấp Đại học Đà Nẵng.'
+          ? 'Đủ 05 ngày tình nguyện theo quy định đối với chiến dịch cao điểm cấp Thành phố.'
           : undefined,
         consideredBy: allResolved ? 'Lê Minh Quân' : undefined,
         consideredAt: allResolved ? '17/10/2026 · 10:35' : undefined,
@@ -310,8 +310,8 @@ function buildInitialFlaggedItemsForApp(
         criterionId: 'integration',
         criterionNumber: 5,
         criterionName: 'Hội nhập tốt',
-        requirementId: 'integration-activities',
-        requirementTitle: 'Hoạt động hội nhập quốc tế',
+        requirementId: 'integration-intl',
+        requirementTitle: 'Hoạt động giao lưu quốc tế',
         declarationId: 'decl-integ-act-1',
         declarationTitle:
           'Diễn đàn Thanh niên ASEAN - Nhật Bản trực tuyến 2026',
@@ -338,7 +338,7 @@ function buildInitialFlaggedItemsForApp(
         criterionId: 'volunteer',
         criterionNumber: 4,
         criterionName: 'Tình nguyện tốt',
-        requirementId: 'volunteer-campaigns',
+        requirementId: 'volunteer-activities',
         requirementTitle: 'Hoạt động tình nguyện',
         declarationId: 'decl-vol-camp-1',
         declarationTitle:
@@ -440,7 +440,7 @@ export function buildCommitteeScenarioBundle(
         status: 'reviewed',
         noteSummary:
           crit.noteSummary ||
-          'Đạt điều kiện tiêu chí theo quy chế cấp Đại học Đà Nẵng.',
+          'Đạt điều kiện tiêu chí theo quy chế cấp Thành phố Đà Nẵng.',
       };
     });
 
@@ -463,14 +463,14 @@ export function buildCommitteeScenarioBundle(
           outcome,
           outcomeLabel:
             outcome === 'recognized'
-              ? ('Được công nhận Sinh viên 5 tốt cấp Đại học Đà Nẵng' as const)
+              ? ('Được công nhận Sinh viên 5 tốt cấp Thành phố Đà Nẵng' as const)
               : ('Chưa được công nhận trong đợt xét này' as const),
           recordedBy: 'Lê Minh Quân',
           recordedByRoleLabel: 'Hội đồng xét chọn',
           recordedAt: '18/10/2026 · 10:15',
           internalNote:
             outcome === 'recognized'
-              ? 'Hồ sơ đáp ứng đầy đủ 05 tiêu chí Sinh viên 5 tốt cấp Đại học Đà Nẵng.'
+              ? 'Hồ sơ đáp ứng đầy đủ 05 tiêu chí Sinh viên 5 tốt cấp Thành phố Đà Nẵng.'
               : 'Chưa đủ điều kiện công nhận đồng thời cả 05 tiêu chí trong đợt xét này.',
         }
       : null;
@@ -535,7 +535,7 @@ export function buildCommitteeScenarioBundle(
         timestamp: app.submittedAt,
         actorName: app.student.fullName,
         actorRoleLabel: 'Sinh viên',
-        description: 'Nộp hồ sơ trực tuyến lên hệ thống xét duyệt cấp Đại học Đà Nẵng.',
+        description: 'Nộp hồ sơ trực tuyến lên hệ thống xét duyệt cấp Thành phố Đà Nẵng.',
         tone: 'neutral',
       },
       {
@@ -569,7 +569,7 @@ export function buildCommitteeScenarioBundle(
           criterionId: 'volunteer',
           criterionNumber: 4,
           criterionName: 'Tình nguyện tốt',
-          requirementId: 'volunteer-campaigns',
+          requirementId: 'volunteer-activities',
           requirementTitle: 'Hoạt động tình nguyện',
           declarationId: 'decl-vol-camp-1',
           declarationTitle: 'Chiến dịch Mùa hè xanh 2026',
@@ -794,7 +794,7 @@ export function buildDefaultCommitteeCase(
         outcome,
         outcomeLabel:
           outcome === 'recognized'
-            ? ('Được công nhận Sinh viên 5 tốt cấp Đại học Đà Nẵng' as const)
+            ? ('Được công nhận Sinh viên 5 tốt cấp Thành phố Đà Nẵng' as const)
             : ('Chưa được công nhận trong đợt xét này' as const),
         recordedBy: (app.finalResultSummary as any)?.decidedBy || 'Hội đồng xét chọn',
         recordedByRoleLabel: 'Hội đồng xét chọn',

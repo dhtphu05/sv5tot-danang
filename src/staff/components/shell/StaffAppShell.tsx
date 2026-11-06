@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Approved City-Level Staff Backoffice Shell (StaffAppShell)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Approved City-Level Staff Backoffice Shell (StaffAppShell)
+ * Cơ quan chỉ đạo: Thành Đoàn Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements role-based navigation and capability-based permissions for:
  * - Cán bộ xét duyệt (CITY_OFFICER)
@@ -29,13 +29,11 @@ import {
   History,
   ShieldCheck,
   Settings2,
-  PanelLeftClose,
-  PanelLeftOpen,
   LogOut,
   Feather,
+  KeyRound,
 } from 'lucide-react';
 import { formatAcademicYearLabel } from '@5tot/contracts';
-import { UdnEmblem, HsvEmblem } from '../../../components/brand/HsvLogo';
 import {
   StaffRole,
   StaffRouteId,
@@ -47,7 +45,9 @@ import {
 } from '../../permissions';
 import { Season } from '../../adminTypes';
 import { AwardProgramContextBar } from './AwardProgramContextBar';
+import { PortalTopHeader } from '../../../components/shell/PortalTopHeader';
 import { FeedbackFloatingWidget } from '../../../components/feedback/FeedbackFloatingWidget';
+import { ChangePasswordModal } from '../../../components/auth/ChangePasswordModal';
 
 export interface StaffAppShellProps {
   currentUser: StaffUser;
@@ -109,27 +109,27 @@ const ALL_STAFF_NAV_ITEMS: StaffNavItemConfig[] = [
   {
     id: 'school_overview',
     label: 'Tổng quan',
-    icon: <LayoutDashboard size={16} />,
+    icon: <LayoutDashboard size={15.5} />,
     group: 'school',
   },
   {
     id: 'school_applications',
     label: 'Hồ sơ sơ tuyển',
-    icon: <FolderKanban size={16} />,
+    icon: <FolderKanban size={15.5} />,
     group: 'school',
     badgeKey: 'school_total',
   },
   {
     id: 'school_awaiting_forward',
     label: 'Danh sách đề nghị',
-    icon: <UserCheck size={16} />,
+    icon: <UserCheck size={15.5} />,
     group: 'school',
     badgeKey: 'school_awaiting_forward',
   },
   {
     id: 'school_notifications',
     label: 'Thông báo',
-    icon: <Bell size={16} />,
+    icon: <Bell size={15.5} />,
     group: 'school',
     badgeKey: 'notifications',
   },
@@ -137,14 +137,14 @@ const ALL_STAFF_NAV_ITEMS: StaffNavItemConfig[] = [
   {
     id: 'overview',
     label: 'Tổng quan',
-    icon: <LayoutDashboard size={16} />,
+    icon: <LayoutDashboard size={15.5} />,
     group: 'core',
   },
   {
     id: 'applications',
     label: 'Hồ sơ cá nhân',
     managerLabel: 'Hồ sơ cá nhân',
-    icon: <FolderKanban size={16} />,
+    icon: <FolderKanban size={15.5} />,
     group: 'core',
     badgeKey: 'assigned',
   },
@@ -152,14 +152,14 @@ const ALL_STAFF_NAV_ITEMS: StaffNavItemConfig[] = [
     id: 'attention',
     label: 'Hồ sơ cần xử lý',
     managerLabel: 'Hồ sơ cần xử lý',
-    icon: <AlertCircle size={16} />,
+    icon: <AlertCircle size={15.5} />,
     group: 'core',
     badgeKey: 'attention',
   },
   {
     id: 'supplements',
     label: 'Yêu cầu bổ sung',
-    icon: <MessageSquareWarning size={16} />,
+    icon: <MessageSquareWarning size={15.5} />,
     group: 'core',
     badgeKey: 'supplement',
   },
@@ -167,62 +167,62 @@ const ALL_STAFF_NAV_ITEMS: StaffNavItemConfig[] = [
     id: 'collective_review',
     label: 'Hồ sơ tập thể',
     managerLabel: 'Hồ sơ tập thể',
-    icon: <Users size={16} />,
+    icon: <Users size={15.5} />,
     group: 'core',
     badgeKey: 'collective_pending',
   },
   {
     id: 'white_bird_review',
-    label: 'Giải thưởng Cánh chim trắng',
-    managerLabel: 'Giải thưởng Cánh chim trắng',
-    committeeLabel: 'Giải thưởng Cánh chim trắng',
-    icon: <Feather size={16} />,
+    label: 'Giải thưởng 9/1',
+    managerLabel: 'Giải thưởng 9/1',
+    committeeLabel: 'Giải thưởng 9/1',
+    icon: <Feather size={15.5} />,
     group: 'core',
   },
   {
     id: 'deadlines',
     label: 'Mốc thời gian',
-    icon: <Clock size={16} />,
+    icon: <Clock size={15.5} />,
     group: 'management',
   },
   {
     id: 'committee',
     label: 'Hồ sơ xét chọn',
-    icon: <Scale size={16} />,
+    icon: <Scale size={15.5} />,
     group: 'committee',
     badgeKey: 'committee',
   },
   {
     id: 'committee_decisions',
     label: 'Hồ sơ chờ quyết định',
-    icon: <FolderKanban size={16} />,
+    icon: <FolderKanban size={15.5} />,
     group: 'committee',
     badgeKey: 'committee_decisions',
   },
   {
     id: 'results',
     label: 'Kết quả xét chọn',
-    icon: <Award size={16} />,
+    icon: <Award size={15.5} />,
     group: 'committee',
   },
   {
     id: 'recognition',
     label: 'Quyết định công nhận',
-    icon: <Calendar size={16} />,
+    icon: <Calendar size={15.5} />,
     group: 'committee',
   },
   {
     id: 'analytics',
     label: 'Thống kê đợt xét',
     committeeLabel: 'Thống kê',
-    icon: <BarChart3 size={16} />,
+    icon: <BarChart3 size={15.5} />,
     group: 'info',
   },
   {
     id: 'notifications',
     label: 'Thông báo nghiệp vụ',
     committeeLabel: 'Thông báo',
-    icon: <Bell size={16} />,
+    icon: <Bell size={15.5} />,
     group: 'info',
     badgeKey: 'notifications',
   },
@@ -231,50 +231,50 @@ const ALL_STAFF_NAV_ITEMS: StaffNavItemConfig[] = [
   {
     id: 'admin_season',
     label: 'Mùa xét chọn',
-    icon: <Calendar size={16} />,
+    icon: <Calendar size={15.5} />,
     group: 'admin_gov',
   },
   {
     id: 'admin_criteria',
     label: 'Tiêu chí xét chọn',
-    icon: <Sliders size={16} />,
+    icon: <Sliders size={15.5} />,
     group: 'admin_gov',
   },
   {
     id: 'admin_deadlines',
     label: 'Mốc thời gian',
-    icon: <Clock size={16} />,
+    icon: <Clock size={15.5} />,
     group: 'admin_gov',
   },
   {
     id: 'admin_institutions',
     label: 'Đơn vị & phân tuyến',
-    icon: <Building2 size={16} />,
+    icon: <Building2 size={15.5} />,
     group: 'admin_gov',
   },
   // Quản trị hệ thống (System & Security Admin)
   {
     id: 'admin_users',
     label: 'Người dùng & cán bộ',
-    icon: <Users size={16} />,
+    icon: <Users size={15.5} />,
     group: 'admin_sys',
   },
   {
     id: 'admin_permissions',
     label: 'Quyền truy cập',
-    icon: <ShieldCheck size={16} />,
+    icon: <ShieldCheck size={15.5} />,
     group: 'admin_sys',
   },
   {
     id: 'admin_operations',
     label: 'Vận hành & cấu hình',
-    icon: <Settings2 size={16} />,
+    icon: <Settings2 size={15.5} />,
     group: 'admin_sys',
   },
   {
     id: 'admin_audit',
     label: 'Lịch sử hoạt động',
-    icon: <History size={16} />,
+    icon: <History size={15.5} />,
     group: 'admin_sys',
   },
 ];
@@ -304,26 +304,22 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(
     () => typeof window !== 'undefined' && window.innerWidth < 1024
   );
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
   const activeSidebarId = resolveActiveSidebarNavId(activeRouteId, currentUser);
 
   const visibleNavItems = ALL_STAFF_NAV_ITEMS.filter((item) => {
-    // School Officer Navigation (Prompt S2 Section 10)
     if (currentUser.primaryRole === 'SCHOOL_OFFICER') {
       return item.group === 'school';
     }
-    // Non-School roles never see school group nav items
     if (item.group === 'school') {
       return false;
     }
-    // Keep Officer navigation focused on core review items + notifications
     if (currentUser.primaryRole === 'CITY_OFFICER') {
       if (item.group !== 'core' && item.id !== 'notifications') {
         return false;
       }
     }
-    // Committee navigation (Prompt 19 Section 12):
-    // Tổng quan | HỘI ĐỒNG: Cần Hội đồng xem xét, Hồ sơ chờ quyết định, Kết quả xét chọn, Quyết định công nhận | THÔNG TIN: Thống kê, Thông báo
     if (currentUser.primaryRole === 'CITY_COMMITTEE') {
       const allowedForCommittee: StaffRouteId[] = [
         'overview',
@@ -340,8 +336,6 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
         return false;
       }
     }
-    // Admin navigation:
-    // Tổng quan | QUẢN TRỊ CHƯƠNG TRÌNH: Mùa xét chọn, Tiêu chí xét chọn, Mốc thời gian, Đơn vị & phân tuyến | QUẢN TRỊ HỆ THỐNG: Người dùng & cán bộ, Quyền truy cập, Vận hành & cấu hình, Lịch sử hoạt động
     if (currentUser.primaryRole === 'ADMIN') {
       const allowedForAdmin: StaffRouteId[] = [
         'overview',
@@ -394,69 +388,61 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
     }
   };
 
+  const notificationRouteTarget: StaffRouteId | null =
+    currentUser.primaryRole === 'SCHOOL_OFFICER'
+      ? 'school_notifications'
+      : currentUser.primaryRole !== 'ADMIN' &&
+          canAccessStaffRoute(currentUser, 'notifications')
+        ? 'notifications'
+        : null;
+
   return (
-    <div className="min-h-screen bg-[#F4F7FA] print:bg-white text-[#172A3A] flex flex-col font-sans">
-      <div className="flex flex-1 min-h-screen items-start">
-        {/* Left Institutional Staff Sidebar — Sticky 100dvh (Matching Approved Target Image 2) */}
+    <div className="min-h-screen bg-[#F4F6F9] print:bg-white text-[#1E293B] flex flex-col font-sans">
+      {/* Top Ocean-Blue Administrative Bar (#007EE5) */}
+      <PortalTopHeader
+        title="5TOT Đà Nẵng"
+        subtitle={
+          currentUser.primaryRole === 'SCHOOL_OFFICER'
+            ? `Sơ tuyển cấp Trường · ${currentUser.unitLabel || 'Đơn vị đào tạo'}`
+            : 'Hệ thống Thẩm định & Xét chọn Cấp Thành phố'
+        }
+        userName={currentUser.fullName}
+        userSubLabel={currentUser.roleLabel}
+        userEmail={currentUser.email}
+        universityLabel={currentUser.unitLabel}
+        roleBadge={currentUser.roleLabel}
+        notificationCount={unreadNotificationCount}
+        onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
+        onOpenNotifications={
+          notificationRouteTarget
+            ? () => onSelectRoute(notificationRouteTarget)
+            : undefined
+        }
+        onOpenChangePassword={() => setIsChangePasswordOpen(true)}
+        onLogout={onLogout}
+        logoutLabel="Đăng xuất hệ thống"
+      />
+
+      <div className="flex flex-1 min-h-[calc(100dvh-50px)] items-start">
+        {/* Left Synchronized Light Administrative Sidebar */}
         <aside
           aria-label="Điều hướng nghiệp vụ cán bộ"
           className={`${
-            isSidebarCollapsed ? 'w-[64px]' : 'w-[232px]'
-          } sticky top-0 h-dvh overflow-y-auto shrink-0 bg-[#0B1E2D] text-white flex flex-col justify-between border-r border-white/5 transition-all duration-150 select-none z-30 print:hidden`}
+            isSidebarCollapsed ? 'w-[60px]' : 'w-[238px]'
+          } sticky top-[50px] h-[calc(100dvh-50px)] overflow-y-auto shrink-0 bg-white text-[#1E293B] flex flex-col justify-between border-r border-[#DFE5EC] transition-all duration-150 select-none z-30 print:hidden`}
         >
-          {/* Top Brand + Role Context */}
           <div>
-            <div className="px-3.5 py-3.5 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {!isSidebarCollapsed && <UdnEmblem size={30} className="shrink-0 rounded-[4px]" />}
-                  <HsvEmblem size={30} className="shrink-0" />
-                </div>
-                {!isSidebarCollapsed && (
-                  <div className="min-w-0">
-                    <div className="text-[10px] font-bold tracking-[0.06em] text-[#7CC4EE] uppercase truncate">
-                      HSV ĐH Đà Nẵng
-                    </div>
-                    <div className="text-[14.5px] font-extrabold text-white tracking-tight truncate">
-                      5TOT ĐHĐN
-                    </div>
-                  </div>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsSidebarCollapsed((prev) => !prev)}
-                title={
-                  isSidebarCollapsed
-                    ? 'Mở rộng thanh điều hướng'
-                    : 'Thu gọn thanh điều hướng'
-                }
-                aria-label={
-                  isSidebarCollapsed
-                    ? 'Mở rộng thanh điều hướng'
-                    : 'Thu gọn thanh điều hướng'
-                }
-                className="p-1.5 rounded-[8px] text-[#8EA9BF] hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
-              >
-                {isSidebarCollapsed ? (
-                  <PanelLeftOpen size={15} />
-                ) : (
-                  <PanelLeftClose size={15} />
-                )}
-              </button>
-            </div>
-
-            {/* Season & Scope Banner */}
+            {/* Compact Scope Card */}
             {!isSidebarCollapsed && (
-              <div className="mx-2.5 px-3 py-2 rounded-[10px] bg-white/[0.04] text-[11px] mb-2">
-                <div className="font-semibold text-[#8EA9BE] text-[11.5px]">
+              <div className="mx-2.5 mt-2.5 mb-1.5 px-3 py-2 rounded-[4px] bg-[#F8FAFC] border border-[#E2E8F0] text-[11px]">
+                <div className="font-bold text-[#0F172A] text-[11.5px] truncate">
                   {currentUser.primaryRole === 'SCHOOL_OFFICER'
-                    ? 'Xét sơ tuyển cấp Trường / Đơn vị'
-                    : 'Hệ thống xét duyệt cấp ĐHĐN'}
+                    ? 'Sơ tuyển cấp Trường / Đơn vị'
+                    : 'Hệ thống xét duyệt Thành phố'}
                 </div>
-                <div className="text-[#64829A] text-[11px] mt-0.5 truncate">
+                <div className="text-[#007EE5] font-semibold text-[11px] mt-0.5 truncate">
                   {currentUser.primaryRole === 'SCHOOL_OFFICER'
-                    ? `Đơn vị: ${currentUser.unitLabel || 'Trường thành viên ĐHĐN'}`
+                    ? currentUser.unitLabel || 'Cơ sở đào tạo tại Đà Nẵng'
                     : formatAcademicYearLabel(
                         currentSeason?.schoolYear || '2025–2026'
                       )}
@@ -465,7 +451,7 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
             )}
 
             {/* Navigation Links */}
-            <nav className="p-2 space-y-1">
+            <nav className="p-2 space-y-0.5">
               {visibleNavItems.map((item, idx) => {
                 const isActive = activeSidebarId === item.id;
                 const badgeVal = getBadgeValue(item.badgeKey);
@@ -481,25 +467,32 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
                 const showGroupHeader =
                   !isSidebarCollapsed &&
                   item.group !== 'core' &&
+                  item.group !== 'school' &&
                   (!prevItem || prevItem.group !== item.group);
 
                 const groupTitle =
                   item.group === 'committee'
-                    ? 'HỘI ĐỒNG'
+                    ? 'HỘI ĐỒNG XÉT CHỌN'
                     : item.group === 'info'
-                    ? 'THÔNG TIN'
+                    ? 'THỐNG KÊ & THÔNG BÁO'
                     : item.group === 'management'
-                    ? 'ĐIỀU PHỐI'
+                    ? 'ĐIỀU PHỐI TIẾN ĐỘ'
                     : item.group === 'admin_gov'
                     ? 'QUẢN TRỊ CHƯƠNG TRÌNH'
                     : item.group === 'admin_sys'
                     ? 'QUẢN TRỊ HỆ THỐNG'
                     : null;
 
+                const isAwardTrackIcon =
+                  item.id === 'white_bird_review' ||
+                  item.id === 'collective_review' ||
+                  item.id === 'results' ||
+                  item.id === 'recognition';
+
                 return (
                   <React.Fragment key={item.id}>
                     {showGroupHeader && groupTitle && (
-                      <div className="pt-3 pb-1 px-3 text-[10px] font-extrabold tracking-[0.08em] text-[#5B7B94] uppercase">
+                      <div className="pt-3 pb-1 px-2.5 text-[10px] font-bold tracking-[0.07em] text-[#64748B] uppercase">
                         {groupTitle}
                       </div>
                     )}
@@ -507,14 +500,26 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
                       type="button"
                       onClick={() => onSelectRoute(item.id)}
                       title={isSidebarCollapsed ? displayLabel : undefined}
-                      className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-[11px] text-[12.5px] transition-all cursor-pointer ${
+                      className={`w-full flex items-center ${
+                        isSidebarCollapsed ? 'justify-center px-2' : 'justify-between px-2.5'
+                      } gap-2 py-2 rounded-[4px] text-[12.5px] transition-colors cursor-pointer ${
                         isActive
-                          ? 'bg-[#1680DE] text-white font-bold shadow-[0_2px_12px_rgba(22,128,222,0.35)]'
-                          : 'text-[#9EB3C6] hover:text-white hover:bg-white/[0.06] font-medium'
+                          ? 'bg-[#10A37F] text-white font-semibold'
+                          : 'text-[#334155] hover:bg-[#F1F5F9] hover:text-[#0F172A] font-medium'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <span className="shrink-0">{item.icon}</span>
+                        <span
+                          className={`shrink-0 ${
+                            isActive
+                              ? 'text-white'
+                              : isAwardTrackIcon
+                                ? 'text-[#EA8C00]'
+                                : 'text-[#64748B]'
+                          }`}
+                        >
+                          {item.icon}
+                        </span>
                         {!isSidebarCollapsed && (
                           <span className="truncate">{displayLabel}</span>
                         )}
@@ -522,14 +527,14 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
 
                       {!isSidebarCollapsed && badgeVal > 0 && (
                         <span
-                          className={`px-2 py-0.5 text-[11px] font-bold rounded-full tabular-nums shrink-0 ${
+                          className={`px-1.5 py-0.5 text-[10.5px] font-bold rounded-[3px] tabular-nums shrink-0 ${
                             isActive
                               ? 'bg-white/20 text-white'
                               : item.badgeKey === 'attention' ||
                                 item.badgeKey === 'unassigned' ||
                                 item.badgeKey === 'committee'
-                              ? 'bg-[#E58A1F] text-white'
-                              : 'bg-white/12 text-[#CADBE8]'
+                              ? 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]'
+                              : 'bg-[#F1F5F9] text-[#475569] border border-[#E2E8F0]'
                           }`}
                         >
                           {badgeVal}
@@ -542,50 +547,64 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
             </nav>
           </div>
 
-          {/* Bottom Officer / Staff Identity & Logout */}
-          <div className="p-3 bg-[#081824] border-t border-white/5 space-y-2.5">
+          {/* Bottom Quick Account Footer */}
+          <div className="p-2.5 bg-[#F8FAFC] border-t border-[#DFE5EC] space-y-1.5">
             {!isSidebarCollapsed ? (
               <>
-                <div className="px-3 py-2.5 rounded-[12px] bg-[#132A3E]/70">
-                  <div className="text-[10.5px] font-semibold text-[#7CC4EE]">
+                <div className="px-2.5 py-1.5 rounded-[4px] bg-white border border-[#E2E8F0]">
+                  <div className="text-[10.5px] font-bold text-[#007EE5] truncate">
                     {currentUser.roleLabel}
                   </div>
-                  <div className="text-[13.5px] font-bold text-white truncate mt-0.5">
+                  <div className="text-[12px] font-bold text-[#0F172A] truncate">
                     {currentUser.fullName}
                   </div>
-                  <div className="text-[11.5px] text-[#7B95A9] truncate">
+                  <div className="text-[10.5px] text-[#64748B] truncate">
                     {currentUser.email}
                   </div>
                 </div>
 
-                {onLogout && (
+                <div className="grid grid-cols-2 gap-1.5">
                   <button
                     type="button"
-                    onClick={onLogout}
-                    className="w-full flex items-center justify-between py-2 px-3 rounded-[9px] bg-white/[0.06] hover:bg-[#DC2626]/20 text-[#9EB3C6] hover:text-[#FCA5A5] text-[12px] font-semibold transition-colors cursor-pointer"
+                    onClick={() => setIsChangePasswordOpen(true)}
+                    className="flex items-center justify-center gap-1 py-1.5 px-2 rounded-[4px] bg-white hover:bg-[#F1F5F9] border border-[#DFE5EC] text-[#334155] text-[11px] font-semibold transition-colors cursor-pointer"
                   >
-                    <span>Đăng xuất hệ thống</span>
-                    <LogOut size={13.5} className="shrink-0" />
+                    <KeyRound size={12.5} className="text-[#10A37F] shrink-0" />
+                    <span>Mật khẩu</span>
                   </button>
-                )}
+
+                  {onLogout && (
+                    <button
+                      type="button"
+                      onClick={onLogout}
+                      className="flex items-center justify-center gap-1 py-1.5 px-2 rounded-[4px] bg-white hover:bg-[#FEF2F2] border border-[#DFE5EC] hover:border-[#FECACA] text-[#DC2626] text-[11px] font-semibold transition-colors cursor-pointer"
+                    >
+                      <LogOut size={12.5} className="shrink-0" />
+                      <span>Đăng xuất</span>
+                    </button>
+                  )}
+                </div>
               </>
             ) : (
-              <div className="flex flex-col items-center gap-2">
-                <div
-                  title={`${currentUser.fullName} (${currentUser.roleLabel})`}
-                  className="w-9 h-9 rounded-full bg-[#1680DE] text-white font-bold text-[13px] flex items-center justify-center shadow-sm"
+              <div className="flex flex-col items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setIsChangePasswordOpen(true)}
+                  title="Đổi mật khẩu"
+                  aria-label="Đổi mật khẩu"
+                  className="w-8 h-8 rounded-[4px] bg-white hover:bg-[#F1F5F9] border border-[#DFE5EC] text-[#334155] flex items-center justify-center transition-colors cursor-pointer"
                 >
-                  {currentUser.fullName.charAt(0)}
-                </div>
+                  <KeyRound size={13.5} className="text-[#10A37F]" />
+                </button>
                 {onLogout && (
                   <button
                     type="button"
                     onClick={onLogout}
                     title="Đăng xuất hệ thống"
                     aria-label="Đăng xuất hệ thống"
-                    className="w-9 h-9 rounded-[9px] bg-white/[0.06] hover:bg-[#DC2626]/20 text-[#9EB3C6] hover:text-[#FCA5A5] flex items-center justify-center transition-colors cursor-pointer"
+                    className="w-8 h-8 rounded-[4px] bg-white hover:bg-[#FEF2F2] border border-[#DFE5EC] text-[#DC2626] flex items-center justify-center transition-colors cursor-pointer"
                   >
-                    <LogOut size={14} />
+                    <LogOut size={13.5} />
                   </button>
                 )}
               </div>
@@ -607,6 +626,13 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
         </div>
       </div>
       <FeedbackFloatingWidget />
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+        accountName={currentUser.fullName}
+        accountEmail={currentUser.email}
+        roleLabel={currentUser.roleLabel}
+      />
     </div>
   );
 };

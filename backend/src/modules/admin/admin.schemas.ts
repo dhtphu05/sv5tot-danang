@@ -39,7 +39,9 @@ export const ActivateStaffInviteSchema = z.object({
 });
 
 export const ResetStaffPasswordSchema = z.object({
-  newTemporaryPassword: z.string().min(8).optional(),
+  newTemporaryPassword: z.string().min(8, 'Mật khẩu mới phải từ 8 ký tự trở lên').max(128).optional(),
+  email: z.string().trim().email().optional(),
+  reason: z.string().trim().max(500).optional(),
 });
 
 export const UpdateStaffRoleSchema = z.object({

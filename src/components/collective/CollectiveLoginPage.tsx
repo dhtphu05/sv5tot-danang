@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Dedicated Collective Login Page (/collective/login)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Dedicated Collective Login Page (/collective/login)
+ * Cơ quan chỉ đạo: Thành Đoàn Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements Prompt S4.8 v3 Section 4:
  * - Dedicated login endpoint for authorized Collective Portal accounts.
@@ -39,35 +39,34 @@ export const CollectiveLoginPage: React.FC<CollectiveLoginPageProps> = ({
     const normalized = email.trim().toLowerCase();
     if (!normalized || !password) {
       setErrorMessage('Vui lòng nhập đầy đủ email và mật khẩu tài khoản phụ trách tập thể.');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const services = resolveDomainServices();
-      const session = await services.auth.loginWithCredentials({
-        email: normalized,
-        password,
-        preferredTrack: 'COLLECTIVE',
-      });
-      if (session?.user) {
-        setApiActorContext({
-          userId: session.user.id,
-          userName: session.user.fullName,
-          userEmail: session.user.email,
-          role: session.user.role,
-          unitId: session.user.unitId,
-          token: session.token,
+    } else {
+      setIsSubmitting(true);
+      try {
+        const services = resolveDomainServices();
+        const session = await services.auth.loginWithCredentials({
+          email: normalized,
+          password,
+          preferredTrack: 'COLLECTIVE',
         });
+        if (session?.user) {
+          setApiActorContext({
+            userId: session.user.id,
+            userName: session.user.fullName,
+            userEmail: session.user.email,
+            role: session.user.role,
+            unitId: session.user.unitId,
+            token: session.token,
+          });
+        }
+        setIsSubmitting(false);
+        onLoginSuccess(normalized);
+      } catch (err: any) {
+        setIsSubmitting(false);
+        setErrorMessage(
+          err?.message ||
+            'Tài khoản này không có quyền truy cập Cổng Tập thể hoặc thông tin đăng nhập chưa chính xác.'
+        );
       }
-      setIsSubmitting(false);
-      onLoginSuccess(normalized);
-    } catch (err: any) {
-      setIsSubmitting(false);
-      setErrorMessage(
-        err?.message ||
-          'Tài khoản này không có quyền truy cập Cổng Tập thể hoặc thông tin đăng nhập chưa chính xác.'
-      );
     }
   };
 
@@ -81,7 +80,7 @@ export const CollectiveLoginPage: React.FC<CollectiveLoginPageProps> = ({
           className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#4A6275] hover:text-[#0D78AE] transition-colors cursor-pointer"
         >
           <ArrowLeft size={15} />
-          <span>Trang chủ 5TOT ĐHĐN</span>
+          <span>Trang chủ 5TOT Đà Nẵng</span>
         </button>
 
         <button
@@ -104,13 +103,13 @@ export const CollectiveLoginPage: React.FC<CollectiveLoginPageProps> = ({
             </div>
           </div>
           <div className="mt-2 text-[11px] font-extrabold uppercase tracking-wider text-[#4A6275]">
-            HỘI SINH VIÊN VIỆT NAM ĐẠI HỌC ĐÀ NẴNG
+            HỘI SINH VIÊN VIỆT NAM THÀNH PHỐ ĐÀ NẴNG
           </div>
           <h1 className="text-[20px] font-extrabold text-[#172A3A] mt-1">
             Cổng Kê khai Tập thể "Sinh viên 5 tốt"
           </h1>
           <p className="text-[12.5px] text-[#607483] max-w-sm mt-1">
-            Dành cho Chi hội, Liên Chi hội, Chi đoàn và các Ban Cán sự tập thể sinh viên đăng ký xét chọn cấp Đại học Đà Nẵng
+            Dành cho Chi hội, Liên Chi hội, Chi đoàn và các Ban Cán sự tập thể sinh viên đăng ký xét chọn cấp Thành phố
           </p>
         </div>
 
@@ -172,13 +171,13 @@ export const CollectiveLoginPage: React.FC<CollectiveLoginPageProps> = ({
 
         {/* Regulatory note */}
         <div className="mt-4 text-center text-[11.5px] text-[#607483] leading-relaxed">
-          Theo quy chế xét chọn 2025–2026, hồ sơ Tập thể sau khi kê khai sẽ được <strong>nộp trực tiếp</strong> lên Hội Sinh viên Việt Nam Đại học Đà Nẵng, không qua khâu duyệt của Trường.
+          Theo quy chế xét chọn 2025–2026, hồ sơ Tập thể sau khi kê khai sẽ được <strong>nộp trực tiếp</strong> lên Hội Sinh viên Việt Nam Thành phố Đà Nẵng, không qua khâu duyệt của Trường.
         </div>
       </main>
 
       {/* Footer */}
       <footer className="text-center text-[12px] text-[#728391]">
-        Hệ thống xét duyệt Sinh viên 5 tốt cấp Đại học Đà Nẵng · Hội Sinh viên Việt Nam Đại học Đà Nẵng
+        Hệ thống xét duyệt Sinh viên 5 tốt cấp Thành phố · Hội Sinh viên Việt Nam Thành phố Đà Nẵng
       </footer>
 
       <FeedbackFloatingWidget />

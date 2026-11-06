@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Admin Control Plane Feature Hook (FSD Features Layer)
+ * 5TOT Đà Nẵng — Admin Control Plane Feature Hook (FSD Features Layer)
  * Encapsulates state, readiness checks, Central-style timeline synchronization,
  * and audit-logged mutations for Institutions, School Review Units, Staff Accounts,
  * Seasons, Criteria (Individual + Collective TT01–TT04), Deadlines, Notifications,
@@ -56,6 +56,7 @@ import {
   syncAdminActionToServer,
 } from './adminApiService';
 import { apiRequest } from '../../shared/api/httpClient';
+import { setDemoAccountPassword } from '../../entities/services/demoAdapter';
 import { useAdminSeasonAndOperations } from './useAdminSeasonAndOperations';
 
 export interface AdminActionFeedback {
@@ -285,7 +286,7 @@ export function useAdminControlPlane(
         phone: payload.phone || '0905 000 111',
         primaryRole: 'ADMIN',
         roleLabel: 'Quản trị hệ thống',
-        unitLabel: 'Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng',
+        unitLabel: 'Ban Thư ký Hội Sinh viên Việt Nam Thành phố Đà Nẵng',
         roles: ['ADMIN'],
         status: 'active',
         assignedApplicationCount: 0,
@@ -574,7 +575,7 @@ export function useAdminControlPlane(
         roleCode: newAccount.primaryRole,
         schoolReviewUnitId:
           newAccount.primaryRole === 'SCHOOL_OFFICER'
-            ? newAccount.schoolReviewUnitId || 'unit-dut'
+            ? newAccount.schoolReviewUnitId || 'unit-udn'
             : null,
         institutionId: newAccount.institutionId || null,
         provisioningMode:
@@ -694,10 +695,46 @@ export function useAdminControlPlane(
   );
 
   const handleResetStaffPassword = useCallback(
-    (id: string, reason?: string) => {
+    async (
+      id: string,
+      reason?: string,
+      newTemporaryPassword?: string
+    ): Promise<{ success: boolean; error?: string }> => {
       const nowLabel = 'Vừa xong · Hôm nay';
       const target = adminStaffAccounts.find((s) => s.id === id);
-      if (!target) return;
+      if (!target) {
+        return { success: false, error: 'Không tìm thấy tài khoản cán bộ.' };
+      }
+
+      const effectivePassword = (newTemporaryPassword || 'MatKhau@2026').trim();
+      if (effectivePassword.length < 8) {
+        const msg = 'Mật khẩu cấp lại phải có tối thiểu 8 ký tự.';
+        setAdminActionFeedback({ type: 'error', message: msg });
+        return { success: false, error: msg };
+      }
+
+      if (isRealBackendActive()) {
+        try {
+          await apiRequest(`/api/v2/admin/staff/${encodeURIComponent(id)}/reset-password`, {
+            method: 'POST',
+            body: {
+              newTemporaryPassword: effectivePassword,
+              email: target.email,
+              reason,
+            },
+          });
+        } catch (err) {
+          const msg =
+            err instanceof Error && err.message
+              ? err.message
+              : 'Không thể cập nhật mật khẩu trên cơ sở dữ liệu máy chủ.';
+          setAdminActionFeedback({ type: 'error', message: msg });
+          return { success: false, error: msg };
+        }
+      } else {
+        setDemoAccountPassword(target.email, effectivePassword);
+      }
+
       const auditEv: AuditEvent = {
         id: `audit-${Date.now()}`,
         timestamp: nowLabel,
@@ -707,19 +744,15 @@ export function useAdminControlPlane(
         category: 'security',
         actionType: 'Đặt lại mật khẩu cán bộ',
         targetEntity: `${target.fullName} (${target.email})`,
-        summary: `${staffUser.fullName} đặt lại mật khẩu tạm thời và thu hồi các phiên đăng nhập của ${target.email} [Mật khẩu: ĐÃ ẨN].`,
+        summary: `${staffUser.fullName} đặt lại mật khẩu và thu hồi các phiên đăng nhập của ${target.email} [Mật khẩu: ĐÃ ẨN].`,
         reason,
       };
       setAdminAuditLogs((prev) => [auditEv, ...prev]);
       setAdminActionFeedback({
         type: 'success',
-        message: `Đã đặt lại mật khẩu tạm thời và thu hồi phiên đăng nhập của ${target.fullName}.`,
+        message: `Đã đặt lại mật khẩu mới và thu hồi phiên đăng nhập của ${target.fullName}.`,
       });
-      void syncAdminActionToServer(
-        `/api/v2/admin/staff/${id}/reset-password`,
-        'POST',
-        { newTemporaryPassword: 'MatKhau@2026' }
-      );
+      return { success: true };
     },
     [staffUser, adminStaffAccounts]
   );
@@ -767,7 +800,7 @@ export function useAdminControlPlane(
 
       const resolvedUnitId =
         newRole === 'SCHOOL_OFFICER'
-          ? schoolReviewUnitId || target.schoolReviewUnitId || 'unit-dut'
+          ? schoolReviewUnitId || target.schoolReviewUnitId || 'unit-udn'
           : undefined;
 
       setAdminStaffAccounts((prev) =>

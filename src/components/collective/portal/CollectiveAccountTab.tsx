@@ -1,7 +1,8 @@
-import React from 'react';
-import { Users, Building2, Plus, ArrowRight, Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { Users, Plus, ArrowRight, Check, KeyRound } from 'lucide-react';
 import { Button } from '../../buttons/Button';
 import { CollectiveApplication, COLLECTIVE_TYPE_LABELS } from '../../../staff/collectiveTypes';
+import { ChangePasswordModal } from '../../auth/ChangePasswordModal';
 
 export interface CollectiveAccountTabProps {
   currentApp: CollectiveApplication;
@@ -18,6 +19,8 @@ export const CollectiveAccountTab: React.FC<CollectiveAccountTabProps> = ({
   onOpenCreateModal,
   onLogout,
 }) => {
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+
   return (
     <div className="p-6 lg:p-8 max-w-3xl mx-auto w-full space-y-6 animate-in fade-in duration-150">
       <h2 className="text-[20px] font-extrabold text-[#172A3A]">
@@ -62,15 +65,34 @@ export const CollectiveAccountTab: React.FC<CollectiveAccountTabProps> = ({
           </div>
         </div>
 
-        {onLogout && (
-          <div className="pt-4 border-t border-[#EEF4F8] flex items-center justify-between">
-            <span className="text-[12px] text-[#728391]">Phiên làm việc bảo mật cấp Đại học Đà Nẵng</span>
-            <Button type="button" variant="danger" size="sm" onClick={onLogout}>
-              Đăng xuất
+        <div className="pt-4 border-t border-[#EEF4F8] flex flex-wrap items-center justify-between gap-2.5">
+          <span className="text-[12px] text-[#728391]">Phiên làm việc bảo mật cấp Thành phố</span>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => setIsChangePasswordOpen(true)}
+            >
+              <KeyRound size={13.5} className="mr-1.5" />
+              Đổi mật khẩu
             </Button>
+            {onLogout && (
+              <Button type="button" variant="danger" size="sm" onClick={onLogout}>
+                Đăng xuất
+              </Button>
+            )}
           </div>
-        )}
+        </div>
       </div>
+
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+        accountName={currentApp.preparedByUserName}
+        accountEmail={currentApp.preparedByUserEmail}
+        roleLabel="Người phụ trách hồ sơ Tập thể"
+      />
 
       {/* Danh sách tập thể do tài khoản quản lý */}
       <div className="bg-white border border-[#DCE7EE] rounded-[16px] p-6 space-y-4 shadow-2xs">

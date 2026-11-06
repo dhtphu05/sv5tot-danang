@@ -26,17 +26,17 @@ describe('5TOT ĐHĐN — SRW-3 School Batch Forwarding Specification Suite', ()
   const udnOfficer = STAFF_DEMO_USERS.SCHOOL_OFFICER;
   const dtuOfficer = {
     ...STAFF_DEMO_USERS.SCHOOL_OFFICER,
-    id: 'staff-sch-huy-due',
-    fullName: 'Trần Gia Huy',
-    schoolReviewUnitId: 'unit-due' as const,
-    unitLabel: 'Trường Đại học Kinh tế – ĐHĐN',
+    id: 'staff-sch-dtu',
+    fullName: 'Cán bộ HSV Đại học Duy Tân',
+    schoolReviewUnitId: 'unit-dtu' as const,
+    unitLabel: 'Đại học Duy Tân',
   };
   const cityManager = STAFF_DEMO_USERS.CITY_MANAGER;
 
   const demoDecisionDoc: DecisionDocumentMetadata = {
     decisionNumber: '182/QĐ-ĐHĐN',
     decisionTitle:
-      'Quyết định về việc đề xuất danh sách sinh viên đạt danh hiệu "Sinh viên 5 tốt" cấp Đại học Đà Nẵng năm học 2025–2026',
+      'Quyết định về việc đề xuất danh sách sinh viên đạt danh hiệu "Sinh viên 5 tốt" cấp Thành phố Đà Nẵng năm học 2025–2026',
     decisionDate: '2026-10-18',
     signedByName: 'PGS.TS. Nguyễn Ngọc Vũ',
     signedByTitle: 'Giám đốc Đại học Đà Nẵng',
@@ -52,7 +52,7 @@ describe('5TOT ĐHĐN — SRW-3 School Batch Forwarding Specification Suite', ()
   // ---------------------------------------------------------------------------
   // S3-01: One School Unit Batch
   // ---------------------------------------------------------------------------
-  it('S3-01: Exactly ONE batch belongs to unit-dut for the award season', async () => {
+  it('S3-01: Exactly ONE batch belongs to unit-udn for the award season', async () => {
     const services = resolveDomainServices('DEMO');
     const actor = {
       id: udnOfficer.id,
@@ -72,11 +72,11 @@ describe('5TOT ĐHĐN — SRW-3 School Batch Forwarding Specification Suite', ()
     const batch = await services.schoolReview.saveSchoolForwardingBatchDraft({
       seasonId: 'season-2025-2026',
       selectedApplicationIds: ['APP-2026-DN-102220123'],
-      forwardingNote: 'Dự thảo đợt đề xuất ĐHBK',
+      forwardingNote: 'Dự thảo đợt đề xuất ĐHĐN',
       actor,
     });
 
-    assert.equal(batch.schoolReviewUnitId, 'unit-dut');
+    assert.equal(batch.schoolReviewUnitId, 'unit-udn');
     assert.equal(batch.seasonId, 'season-2025-2026');
     assert.equal(batch.status, 'DRAFT');
     assert.equal(batch.selectedApplicationIds.length, 1);
@@ -85,19 +85,19 @@ describe('5TOT ĐHĐN — SRW-3 School Batch Forwarding Specification Suite', ()
   // ---------------------------------------------------------------------------
   // S3-02: Member Institution Applications Preserved Under School Unit Batch
   // ---------------------------------------------------------------------------
-  it('S3-02: Selected list contains applications from member institution while preserving original institution identity', async () => {
+  it('S3-02: Selected list contains applications from member institutions while preserving original institution identity', async () => {
     const udnApps = getApplicationsForSchoolOfficer(INITIAL_STAFF_APPLICATIONS, udnOfficer);
-    assert.ok(udnApps.length >= 2, 'DUT has multiple applications in scope');
+    assert.ok(udnApps.length >= 2, 'UDN has multiple applications in scope');
 
-    // Collect institutions present in DUT scope
+    // Collect institutions present in UDN scope
     const institutionIds = new Set(udnApps.map((a) => a.institution.id));
-    assert.equal(institutionIds.size, 1, 'DUT scope contains strictly inst-dut');
+    assert.ok(institutionIds.size >= 1, 'UDN scope preserves original member institution identities');
 
-    // Ensure member institution routes to unit-dut
+    // Ensure member institutions route to unit-udn
     for (const instId of institutionIds) {
       const routing = resolveSchoolReviewUnit(instId);
       assert.equal(routing.resolved, true);
-      assert.equal(routing.unit?.id, 'unit-dut');
+      assert.equal(routing.unit?.id, 'unit-udn');
     }
   });
 
@@ -245,7 +245,7 @@ describe('5TOT ĐHĐN — SRW-3 School Batch Forwarding Specification Suite', ()
       id: udnOfficer.id,
       name: udnOfficer.fullName,
       role: udnOfficer.primaryRole,
-      unitId: 'unit-dut',
+      unitId: 'unit-udn',
     };
 
     const summary = await services.schoolReview.getSchoolForwardingBatchSummary({
@@ -253,8 +253,8 @@ describe('5TOT ĐHĐN — SRW-3 School Batch Forwarding Specification Suite', ()
       actor,
     });
 
-    assert.equal(summary.schoolReviewUnitId, 'unit-dut');
-    assert.equal(summary.schoolReviewUnitName, 'Trường Đại học Bách khoa – ĐHĐN');
+    assert.equal(summary.schoolReviewUnitId, 'unit-udn');
+    assert.equal(summary.schoolReviewUnitName, 'Đại học Đà Nẵng');
     assert.ok(summary.totalApplicationsInScope > 0);
     assert.ok(Array.isArray(summary.institutionBreakdown));
     assert.ok(summary.institutionBreakdown.length > 0);
@@ -269,7 +269,7 @@ describe('5TOT ĐHĐN — SRW-3 School Batch Forwarding Specification Suite', ()
       id: udnOfficer.id,
       name: udnOfficer.fullName,
       role: udnOfficer.primaryRole,
-      unitId: 'unit-dut',
+      unitId: 'unit-udn',
     };
 
     // 1. Prepare draft
@@ -289,7 +289,7 @@ describe('5TOT ĐHĐN — SRW-3 School Batch Forwarding Specification Suite', ()
     // 3. Confirm
     const result = await services.schoolReview.confirmSchoolForwardingBatch({
       seasonId: 'season-2025-2026',
-      forwardingNote: 'Kính chuyển Hội đồng xét chọn cấp Đại học Đà Nẵng',
+      forwardingNote: 'Kính chuyển Hội đồng xét chọn cấp Thành phố Đà Nẵng',
       actor,
     });
 
@@ -307,7 +307,7 @@ describe('5TOT ĐHĐN — SRW-3 School Batch Forwarding Specification Suite', ()
       id: udnOfficer.id,
       name: udnOfficer.fullName,
       role: udnOfficer.primaryRole,
-      unitId: 'unit-dut',
+      unitId: 'unit-udn',
     };
 
     await services.schoolReview.saveSchoolForwardingBatchDraft({
@@ -363,7 +363,7 @@ describe('5TOT ĐHĐN — SRW-3 School Batch Forwarding Specification Suite', ()
       id: udnOfficer.id,
       name: udnOfficer.fullName,
       role: udnOfficer.primaryRole,
-      unitId: 'unit-dut',
+      unitId: 'unit-udn',
     };
 
     await services.schoolReview.saveSchoolForwardingBatchDraft({
@@ -413,10 +413,10 @@ describe('5TOT ĐHĐN — SRW-3 School Batch Forwarding Specification Suite', ()
       id: udnOfficer.id,
       name: udnOfficer.fullName,
       role: udnOfficer.primaryRole,
-      unitId: 'unit-dut',
+      unitId: 'unit-udn',
     };
 
-    // Forward DUT batch
+    // Forward UDN batch
     await services.schoolReview.saveSchoolForwardingBatchDraft({
       seasonId: 'season-2025-2026',
       selectedApplicationIds: ['APP-2026-DN-102220123'],
@@ -443,7 +443,7 @@ describe('5TOT ĐHĐN — SRW-3 School Batch Forwarding Specification Suite', ()
     });
 
     assert.equal(cityBatches.length, 1);
-    assert.equal(cityBatches[0].schoolReviewUnitId, 'unit-dut');
+    assert.equal(cityBatches[0].schoolReviewUnitId, 'unit-udn');
     assert.equal(cityBatches[0].decisionNumber, '182/QĐ-ĐHĐN');
     assert.equal(cityBatches[0].status, 'FORWARDED');
   });
@@ -451,35 +451,35 @@ describe('5TOT ĐHĐN — SRW-3 School Batch Forwarding Specification Suite', ()
   // ---------------------------------------------------------------------------
   // S3-12: Other School Review Unit Isolation
   // ---------------------------------------------------------------------------
-  it('S3-12: Other School Review Unit (unit-due) cannot modify DUT batch', async () => {
+  it('S3-12: Other School Review Unit (unit-dtu) cannot modify UDN batch', async () => {
     const services = resolveDomainServices('DEMO');
     const dtuActor = {
       id: dtuOfficer.id,
       name: dtuOfficer.fullName,
       role: dtuOfficer.primaryRole,
-      unitId: 'unit-due',
+      unitId: 'unit-dtu',
     };
 
-    // DUE officer creates DUE batch draft
+    // DTU officer creates DTU batch draft
     const dtuBatch = await services.schoolReview.saveSchoolForwardingBatchDraft({
       seasonId: 'season-2025-2026',
       selectedApplicationIds: [],
       actor: dtuActor,
     });
 
-    assert.equal(dtuBatch.schoolReviewUnitId, 'unit-due');
+    assert.equal(dtuBatch.schoolReviewUnitId, 'unit-dtu');
 
-    // DUE cannot see or mutate DUT batch
+    // DTU cannot see or mutate UDN batch
     const udnBatch = await services.schoolReview.getSchoolForwardingBatch({
       seasonId: 'season-2025-2026',
       actor: {
         id: udnOfficer.id,
         name: udnOfficer.fullName,
         role: udnOfficer.primaryRole,
-        unitId: 'unit-dut',
+        unitId: 'unit-udn',
       },
     });
-    assert.equal(udnBatch, null, 'DUT batch remains uncreated and unimpacted by DUE');
+    assert.equal(udnBatch, null, 'UDN batch remains uncreated and unimpacted by DTU');
   });
 
   // ---------------------------------------------------------------------------
@@ -491,7 +491,7 @@ describe('5TOT ĐHĐN — SRW-3 School Batch Forwarding Specification Suite', ()
       id: udnOfficer.id,
       name: udnOfficer.fullName,
       role: udnOfficer.primaryRole,
-      unitId: 'unit-dut',
+      unitId: 'unit-udn',
     };
 
     await services.schoolReview.saveSchoolForwardingBatchDraft({
@@ -524,24 +524,24 @@ describe('5TOT ĐHĐN — SRW-3 School Batch Forwarding Specification Suite', ()
   // ---------------------------------------------------------------------------
   it('S3-14: Selecting an out-of-scope application is rejected by validation', async () => {
     const services = resolveDomainServices('DEMO');
-    const actor = {
-      id: udnOfficer.id,
-      name: udnOfficer.fullName,
-      role: udnOfficer.primaryRole,
-      unitId: 'unit-dut',
+    const dtuActor = {
+      id: dtuOfficer.id,
+      name: dtuOfficer.fullName,
+      role: dtuOfficer.primaryRole,
+      unitId: 'unit-dtu',
     };
 
-    // Find application from DUE (out of scope for unit-dut)
-    const dueApp = INITIAL_STAFF_APPLICATIONS.find(
-      (a) => a.institution.id === 'inst-due'
+    // Find application from DUT (unit-udn, out of scope for unit-dtu)
+    const dutApp = INITIAL_STAFF_APPLICATIONS.find(
+      (a) => a.institution.id === 'inst-dut'
     );
-    if (dueApp) {
+    if (dutApp) {
       await assert.rejects(
         async () => {
           await services.schoolReview.saveSchoolForwardingBatchDraft({
             seasonId: 'season-2025-2026',
-            selectedApplicationIds: [dueApp.applicationId],
-            actor,
+            selectedApplicationIds: [dutApp.applicationId],
+            actor: dtuActor,
           });
         },
         (err: any) => {

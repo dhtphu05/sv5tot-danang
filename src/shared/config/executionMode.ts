@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Dual-Mode Execution Configuration & Guard
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Dual-Mode Execution Configuration & Guard
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Supports two permanent, strictly isolated execution modes:
  * - DEMO: Interactive Demo Mode using isolated fixtures and Demo Store (works without backend).
@@ -38,7 +38,12 @@ export function getExecutionMode(): ExecutionMode {
     return memoryModeOverride;
   }
 
-  if (typeof window !== 'undefined') {
+  const isProductionLocked =
+    typeof import.meta !== 'undefined' &&
+    import.meta.env &&
+    (import.meta.env.VITE_DEMO_MODE === 'false' || import.meta.env.PROD === true);
+
+  if (typeof window !== 'undefined' && !isProductionLocked) {
     try {
       const params = new URLSearchParams(window.location.search);
       const fromUrl = normalizeMode(params.get('mode') || params.get('executionMode'));

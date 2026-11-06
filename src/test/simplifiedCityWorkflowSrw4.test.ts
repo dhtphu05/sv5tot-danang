@@ -74,8 +74,8 @@ describe('5TOT ĐHĐN — SRW-4 Simplified City Officer & Committee Review Suite
     assert.equal(appRecord.institution.officialName, 'Trường Đại học Bách khoa - Đại học Đà Nẵng');
     const unitRes = resolveSchoolReviewUnit(appRecord.institution.id);
     assert.equal(unitRes.resolved, true);
-    assert.equal(unitRes.unit?.id, 'unit-dut');
-    assert.equal(unitRes.unit?.officialName, 'Trường Đại học Bách khoa – ĐHĐN');
+    assert.equal(unitRes.unit?.id, 'unit-udn');
+    assert.equal(unitRes.unit?.officialName, 'Đại học Đà Nẵng');
   });
 
   // D02: UDN common decision document visibility
@@ -308,11 +308,11 @@ describe('5TOT ĐHĐN — SRW-4 Simplified City Officer & Committee Review Suite
     // Record decision: recognized
     committeeCase.decision = {
       outcome: 'recognized',
-      outcomeLabel: 'Được công nhận Sinh viên 5 tốt cấp Đại học Đà Nẵng',
+      outcomeLabel: 'Được công nhận Sinh viên 5 tốt cấp Thành phố Đà Nẵng',
       recordedBy: committeeMember.fullName,
       recordedByRoleLabel: committeeMember.roleLabel,
       recordedAt: '2026-10-21 14:30',
-      internalNote: 'Hội đồng thống nhất công nhận danh hiệu Sinh viên 5 tốt cấp Đại học Đà Nẵng.',
+      internalNote: 'Hội đồng thống nhất công nhận danh hiệu Sinh viên 5 tốt cấp Thành phố Đà Nẵng.',
     };
     committeeCase.workflowStage = 'decision_recorded';
 

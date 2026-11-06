@@ -24,7 +24,7 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
     });
 
     // 1. Institutional identification
-    assert.ok(html.includes('HỘI SINH VIÊN VIỆT NAM ĐẠI HỌC ĐÀ NẴNG'));
+    assert.ok(html.includes('HỘI SINH VIÊN VIỆT NAM THÀNH PHỐ ĐÀ NẴNG'));
     assert.ok(html.includes('Hệ thống xét chọn danh hiệu và giải thưởng sinh viên'));
 
     // 2. Greeting & content
@@ -65,8 +65,8 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
     assert.equal(ctaHref, fallbackHref);
 
     // 6. Footer
-    assert.ok(html.includes('Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà NẴng') || html.includes('Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng'));
-    assert.ok(html.includes('hoisinhvien@udn.vn'));
+    assert.ok(html.includes('Ban Thư ký Hội Sinh viên Việt Nam Thành phố Đà Nẵng'));
+    assert.ok(html.includes('hoisinhvien@danang.gov.vn'));
     assert.ok(html.includes('Đây là email được gửi tự động từ hệ thống. Vui lòng không trả lời trực tiếp.'));
 
     // 7. Verify removed obsolete / unwanted phrases
@@ -77,18 +77,18 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
   });
 
   it('builds matching plain text alternative template', () => {
-    const resetUrl = 'https://sinhvien5tot.udn.vn/?route=reset_password&token=mock-token-123';
+    const resetUrl = 'https://sv5tot.thanhdoandanang.org.vn/?route=reset_password&token=mock-token-123';
     const text = buildPasswordResetPlainTextTemplate({
       userName: 'Trần Thị B',
       resetUrl,
       expiresInMinutes: 15,
     });
 
-    assert.ok(text.includes('HỘI SINH VIÊN VIỆT NAM ĐẠI HỌC ĐÀ NẴNG'));
+    assert.ok(text.includes('HỘI SINH VIÊN VIỆT NAM THÀNH PHỐ ĐÀ NẴNG'));
     assert.ok(text.includes('Kính gửi Trần Thị B,'));
     assert.ok(text.includes(resetUrl));
     assert.ok(text.includes('15 phút'));
-    assert.ok(text.includes('hoisinhvien@udn.vn'));
+    assert.ok(text.includes('hoisinhvien@danang.gov.vn'));
   });
 
   it('generates production reset URL with official HTTPS domain, proper query params, and no email parameter', async () => {
@@ -96,10 +96,12 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
     const origAppUrl = process.env.APP_URL;
     const origPublicUrl = process.env.APP_PUBLIC_URL;
     const origResendMode = process.env.RESEND_MODE;
+    const origDbMode = process.env.BACKEND_DATABASE_MODE;
 
     process.env.NODE_ENV = 'production';
     delete process.env.APP_PUBLIC_URL;
     delete process.env.APP_URL;
+    delete process.env.BACKEND_DATABASE_MODE;
     process.env.RESEND_MODE = 'mock';
     process.env.DATABASE_URL = 'postgresql://fake:fake@ep-fake.aws.neon.tech/neondb?sslmode=require';
     process.env.JWT_ACCESS_SECRET = 'production-secret-with-high-entropy-at-least-32-chars-long';
@@ -132,7 +134,7 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
       });
 
       assert.ok(interceptedPayload);
-      assert.equal(interceptedPayload.subject, '[5TOT ĐHĐN] Yêu cầu đặt lại mật khẩu');
+      assert.equal(interceptedPayload.subject, '[5TOT Đà Nẵng] Yêu cầu đặt lại mật khẩu');
 
       // Extract URL from HTML
       const urlMatch = interceptedPayload.html.match(/href="([^"]+)"/);
@@ -141,7 +143,7 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
 
       // Assertions on production reset link:
       assert.equal(generatedUrl.protocol, 'https:');
-      assert.equal(generatedUrl.hostname, 'sinhvien5tot.udn.vn');
+      assert.equal(generatedUrl.hostname, 'sv5tot.thanhdoandanang.org.vn');
       assert.equal(generatedUrl.searchParams.get('route'), 'reset_password');
       assert.equal(generatedUrl.searchParams.get('token'), 'test-raw-token-abcxyz-456');
       assert.equal(generatedUrl.searchParams.get('email'), null, 'Email parameter must NOT be present in reset URL');
@@ -166,6 +168,11 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
         process.env.RESEND_MODE = origResendMode;
       } else {
         delete process.env.RESEND_MODE;
+      }
+      if (origDbMode !== undefined) {
+        process.env.BACKEND_DATABASE_MODE = origDbMode;
+      } else {
+        delete process.env.BACKEND_DATABASE_MODE;
       }
       delete process.env.DATABASE_URL;
       delete process.env.JWT_ACCESS_SECRET;
@@ -263,10 +270,10 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
       requestReason: 'Cần bổ sung minh chứng Giấy chứng nhận hiến máu tình nguyện đợt 2.',
       requiredAction: 'Tải lên hình ảnh rõ nét của Giấy chứng nhận có mộc đỏ.',
       deadlineAt: '23:59 ngày 15/11/2026',
-      actionUrl: 'https://sinhvien5tot.udn.vn/?route=application_detail&code=HS-2026-DUT-001',
+      actionUrl: 'https://sv5tot.thanhdoandanang.org.vn/?route=application_detail&code=HS-2026-DUT-001',
     });
 
-    assert.ok(html.includes('HỘI SINH VIÊN VIỆT NAM ĐẠI HỌC ĐÀ NẴNG'));
+    assert.ok(html.includes('HỘI SINH VIÊN VIỆT NAM THÀNH PHỐ ĐÀ NẴNG'));
     assert.ok(html.includes('Kính gửi Nguyễn Văn Sinh Viên,'));
     assert.ok(html.includes('HS-2026-DUT-001'));
     assert.ok(html.includes('Trường Đại học Bách khoa – ĐHĐN'));
@@ -275,9 +282,9 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
     assert.ok(html.includes('Tải lên hình ảnh rõ nét của Giấy chứng nhận có mộc đỏ.'));
     assert.ok(html.includes('15/11/2026'));
     assert.ok(html.includes('Xem yêu cầu và bổ sung minh chứng'));
-    assert.ok(html.includes('https://sinhvien5tot.udn.vn/?route=application_detail&code=HS-2026-DUT-001'));
+    assert.ok(html.includes('https://sv5tot.thanhdoandanang.org.vn/?route=application_detail&code=HS-2026-DUT-001'));
     assert.ok(html.includes('word-break: break-all'));
-    assert.ok(html.includes('hoisinhvien@udn.vn'));
+    assert.ok(html.includes('hoisinhvien@danang.gov.vn'));
   });
 
   it('Dịch vụ 1: dispatches supplement request email with proper subject and payload', async () => {
@@ -306,7 +313,7 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
 
     assert.equal(result.success, true);
     assert.ok(captured);
-    assert.equal(captured.subject, '[5TOT ĐHĐN] Yêu cầu bổ sung minh chứng – HS-2026-DUT-002');
+    assert.equal(captured.subject, '[5TOT Đà Nẵng] Yêu cầu bổ sung minh chứng – HS-2026-DUT-002');
     assert.ok(captured.html.includes('Trần Thị Thu Thảo'));
     assert.ok(captured.html.includes('Tiêu chuẩn 2: Học tập tốt'));
     assert.ok(captured.text.includes('Bảng điểm chưa có xác nhận'));
@@ -332,10 +339,10 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
       institutionName: 'Trường Đại học Bách khoa – ĐHĐN',
       schoolReviewUnitName: 'Đoàn Thanh niên - Hội Sinh viên Trường Đại học Bách khoa',
       submittedAt: '2026-10-31T08:00:00Z',
-      actionUrl: 'https://sinhvien5tot.udn.vn/?route=application_detail&code=APP-2026-DN-102240295',
+      actionUrl: 'https://sv5tot.thanhdoandanang.org.vn/?route=application_detail&code=APP-2026-DN-102240295',
     });
 
-    assert.ok(html.includes('HỘI SINH VIÊN VIỆT NAM ĐẠI HỌC ĐÀ NẴNG'));
+    assert.ok(html.includes('HỘI SINH VIÊN VIỆT NAM THÀNH PHỐ ĐÀ NẴNG'));
     assert.ok(html.includes('Hệ thống xét chọn danh hiệu và giải thưởng sinh viên'));
     assert.ok(html.includes('Đã nộp hồ sơ thành công'));
     assert.ok(html.includes('Kính gửi Nguyễn Văn Minh Anh,'));
@@ -345,8 +352,8 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
     assert.ok(html.includes('Đoàn Thanh niên - Hội Sinh viên Trường Đại học Bách khoa'));
     assert.ok(html.includes('Chờ xét sơ tuyển'));
     assert.ok(html.includes('Theo dõi hồ sơ'));
-    assert.ok(html.includes('https://sinhvien5tot.udn.vn/?route=application_detail&code=APP-2026-DN-102240295'));
-    assert.ok(html.includes('hoisinhvien@udn.vn'));
+    assert.ok(html.includes('https://sv5tot.thanhdoandanang.org.vn/?route=application_detail&code=APP-2026-DN-102240295'));
+    assert.ok(html.includes('hoisinhvien@danang.gov.vn'));
   });
 
   it('Dịch vụ 2: builds matching plain text alternative template for submission confirmation', () => {
@@ -358,17 +365,17 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
       institutionName: 'Trường Đại học Bách khoa – ĐHĐN',
       schoolReviewUnitName: 'Hội đồng thẩm định cấp Trường',
       submittedAt: '2026-10-31T08:00:00Z',
-      actionUrl: 'https://sinhvien5tot.udn.vn/?route=application_detail&code=APP-2026-DN-102240295',
+      actionUrl: 'https://sv5tot.thanhdoandanang.org.vn/?route=application_detail&code=APP-2026-DN-102240295',
     });
 
-    assert.ok(text.includes('HỘI SINH VIÊN VIỆT NAM ĐẠI HỌC ĐÀ NẴNG'));
+    assert.ok(text.includes('HỘI SINH VIÊN VIỆT NAM THÀNH PHỐ ĐÀ NẴNG'));
     assert.ok(text.includes('XÁC NHẬN NỘP HỒ SƠ'));
     assert.ok(text.includes('Kính gửi Nguyễn Văn Minh Anh,'));
     assert.ok(text.includes('APP-2026-DN-102240295'));
     assert.ok(text.includes('Năm học 2025 - 2026'));
     assert.ok(text.includes('Trường Đại học Bách khoa – ĐHĐN'));
     assert.ok(text.includes('Chờ xét sơ tuyển'));
-    assert.ok(text.includes('https://sinhvien5tot.udn.vn/?route=application_detail&code=APP-2026-DN-102240295'));
+    assert.ok(text.includes('https://sv5tot.thanhdoandanang.org.vn/?route=application_detail&code=APP-2026-DN-102240295'));
   });
 
   it('Dịch vụ 2: dispatches submission confirmation email with proper subject, idempotency key, and payload', async () => {
@@ -398,7 +405,7 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
 
     assert.equal(result.success, true);
     assert.ok(captured);
-    assert.equal(captured.subject, '[5TOT ĐHĐN] Xác nhận nộp hồ sơ – APP-2026-DN-102240240');
+    assert.equal(captured.subject, '[5TOT Đà Nẵng] Xác nhận nộp hồ sơ – APP-2026-DN-102240240');
     assert.ok(captured.html.includes('Cao Nam Hải'));
     assert.ok(captured.html.includes('APP-2026-DN-102240240'));
     assert.ok(captured.text.includes('XÁC NHẬN NỘP HỒ SƠ'));
@@ -459,7 +466,7 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
     assert.ok(htmlNoDeadline.includes('Vui lòng truy cập hệ thống để xem yêu cầu và thực hiện bổ sung theo hướng dẫn.'));
   });
 
-  it('resolves dynamic subject tags for other awards such as Cánh chim trắng and Tập thể', async () => {
+  it('resolves dynamic subject tags for other awards such as Giải thưởng 9/1 and Tập thể', async () => {
     const emailService = new ResendEmailService('mock-api-key');
 
     let capturedConfirm: any = null;
@@ -478,11 +485,11 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
     await emailService.sendSubmissionConfirmationEmail({
       to: 'student@udn.vn',
       studentName: 'Phạm Thị Thùy',
-      applicationCode: 'CCT-2026-001',
-      awardTitle: 'Giải thưởng Cánh chim trắng',
+      applicationCode: 'GT91-2026-DN-001',
+      awardTitle: 'Giải thưởng 9/1',
     });
 
-    assert.equal(capturedConfirm.subject, '[Cánh chim trắng ĐHĐN] Xác nhận nộp hồ sơ – CCT-2026-001');
+    assert.equal(capturedConfirm.subject, '[Giải thưởng 9/1 Đà Nẵng] Xác nhận nộp hồ sơ – GT91-2026-DN-001');
 
     await emailService.sendSubmissionConfirmationEmail({
       to: 'collective@udn.vn',
@@ -491,7 +498,7 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
       awardTitle: 'danh hiệu Tập thể Sinh viên 5 tốt',
     });
 
-    assert.equal(capturedConfirm.subject, '[Tập thể 5TOT ĐHĐN] Xác nhận nộp hồ sơ – TT-2026-001');
+    assert.equal(capturedConfirm.subject, '[Tập thể 5TOT Đà Nẵng] Xác nhận nộp hồ sơ – TT-2026-001');
   });
 
   it('builds bulletproof feedback email HTML without flexbox and cleanly separates metadata & tech team emails', () => {
@@ -505,7 +512,7 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
     });
 
     // 1. Institutional header
-    assert.ok(html.includes('Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng'));
+    assert.ok(html.includes('Thành Đoàn Đà Nẵng · Hội Sinh viên Việt Nam Thành phố Đà Nẵng'));
     assert.ok(html.includes('Phản hồi & Báo lỗi Kỹ thuật'));
 
     // 2. Preheader is present
@@ -520,7 +527,7 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
 
     // 5. Action bar uses table with button on left and subtitle on right
     assert.ok(html.includes('Soạn thư trả lời Văn Ngọc Như Ý &rarr;'));
-    assert.ok(html.includes('Đội ngũ Kỹ thuật Hệ thống 5TOT ĐHĐN'));
+    assert.ok(html.includes('Đội ngũ Kỹ thuật Hệ thống 5TOT Đà Nẵng'));
 
     // 6. Footer separates the two emails with a clean bullet
     assert.ok(html.includes('vanngocnhuy30032006@gmail.com'));
@@ -537,7 +544,7 @@ describe('Backend V2: Resend Email Domain Service & Templates', () => {
       submittedAt: new Date('2026-11-03T03:10:00Z'),
     });
 
-    assert.ok(text.includes('=== [SV5T ĐHĐN] THÔNG BÁO GÓP Ý & BÁO LỖI KỸ THUẬT ==='));
+    assert.ok(text.includes('=== [5TOT ĐÀ NẴNG] THÔNG BÁO GÓP Ý & BÁO LỖI KỸ THUẬT ==='));
     assert.ok(text.includes('BÁO LỖI KỸ THUẬT'));
     assert.ok(text.includes('Khách (Chưa đăng nhập)'));
     assert.ok(text.includes('vanngocnhuy30032006@gmail.com · dhtphu05@gmail.com'));

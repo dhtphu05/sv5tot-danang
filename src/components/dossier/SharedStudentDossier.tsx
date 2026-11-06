@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Shared Canonical Student Dossier Presentation (SRW-2)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Shared Canonical Student Dossier Presentation (SRW-2)
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * ONE CANONICAL DOSSIER PRESENTATION. MULTIPLE AUTHORIZED ACTION MODES.
  *
@@ -340,16 +340,16 @@ export const SharedStudentDossier: React.FC<SharedStudentDossierProps> = ({
         </div>
       )}
 
-      {/* Canonical 4-Column Table Surface */}
-      <div className="bg-white rounded-[14px] border border-[#DCE7EE] shadow-sm overflow-x-auto min-w-0">
-        <div className="w-full min-w-0">
+      {/* Canonical 5-Column Administrative Table Surface */}
+      <div className="bg-white rounded-[4px] border border-[#DFE5EC] overflow-x-auto min-w-0">
+        <div className="w-full min-w-[740px] md:min-w-0">
           <ApplicationTableHeader
             isSticky={false}
             isCompact={isTableCompact}
             isReviewMode={isReviewMode}
           />
 
-          <div className="divide-y divide-[#DCE7EE]">
+          <div className="divide-y divide-[#DFE5EC]">
           {application.criteria.map((criterion: ApplicationCriterion) => {
             const isCritExpanded = !!expandedCriteria[criterion.id];
             const overrideMeta = criteriaStatusOverrides?.[criterion.id];

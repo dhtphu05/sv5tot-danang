@@ -303,7 +303,7 @@ export class SchoolReviewService {
         recipientUserId: detail.applicantUserId,
         category: 'SUPPLEMENT_REQUESTED',
         channel: 'IN_APP_AND_EMAIL',
-        title: `[5TOT ĐHĐN] Yêu cầu bổ sung minh chứng hồ sơ ${detail.applicationCode}`,
+        title: `[5TOT Đà Nẵng] Yêu cầu bổ sung minh chứng hồ sơ ${detail.applicationCode}`,
         body: `Cán bộ thẩm định yêu cầu bổ sung minh chứng cho ${data.criterionName || resolveCriterionName(data.criterionOrReqCode)}${data.requirementTitle ? ' (' + data.requirementTitle + ')' : ''}. Lý do: ${data.requestReason}`,
         track: 'INDIVIDUAL',
         applicationId,

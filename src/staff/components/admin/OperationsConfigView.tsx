@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Operations & System Configuration View (Vận hành & Cấu hình)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Operations & System Configuration View (Vận hành & Cấu hình)
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements ADMIN-REVAMP Sections 12, 13, 14 & 15:
  * - Notification Templates & Safe Preview (never dispatches real mass emails)
@@ -267,7 +267,7 @@ export const OperationsConfigView: React.FC<OperationsConfigViewProps> = ({
             </div>
             <p className="text-[12px] text-[#526B7C] mt-0.5">
               Điều chỉnh thời hạn phản hồi yêu cầu bổ sung minh chứng trong khi
-              bảo toàn tuyệt đối quy trình nghiệp vụ 2 cấp (Trường → Đại học Đà Nẵng).
+              bảo toàn tuyệt đối quy trình nghiệp vụ 2 cấp (Đơn vị → Thành phố Đà Nẵng).
             </p>
           </div>
           <Button
@@ -305,7 +305,7 @@ export const OperationsConfigView: React.FC<OperationsConfigViewProps> = ({
               className="w-full h-[38px] px-3 bg-white border border-[#DCE7EE] rounded-[8px] font-bold"
             />
             <span className="text-[11px] text-[#526B7C] block">
-              Áp dụng khi Cán bộ sơ tuyển Trường hoặc Cán bộ cấp Đại học Đà Nẵng gửi yêu
+              Áp dụng khi Cán bộ sơ tuyển Đơn vị hoặc Cán bộ cấp Thành phố Đà Nẵng gửi yêu
               cầu bổ sung inline.
             </span>
           </div>
@@ -341,7 +341,7 @@ export const OperationsConfigView: React.FC<OperationsConfigViewProps> = ({
               <li className="flex items-center gap-1.5">
                 <CheckCircle2 size={12} className="text-[#16A34A]" />
                 <span>
-                  Bắt buộc 01 PDF công văn/tờ trình chung khi Trường gửi ĐHĐN
+                  Bắt buộc 01 PDF công văn/tờ trình chung khi Đơn vị gửi Thành phố
                 </span>
               </li>
               <li className="flex items-center gap-1.5">
@@ -353,7 +353,7 @@ export const OperationsConfigView: React.FC<OperationsConfigViewProps> = ({
               <li className="flex items-center gap-1.5">
                 <CheckCircle2 size={12} className="text-[#16A34A]" />
                 <span>
-                  Tập thể (TT01–TT04) nộp trực tiếp lên ĐHĐN; AI chỉ tư vấn
+                  Tập thể (TT01–TT04) nộp trực tiếp lên Thành phố; AI chỉ tư vấn
                 </span>
               </li>
             </ul>

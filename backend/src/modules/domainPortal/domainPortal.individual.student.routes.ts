@@ -383,9 +383,9 @@ export function registerIndividualStudentPortalRoutes(
     }
 
     const mapped = SCHOOL_UNIT_MAP[institutionId] || {
-      unitId: 'unit-dut',
-      unitName: 'Trường Đại học Bách khoa – ĐHĐN',
-      instName: institutionName || 'Trường Đại học Bách khoa – ĐHĐN',
+      unitId: 'unit-udn',
+      unitName: 'Đại học Đà Nẵng',
+      instName: institutionName || 'Trường Đại học Bách khoa – Đại học Đà Nẵng',
     };
 
     const appId = `APP-2026-DN-${studentCode}`;
@@ -416,6 +416,8 @@ export function registerIndividualStudentPortalRoutes(
       academicYearNumber: Number(academicYearNumber) || 0,
       educationLevel: educationLevel || '',
       className: className || '',
+      facultyName: faculty || '',
+      faculty: faculty || '',
       homeProvince: homeProvince || '',
       institutionId,
       institutionName: institutionName || mapped.instName,
@@ -442,7 +444,7 @@ export function registerIndividualStudentPortalRoutes(
     const created: Record<string, any> = {
       applicationId: appId,
       season: 'Năm học 2025–2026',
-      level: 'Cấp Đại học Đà Nẵng',
+      level: 'Cấp Thành phố Đà Nẵng',
       status: isExistingDraft ? 'draft' : existingApp?.status || 'draft',
       reviewStage: existingApp?.reviewStage || 'SCHOOL',
       trainingInstitutionName: resolvedSnapshot.institutionName || institutionName || mapped.instName,
@@ -456,7 +458,12 @@ export function registerIndividualStudentPortalRoutes(
         fullName: resolvedSnapshot.fullName || studentFullName,
         studentId: studentCode,
         university: resolvedSnapshot.institutionName || institutionName || mapped.instName,
-        faculty: faculty || existingApp?.student?.faculty || 'Khoa Đào tạo',
+        faculty:
+          resolvedSnapshot.facultyName ||
+          resolvedSnapshot.faculty ||
+          faculty ||
+          existingApp?.student?.faculty ||
+          'Khoa Đào tạo',
         class: resolvedSnapshot.className || className || existingApp?.student?.class || '',
         email: resolvedSnapshot.email || email || `${studentCode}@sv.udn.vn`,
         academicYear: 'Năm học 2025–2026',
@@ -523,15 +530,16 @@ export function registerIndividualStudentPortalRoutes(
       portalState.studentApplications[id] || {
         applicationId: id,
         season: 'Năm học 2025–2026',
-        level: 'Cấp Đại học Đà Nẵng',
+        level: 'Cấp Thành phố Đà Nẵng',
         status: 'draft',
         reviewStage: 'SCHOOL',
         applicantProfileSnapshot: savedProfile || undefined,
         student: {
-          fullName: savedProfile?.fullName || actor.name || 'Sinh viên ĐHĐN',
+          fullName: savedProfile?.fullName || actor.name || 'Sinh viên Đà Nẵng',
           studentId: inferredStudentCode,
           university:
-            savedProfile?.institutionName || 'Trường Đại học Bách khoa – ĐHĐN',
+            savedProfile?.institutionName || 'Trường Đại học Bách khoa – Đại học Đà Nẵng',
+          faculty: savedProfile?.facultyName || savedProfile?.faculty || 'Khoa Đào tạo',
           class: savedProfile?.className || '',
           email: savedProfile?.email || actor.email || `${inferredStudentCode}@sv.udn.vn`,
           academicYear: 'Năm học 2025–2026',
@@ -846,6 +854,10 @@ export function registerIndividualStudentPortalRoutes(
         if (app.applicantProfileSnapshot.email) {
           app.student.email = app.applicantProfileSnapshot.email;
         }
+        if (app.applicantProfileSnapshot.facultyName || app.applicantProfileSnapshot.faculty) {
+          app.student.faculty =
+            app.applicantProfileSnapshot.facultyName || app.applicantProfileSnapshot.faculty;
+        }
       }
     }
 
@@ -873,7 +885,7 @@ export function registerIndividualStudentPortalRoutes(
       actorId: actor.id,
       actorName: actor.name,
       actorRole: actor.role,
-      details: `Sinh viên nộp hồ sơ về Đơn vị xét sơ tuyển (${app.schoolReviewUnitName || 'Trường Đại học Bách khoa – ĐHĐN'})`,
+      details: `Sinh viên nộp hồ sơ về Đơn vị xét sơ tuyển (${app.schoolReviewUnitName || 'Đại học Đà Nẵng'})`,
     });
     const emailSvc = deps.emailService || getEmailService();
     const finalStudentEmail = String(
@@ -889,9 +901,9 @@ export function registerIndividualStudentPortalRoutes(
           to: finalStudentEmail,
           studentName: studentFullName,
           applicationCode: app.applicationCode || id,
-          awardTitle: app.awardTitle || app.title || 'danh hiệu Sinh viên 5 tốt Đại học Đà Nẵng',
+          awardTitle: app.awardTitle || app.title || 'danh hiệu Sinh viên 5 tốt Thành phố Đà Nẵng',
           seasonName: app.seasonName || app.season || 'Năm học 2025 - 2026',
-          institutionName: app.trainingInstitutionName || app.student?.university || mapped.instName || 'Đại học Đà Nẵng',
+          institutionName: app.trainingInstitutionName || app.student?.university || mapped.instName || 'Thành phố Đà Nẵng',
           schoolReviewUnitName: app.schoolReviewUnitName || mapped.unitName || 'Đơn vị xét sơ tuyển cấp Trường',
           submittedAt: new Date(),
           statusName: 'Chờ xét sơ tuyển',
@@ -909,8 +921,8 @@ export function registerIndividualStudentPortalRoutes(
     res.status(200).json({
       success: true,
       message: 'Đã nộp hồ sơ về Đơn vị xét sơ tuyển thành công.',
-      schoolReviewUnitId: app.schoolReviewUnitId || 'unit-dut',
-      schoolReviewUnitName: app.schoolReviewUnitName || 'Trường Đại học Bách khoa – ĐHĐN',
+      schoolReviewUnitId: app.schoolReviewUnitId || 'unit-udn',
+      schoolReviewUnitName: app.schoolReviewUnitName || 'Đại học Đà Nẵng',
       data: app,
     });
   });

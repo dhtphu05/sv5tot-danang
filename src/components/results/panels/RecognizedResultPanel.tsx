@@ -33,7 +33,7 @@ export const RecognizedResultPanel: React.FC<RecognizedResultPanelProps> = ({
           <HsvLogo size={32} />
           <div>
             <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#126A9C]">
-              HỘI SINH VIÊN VIỆT NAM ĐẠI HỌC ĐÀ NẴNG
+              HỘI SINH VIÊN VIỆT NAM THÀNH PHỐ ĐÀ NẴNG
             </p>
             <p className="text-[12px] text-[#466474] font-medium">
               Kết quả xét chọn chính thức · Năm học {activeResult.schoolYear}
@@ -61,7 +61,7 @@ export const RecognizedResultPanel: React.FC<RecognizedResultPanelProps> = ({
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAFBF1] text-[#136F3A] text-[12px] font-bold">
               <Award size={15} className="text-[#1A934E]" />
-              <span>DANH HIỆU CẤP ĐẠI HỌC ĐÀ NẴNG</span>
+              <span>DANH HIỆU CẤP THÀNH PHỐ ĐÀ NẴNG</span>
             </div>
 
             <div>
@@ -79,7 +79,7 @@ export const RecognizedResultPanel: React.FC<RecognizedResultPanelProps> = ({
                 Đạt danh hiệu {activeResult.awardTitle}
               </p>
               <p className="text-[#334E68] text-[12.5px] leading-relaxed">
-                Hội đồng xét chọn Hội Sinh viên Đại học Đà Nẵng quyết định công nhận sau khi thẩm tra đầy đủ 5 tiêu chuẩn chuẩn tắc niên khóa {activeResult.schoolYear}.
+                Hội đồng xét chọn Hội Sinh viên Việt Nam Thành phố Đà Nẵng quyết định công nhận sau khi thẩm tra đầy đủ 5 tiêu chuẩn chuẩn tắc niên khóa {activeResult.schoolYear}.
               </p>
             </div>
           </div>

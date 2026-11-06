@@ -123,7 +123,9 @@ export class AdminController {
     const result = await this.adminService.resetStaffPassword(
       req.actor!,
       id,
-      body.newTemporaryPassword
+      body.newTemporaryPassword,
+      body.email,
+      body.reason
     );
     res.status(200).json({
       success: true,

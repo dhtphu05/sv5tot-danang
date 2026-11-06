@@ -170,7 +170,7 @@ export function buildOfficerScenarioBundle(
       'academic-gpa',
       'decl-aca-gpa-1',
       'review_completed',
-      'GPA 3.58/4.00 đạt chuẩn (>= 3.40), không có học phần điểm F.'
+      'GPA 3.58/4.00 đạt chuẩn (>= 3.20), không có học phần điểm F.'
     ),
     [getScopeKey('academic-nckh', 'decl-aca-nckh-1')]: makeScopeRecord(
       appId,
@@ -194,7 +194,7 @@ export function buildOfficerScenarioBundle(
       'academic-competition',
       'decl-aca-comp-1',
       'review_completed',
-      'Giải Nhất CodeStorm 2026 do Hội Sinh viên Đại học Đà Nẵng đồng tổ chức.'
+      'Giải Nhất CodeStorm 2026 do Hội Sinh viên Thành phố Đà Nẵng đồng tổ chức.'
     ),
     // Physical (3 declarations on physical-sport)
     [getScopeKey('physical-khoe', 'decl-phy-khoe-1')]: makeScopeRecord(
@@ -203,7 +203,7 @@ export function buildOfficerScenarioBundle(
       'physical-khoe',
       'decl-phy-khoe-1',
       'review_completed',
-      'Chứng nhận Sinh viên khỏe cấp Trường hợp lệ.'
+      'Chứng nhận Thanh niên khỏe cấp Trường hợp lệ.'
     ),
     [getScopeKey('physical-sport', 'decl-phy-sport-1')]: makeScopeRecord(
       appId,
@@ -1017,10 +1017,10 @@ export function buildFallbackBundleForStaffRecord(
     const defaultActorName = isSchoolStage
       ? record.schoolReviewSummary?.recommendingOfficerName ||
         `Cán bộ xét cấp trường ${unitName}`
-      : record.assignment?.officerName || 'Cán bộ xét duyệt cấp Đại học Đà Nẵng';
+      : record.assignment?.officerName || 'Cán bộ xét duyệt cấp Thành phố Đà Nẵng';
     const defaultActorRole = isSchoolStage
       ? 'Cán bộ xét cấp Trường'
-      : 'Cán bộ xét duyệt cấp Đại học Đà Nẵng';
+      : 'Cán bộ xét duyệt cấp Thành phố Đà Nẵng';
 
     const criterionCompletedMap: ApplicationReviewWorkspaceState['criterionCompletedMap'] =
       {};
@@ -1060,7 +1060,7 @@ export function buildFallbackBundleForStaffRecord(
           reason: cr.noteSummary,
           actorId:
             record.assignment?.officerId ||
-            `staff-school-${record.schoolReviewUnitId || 'unit-dut'}`,
+            `staff-school-${record.schoolReviewUnitId || 'unit-udn'}`,
           actorName: defaultActorName,
           actorRole: defaultActorRole,
           concludedAt: record.updatedAt || record.submittedAt,
@@ -1102,7 +1102,7 @@ export function buildFallbackBundleForStaffRecord(
                 : 'pass',
             actorId:
               record.assignment?.officerId ||
-              `staff-school-${record.schoolReviewUnitId || 'unit-dut'}`,
+              `staff-school-${record.schoolReviewUnitId || 'unit-udn'}`,
             actorName: defaultActorName,
             actorRole: defaultActorRole,
             concludedAt: record.updatedAt || record.submittedAt,
@@ -1126,7 +1126,7 @@ export function buildFallbackBundleForStaffRecord(
       historyEvents.unshift({
         id: `hist-assign-${record.applicationId}`,
         timestamp: record.assignment.assignedAt || record.updatedAt || '14/10/2026 · 09:00',
-        actorName: record.assignment.assignedBy || 'Quản lý xét duyệt cấp Đại học Đà Nẵng',
+        actorName: record.assignment.assignedBy || 'Quản lý xét duyệt cấp Thành phố Đà Nẵng',
         actorRoleLabel: 'Quản lý xét duyệt',
         description: `Phân công hồ sơ cho ${record.assignment.officerName}.`,
         tone: 'neutral',
@@ -1141,7 +1141,7 @@ export function buildFallbackBundleForStaffRecord(
         actorRoleLabel: defaultActorRole,
         description: isSchoolStage
           ? `${defaultActorName} đã hoàn tất xét sơ tuyển 05 tiêu chí cấp Trường.`
-          : `${defaultActorName} đã hoàn tất thẩm định 05 tiêu chí cấp Đại học Đà Nẵng.`,
+          : `${defaultActorName} đã hoàn tất thẩm định 05 tiêu chí cấp Thành phố Đà Nẵng.`,
         scopeBadge: isSchoolStage ? 'Hoàn tất xét sơ tuyển' : 'Hoàn tất thẩm định',
         tone: 'green',
       });
@@ -1163,7 +1163,7 @@ export function buildFallbackBundleForStaffRecord(
       workspaceState: {
         applicationId: record.applicationId,
         reviewStage: stage,
-        reviewUnitId: record.schoolReviewUnitId || 'unit-dut',
+        reviewUnitId: record.schoolReviewUnitId || 'unit-udn',
         hasStartedReview,
         startedAt: hasStartedReview ? record.submittedAt : undefined,
         lastReviewedAt: hasStartedReview ? record.updatedAt : undefined,

@@ -47,39 +47,39 @@ export const StatusChip: React.FC<StatusChipProps> = ({
       case 'ready':
       case 'review_completed':
         return {
-          bg: 'bg-[#EDF9F1]',
-          text: 'text-[#1B7C49]',
-          border: 'border-[#C6EED5]',
-          dot: 'bg-[#1A934E]',
+          bg: 'bg-[#ECFDF5]',
+          text: 'text-[#047857]',
+          border: 'border-[#A7F3D0]',
+          dot: 'bg-[#10A37F]',
         };
       case 'declared':
         return {
-          bg: 'bg-[#EBF5FA]',
-          text: 'text-[#0D78AE]',
-          border: 'border-[#D0E8F5]',
-          dot: 'bg-[#18A6E0]',
+          bg: 'bg-[#EFF6FF]',
+          text: 'text-[#0066CC]',
+          border: 'border-[#BFDBFE]',
+          dot: 'bg-[#007EE5]',
         };
       case 'needs_verification':
       case 'requires_supplement':
         return {
-          bg: 'bg-[#FEF6EB]',
-          text: 'text-[#B75B00]',
-          border: 'border-[#FADDB6]',
-          dot: 'bg-[#E99A18]',
+          bg: 'bg-[#FFFBEB]',
+          text: 'text-[#B45309]',
+          border: 'border-[#FDE68A]',
+          dot: 'bg-[#D97706]',
         };
       case 'reading_document':
       case 'reviewing':
         return {
-          bg: 'bg-[#EBF5FA]',
-          text: 'text-[#0D78AE]',
-          border: 'border-[#D0E8F5]',
-          dot: 'bg-[#18A6E0]',
+          bg: 'bg-[#EFF6FF]',
+          text: 'text-[#0066CC]',
+          border: 'border-[#BFDBFE]',
+          dot: 'bg-[#007EE5]',
         };
       case 'read_failed':
         return {
           bg: 'bg-[#FEF2F2]',
           text: 'text-[#991B1B]',
-          border: 'border-[#FCA5A5]',
+          border: 'border-[#FECACA]',
           dot: 'bg-[#DC2626]',
         };
       case 'undeclared':
@@ -87,19 +87,19 @@ export const StatusChip: React.FC<StatusChipProps> = ({
       case 'awaiting_officer':
       default:
         return {
-          bg: 'bg-[#F1F5F8]',
-          text: 'text-[#4F6777]',
-          border: 'border-[#DDE6ED]',
-          dot: 'bg-[#728391]',
+          bg: 'bg-[#F8FAFC]',
+          text: 'text-[#475569]',
+          border: 'border-[#E2E8F0]',
+          dot: 'bg-[#94A3B8]',
         };
     }
   };
 
   const config = REQUIREMENT_STATUS_MAP[status] || {
     label: status,
-    dotColor: '#728391',
+    dotColor: '#64748B',
     bgSoft: 'rgba(0,0,0,0.04)',
-    textColor: '#4F6777',
+    textColor: '#475569',
   };
 
   const style = getStatusStyles(status);
@@ -108,7 +108,7 @@ export const StatusChip: React.FC<StatusChipProps> = ({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 h-[28px] px-2.5 rounded-[8px] text-[12px] font-semibold whitespace-nowrap select-none border transition-colors ${style.bg} ${style.text} ${style.border} ${className}`}
+      className={`inline-flex items-center gap-1.5 h-[25px] px-2 rounded-[4px] text-[11.5px] font-semibold whitespace-nowrap select-none border transition-colors ${style.bg} ${style.text} ${style.border} ${className}`}
     >
       <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${style.dot}`} aria-hidden="true" />
       <span className="truncate">{label}</span>

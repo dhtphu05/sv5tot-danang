@@ -1,12 +1,12 @@
 /**
- * 5TOT ĐHĐN — Create Collective Application Modal
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Create Collective Application Modal
+ * Cơ quan chỉ đạo: Thành Đoàn Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements Student-Account Collective Application Initialization:
  * - Allows any authenticated student to initialize a Collective SV5T application directly inside their account.
  * - Pre-fills institution, faculty, class/chi hội, and contact phone from the student's profile.
- * - Automatically resolves the UDN member School Review Unit.
+ * - Automatically resolves the corresponding School Review Unit (routing 08 UDN schools to unit-udn and 23 standalone schools 1:1).
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -18,8 +18,10 @@ import {
 } from '../../staff/collectiveTypes';
 import {
   AUTHORITATIVE_SCHOOL_REVIEW_UNITS,
+  resolveSchoolReviewUnit,
   SchoolReviewUnitId,
 } from '../../staff/schoolReviewTypes';
+import { DANANG_INSTITUTION_REGISTRY } from '../../demo/fixtures/institutionRegistry';
 import { resolveInstitutionFromUniversity } from '../../demo/fixtures/studentApplication';
 import { getAllCollectiveApplications } from '../../staff/collectiveStore';
 import { isBackendMode } from '../../shared/config/executionMode';
@@ -63,7 +65,7 @@ export const CreateCollectiveModal: React.FC<CreateCollectiveModalProps> = ({
   onClose,
   onSubmit,
   onContinueExisting,
-  initialUserName = 'Sinh viên ĐHĐN',
+  initialUserName = 'Sinh viên Đà Nẵng',
   initialUserEmail = '',
   initialStudentId = '',
   initialUniversity = '',
@@ -72,27 +74,21 @@ export const CreateCollectiveModal: React.FC<CreateCollectiveModalProps> = ({
   initialClassName = '',
   initialPhone = '',
 }) => {
-  const defaultResolvedUnit = useMemo(() => {
+  const defaultResolvedInstitution = useMemo(() => {
     if (initialInstitutionId) {
-      const matched = AUTHORITATIVE_SCHOOL_REVIEW_UNITS.find((u) =>
-        u.memberInstitutionIds.includes(initialInstitutionId)
-      );
+      const matched = DANANG_INSTITUTION_REGISTRY.find((i) => i.id === initialInstitutionId);
       if (matched) return matched;
     }
     if (initialUniversity) {
       const resolved = resolveInstitutionFromUniversity(initialUniversity);
-      const matched = AUTHORITATIVE_SCHOOL_REVIEW_UNITS.find(
-        (u) =>
-          u.id === resolved.schoolReviewUnitId ||
-          u.memberInstitutionIds.includes(resolved.institutionId)
-      );
+      const matched = DANANG_INSTITUTION_REGISTRY.find((i) => i.id === resolved.institutionId);
       if (matched) return matched;
     }
-    return AUTHORITATIVE_SCHOOL_REVIEW_UNITS[0];
+    return DANANG_INSTITUTION_REGISTRY[0];
   }, [initialInstitutionId, initialUniversity]);
 
-  const [selectedUnitId, setSelectedUnitId] = useState<SchoolReviewUnitId>(
-    defaultResolvedUnit.id
+  const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>(
+    defaultResolvedInstitution.id
   );
   const [collectiveType, setCollectiveType] = useState<CollectiveType>('CHI_HOI');
   const [collectiveName, setCollectiveName] = useState<string>(
@@ -104,7 +100,7 @@ export const CreateCollectiveModal: React.FC<CreateCollectiveModalProps> = ({
 
   useEffect(() => {
     if (!isOpen) return;
-    setSelectedUnitId(defaultResolvedUnit.id);
+    setSelectedInstitutionId(defaultResolvedInstitution.id);
     if (initialClassName && !collectiveName) {
       setCollectiveName(`Chi hội ${initialClassName}`);
     }
@@ -117,26 +113,32 @@ export const CreateCollectiveModal: React.FC<CreateCollectiveModalProps> = ({
     setNameError('');
   }, [
     isOpen,
-    defaultResolvedUnit.id,
+    defaultResolvedInstitution.id,
     initialClassName,
     initialFaculty,
     initialPhone,
   ]);
 
+  const selectedInstitution = useMemo(() => {
+    return (
+      DANANG_INSTITUTION_REGISTRY.find((i) => i.id === selectedInstitutionId) ||
+      defaultResolvedInstitution
+    );
+  }, [selectedInstitutionId, defaultResolvedInstitution]);
+
   const selectedUnit = useMemo(() => {
     return (
-      AUTHORITATIVE_SCHOOL_REVIEW_UNITS.find((u) => u.id === selectedUnitId) ||
-      defaultResolvedUnit
+      resolveSchoolReviewUnit(selectedInstitution.id).unit ||
+      AUTHORITATIVE_SCHOOL_REVIEW_UNITS[0]
     );
-  }, [selectedUnitId, defaultResolvedUnit]);
+  }, [selectedInstitution]);
 
   const suggestedEntities = useMemo(() => {
     if (isBackendMode()) return [];
-    const instId = selectedUnit.memberInstitutionIds[0] || 'inst-dut';
     return AUTHORIZED_COLLECTIVE_REGISTRY.filter(
-      (e) => e.institutionId === instId || e.schoolReviewUnitId === selectedUnit.id
+      (e) => e.institutionId === selectedInstitution.id
     );
-  }, [selectedUnit]);
+  }, [selectedInstitution]);
 
   // Check Application Uniqueness in active season
   const existingApp = useMemo(() => {
@@ -178,13 +180,11 @@ export const CreateCollectiveModal: React.FC<CreateCollectiveModalProps> = ({
       return;
     }
 
-    const instId = selectedUnit.memberInstitutionIds[0] || 'inst-dut';
-
     onSubmit({
       collectiveName: trimmedName,
       collectiveType,
-      institutionId: instId,
-      institutionName: selectedUnit.officialName,
+      institutionId: selectedInstitution.id,
+      institutionName: selectedInstitution.officialName,
       schoolReviewUnitId: selectedUnit.id,
       schoolReviewUnitName: selectedUnit.officialName,
       facultyName: facultyName.trim() || 'Khoa / Liên chi hội trực thuộc',
@@ -232,7 +232,7 @@ export const CreateCollectiveModal: React.FC<CreateCollectiveModalProps> = ({
                   </div>
                   <p className="text-[12px] mt-0.5 text-[#A1480C]">
                     Mã hồ sơ: <strong>{existingApp.id}</strong> · Trạng thái:{' '}
-                    {existingApp.status === 'draft' ? 'Đang kê khai' : 'Đã nộp cấp ĐHĐN'}.
+                    {existingApp.status === 'draft' ? 'Đang kê khai' : 'Đã nộp cấp Thành phố'}.
                   </p>
                 </div>
               </div>
@@ -258,16 +258,16 @@ export const CreateCollectiveModal: React.FC<CreateCollectiveModalProps> = ({
           {/* Member Institution / University Selection */}
           <div>
             <label className="block text-[12.5px] font-semibold text-[#172A3A] mb-1">
-              Đơn vị đào tạo (Trường / Đơn vị thành viên ĐHĐN)
+              Đơn vị đào tạo (Trường Đại học / Học viện / Cao đẳng tại Đà Nẵng)
             </label>
             <select
-              value={selectedUnitId}
-              onChange={(e) => setSelectedUnitId(e.target.value as SchoolReviewUnitId)}
+              value={selectedInstitutionId}
+              onChange={(e) => setSelectedInstitutionId(e.target.value)}
               className="w-full h-[40px] px-3 bg-white border border-[#DCE7EE] rounded-[8px] text-[13px] font-semibold text-[#172A3A] outline-none focus:border-[#0D78AE]"
             >
-              {AUTHORITATIVE_SCHOOL_REVIEW_UNITS.map((unit) => (
-                <option key={unit.id} value={unit.id}>
-                  {unit.officialName}
+              {DANANG_INSTITUTION_REGISTRY.map((inst) => (
+                <option key={inst.id} value={inst.id}>
+                  {inst.officialName}
                 </option>
               ))}
             </select>
@@ -360,7 +360,7 @@ export const CreateCollectiveModal: React.FC<CreateCollectiveModalProps> = ({
               <span className="font-bold">Đơn vị quản lý theo dõi: </span>
               <span className="font-semibold text-[#172A3A]">{selectedUnit.officialName}</span>
               <p className="text-[11.5px] text-[#4A6275] mt-0.5">
-                Đích nộp hồ sơ: <strong>Hội Sinh viên Việt Nam Đại học Đà Nẵng</strong> (Nộp trực tiếp cấp ĐHĐN sau khi hoàn thiện 04 tiêu chuẩn).
+                Đích nộp hồ sơ: <strong>Hội Sinh viên Việt Nam Thành phố Đà Nẵng</strong> (Nộp trực tiếp cấp Thành phố sau khi hoàn thiện 04 tiêu chuẩn).
               </p>
             </div>
           </div>

@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Student Personal Information Profile View (SRW-6)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Student Personal Information Profile View (SRW-6)
+ * Cơ quan quản lý: Thành Đoàn Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements:
  * - 13 canonical fields across 4 groups (A: Cá nhân, B: Học tập, C: Đoàn - Hội, D: Liên hệ).
@@ -37,6 +37,7 @@ import {
   UpdateStudentProfileInput,
   ProfileCompletenessResult,
 } from '../../entities/application/studentApplicationTypes';
+import { DANANG_INSTITUTION_REGISTRY } from '../../demo/fixtures/institutionRegistry';
 import {
   CANONICAL_FACULTIES_2026,
   getFacultiesByInstitution,
@@ -81,17 +82,13 @@ export interface StudentProfileViewProps {
   className?: string;
 }
 
-export const CANONICAL_INSTITUTION_OPTIONS = [
-  { id: 'inst-dut', name: 'Trường Đại học Bách khoa - Đại học Đà Nẵng' },
-  { id: 'inst-due', name: 'Trường Đại học Kinh tế - Đại học Đà Nẵng' },
-  { id: 'inst-ued', name: 'Trường Đại học Sư phạm - Đại học Đà Nẵng' },
-  { id: 'inst-ufl', name: 'Trường Đại học Ngoại ngữ - Đại học Đà Nẵng' },
-  { id: 'inst-ute', name: 'Trường Đại học Sư phạm Kỹ thuật - Đại học Đà Nẵng' },
-  { id: 'inst-vku', name: 'Trường Đại học CNTT & Truyền thông Việt - Hàn - Đại học Đà Nẵng' },
-  { id: 'inst-smp', name: 'Trường Y Dược - Đại học Đà Nẵng' },
-  { id: 'inst-vnuk', name: 'Viện Nghiên cứu & Đào tạo Việt - Anh - Đại học Đà Nẵng' },
-  { id: 'inst-kontum', name: 'Phân hiệu Đại học Đà Nẵng tại Kon Tum' },
-];
+export const CANONICAL_INSTITUTION_OPTIONS = DANANG_INSTITUTION_REGISTRY.map(
+  (inst) => ({
+    id: inst.id,
+    name: inst.officialName,
+    educationLevelHint: inst.educationLevelHint,
+  })
+);
 
 const STUDENT_PROFILE_CACHE_PREFIX = '5tot_dhdn_student_profile_v1_';
 
@@ -299,7 +296,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [dobError, setDobError] = useState<string | null>(null);
 
-  // 3x4 Portrait Photo State (Decision 12/QĐ/ĐHĐN-HSV)
+  // 3x4 Portrait Photo State (Decision 14-HD/BTK-HSVTP)
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState<boolean>(false);
   const [photoUploadError, setPhotoUploadError] = useState<string | null>(null);
@@ -423,6 +420,10 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
           ...prev,
           institutionId: found.id,
           institutionName: found.name,
+          educationLevel:
+            prev.educationLevel === 'Sau đại học'
+              ? prev.educationLevel
+              : (found.educationLevelHint as any) || prev.educationLevel,
           facultyDepartmentId: '',
           faculty: '',
           facultyName: '',
@@ -656,7 +657,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
             </h1>
           </div>
           <p className="text-[13.5px] text-[#607483] mt-1.5 max-w-2xl">
-            Quản lý và cập nhật thông tin định danh cá nhân phục vụ quy trình xét duyệt danh hiệu Sinh viên 5 tốt Đại học Đà Nẵng.
+            Quản lý và cập nhật thông tin định danh cá nhân phục vụ quy trình xét duyệt danh hiệu Sinh viên 5 tốt cấp Thành phố Đà Nẵng.
           </p>
         </div>
 
@@ -1104,7 +1105,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
                 onChange={(e) => handleInstitutionSelect(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl border border-[#DCE7EE] bg-white text-[13.5px] text-[#172A3A] focus:outline-hidden focus:border-[#18A6E0] focus:ring-2 focus:ring-[#18A6E0]/20 transition-all font-medium cursor-pointer"
               >
-                <option value="">-- Chọn trường đại học / học viện tại Đà Nẵng --</option>
+                <option value="">-- Chọn trường đại học / học viện / cao đẳng tại Đà Nẵng --</option>
                 {CANONICAL_INSTITUTION_OPTIONS.map((inst) => (
                   <option key={inst.id} value={inst.id}>
                     {inst.name}
@@ -1124,37 +1125,53 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
               </div>
             </div>
 
-            {/* Khoa / Ban đào tạo (Cập nhật 2026) */}
+            {/* Khoa / Ban đào tạo (Dropdown cho ĐHĐN, nhập trực tiếp cho các trường độc lập) */}
             <div>
               <label className="block text-[13px] font-semibold text-[#172A3A] mb-1">
-                Khoa / Ban đào tạo <span className="text-[#E02424]">*</span>
+                Khoa / Viện / Ngành đào tạo <span className="text-[#E02424]">*</span>
               </label>
-              <select
-                value={profile.facultyDepartmentId || ''}
-                onChange={(e) => {
-                  const fac = currentFaculties.find((f) => f.id === e.target.value);
-                  setProfile((prev) => ({
-                    ...prev,
-                    facultyDepartmentId: fac?.id || '',
-                    faculty: fac?.name || '',
-                    facultyName: fac?.name || '',
-                  }));
-                  setSaveSuccessMsg(null);
-                  setErrorMsg(null);
-                }}
-                className="w-full px-3 py-2 rounded-xl border border-[#DCE7EE] bg-white text-[13.5px] text-[#172A3A] focus:outline-hidden focus:border-[#18A6E0] focus:ring-2 focus:ring-[#18A6E0]/20 transition-all font-medium cursor-pointer"
-              >
-                <option value="">
-                  {currentFaculties.length === 0
-                    ? '-- Không có khoa trực thuộc hoặc tự do --'
-                    : '-- Chọn Khoa đào tạo --'}
-                </option>
-                {currentFaculties.map((fac) => (
-                  <option key={fac.id} value={fac.id}>
-                    {fac.name}
-                  </option>
-                ))}
-              </select>
+              {currentFaculties.length === 0 ? (
+                <input
+                  type="text"
+                  value={profile.facultyName || profile.faculty || ''}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setProfile((prev) => ({
+                      ...prev,
+                      facultyDepartmentId: '',
+                      faculty: val,
+                      facultyName: val,
+                    }));
+                    setSaveSuccessMsg(null);
+                    setErrorMsg(null);
+                  }}
+                  placeholder="Nhập tên Khoa / Viện / Ngành đào tạo..."
+                  className="w-full px-3.5 py-2 rounded-xl border border-[#DCE7EE] bg-white text-[13.5px] text-[#172A3A] focus:outline-hidden focus:border-[#18A6E0] focus:ring-2 focus:ring-[#18A6E0]/20 transition-all font-medium"
+                />
+              ) : (
+                <select
+                  value={profile.facultyDepartmentId || ''}
+                  onChange={(e) => {
+                    const fac = currentFaculties.find((f) => f.id === e.target.value);
+                    setProfile((prev) => ({
+                      ...prev,
+                      facultyDepartmentId: fac?.id || '',
+                      faculty: fac?.name || '',
+                      facultyName: fac?.name || '',
+                    }));
+                    setSaveSuccessMsg(null);
+                    setErrorMsg(null);
+                  }}
+                  className="w-full px-3 py-2 rounded-xl border border-[#DCE7EE] bg-white text-[13.5px] text-[#172A3A] focus:outline-hidden focus:border-[#18A6E0] focus:ring-2 focus:ring-[#18A6E0]/20 transition-all font-medium cursor-pointer"
+                >
+                  <option value="">-- Chọn Khoa đào tạo --</option>
+                  {currentFaculties.map((fac) => (
+                    <option key={fac.id} value={fac.id}>
+                      {fac.name}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           </div>
         </div>
@@ -1348,7 +1365,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
                 />
               </div>
               <span className="text-[11.5px] font-medium text-[#728391] mt-2.5">
-                Tỷ lệ chuẩn 3:4 · Quyết định 12/QĐ/ĐHĐN-HSV
+                Tỷ lệ chuẩn 3:4 · Hồ sơ xét chọn cấp Thành phố
               </span>
             </div>
           </div>

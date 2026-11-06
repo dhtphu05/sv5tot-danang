@@ -98,8 +98,8 @@ export const CollectiveWorkspaceHeader: React.FC<CollectiveWorkspaceHeaderProps>
                 <span>
                   {status === 'city_supplement_pending' ||
                   status === 'returned_for_correction'
-                    ? 'Gửi hồ sơ bổ sung lên ĐHĐN'
-                    : 'Nộp hồ sơ lên cấp Đại học Đà Nẵng'}
+                    ? 'Gửi hồ sơ bổ sung lên Thành phố'
+                    : 'Nộp hồ sơ lên cấp Thành phố'}
                 </span>
               </Button>
             </>

@@ -93,25 +93,11 @@ function isLegacyMockCollectiveId(id?: string | null): boolean {
 function isNonUdnCollectiveApp(app?: CollectiveApplication | null): boolean {
   if (!app) return false;
   const instId = String(app.institutionId || '').trim().toLowerCase();
-  if (
-    instId === 'inst-dtu' ||
-    instId === 'inst-donga' ||
-    instId === 'inst-dau' ||
-    instId === 'inst-upes3' ||
-    instId === 'inst-tyd' ||
-    instId === 'inst-fpt'
-  ) {
+  if (instId === 'inst-kontum' || instId === 'unit-kontum') {
     return true;
   }
   const instName = String(app.institutionName || '').trim().toLowerCase();
-  if (
-    instName.includes('duy tân') ||
-    instName.includes('đông á') ||
-    instName.includes('kiến trúc') ||
-    instName.includes('thể dục thể thao') ||
-    instName.includes('kỹ thuật y') ||
-    instName.includes('fpt')
-  ) {
+  if (instName.includes('kon tum')) {
     return true;
   }
   return false;

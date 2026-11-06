@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Student Application Pure Domain Mutators & Selectors (FSD Entities Layer)
+ * 5TOT Đà Nẵng — Student Application Pure Domain Mutators & Selectors (FSD Entities Layer)
  * Synchronizes criteria requirement mutations, declaration/evidence CRUD, summary strings, and live stats.
  */
 
@@ -23,36 +23,26 @@ export function syncCriteriaWithUpdate(
   updateReq: (req: ApplicationRequirement) => ApplicationRequirement
 ): ApplicationCriterion[] {
   return prevCriteria.map((crit) => {
-    const updatedReqs = crit.requirements.map((r) =>
-      r.id === reqId ? updateReq(r) : r
-    );
+    const updatedReqs = crit.requirements.map((r) => (r.id === reqId ? updateReq(r) : r));
     const updatedGroups = crit.groups?.map((grp) => ({
       ...grp,
-      requirements: grp.requirements.map((r) =>
-        r.id === reqId ? updateReq(r) : r
-      ),
+      requirements: grp.requirements.map((r) => (r.id === reqId ? updateReq(r) : r)),
     }));
 
-    const declaredReqs = updatedReqs.filter(
-      (r) => r.declarations && r.declarations.length > 0
-    );
+    const declaredReqs = updatedReqs.filter((r) => r.declarations && r.declarations.length > 0);
     const totalEvidence = updatedReqs.reduce(
-      (sum, r) =>
-        sum +
-        r.declarations.reduce(
-          (dSum, d) => dSum + (d.evidenceFiles?.length || 0),
-          0
-        ),
+      (sum, r) => sum + r.declarations.reduce((dSum, d) => dSum + (d.evidenceFiles?.length || 0), 0),
       0
     );
 
     let shortSummary = crit.shortSummary;
     if (crit.id === 'volunteer') {
-      const allDecls = updatedReqs.flatMap((r) => r.declarations || []);
-      const totalActivities = allDecls.length;
+      const volActDecls = updatedReqs.find((r) => r.id === 'volunteer-activities')?.declarations || [];
+      const volAwardDecls = updatedReqs.find((r) => r.id === 'volunteer-award')?.declarations || [];
+      const totalActivities = volActDecls.length;
       let totalDays = 0;
       let bloodCount = 0;
-      for (const d of allDecls) {
+      for (const d of volActDecls) {
         const combined = `${d.value} ${d.detail || ''}`.toLowerCase();
         if (
           d.metadata?.volActivityType === 'blood_donation' ||
@@ -69,11 +59,13 @@ export function syncCriteriaWithUpdate(
           totalDays += dayMatch ? parseInt(dayMatch[1], 10) : 1;
         }
       }
-      shortSummary = `${totalActivities} hoạt động đã khai · ${totalEvidence} minh chứng · ${totalDays}/3 ngày tình nguyện${
-        bloodCount > 0 ? ` (${bloodCount} lần hiến máu)` : ''
-      }`;
-    } else if (crit.id === 'physical') {
-      shortSummary = `${declaredReqs.length} nội dung đã kê khai · ${totalEvidence} minh chứng`;
+      if (volAwardDecls.length > 0 && totalActivities === 0) {
+        shortSummary = `${volAwardDecls.length} giấy khen tình nguyện · ${totalEvidence} minh chứng`;
+      } else {
+        shortSummary = `${totalActivities} hoạt động đã khai · ${totalEvidence} minh chứng · ${totalDays}/5 ngày tình nguyện${
+          bloodCount > 0 ? ` (${bloodCount} lần hiến máu)` : ''
+        }`;
+      }
     } else {
       shortSummary = `${declaredReqs.length} nội dung đã kê khai · ${totalEvidence} minh chứng`;
     }
@@ -539,7 +531,7 @@ export function computeDynamicPreSubmitAdvisories(
       continue;
     }
 
-    // CRITERION-SPECIFIC MANDATORY & COMBINATORY LOGIC (Decision 12/QĐ/ĐHĐN-HSV)
+    // CRITERION-SPECIFIC MANDATORY & COMBINATORY LOGIC (Hướng dẫn số 14-HD/BTK-HSVTP — Cấp TP. Đà Nẵng)
     if (c.id === 'ethics') {
       const ethicsScoreReq = allReqs.find((r) => r.id === 'ethics-score');
       const ethicsLawReq = allReqs.find((r) => r.id === 'ethics-law');
@@ -553,7 +545,7 @@ export function computeDynamicPreSubmitAdvisories(
           criterionName: c.name,
           criterionNumber: c.number,
           requirementId: 'ethics-score',
-          message: 'Tiêu chí 1: Bạn chưa kê khai Điểm rèn luyện (TC1.1 - Tiêu chuẩn bắt buộc).',
+          message: 'Tiêu chí 1: Bạn chưa kê khai Điểm rèn luyện năm học (TC1.1 - Tiêu chuẩn bắt buộc).',
           actionLabel: 'Kê khai',
           targetType: 'row',
         });
@@ -589,25 +581,40 @@ export function computeDynamicPreSubmitAdvisories(
       }
       // Note: TC1.2 is a pledge/statement; having a declaration text is sufficient for formal precheck, no mandatory file required.
 
-      // Priority requirements (TC1.3–TC1.6): only warn if declared without evidence
-      const priorityReqs = allReqs.filter(
+      // Supplement group (TC1.3–TC1.6): City-level requires at least 1 of 4
+      const supplementReqs = allReqs.filter(
         (r) => r.id.startsWith('ethics-') && r.id !== 'ethics-score' && r.id !== 'ethics-law'
       );
-      for (const pr of priorityReqs) {
-        const hasDeclWithoutEv = (pr.declarations || []).some(
-          (d) => !d.evidenceFiles || d.evidenceFiles.length === 0
-        );
-        if (hasDeclWithoutEv) {
-          result.push({
-            id: `adv-no-ev-${c.id}-${pr.id}`,
-            criterionId: c.id,
-            criterionName: c.name,
-            criterionNumber: c.number,
-            requirementId: pr.id,
-            message: `Mục "${pr.title}" đã kê khai nhưng chưa đính kèm tệp minh chứng.`,
-            actionLabel: 'Bổ sung',
-            targetType: 'row',
-          });
+      const supplementDeclared = supplementReqs.filter((r) => (r.declarations?.length || 0) > 0);
+
+      if (supplementDeclared.length === 0) {
+        result.push({
+          id: 'adv-missing-ethics-supplement',
+          criterionId: c.id,
+          criterionName: c.name,
+          criterionNumber: c.number,
+          requirementId: supplementReqs[0]?.id || 'ethics-party',
+          message: 'Tiêu chí 1: Cần đạt thêm ít nhất 01 trong 04 tiêu chuẩn bổ sung về đạo đức, nhận thức chính trị (TC1.3–TC1.6).',
+          actionLabel: 'Kê khai',
+          targetType: 'row',
+        });
+      } else {
+        for (const sr of supplementDeclared) {
+          const hasDeclWithoutEv = (sr.declarations || []).some(
+            (d) => !d.evidenceFiles || d.evidenceFiles.length === 0
+          );
+          if (hasDeclWithoutEv) {
+            result.push({
+              id: `adv-no-ev-${c.id}-${sr.id}`,
+              criterionId: c.id,
+              criterionName: c.name,
+              criterionNumber: c.number,
+              requirementId: sr.id,
+              message: `Mục "${sr.title}" đã kê khai nhưng chưa đính kèm tệp minh chứng.`,
+              actionLabel: 'Bổ sung',
+              targetType: 'row',
+            });
+          }
         }
       }
     } else if (c.id === 'academic') {
@@ -621,11 +628,65 @@ export function computeDynamicPreSubmitAdvisories(
           criterionName: c.name,
           criterionNumber: c.number,
           requirementId: 'academic-gpa',
-          message: 'Tiêu chí 2: Bạn chưa kê khai Điểm trung bình học tập GPA (TC2.1 - Tiêu chuẩn bắt buộc).',
+          message: 'Tiêu chí 2: Bạn chưa kê khai Điểm trung bình học tập năm học GPA (TC2.1 - Tiêu chuẩn bắt buộc).',
           actionLabel: 'Kê khai',
           targetType: 'row',
         });
       } else {
+        const profileIsCollege =
+          Boolean(profile?.educationLevel && profile.educationLevel.toLowerCase().includes('cao đẳng')) ||
+          Boolean(profile?.institutionId && profile.institutionId.includes('-cd-')) ||
+          Boolean(profile?.institutionName && profile.institutionName.toLowerCase().includes('cao đẳng'));
+
+        for (const d of gpaReq?.declarations || []) {
+          const isCollege =
+            d.metadata?.trainingLevel === 'college'
+              ? true
+              : d.metadata?.trainingLevel === 'university'
+                ? false
+                : profileIsCollege;
+          let parsedScore: number | null = null;
+          let parsedScale: 4 | 10 | null = null;
+
+          if (d.metadata?.gpaScore) {
+            const s = parseFloat(d.metadata.gpaScore.replace(',', '.'));
+            if (!isNaN(s)) {
+              parsedScore = s;
+              parsedScale = d.metadata.gpaScale === '10' ? 10 : 4;
+            }
+          } else {
+            const stripped = (d.value || '')
+              .replace(/\b\d{1,2}\/\d{1,2}\/20\d{2}\b/g, ' ')
+              .replace(/\b20\d{2}\s*[-–/]\s*20\d{2}\b/g, ' ');
+            const m4 = stripped.match(/(\d+(?:[.,]\d+)?)\s*\/\s*4(?:[.,]0+)?\b/);
+            const m10 = stripped.match(/(\d+(?:[.,]\d+)?)\s*\/\s*10(?:[.,]0+)?\b/);
+            if (m4) {
+              parsedScore = parseFloat(m4[1].replace(',', '.'));
+              parsedScale = 4;
+            } else if (m10) {
+              parsedScore = parseFloat(m10[1].replace(',', '.'));
+              parsedScale = 10;
+            }
+          }
+
+          if (parsedScore !== null && parsedScale !== null) {
+            const minRequired = parsedScale === 4 ? (isCollege ? 3.0 : 3.2) : isCollege ? 7.5 : 8.0;
+            if (parsedScore < minRequired) {
+              result.push({
+                id: 'adv-gpa-below-threshold',
+                criterionId: c.id,
+                criterionName: c.name,
+                criterionNumber: c.number,
+                requirementId: 'academic-gpa',
+                message: `Điểm trung bình năm học (TC2.1) kê khai ${parsedScore}/${parsedScale} chưa đạt ngưỡng quy định hệ ${isCollege ? 'Cao đẳng (tối thiểu 3.0/4 hoặc 7.5/10)' : 'Đại học / Học viện (tối thiểu 3.2/4 hoặc 8.0/10)'}.`,
+                actionLabel: 'Kiểm tra',
+                targetType: 'row',
+              });
+              break;
+            }
+          }
+        }
+
         const gpaHasNoEv = gpaReq?.declarations?.some(
           (d) => !d.evidenceFiles || d.evidenceFiles.length === 0
         );
@@ -643,9 +704,9 @@ export function computeDynamicPreSubmitAdvisories(
         }
       }
 
-      // Academic achievements (TC2.2 - TC2.8): need at least 1
+      // Academic achievements (TC2.2 - TC2.7): need at least 1 of 6
       const academicAchReqs = allReqs.filter(
-        (r) => r.id.startsWith('academic-') && r.id !== 'academic-gpa' && !r.id.startsWith('academic-priority')
+        (r) => r.id.startsWith('academic-') && r.id !== 'academic-gpa'
       );
       const achDeclared = academicAchReqs.filter((r) => (r.declarations?.length || 0) > 0);
 
@@ -656,7 +717,7 @@ export function computeDynamicPreSubmitAdvisories(
           criterionName: c.name,
           criterionNumber: c.number,
           requirementId: academicAchReqs[0]?.id || 'academic-nckh',
-          message: 'Tiêu chí 2: Cần đạt thêm ít nhất 01 tiêu chuẩn học thuật, NCKH hoặc cuộc thi sáng tạo (TC2.2–TC2.8).',
+          message: 'Tiêu chí 2: Cần đạt thêm ít nhất 01 trong 06 tiêu chuẩn học thuật, NCKH hoặc cuộc thi sáng tạo (TC2.2–TC2.7).',
           actionLabel: 'Kê khai',
           targetType: 'row',
         });
@@ -679,29 +740,8 @@ export function computeDynamicPreSubmitAdvisories(
           }
         }
       }
-
-      // Priority requirements (TC2.9 - TC2.11)
-      const priorityReqs = allReqs.filter((r) => r.id.startsWith('academic-priority'));
-      for (const pr of priorityReqs) {
-        const hasDeclWithoutEv = (pr.declarations || []).some(
-          (d) => !d.evidenceFiles || d.evidenceFiles.length === 0
-        );
-        if (hasDeclWithoutEv) {
-          result.push({
-            id: `adv-no-ev-${c.id}-${pr.id}`,
-            criterionId: c.id,
-            criterionName: c.name,
-            criterionNumber: c.number,
-            requirementId: pr.id,
-            message: `Mục "${pr.title}" đã kê khai nhưng chưa đính kèm tệp minh chứng.`,
-            actionLabel: 'Bổ sung',
-            targetType: 'row',
-          });
-        }
-      }
     } else if (c.id === 'physical') {
-      const physicalForms = allReqs.filter((r) => r.id !== 'physical-priority-team');
-      const formsDeclared = physicalForms.filter((r) => (r.declarations?.length || 0) > 0);
+      const formsDeclared = allReqs.filter((r) => (r.declarations?.length || 0) > 0);
 
       if (formsDeclared.length === 0) {
         result.push({
@@ -709,8 +749,8 @@ export function computeDynamicPreSubmitAdvisories(
           criterionId: c.id,
           criterionName: c.name,
           criterionNumber: c.number,
-          requirementId: physicalForms[0]?.id || 'physical-khoe',
-          message: 'Tiêu chí 3: Cần kê khai ít nhất 01 trong 04 phương án Thể lực tốt theo quy định.',
+          requirementId: allReqs[0]?.id || 'physical-khoe',
+          message: 'Tiêu chí 3: Cần kê khai ít nhất 01 trong 02 tiêu chuẩn Thể lực tốt theo quy định (TC3.1–TC3.2).',
           actionLabel: 'Kê khai',
           targetType: 'row',
         });
@@ -733,49 +773,26 @@ export function computeDynamicPreSubmitAdvisories(
           }
         }
       }
-
-      // Priority team (TC3.5)
-      const priorityTeam = allReqs.find((r) => r.id === 'physical-priority-team');
-      if (priorityTeam && (priorityTeam.declarations?.length || 0) > 0) {
-        const hasDeclWithoutEv = (priorityTeam.declarations || []).some(
-          (d) => !d.evidenceFiles || d.evidenceFiles.length === 0
-        );
-        if (hasDeclWithoutEv) {
-          result.push({
-            id: `adv-no-ev-${c.id}-${priorityTeam.id}`,
-            criterionId: c.id,
-            criterionName: c.name,
-            criterionNumber: c.number,
-            requirementId: priorityTeam.id,
-            message: `Mục "${priorityTeam.title}" đã kê khai nhưng chưa đính kèm tệp minh chứng.`,
-            actionLabel: 'Bổ sung',
-            targetType: 'row',
-          });
-        }
-      }
     } else if (c.id === 'volunteer') {
       const volActReq = allReqs.find((r) => r.id === 'volunteer-activities');
-      const volCampReq = allReqs.find((r) => r.id === 'volunteer-campaign');
       const volAwardReq = allReqs.find((r) => r.id === 'volunteer-award');
 
-      const hasCamp = (volCampReq?.declarations?.length || 0) > 0;
       const hasAward = (volAwardReq?.declarations?.length || 0) > 0;
       const hasActivities = (volActReq?.declarations?.length || 0) > 0;
 
-      if (!hasCamp && !hasAward && !hasActivities) {
+      if (!hasAward && !hasActivities) {
         result.push({
           id: 'adv-missing-volunteer-form',
           criterionId: c.id,
           criterionName: c.name,
           criterionNumber: c.number,
           requirementId: 'volunteer-activities',
-          message: 'Tiêu chí 4: Cần kê khai ít nhất 01 phương án Tình nguyện tốt (hoạt động tích lũy, chiến dịch hoặc giấy khen).',
+          message: 'Tiêu chí 4: Cần đạt ít nhất 01 trong 02 tiêu chuẩn Tình nguyện tốt: tích lũy tối thiểu 05 ngày tình nguyện/năm (TC4.1) hoặc có khen thưởng tình nguyện từ cấp khoa trở lên (TC4.2).',
           actionLabel: 'Kê khai',
           targetType: 'row',
         });
       } else {
-        // If student only uses activities (TC4.1) without campaign or award, check days
-        if (hasActivities && !hasCamp && !hasAward) {
+        if (hasActivities && !hasAward) {
           let totalDays = 0;
           for (const d of volActReq?.declarations || []) {
             const text = `${d.value} ${d.detail || ''} ${d.metadata?.duration || ''}`.toLowerCase();
@@ -793,14 +810,14 @@ export function computeDynamicPreSubmitAdvisories(
               totalDays += match ? parseInt(match[1], 10) : 1;
             }
           }
-          if (totalDays < 3) {
+          if (totalDays < 5) {
             result.push({
               id: 'adv-volunteer-days-insufficient',
               criterionId: c.id,
               criterionName: c.name,
               criterionNumber: c.number,
               requirementId: 'volunteer-activities',
-              message: `Hoạt động tình nguyện tích lũy (TC4.1) hiện đạt ${totalDays}/3 ngày. Bạn có thể bổ sung thêm hoạt động/hiến máu hoặc dùng phương án chiến dịch (TC4.2) / giấy khen (TC4.3).`,
+              message: `Hoạt động tình nguyện tích lũy (TC4.1) hiện đạt ${totalDays}/5 ngày. Bạn cần tích lũy đủ tối thiểu 05 ngày tình nguyện/năm (bao gồm quy đổi hiến máu) hoặc bổ sung khen thưởng tình nguyện từ cấp khoa trở lên (TC4.2).`,
               actionLabel: 'Khai thêm',
               targetType: 'row',
             });
@@ -808,7 +825,7 @@ export function computeDynamicPreSubmitAdvisories(
         }
 
         // Check evidence for declared volunteer items
-        for (const r of [volActReq, volCampReq, volAwardReq]) {
+        for (const r of [volActReq, volAwardReq]) {
           if (!r) continue;
           const hasDeclWithoutEv = (r.declarations || []).some(
             (d) => !d.evidenceFiles || d.evidenceFiles.length === 0
@@ -830,15 +847,12 @@ export function computeDynamicPreSubmitAdvisories(
     } else if (c.id === 'integration') {
       const skillsReq = allReqs.find((r) => r.id === 'integration-skills');
       const unionReq = allReqs.find((r) => r.id === 'integration-union-award');
-      const actReq = allReqs.find((r) => r.id === 'integration-activity');
       const langReq = allReqs.find((r) => r.id === 'integration-lang');
       const intlReq = allReqs.find((r) => r.id === 'integration-intl');
       const contestReq = allReqs.find((r) => r.id === 'integration-contest');
-      const cultureReq = allReqs.find((r) => r.id === 'integration-priority-culture');
 
       const hasGroupA = ((skillsReq?.declarations?.length || 0) > 0) || ((unionReq?.declarations?.length || 0) > 0);
-      const hasGroupB = (actReq?.declarations?.length || 0) > 0;
-      const hasGroupC = ((langReq?.declarations?.length || 0) > 0) || ((intlReq?.declarations?.length || 0) > 0) || ((contestReq?.declarations?.length || 0) > 0);
+      const hasGroupB = ((langReq?.declarations?.length || 0) > 0) || ((intlReq?.declarations?.length || 0) > 0) || ((contestReq?.declarations?.length || 0) > 0);
 
       if (!hasGroupA) {
         result.push({
@@ -847,7 +861,7 @@ export function computeDynamicPreSubmitAdvisories(
           criterionName: c.name,
           criterionNumber: c.number,
           requirementId: 'integration-skills',
-          message: 'Tiêu chí 5: Cần hoàn thành khóa kỹ năng thực hành xã hội (TC5.1) hoặc có khen thưởng Đoàn - Hội (TC5.2).',
+          message: 'Tiêu chí 5 (Nhóm A): Cần hoàn thành ít nhất 01 khóa trang bị kỹ năng thực hành xã hội (TC5.1) hoặc có khen thưởng Đoàn – Hội từ cấp trường trở lên (TC5.2).',
           actionLabel: 'Kê khai',
           targetType: 'row',
         });
@@ -859,28 +873,15 @@ export function computeDynamicPreSubmitAdvisories(
           criterionId: c.id,
           criterionName: c.name,
           criterionNumber: c.number,
-          requirementId: 'integration-activity',
-          message: 'Tiêu chí 5: Cần kê khai tham gia hoạt động về hội nhập do cấp khoa trở lên tổ chức (TC5.3 - Tiêu chuẩn bắt buộc).',
-          actionLabel: 'Kê khai',
-          targetType: 'row',
-        });
-      }
-
-      if (!hasGroupC) {
-        result.push({
-          id: 'adv-missing-integration-group-c',
-          criterionId: c.id,
-          criterionName: c.name,
-          criterionNumber: c.number,
           requirementId: 'integration-lang',
-          message: 'Tiêu chí 5: Cần đạt ít nhất 01 tiêu chuẩn về Ngoại ngữ (TC5.4), Giao lưu quốc tế (TC5.5) hoặc Cuộc thi liên quan (TC5.6).',
+          message: 'Tiêu chí 5 (Nhóm B): Cần đạt ít nhất 01 tiêu chuẩn về Ngoại ngữ (TC5.3), Giao lưu quốc tế (TC5.4) hoặc Đạt giải cuộc thi kiến thức – kỹ năng hội nhập (TC5.5).',
           actionLabel: 'Kê khai',
           targetType: 'row',
         });
       }
 
       // Check evidence for declared items in integration
-      for (const r of [skillsReq, unionReq, actReq, langReq, intlReq, contestReq, cultureReq]) {
+      for (const r of [skillsReq, unionReq, langReq, intlReq, contestReq]) {
         if (!r) continue;
         const hasDeclWithoutEv = (r.declarations || []).some(
           (d) => !d.evidenceFiles || d.evidenceFiles.length === 0
@@ -908,7 +909,7 @@ export function computeDynamicPreSubmitAdvisories(
     }
   }
 
-  // 6. PROFILE 3x4 PORTRAIT PHOTO CHECK (Decision 12/QĐ/ĐHĐN-HSV) - Non-blocking Advisory
+  // 6. PROFILE 3x4 PORTRAIT PHOTO CHECK — Non-blocking Advisory
   if (profile && !profile.portraitUrl) {
     result.push({
       id: 'adv-suggestion-portrait-photo',
@@ -916,7 +917,7 @@ export function computeDynamicPreSubmitAdvisories(
       criterionName: 'Thông tin cá nhân',
       criterionNumber: 1,
       requirementId: '',
-      message: 'Hồ sơ chưa có ảnh thẻ 3×4. Bạn nên bổ sung ảnh thẻ chân dung để hoàn thiện thành phần hồ sơ theo Quyết định 12/QĐ/ĐHĐN-HSV.',
+      message: 'Hồ sơ chưa có ảnh thẻ 3×4. Bạn nên bổ sung ảnh thẻ chân dung để hoàn thiện thành phần hồ sơ xét chọn cấp Thành phố.',
       actionLabel: 'Bổ sung ảnh thẻ',
       targetType: 'row',
     });
@@ -940,10 +941,16 @@ export function computeCriteriaAdvisoryStatuses(
       (a) => a.criterionId === c.id && a.id !== 'adv-suggestion-portrait-photo'
     );
     const hasMissingMandatory = criterionAdvisories.some((a) => a.id.startsWith('adv-missing-'));
-    const hasInsufficientDays = criterionAdvisories.some((a) => a.id === 'adv-volunteer-days-insufficient');
+    const hasThresholdIssue = criterionAdvisories.some(
+      (a) => a.id === 'adv-volunteer-days-insufficient' || a.id === 'adv-gpa-below-threshold'
+    );
     const hasMissingEvidence = criterionAdvisories.some((a) => a.id.startsWith('adv-no-ev-'));
     const hasOtherAdvisory = criterionAdvisories.some(
-      (a) => !a.id.startsWith('adv-missing-') && !a.id.startsWith('adv-no-ev-') && a.id !== 'adv-volunteer-days-insufficient'
+      (a) =>
+        !a.id.startsWith('adv-missing-') &&
+        !a.id.startsWith('adv-no-ev-') &&
+        a.id !== 'adv-volunteer-days-insufficient' &&
+        a.id !== 'adv-gpa-below-threshold'
     );
 
     let statusLabel = 'Đã có thông tin';
@@ -954,7 +961,7 @@ export function computeCriteriaAdvisoryStatuses(
       statusLabel = 'Chưa kê khai';
       statusTone = 'undeclared';
       hasAdvisory = false;
-    } else if (hasMissingMandatory || hasInsufficientDays) {
+    } else if (hasMissingMandatory || hasThresholdIssue) {
       statusLabel = 'Chưa đủ điều kiện';
       statusTone = 'advisory';
       hasAdvisory = true;

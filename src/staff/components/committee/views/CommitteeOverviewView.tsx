@@ -99,7 +99,7 @@ export const CommitteeOverviewView: React.FC<CommitteeOverviewViewProps> = ({
           <div>
             <span className="inline-flex items-center gap-1 text-[12px] font-bold text-[#0B64A0] bg-[#EAF5FC] px-2 py-0.5 rounded-[5px]">
               <CheckCircle2 size={12} className="text-[#0D78AE]" />
-              <span>Đề xuất trình ĐHĐN</span>
+              <span>Đề xuất trình Thành phố</span>
             </span>
             <div className="text-[11px] text-[#607483] mt-0.5">
               {docNum ? `Theo ${docNum}` : 'Đã kèm văn bản PDF'}
@@ -110,7 +110,7 @@ export const CommitteeOverviewView: React.FC<CommitteeOverviewViewProps> = ({
     },
     {
       key: 'city_review',
-      header: 'Thẩm định cấp ĐHĐN',
+      header: 'Thẩm định cấp Thành phố',
       renderCell: (app) => {
         const prg = deriveApplicationCriteriaReviewProgress(app);
         return (
@@ -127,7 +127,7 @@ export const CommitteeOverviewView: React.FC<CommitteeOverviewViewProps> = ({
               {prg.compactProgressLabel}
             </div>
             <div className="text-[11px] text-[#607483]">
-              {app.assignment?.officerName || 'Tổ thẩm định ĐHĐN'}
+              {app.assignment?.officerName || 'Tổ thẩm định Thành phố'}
             </div>
           </div>
         );
@@ -187,16 +187,16 @@ export const CommitteeOverviewView: React.FC<CommitteeOverviewViewProps> = ({
       {renderCommitteeScenarioStrip()}
 
       {/* Home Header (Section 14) */}
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#DCE7EE] pb-4">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#DFE5EC] pb-4">
         <div>
-          <div className="text-[12px] font-bold text-[#0B64A0]">
+          <div className="text-[12px] font-bold text-[#007EE5]">
             {activeSeasonLabel || CURRENT_STAFF_SEASON.schoolYear} · {CURRENT_STAFF_SEASON.scopeLabel}
           </div>
-          <h1 className="text-[22px] font-extrabold text-[#0F2335] mt-0.5">
-            Hội đồng xét chọn cấp Đại học Đà Nẵng
+          <h1 className="text-[21px] font-extrabold text-[#0F172A] mt-0.5">
+            Hội đồng xét chọn cấp Thành phố Đà Nẵng
           </h1>
-          <p className="text-[13.5px] text-[#4A6275] mt-0.5">
-            Xem xét các hồ sơ từ 09 đơn vị thành viên đã hoàn tất thẩm định và thực hiện bước quyết định công nhận theo quy trình.
+          <p className="text-[13px] text-[#475569] mt-0.5">
+            Xem xét các hồ sơ từ các cơ sở đào tạo trên địa bàn Thành phố đã hoàn tất thẩm định và thực hiện bước quyết định công nhận theo quy trình.
           </p>
         </div>
         <div className="flex items-center gap-2.5">
@@ -231,54 +231,54 @@ export const CommitteeOverviewView: React.FC<CommitteeOverviewViewProps> = ({
         </div>
       </div>
 
-      {/* One Structured Operational Summary Surface (Section 15 — NO five giant KPI cards) */}
+      {/* One Structured Operational Summary Surface */}
       <section
         aria-label="Tổng hợp trạng thái hồ sơ Hội đồng"
-        className="bg-white rounded-[12px] border border-[#D4E2EC] shadow-2xs overflow-hidden"
+        className="bg-white rounded-[6px] border border-[#DFE5EC] overflow-hidden"
       >
-        <div className="grid grid-cols-2 sm:grid-cols-5 divide-y sm:divide-y-0 sm:divide-x divide-[#E6EFF5]">
+        <div className="grid grid-cols-2 sm:grid-cols-5 divide-y sm:divide-y-0 sm:divide-x divide-[#DFE5EC]">
           <button
             type="button"
             onClick={() => onSelectRoute('committee')}
-            className="p-4 text-left hover:bg-[#F7FAFC] transition-colors cursor-pointer"
+            className="p-4 text-left hover:bg-[#F8FAFC] transition-colors cursor-pointer"
           >
-            <div className="text-[12px] font-semibold text-[#526B7C]">
+            <div className="text-[12px] font-semibold text-[#64748B]">
               Cần Hội đồng xem xét
             </div>
-            <div className="text-[22px] font-extrabold text-[#0F2335] tabular-nums mt-1">
+            <div className="text-[22px] font-extrabold text-[#0F172A] tabular-nums mt-1">
               {summaryMetrics.totalInCommitteeScope}
             </div>
-            <div className="text-[11.5px] text-[#B45309] font-semibold mt-0.5">
+            <div className="text-[11.5px] text-[#D97706] font-semibold mt-0.5">
               {summaryMetrics.flaggedApplicationsCount} có nội dung chuyển riêng
             </div>
           </button>
           <button
             type="button"
             onClick={() => onSelectRoute('committee_decisions')}
-            className="p-4 text-left hover:bg-[#F7FAFC] transition-colors cursor-pointer"
+            className="p-4 text-left hover:bg-[#F8FAFC] transition-colors cursor-pointer"
           >
-            <div className="text-[12px] font-semibold text-[#526B7C]">
+            <div className="text-[12px] font-semibold text-[#64748B]">
               Chờ quyết định
             </div>
-            <div className="text-[22px] font-extrabold text-[#0B64A0] tabular-nums mt-1">
+            <div className="text-[22px] font-extrabold text-[#007EE5] tabular-nums mt-1">
               {summaryMetrics.waitingDecisionCount}
             </div>
-            <div className="text-[11.5px] text-[#526B7C] mt-0.5">
+            <div className="text-[11.5px] text-[#64748B] mt-0.5">
               Đã hoàn tất rà soát 05 tiêu chí
             </div>
           </button>
           <button
             type="button"
             onClick={() => onSelectRoute('results')}
-            className="p-4 text-left hover:bg-[#F7FAFC] transition-colors cursor-pointer"
+            className="p-4 text-left hover:bg-[#F8FAFC] transition-colors cursor-pointer"
           >
-            <div className="text-[12px] font-semibold text-[#526B7C]">
+            <div className="text-[12px] font-semibold text-[#64748B]">
               Đã hoàn tất quyết định
             </div>
-            <div className="text-[22px] font-extrabold text-[#136F3A] tabular-nums mt-1">
+            <div className="text-[22px] font-extrabold text-[#10A37F] tabular-nums mt-1">
               {summaryMetrics.decidedCount}
             </div>
-            <div className="text-[11.5px] text-[#526B7C] mt-0.5">
+            <div className="text-[11.5px] text-[#64748B] mt-0.5">
               {summaryMetrics.recognizedCount} công nhận ·{' '}
               {summaryMetrics.notRecognizedCount} chưa công nhận
             </div>
@@ -286,15 +286,15 @@ export const CommitteeOverviewView: React.FC<CommitteeOverviewViewProps> = ({
           <button
             type="button"
             onClick={() => onSelectRoute('recognition')}
-            className="p-4 text-left hover:bg-[#F7FAFC] transition-colors cursor-pointer"
+            className="p-4 text-left hover:bg-[#F8FAFC] transition-colors cursor-pointer"
           >
-            <div className="text-[12px] font-semibold text-[#526B7C]">
+            <div className="text-[12px] font-semibold text-[#64748B]">
               Chưa công bố
             </div>
-            <div className="text-[22px] font-extrabold text-[#334E68] tabular-nums mt-1">
+            <div className="text-[22px] font-extrabold text-[#334155] tabular-nums mt-1">
               {summaryMetrics.unpublishedCount}
             </div>
-            <div className="text-[11.5px] text-[#526B7C] mt-0.5">
+            <div className="text-[11.5px] text-[#64748B] mt-0.5">
               {summaryMetrics.isResultSetFinalized
                 ? 'Sẵn sàng công bố'
                 : 'Đang hoàn tất danh sách'}
@@ -303,66 +303,66 @@ export const CommitteeOverviewView: React.FC<CommitteeOverviewViewProps> = ({
           <button
             type="button"
             onClick={() => onSelectRoute('results')}
-            className="p-4 text-left hover:bg-[#F7FAFC] transition-colors cursor-pointer"
+            className="p-4 text-left hover:bg-[#F8FAFC] transition-colors cursor-pointer"
           >
-            <div className="text-[12px] font-semibold text-[#526B7C]">
+            <div className="text-[12px] font-semibold text-[#64748B]">
               Đã công bố
             </div>
-            <div className="text-[22px] font-extrabold text-[#136F3A] tabular-nums mt-1">
+            <div className="text-[22px] font-extrabold text-[#0F766E] tabular-nums mt-1">
               {summaryMetrics.publishedCount}
             </div>
-            <div className="text-[11.5px] text-[#526B7C] mt-0.5">
+            <div className="text-[11.5px] text-[#64748B] mt-0.5">
               Hiển thị chính thức cho Sinh viên
             </div>
           </button>
         </div>
       </section>
 
-      {/* 5-Criteria Met Distribution Strip (UX-S3) */}
+      {/* 5-Criteria Met Distribution Strip */}
       <section
         aria-label="Phân bố kết quả thẩm định 05 tiêu chí"
-        className="bg-[#F8FAFC] rounded-[12px] border border-[#CBD5E1] p-4 space-y-3"
+        className="bg-white rounded-[6px] border border-[#DFE5EC] p-4 space-y-3"
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <BarChart3 size={17} className="text-[#0D78AE]" />
-            <h3 className="text-[13.5px] font-bold text-[#0F2335]">
-              Phân bố kết quả thẩm định 05 tiêu chí cấp Đại học Đà Nẵng
+            <BarChart3 size={17} className="text-[#007EE5]" />
+            <h3 className="text-[13.5px] font-bold text-[#0F172A]">
+              Phân bố kết quả thẩm định 05 tiêu chí cấp Thành phố Đà Nẵng
             </h3>
             <span className="text-[11.5px] text-[#64748B]">
               (Dữ liệu thực tế từ cán bộ thẩm định, chưa phải kết luận công nhận của Hội đồng)
             </span>
           </div>
-          <span className="text-[12px] font-semibold text-[#0B64A0]">
+          <span className="text-[12px] font-semibold text-[#007EE5]">
             Tổng {allCommitteeApps.length} hồ sơ Hội đồng
           </span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-[#E2E8F0]">
-          <div className="p-3 bg-white rounded-[8px] border border-[#E2E8F0] text-center">
+          <div className="p-3 bg-[#F8FAFC] rounded-[4px] border border-[#DFE5EC] text-center">
             <div className="text-[11.5px] text-[#64748B] font-semibold">Đạt đủ 5/5 tiêu chuẩn</div>
-            <div className="text-[22px] font-extrabold text-[#16A34A] tabular-nums mt-0.5">
+            <div className="text-[22px] font-extrabold text-[#10A37F] tabular-nums mt-0.5">
               {met5Count}
             </div>
-            <div className="text-[10.5px] text-[#15803D] font-bold mt-0.5">
+            <div className="text-[10.5px] text-[#0F766E] font-bold mt-0.5">
               Sẵn sàng đề xuất công nhận
             </div>
           </div>
-          <div className="p-3 bg-white rounded-[8px] border border-[#E2E8F0] text-center">
+          <div className="p-3 bg-[#F8FAFC] rounded-[4px] border border-[#DFE5EC] text-center">
             <div className="text-[11.5px] text-[#64748B] font-semibold">Đạt 4 tiêu chuẩn</div>
-            <div className="text-[22px] font-extrabold text-[#0D78AE] tabular-nums mt-0.5">
+            <div className="text-[22px] font-extrabold text-[#007EE5] tabular-nums mt-0.5">
               {met4Count}
             </div>
             <div className="text-[10.5px] text-[#0369A1] mt-0.5">Thiếu 01 tiêu chuẩn</div>
           </div>
-          <div className="p-3 bg-white rounded-[8px] border border-[#E2E8F0] text-center">
+          <div className="p-3 bg-[#F8FAFC] rounded-[4px] border border-[#DFE5EC] text-center">
             <div className="text-[11.5px] text-[#64748B] font-semibold">Đạt 3 tiêu chuẩn</div>
-            <div className="text-[22px] font-extrabold text-[#B45309] tabular-nums mt-0.5">
+            <div className="text-[22px] font-extrabold text-[#D97706] tabular-nums mt-0.5">
               {met3Count}
             </div>
             <div className="text-[10.5px] text-[#B45309] mt-0.5">Thiếu 02 tiêu chuẩn</div>
           </div>
-          <div className="p-3 bg-white rounded-[8px] border border-[#E2E8F0] text-center">
+          <div className="p-3 bg-[#F8FAFC] rounded-[4px] border border-[#DFE5EC] text-center">
             <div className="text-[11.5px] text-[#64748B] font-semibold">Đạt dưới 3 tiêu chuẩn</div>
             <div className="text-[22px] font-extrabold text-[#64748B] tabular-nums mt-0.5">
               {metFewerCount}
@@ -372,27 +372,27 @@ export const CommitteeOverviewView: React.FC<CommitteeOverviewViewProps> = ({
         </div>
       </section>
 
-      {/* Primary Next Action Banner (Section 16 & 82) */}
-      <section className="bg-white rounded-[12px] border border-[#CFE0EC] p-5 flex flex-wrap items-center justify-between gap-4 shadow-2xs">
+      {/* Primary Next Action Banner */}
+      <section className="bg-white rounded-[6px] border border-[#DFE5EC] border-l-[3px] border-l-[#10A37F] p-5 flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="text-[11.5px] font-extrabold uppercase tracking-wider text-[#0B64A0]">
+          <div className="text-[11.5px] font-extrabold uppercase tracking-wider text-[#0F766E]">
             Tác vụ trọng tâm tiếp theo
           </div>
           {summaryMetrics.isResultSetPublished ? (
             <>
-              <h2 className="text-[17px] font-extrabold text-[#0F2335]">
+              <h2 className="text-[16.5px] font-extrabold text-[#0F172A]">
                 Đã công bố chính thức kết quả xét chọn ({summaryMetrics.publishedCount} hồ sơ)
               </h2>
-              <p className="text-[13px] text-[#4A6275]">
+              <p className="text-[13px] text-[#475569]">
                 Sinh viên đã có thể tra cứu kết quả chính thức trên hệ thống. Dữ liệu kết luận được khóa bảo toàn.
               </p>
             </>
           ) : summaryMetrics.isAllDecided ? (
             <>
-              <h2 className="text-[17px] font-extrabold text-[#0F2335]">
+              <h2 className="text-[16.5px] font-extrabold text-[#0F172A]">
                 Toàn bộ {summaryMetrics.totalInCommitteeScope} hồ sơ đã có kết luận xét chọn
               </h2>
-              <p className="text-[13px] text-[#4A6275]">
+              <p className="text-[13px] text-[#475569]">
                 {summaryMetrics.isResultSetFinalized
                   ? 'Danh sách kết quả đã hoàn tất quyết định và sẵn sàng công bố chính thức.'
                   : 'Vui lòng kiểm tra danh sách kết quả xét chọn và thực hiện bước Hoàn tất quyết định trước khi công bố.'}
@@ -400,16 +400,16 @@ export const CommitteeOverviewView: React.FC<CommitteeOverviewViewProps> = ({
             </>
           ) : (
             <>
-              <h2 className="text-[17px] font-extrabold text-[#0F2335]">
+              <h2 className="text-[16.5px] font-extrabold text-[#0F172A]">
                 {summaryMetrics.needsCommitteeConsiderationCount} hồ sơ cần Hội đồng xem xét
               </h2>
-              <p className="text-[13px] text-[#4A6275]">
+              <p className="text-[13px] text-[#475569]">
                 Trong đó{' '}
-                <strong className="font-bold text-[#B45309]">
+                <strong className="font-bold text-[#D97706]">
                   {summaryMetrics.flaggedApplicationsCount} hồ sơ
                 </strong>{' '}
                 có nội dung được cán bộ chuyển xem xét thêm và{' '}
-                <strong className="font-bold text-[#0F2335]">
+                <strong className="font-bold text-[#0F172A]">
                   {summaryMetrics.waitingDecisionCount} hồ sơ
                 </strong>{' '}
                 đang chờ ghi nhận kết luận xét chọn.
@@ -450,21 +450,21 @@ export const CommitteeOverviewView: React.FC<CommitteeOverviewViewProps> = ({
         </div>
       </section>
 
-      {/* Priority Queue Table on Committee Home (Section 82) */}
+      {/* Priority Queue Table on Committee Home */}
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <h2 className="text-[15.5px] font-extrabold text-[#0F2335]">
+            <h2 className="text-[15.5px] font-extrabold text-[#0F172A]">
               Danh sách hồ sơ cần xử lý
             </h2>
-            <p className="text-[12.5px] text-[#526B7C]">
+            <p className="text-[12.5px] text-[#475569]">
               Ưu tiên hiển thị các hồ sơ có nội dung cần Hội đồng xem xét thêm và hồ sơ chờ kết luận.
             </p>
           </div>
           <button
             type="button"
             onClick={() => onSelectRoute('committee')}
-            className="text-[12.5px] font-bold text-[#0D78AE] hover:underline cursor-pointer"
+            className="text-[12.5px] font-bold text-[#10A37F] hover:underline cursor-pointer"
           >
             Xem toàn bộ ({allCommitteeApps.length}) →
           </button>

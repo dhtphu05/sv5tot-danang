@@ -1,15 +1,7 @@
 /**
- * 5TOT ĐHĐN — Selection Cycle Information Panel (Approved Visual Reference)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
- *
- * Implements Sections 14, 15, 16, 17, 46, 47, 48:
- * - Wide premium white information panel with subtle cool blue-gray border, 16px radius, soft shadow.
- * - Header: Calendar icon + "THÔNG TIN ĐỢT XÉT CHỌN NĂM HỌC 2026–2027" | Subtle green pill "● Đang tiếp nhận hồ sơ trực tuyến".
- * - Three columns:
- *   1. Thời hạn tiếp nhận: 15/10/2026 – 20/11/2026 | Nộp & rà soát tại cấp Trường / Đơn vị
- *   2. Đối tượng đăng ký: Sinh viên chính quy | Các ĐH, Học viện, Trường ĐH, CĐ tại Đà Nẵng
- *   3. Hình thức thẩm định: Hồ sơ & minh chứng số | Xét chọn cấp Đại học Đà Nẵng · Theo quy trình hệ thống
+ * 5TOT Đà Nẵng — Selection Cycle Information Panel (Approved Visual Reference)
+ * Cơ quan quản lý: Thành Đoàn Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  */
 
 import React from 'react';
@@ -51,7 +43,7 @@ export const SelectionCyclePanel: React.FC = () => {
               Thời hạn tiếp nhận
             </div>
             <div className="text-[15.5px] sm:text-[16.5px] font-extrabold text-[#0F2335] tabular-nums mt-0.5">
-              01/10/2025 – 10/11/2026
+              15/10/2025 – 20/11/2026
             </div>
             <div className="text-[13px] text-[#526B7E] mt-0.5">
               Nộp & rà soát tại cấp Trường / Đơn vị
@@ -74,7 +66,7 @@ export const SelectionCyclePanel: React.FC = () => {
               Sinh viên chính quy
             </div>
             <div className="text-[13px] text-[#526B7E] mt-0.5">
-              09 trường, đơn vị thành viên Đại học Đà Nẵng
+              31 ĐH, Học viện, Trường ĐH, CĐ tại Đà Nẵng
             </div>
           </div>
         </div>
@@ -94,7 +86,7 @@ export const SelectionCyclePanel: React.FC = () => {
               Hồ sơ & minh chứng số
             </div>
             <div className="text-[13px] text-[#526B7E] mt-0.5">
-              Xét chọn cấp Đại học Đà Nẵng · Theo quy trình hệ thống
+              Xét chọn cấp Thành phố · Theo quy trình hệ thống
             </div>
           </div>
         </div>

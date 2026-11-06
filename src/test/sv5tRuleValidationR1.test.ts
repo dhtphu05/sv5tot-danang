@@ -140,12 +140,12 @@ describe('PHASE SV5T-R1 — Comprehensive 5-Criteria Validation Suite', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // SCENARIO 4: Physical: Exactly 1 valid option selected among TC3.1–TC3.4
+  // SCENARIO 4: Physical: Exactly 1 valid option selected among TC3.1–TC3.2
   // ---------------------------------------------------------------------------
-  test('Scenario 4: Chỉ chọn một phương án hợp lệ của Thể lực tốt (TC3.4 - Điểm GDTC)', () => {
+  test('Scenario 4: Chỉ chọn một phương án hợp lệ của Thể lực tốt (TC3.1 - Thanh niên khỏe)', () => {
     const app = createBlankApplication();
-    // Declare only TC3.4 (PE Grade) with evidence
-    addDeclaration(app, 'physical', 'physical-pe-grade', 'Điểm Giáo dục thể chất loại Giỏi (8.5/10)', 1);
+    // Declare only TC3.1 (Thanh niên khỏe) with evidence
+    addDeclaration(app, 'physical', 'physical-khoe', 'Đạt danh hiệu Thanh niên khỏe cấp Trường năm học 2025–2026', 1);
 
     const advisories = computeDynamicPreSubmitAdvisories(app.criteria);
     const physAdvisories = advisories.filter((a) => a.criterionId === 'physical');
@@ -153,7 +153,7 @@ describe('PHASE SV5T-R1 — Comprehensive 5-Criteria Validation Suite', () => {
     assert.strictEqual(
       physAdvisories.length,
       0,
-      'Không được báo thiếu các phương án khác khi đã chọn 1 phương án Thể lực tốt hợp lệ'
+      'Không được báo thiếu phương án còn lại khi đã chọn 1 phương án Thể lực tốt hợp lệ'
     );
 
     const statuses = computeCriteriaAdvisoryStatuses(app.criteria, advisories);
@@ -163,16 +163,16 @@ describe('PHASE SV5T-R1 — Comprehensive 5-Criteria Validation Suite', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // SCENARIO 5: Volunteer: Using TC4.2 or TC4.3 without 3-day restriction
+  // SCENARIO 5: Volunteer: Using TC4.2 (Volunteer Award) without 5-day restriction
   // ---------------------------------------------------------------------------
-  test('Scenario 5: Chỉ dùng TC4.2 (Chiến dịch Mùa hè xanh) để kê khai Tình nguyện tốt', () => {
+  test('Scenario 5: Chỉ dùng TC4.2 (Khen thưởng tình nguyện cấp khoa+) để kê khai Tình nguyện tốt', () => {
     const app = createBlankApplication();
-    // Declare only TC4.2 (Campaign)
+    // Declare only TC4.2 (Volunteer Award)
     addDeclaration(
       app,
       'volunteer',
-      'volunteer-campaign',
-      'Giấy chứng nhận Chiến dịch Tình nguyện Mùa hè xanh 2026',
+      'volunteer-award',
+      'Giấy khen Thành tích xuất sắc Chiến dịch Tình nguyện Mùa hè xanh 2026',
       1
     );
 
@@ -183,7 +183,7 @@ describe('PHASE SV5T-R1 — Comprehensive 5-Criteria Validation Suite', () => {
     assert.strictEqual(
       hasInsufficientDays,
       false,
-      'Không được cảnh báo thiếu 3 ngày tình nguyện khi sinh viên đã chọn phương án Chiến dịch'
+      'Không được cảnh báo thiếu 5 ngày tình nguyện khi sinh viên đã đạt khen thưởng tình nguyện cấp khoa trở lên'
     );
 
     const statuses = computeCriteriaAdvisoryStatuses(app.criteria, advisories);
@@ -193,19 +193,18 @@ describe('PHASE SV5T-R1 — Comprehensive 5-Criteria Validation Suite', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // SCENARIO 6: Integration: Having TC5.1 but omitting TC5.3 (Activity)
+  // SCENARIO 6: Integration: Having Group B (TC5.3) but omitting Group A (TC5.1/TC5.2)
   // ---------------------------------------------------------------------------
-  test('Scenario 6: Hội nhập tốt có TC5.1 (Khóa kỹ năng) nhưng thiếu TC5.3 (Hoạt động hội nhập)', () => {
+  test('Scenario 6: Hội nhập tốt có Nhóm B (TC5.3 Ngoại ngữ) nhưng thiếu Nhóm A (Kỹ năng / Khen thưởng Đoàn-Hội)', () => {
     const app = createBlankApplication();
-    // Declare Group A (TC5.1) and Group C (TC5.4), but leave TC5.3 empty
-    addDeclaration(app, 'integration', 'integration-skills', 'Khóa tập huấn kỹ năng thực hành xã hội', 1);
+    // Declare Group B (TC5.3) only, leaving Group A empty
     addDeclaration(app, 'integration', 'integration-lang', 'Chứng chỉ tiếng Anh IELTS 6.5', 1);
 
     const advisories = computeDynamicPreSubmitAdvisories(app.criteria);
-    const missingActAdv = advisories.find((a) => a.id === 'adv-missing-integration-group-b');
+    const missingGroupAAdv = advisories.find((a) => a.id === 'adv-missing-integration-group-a');
 
-    assert.ok(missingActAdv, 'Phải phát hiện thiếu Hoạt động về hội nhập cấp khoa trở lên (TC5.3)');
-    assert.strictEqual(missingActAdv?.requirementId, 'integration-activity');
+    assert.ok(missingGroupAAdv, 'Phải phát hiện thiếu Nhóm A Hội nhập tốt (TC5.1 hoặc TC5.2)');
+    assert.strictEqual(missingGroupAAdv?.requirementId, 'integration-skills');
 
     const statuses = computeCriteriaAdvisoryStatuses(app.criteria, advisories);
     const intStatus = statuses.find((s) => s.id === 'integration');
@@ -213,18 +212,17 @@ describe('PHASE SV5T-R1 — Comprehensive 5-Criteria Validation Suite', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // SCENARIO 7: Integration: Having TC5.3 but omitting Language/Intl (Group C)
+  // SCENARIO 7: Integration: Having Group A (TC5.1) but omitting Group B (TC5.3–TC5.5)
   // ---------------------------------------------------------------------------
-  test('Scenario 7: Hội nhập tốt có TC5.3 nhưng thiếu nhóm Ngoại ngữ / Giao lưu quốc tế (Group C)', () => {
+  test('Scenario 7: Hội nhập tốt có Nhóm A (TC5.1) nhưng thiếu Nhóm B (Ngoại ngữ / Giao lưu quốc tế / Cuộc thi)', () => {
     const app = createBlankApplication();
-    // Declare Group A (TC5.1) and Group B (TC5.3), but omit Group C
-    addDeclaration(app, 'integration', 'integration-skills', 'Khóa tập huấn kỹ năng', 1);
-    addDeclaration(app, 'integration', 'integration-activity', 'Ngày hội Sinh viên Hội nhập Quốc tế', 1);
+    // Declare Group A (TC5.1), but omit Group B
+    addDeclaration(app, 'integration', 'integration-skills', 'Khóa tập huấn kỹ năng thực hành xã hội', 1);
 
     const advisories = computeDynamicPreSubmitAdvisories(app.criteria);
-    const missingLangAdv = advisories.find((a) => a.id === 'adv-missing-integration-group-c');
+    const missingLangAdv = advisories.find((a) => a.id === 'adv-missing-integration-group-b');
 
-    assert.ok(missingLangAdv, 'Phải phát hiện thiếu tiêu chuẩn Ngoại ngữ / Giao lưu quốc tế (Group C)');
+    assert.ok(missingLangAdv, 'Phải phát hiện thiếu tiêu chuẩn Nhóm B Ngoại ngữ / Giao lưu quốc tế (TC5.3–TC5.5)');
     assert.strictEqual(missingLangAdv?.requirementId, 'integration-lang');
 
     const statuses = computeCriteriaAdvisoryStatuses(app.criteria, advisories);
@@ -233,35 +231,35 @@ describe('PHASE SV5T-R1 — Comprehensive 5-Criteria Validation Suite', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // SCENARIO 8: Optional priority criteria not flagged as missing
+  // SCENARIO 8: Unselected AT_LEAST_N alternatives not flagged as missing
   // ---------------------------------------------------------------------------
-  test('Scenario 8: Không khai các tiêu chí ưu tiên (TC1.3–1.6, TC2.9–2.11, TC3.5, TC5.7)', () => {
+  test('Scenario 8: Chỉ khai tối thiểu 1 hình thức bắt buộc trong từng nhóm lựa chọn, không khai các phương án còn lại', () => {
     const app = createBlankApplication();
-    // Satisfy all mandatory conditions across 5 criteria without any priority items:
-    // TC1: ĐRL + Cam kết không vi phạm
+    // Satisfy all mandatory conditions across 5 criteria using minimal 1 option per AT_LEAST_N group:
+    // TC1: ĐRL + Cam kết không vi phạm + 1 tiêu chuẩn bổ sung (TC1.6)
     addDeclaration(app, 'ethics', 'ethics-score', 'Điểm rèn luyện 88/100', 1);
     addDeclaration(app, 'ethics', 'ethics-law', 'Không vi phạm pháp luật và nội quy', 0);
+    addDeclaration(app, 'ethics', 'ethics-commendation', 'Thanh niên tiên tiến làm theo lời Bác cấp Trường', 1);
 
-    // TC2: GPA + NCKH
+    // TC2: GPA + 1 hình thức học thuật (TC2.2 NCKH)
     addDeclaration(app, 'academic', 'academic-gpa', '3.55/4.00', 1);
-    addDeclaration(app, 'academic', 'academic-nckh', 'Đề tài NCKH cấp Khoa', 1);
+    addDeclaration(app, 'academic', 'academic-nckh', 'Đề tài NCKH đạt giải cấp Khoa', 1);
 
-    // TC3: Thể lực (TC3.4)
-    addDeclaration(app, 'physical', 'physical-pe-grade', 'Điểm GDTC loại Khá', 1);
+    // TC3: Thể lực (1/2 hình thức: TC3.1 Thanh niên khỏe)
+    addDeclaration(app, 'physical', 'physical-khoe', 'Danh hiệu Thanh niên khỏe cấp Trường', 1);
 
-    // TC4: Tình nguyện (TC4.2)
-    addDeclaration(app, 'volunteer', 'volunteer-campaign', 'Chiến dịch Mùa hè xanh', 1);
+    // TC4: Tình nguyện (1/2 hình thức: TC4.2 Khen thưởng tình nguyện)
+    addDeclaration(app, 'volunteer', 'volunteer-award', 'Giấy khen Chiến dịch Mùa hè xanh cấp Trường', 1);
 
-    // TC5: Hội nhập (TC5.1, TC5.3, TC5.4)
-    addDeclaration(app, 'integration', 'integration-skills', 'Khóa kỹ năng xã hội', 1);
-    addDeclaration(app, 'integration', 'integration-activity', 'Diễn đàn Hội nhập Sinh viên', 1);
+    // TC5: Hội nhập (Nhóm A: TC5.1 + Nhóm B: TC5.3)
+    addDeclaration(app, 'integration', 'integration-skills', 'Khóa kỹ năng thực hành xã hội', 1);
     addDeclaration(app, 'integration', 'integration-lang', 'Chứng chỉ TOEIC 650', 1);
 
     const advisories = computeDynamicPreSubmitAdvisories(app.criteria);
     assert.strictEqual(
       advisories.length,
       0,
-      'Khi đã đủ các tiêu chuẩn bắt buộc, việc không khai tiêu chí ưu tiên không được coi là lỗi thiếu'
+      'Khi đã đạt tối thiểu 1 phương án trong mỗi nhóm lựa chọn, không được báo thiếu các phương án còn lại'
     );
 
     const statuses = computeCriteriaAdvisoryStatuses(app.criteria, advisories);

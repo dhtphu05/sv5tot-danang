@@ -340,7 +340,7 @@ describe('5TOT ĐHĐN — LEAN-5 City Review, Committee Decision & Status Simpli
 
     it('C24: Committee decision metadata maps strictly to authoritative Vietnamese labels', () => {
       const recognized = getCommitteeDecisionOutcomeMeta('recognized');
-      assert.equal(recognized.label, 'Được công nhận Sinh viên 5 tốt cấp Đại học Đà Nẵng');
+      assert.equal(recognized.label, 'Được công nhận Sinh viên 5 tốt cấp Thành phố Đà Nẵng');
       assert.equal(recognized.shortLabel, 'Được công nhận');
       assert.equal(recognized.tone, 'success');
 
@@ -508,12 +508,12 @@ describe('5TOT ĐHĐN — LEAN-5 City Review, Committee Decision & Status Simpli
       assert.ok('isAllMet' in proj.criteriaOutcome);
     });
 
-    it('C43: getRoleAwareStatusProjection derives schoolPreliminary dimension (Chưa kết luận, Đề nghị, Không đề nghị, Đã gửi cấp ĐHĐN)', () => {
+    it('C43: getRoleAwareStatusProjection derives schoolPreliminary dimension (Chưa kết luận, Đề nghị, Không đề nghị, Đã gửi cấp Thành phố)', () => {
       const fwdApp: StaffApplicationRecord = {
         ...INITIAL_STAFF_APPLICATIONS[0],
         schoolPreliminaryStatus: 'forwarded_to_city',
       };
-      assert.equal(getRoleAwareStatusProjection(fwdApp).schoolPreliminary.label, 'Đã gửi cấp ĐHĐN');
+      assert.equal(getRoleAwareStatusProjection(fwdApp).schoolPreliminary.label, 'Đã gửi cấp Thành phố');
 
       const recApp: StaffApplicationRecord = {
         ...INITIAL_STAFF_APPLICATIONS[0],

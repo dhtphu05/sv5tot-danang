@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — School Forwarded Immutable Summary Banner Widget (FSD Widgets Layer)
+ * 5TOT Đà Nẵng — School Forwarded Immutable Summary Banner Widget (FSD Widgets Layer)
  * Renders read-only batch metadata after successful atomic forwarding to City level.
  */
 
@@ -33,10 +33,10 @@ export const SchoolForwardedSummaryBanner: React.FC<
           </div>
           <div>
             <h3 className="text-[16px] font-extrabold text-[#5B21B6]">
-              Đã trình danh sách lên Hội Sinh viên Đại học Đà Nẵng
+              Đã trình danh sách lên Hội Sinh viên Thành phố Đà Nẵng
             </h3>
             <p className="text-[12.5px] text-[#6D28D9] mt-0.5">
-              Danh sách đề xuất đã trình thành công. Toàn bộ hồ sơ đã sẵn sàng cho Hội đồng xét chọn cấp Đại học Đà Nẵng thẩm định.
+              Danh sách đề xuất đã trình thành công. Toàn bộ hồ sơ đã sẵn sàng cho Hội đồng xét chọn cấp Thành phố Đà Nẵng thẩm định.
             </p>
           </div>
         </div>
@@ -71,7 +71,7 @@ export const SchoolForwardedSummaryBanner: React.FC<
           </div>
         </div>
         <div>
-          <span className="text-[#6D28D9] font-medium">Trạng thái cấp ĐHĐN:</span>
+          <span className="text-[#6D28D9] font-medium">Trạng thái cấp Thành phố:</span>
           <div className="font-bold text-[#059669] mt-0.5 flex items-center gap-1">
             <CheckCircle2 size={13} />
             <span>Đã tiếp nhận hồ sơ</span>

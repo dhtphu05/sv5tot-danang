@@ -1,12 +1,14 @@
 /**
- * 5TOT ĐHĐN — Canonical Student Application Domain Data & Criteria Builder
- * Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Canonical Student Application Domain Data & Criteria Builder
+ * Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  */
 
 import {
   CRITERIA_DEFINITIONS_LIST,
   resolveMultiplicity,
 } from './criteriaDefinitions';
+import { DANANG_INSTITUTION_REGISTRY } from './institutionRegistry';
+import { resolveSchoolReviewUnit, SchoolReviewUnitId } from '../../staff/schoolReviewTypes';
 import {
   ApplicationEvidence,
   ApplicationRecommendation,
@@ -177,30 +179,37 @@ export function buildCriteriaFromDefinitions(
       (!existingCrit?.shortSummary || existingCrit.shortSummary.startsWith('0 '))
     ) {
       if (critDef.id === 'volunteer') {
+        const awardReq = flatRequirements.find((r) => r.id === 'volunteer-award');
+        const actReq = flatRequirements.find((r) => r.id === 'volunteer-activities');
         const allDecls = flatRequirements.flatMap((r) => r.declarations || []);
-        const totalActivities = allDecls.length;
-        let totalDays = 0;
-        let bloodCount = 0;
-        for (const d of allDecls) {
-          const combined = `${d.value} ${d.detail || ''}`.toLowerCase();
-          if (
-            d.metadata?.volActivityType === 'blood_donation' ||
-            combined.includes('hiến máu') ||
-            combined.includes('hien mau')
-          ) {
-            bloodCount++;
-            totalDays += 1;
-          } else if (d.metadata?.days) {
-            const p = parseInt(d.metadata.days, 10);
-            totalDays += isNaN(p) ? 1 : p;
-          } else {
-            const dayMatch = combined.match(/(\d+)\s*ngày/i);
-            totalDays += dayMatch ? parseInt(dayMatch[1], 10) : 1;
+        if (awardReq && awardReq.declarations && awardReq.declarations.length > 0 && (!actReq || actReq.declarations.length === 0)) {
+          resolvedShortSummary = `${awardReq.declarations.length} khen thưởng tình nguyện đã khai · ${totalEvidence} minh chứng`;
+        } else {
+          const actDecls = actReq?.declarations?.length ? actReq.declarations : allDecls;
+          const totalActivities = actDecls.length;
+          let totalDays = 0;
+          let bloodCount = 0;
+          for (const d of actDecls) {
+            const combined = `${d.value} ${d.detail || ''}`.toLowerCase();
+            if (
+              d.metadata?.volActivityType === 'blood_donation' ||
+              combined.includes('hiến máu') ||
+              combined.includes('hien mau')
+            ) {
+              bloodCount++;
+              totalDays += 1;
+            } else if (d.metadata?.days) {
+              const p = parseInt(d.metadata.days, 10);
+              totalDays += isNaN(p) ? 1 : p;
+            } else {
+              const dayMatch = combined.match(/(\d+)\s*ngày/i);
+              totalDays += dayMatch ? parseInt(dayMatch[1], 10) : 1;
+            }
           }
+          resolvedShortSummary = `${totalActivities} hoạt động đã khai · ${totalEvidence} minh chứng · ${totalDays}/5 ngày tình nguyện${
+            bloodCount > 0 ? ` (${bloodCount} lần hiến máu)` : ''
+          }`;
         }
-        resolvedShortSummary = `${totalActivities} hoạt động đã khai · ${totalEvidence} minh chứng · ${totalDays}/3 ngày tình nguyện${
-          bloodCount > 0 ? ` (${bloodCount} lần hiến máu)` : ''
-        }`;
       } else if (critDef.id === 'physical') {
         resolvedShortSummary = `${declaredReqs.length} nội dung đã kê khai · ${totalEvidence} minh chứng`;
       } else {
@@ -240,120 +249,70 @@ export function resolveInstitutionFromUniversity(
 ): {
   institutionId: string;
   institutionName: string;
-  schoolReviewUnitId: import('../../staff/schoolReviewTypes').SchoolReviewUnitId;
+  schoolReviewUnitId: SchoolReviewUnitId;
   schoolReviewUnitName: string;
+  educationLevelHint: 'Đại học' | 'Cao đẳng';
 } {
-  const norm = (university || '').toLowerCase();
-  if (fallbackInstId) {
-    const map: Record<
-      string,
-      {
-        unitId: import('../../staff/schoolReviewTypes').SchoolReviewUnitId;
-        unitName: string;
-      }
-    > = {
-      'inst-dut': { unitId: 'unit-dut', unitName: 'Trường Đại học Bách khoa – ĐHĐN' },
-      'inst-due': { unitId: 'unit-due', unitName: 'Trường Đại học Kinh tế – ĐHĐN' },
-      'inst-ued': { unitId: 'unit-ued', unitName: 'Trường Đại học Sư phạm – ĐHĐN' },
-      'inst-ufl': { unitId: 'unit-ufl', unitName: 'Trường Đại học Ngoại ngữ – ĐHĐN' },
-      'inst-ufls': { unitId: 'unit-ufl', unitName: 'Trường Đại học Ngoại ngữ – ĐHĐN' },
-      'inst-ute': { unitId: 'unit-ute', unitName: 'Trường Đại học Sư phạm Kỹ thuật – ĐHĐN' },
-      'inst-vku': {
-        unitId: 'unit-vku',
-        unitName: 'Trường Đại học Công nghệ Thông tin và Truyền thông Việt – Hàn – ĐHĐN',
-      },
-      'inst-smp': { unitId: 'unit-smp', unitName: 'Trường Y Dược – ĐHĐN' },
-      'inst-vnuk': {
-        unitId: 'unit-vnuk',
-        unitName: 'Viện Nghiên cứu và Đào tạo Việt – Anh – ĐHĐN',
-      },
-      'inst-kontum': {
-        unitId: 'unit-kontum',
-        unitName: 'Phân hiệu Đại học Đà Nẵng tại Kon Tum',
-      },
-    };
-    const matched = map[fallbackInstId];
-    if (matched) {
+  const normalizedInstId =
+    fallbackInstId === 'inst-ufls' ? 'inst-ufl' : fallbackInstId;
+
+  if (normalizedInstId) {
+    const byId = DANANG_INSTITUTION_REGISTRY.find(
+      (inst) => inst.id === normalizedInstId
+    );
+    if (byId) {
+      const routing = resolveSchoolReviewUnit(byId.id);
       return {
-        institutionId: fallbackInstId === 'inst-ufls' ? 'inst-ufl' : fallbackInstId,
-        institutionName: university || matched.unitName,
-        schoolReviewUnitId: matched.unitId,
-        schoolReviewUnitName: matched.unitName,
+        institutionId: byId.id,
+        institutionName: university || byId.officialName,
+        schoolReviewUnitId: routing.unit?.id || 'unit-udn',
+        schoolReviewUnitName: routing.unit?.officialName || 'Đại học Đà Nẵng',
+        educationLevelHint: byId.educationLevelHint || 'Đại học',
       };
     }
   }
-  if (norm.includes('kinh tế')) {
-    return {
-      institutionId: 'inst-due',
-      institutionName: university || 'Trường Đại học Kinh tế – ĐHĐN',
-      schoolReviewUnitId: 'unit-due',
-      schoolReviewUnitName: 'Trường Đại học Kinh tế – ĐHĐN',
-    };
+
+  const norm = (university || '').trim().toLowerCase();
+  if (norm) {
+    const exactMatch = DANANG_INSTITUTION_REGISTRY.find(
+      (inst) =>
+        inst.officialName.toLowerCase() === norm ||
+        inst.officialName.toLowerCase().replace(/–/g, '-') === norm.replace(/–/g, '-') ||
+        inst.searchKeywords.some((kw) => kw.toLowerCase() === norm)
+    );
+    const partialMatch =
+      exactMatch ||
+      DANANG_INSTITUTION_REGISTRY.find((inst) => {
+        const off = inst.officialName.toLowerCase();
+        const normalizedDashOff = off.replace(/–/g, '-');
+        const normalizedDashNorm = norm.replace(/–/g, '-');
+        return (
+          normalizedDashNorm.includes(normalizedDashOff) ||
+          normalizedDashOff.includes(normalizedDashNorm) ||
+          (inst.searchKeywords || []).some((kw) =>
+            kw.length >= 4 && normalizedDashNorm.includes(kw.toLowerCase())
+          )
+        );
+      });
+
+    if (partialMatch) {
+      const routing = resolveSchoolReviewUnit(partialMatch.id);
+      return {
+        institutionId: partialMatch.id,
+        institutionName: university || partialMatch.officialName,
+        schoolReviewUnitId: routing.unit?.id || 'unit-udn',
+        schoolReviewUnitName: routing.unit?.officialName || 'Đại học Đà Nẵng',
+        educationLevelHint: partialMatch.educationLevelHint || 'Đại học',
+      };
+    }
   }
-  if (norm.includes('sư phạm kỹ thuật')) {
-    return {
-      institutionId: 'inst-ute',
-      institutionName: university || 'Trường Đại học Sư phạm Kỹ thuật – ĐHĐN',
-      schoolReviewUnitId: 'unit-ute',
-      schoolReviewUnitName: 'Trường Đại học Sư phạm Kỹ thuật – ĐHĐN',
-    };
-  }
-  if (norm.includes('sư phạm')) {
-    return {
-      institutionId: 'inst-ued',
-      institutionName: university || 'Trường Đại học Sư phạm – ĐHĐN',
-      schoolReviewUnitId: 'unit-ued',
-      schoolReviewUnitName: 'Trường Đại học Sư phạm – ĐHĐN',
-    };
-  }
-  if (norm.includes('ngoại ngữ')) {
-    return {
-      institutionId: 'inst-ufl',
-      institutionName: university || 'Trường Đại học Ngoại ngữ – ĐHĐN',
-      schoolReviewUnitId: 'unit-ufl',
-      schoolReviewUnitName: 'Trường Đại học Ngoại ngữ – ĐHĐN',
-    };
-  }
-  if (norm.includes('việt – hàn') || norm.includes('việt - hàn') || norm.includes('cntt')) {
-    return {
-      institutionId: 'inst-vku',
-      institutionName:
-        university ||
-        'Trường Đại học Công nghệ Thông tin và Truyền thông Việt – Hàn – ĐHĐN',
-      schoolReviewUnitId: 'unit-vku',
-      schoolReviewUnitName:
-        'Trường Đại học Công nghệ Thông tin và Truyền thông Việt – Hàn – ĐHĐN',
-    };
-  }
-  if (norm.includes('y dược')) {
-    return {
-      institutionId: 'inst-smp',
-      institutionName: university || 'Trường Y Dược – ĐHĐN',
-      schoolReviewUnitId: 'unit-smp',
-      schoolReviewUnitName: 'Trường Y Dược – ĐHĐN',
-    };
-  }
-  if (norm.includes('việt – anh') || norm.includes('việt - anh') || norm.includes('vnuk')) {
-    return {
-      institutionId: 'inst-vnuk',
-      institutionName: university || 'Viện Nghiên cứu và Đào tạo Việt – Anh – ĐHĐN',
-      schoolReviewUnitId: 'unit-vnuk',
-      schoolReviewUnitName: 'Viện Nghiên cứu và Đào tạo Việt – Anh – ĐHĐN',
-    };
-  }
-  if (norm.includes('kon tum')) {
-    return {
-      institutionId: 'inst-kontum',
-      institutionName: university || 'Phân hiệu Đại học Đà Nẵng tại Kon Tum',
-      schoolReviewUnitId: 'unit-kontum',
-      schoolReviewUnitName: 'Phân hiệu Đại học Đà Nẵng tại Kon Tum',
-    };
-  }
+
   return {
     institutionId: 'inst-dut',
     institutionName: university || 'Trường Đại học Bách khoa – ĐHĐN',
-    schoolReviewUnitId: 'unit-dut',
-    schoolReviewUnitName: university || 'Trường Đại học Bách khoa – ĐHĐN',
+    schoolReviewUnitId: 'unit-udn',
+    schoolReviewUnitName: 'Đại học Đà Nẵng',
+    educationLevelHint: 'Đại học',
   };
 }
 
@@ -395,6 +354,7 @@ export function buildCleanStudentApplication(params: {
   studentId: string;
   university: string;
   faculty?: string;
+  facultyDepartmentId?: string;
   email?: string;
   academicYear?: string;
   institutionId?: string;
@@ -412,6 +372,13 @@ export function buildCleanStudentApplication(params: {
     params.institutionId || params.existingProfileSnapshot?.institutionId
   );
   const resolvedInstId = resolvedInst.institutionId;
+  const resolvedInstName = params.university || resolvedInst.institutionName;
+  const resolvedFacultyName =
+    params.faculty ?? params.existingProfileSnapshot?.facultyName ?? '';
+  const resolvedFacultyDeptId =
+    params.facultyDepartmentId ??
+    params.existingProfileSnapshot?.facultyDepartmentId;
+
   const profileSnapshot: import('../../entities/application/studentApplicationTypes').StudentProfileDto =
     params.existingProfileSnapshot &&
     params.existingProfileSnapshot.fullName === params.fullName
@@ -420,7 +387,9 @@ export function buildCleanStudentApplication(params: {
           fullName: params.fullName,
           email: params.email || params.existingProfileSnapshot.email,
           institutionId: resolvedInstId,
-          institutionName: params.university || resolvedInst.schoolReviewUnitName,
+          institutionName: resolvedInstName,
+          facultyDepartmentId: resolvedFacultyDeptId,
+          facultyName: resolvedFacultyName,
         }
       : {
           fullName: params.fullName,
@@ -431,9 +400,11 @@ export function buildCleanStudentApplication(params: {
           phoneNumber: '',
           homeProvince: '',
           institutionId: resolvedInstId,
-          institutionName: params.university || resolvedInst.schoolReviewUnitName,
+          institutionName: resolvedInstName,
+          facultyDepartmentId: resolvedFacultyDeptId,
+          facultyName: resolvedFacultyName,
           academicYearNumber: 0,
-          educationLevel: 'Đại học',
+          educationLevel: resolvedInst.educationLevelHint,
           className: '',
           unionPosition: 'Chưa giữ chức vụ',
           politicalStatus: 'Đoàn viên',
@@ -448,15 +419,15 @@ export function buildCleanStudentApplication(params: {
     student: {
       fullName: params.fullName,
       studentId: params.studentId,
-      university: params.university,
-      faculty: '',
+      university: resolvedInstName,
+      faculty: resolvedFacultyName,
       class: profileSnapshot.className || '',
       email: profileSnapshot.email || params.email || '',
       academicYear: INITIAL_STUDENT_APPLICATION.student.academicYear,
     },
-    trainingInstitutionName: params.university,
+    trainingInstitutionName: resolvedInstName,
     schoolReviewUnitId: resolvedInst.schoolReviewUnitId,
-    schoolReviewUnitName: params.university || resolvedInst.schoolReviewUnitName,
+    schoolReviewUnitName: resolvedInst.schoolReviewUnitName,
     supplementRequests: [],
     criteria: emptyCriteria,
     otherAchievements: [],

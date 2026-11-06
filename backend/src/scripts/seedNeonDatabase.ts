@@ -1,9 +1,8 @@
 /**
- * 5TOT ĐHĐN — Authoritative Neon PostgreSQL Seed Script (Production Ready)
- * Seeds all Institutions, School Review Units, Active Season (2025-2026),
- * Criteria Definitions, Collective Units, and Multi-School Accounts (Admin,
- * Committee, City Manager, City Officers, School Officers, Collective Preparers,
- * and Students across all 14 universities in Đà Nẵng).
+ * 5TOT Đà Nẵng — Authoritative Neon PostgreSQL Seed Script (Production Ready)
+ * Seeds all Da Nang Institutions (08 UDN member schools + 23 standalone universities/colleges + 1 suspended),
+ * School Review Units (shared `unit-udn` + 23 standalone units), Active Season (2025-2026),
+ * Criteria Definitions, Collective Units, and Multi-School Accounts.
  */
 
 import 'dotenv/config';
@@ -54,16 +53,25 @@ const INSTITUTIONS_SEED: {
   shortName: string;
   group: InstitutionGroup;
   hasStudentAssoc: boolean;
+  isActive?: boolean;
 }[] = [
   {
     id: 'inst-hsv-dn',
-    code: 'HSV-DHDN',
-    officialName: 'Hội Sinh viên Việt Nam Đại học Đà Nẵng',
-    shortName: 'HSV ĐH Đà Nẵng',
+    code: 'HSV-DN',
+    officialName: 'Hội Sinh viên Việt Nam Thành phố Đà Nẵng',
+    shortName: 'HSV TP. Đà Nẵng',
     group: 'CITY_YOUTH_UNION_UNIT',
     hasStudentAssoc: true,
   },
-  // 9 UDN Member Institutions / Units
+  {
+    id: 'inst-udn',
+    code: 'UDN',
+    officialName: 'Đại học Đà Nẵng',
+    shortName: 'Đại học Đà Nẵng',
+    group: 'UD_MEMBER_UNIVERSITY',
+    hasStudentAssoc: true,
+  },
+  // 08 UDN Member Institutions / Units in Da Nang
   {
     id: 'inst-dut',
     code: 'DUT',
@@ -128,13 +136,199 @@ const INSTITUTIONS_SEED: {
     group: 'UD_MEMBER_UNIVERSITY',
     hasStudentAssoc: true,
   },
+  // 23 Active Standalone Universities / Academies / Campuses / Colleges in Da Nang
   {
-    id: 'inst-kontum',
-    code: 'KONTUM',
-    officialName: 'Phân hiệu Đại học Đà Nẵng tại Kon Tum',
-    shortName: 'Phân hiệu ĐHĐN tại Kon Tum',
-    group: 'UD_MEMBER_UNIVERSITY',
+    id: 'inst-dtu',
+    code: 'DTU',
+    officialName: 'Đại học Duy Tân',
+    shortName: 'DTU',
+    group: 'AFFILIATED_UNIVERSITY',
     hasStudentAssoc: true,
+  },
+  {
+    id: 'inst-dau',
+    code: 'DAU',
+    officialName: 'Trường Đại học Kiến trúc Đà Nẵng',
+    shortName: 'DAU',
+    group: 'AFFILIATED_UNIVERSITY',
+    hasStudentAssoc: true,
+  },
+  {
+    id: 'inst-upes3',
+    code: 'UPES3',
+    officialName: 'Trường Đại học Thể dục Thể thao Đà Nẵng',
+    shortName: 'UPES3',
+    group: 'AFFILIATED_UNIVERSITY',
+    hasStudentAssoc: true,
+  },
+  {
+    id: 'inst-donga',
+    code: 'UDA',
+    officialName: 'Trường Đại học Đông Á',
+    shortName: 'UDA',
+    group: 'AFFILIATED_UNIVERSITY',
+    hasStudentAssoc: true,
+  },
+  {
+    id: 'inst-tyd',
+    code: 'DHKTYD',
+    officialName: 'Trường Đại học Kỹ thuật Y - Dược Đà Nẵng',
+    shortName: 'DHKTYD',
+    group: 'AFFILIATED_UNIVERSITY',
+    hasStudentAssoc: true,
+  },
+  {
+    id: 'inst-fpt',
+    code: 'FPTU',
+    officialName: 'Trường Đại học FPT phân hiệu Đà Nẵng',
+    shortName: 'FPTU',
+    group: 'AFFILIATED_UNIVERSITY',
+    hasStudentAssoc: true,
+  },
+  {
+    id: 'inst-hv-chinhtri-kv3',
+    code: 'HVCT3',
+    officialName: 'Học viện Chính trị khu vực III',
+    shortName: 'HVCT3',
+    group: 'AFFILIATED_UNIVERSITY',
+    hasStudentAssoc: false,
+  },
+  {
+    id: 'inst-hv-toa-an',
+    code: 'HVTA',
+    officialName: 'Học viện Tòa án (Cơ sở đào tạo thực hành Đà Nẵng)',
+    shortName: 'HVTA',
+    group: 'AFFILIATED_UNIVERSITY',
+    hasStudentAssoc: false,
+  },
+  {
+    id: 'inst-dh-ngan-hang-dn',
+    code: 'HUB-DN',
+    officialName: 'Trường Đại học Ngân hàng TP.HCM (Phân hiệu Đà Nẵng)',
+    shortName: 'HUB-DN',
+    group: 'AFFILIATED_UNIVERSITY',
+    hasStudentAssoc: true,
+  },
+  {
+    id: 'inst-dh-luat-hanoi-dn',
+    code: 'HLU-DN',
+    officialName: 'Trường Đại học Luật Hà Nội (Phân hiệu Đà Nẵng)',
+    shortName: 'HLU-DN',
+    group: 'AFFILIATED_UNIVERSITY',
+    hasStudentAssoc: false,
+  },
+  {
+    id: 'inst-dh-mo-hn-dn',
+    code: 'HOU-DN',
+    officialName: 'Trường Đại học Mở Hà Nội (Trạm đào tạo Đà Nẵng)',
+    shortName: 'HOU-DN',
+    group: 'AFFILIATED_UNIVERSITY',
+    hasStudentAssoc: false,
+  },
+  {
+    id: 'inst-cd-thuongmai',
+    code: 'CDTM',
+    officialName: 'Trường Cao đẳng Thương mại',
+    shortName: 'CDTM',
+    group: 'COLLEGE_JUNIOR_COLLEGE',
+    hasStudentAssoc: true,
+  },
+  {
+    id: 'inst-cd-dulich',
+    code: 'DVTC',
+    officialName: 'Trường Cao đẳng Du lịch Đà Nẵng',
+    shortName: 'DVTC',
+    group: 'COLLEGE_JUNIOR_COLLEGE',
+    hasStudentAssoc: true,
+  },
+  {
+    id: 'inst-cd-congnghe',
+    code: 'YDVN',
+    officialName: 'Trường Cao đẳng Công nghệ Y - Dược Việt Nam',
+    shortName: 'YDVN',
+    group: 'COLLEGE_JUNIOR_COLLEGE',
+    hasStudentAssoc: false,
+  },
+  {
+    id: 'inst-cd-fptpoly',
+    code: 'POLY',
+    officialName: 'Trường Cao đẳng FPT Polytechnic cơ sở Đà Nẵng',
+    shortName: 'POLY',
+    group: 'COLLEGE_JUNIOR_COLLEGE',
+    hasStudentAssoc: false,
+  },
+  {
+    id: 'inst-cd-nghe-dn',
+    code: 'DANAVTC',
+    officialName: 'Trường Cao đẳng Nghề Đà Nẵng',
+    shortName: 'DANAVTC',
+    group: 'COLLEGE_JUNIOR_COLLEGE',
+    hasStudentAssoc: true,
+  },
+  {
+    id: 'inst-cd-gtvt-tw5',
+    code: 'C5',
+    officialName: 'Trường Cao đẳng Giao thông Vận tải Trung ương V',
+    shortName: 'C5',
+    group: 'COLLEGE_JUNIOR_COLLEGE',
+    hasStudentAssoc: false,
+  },
+  {
+    id: 'inst-cd-kinhte-kh',
+    code: 'CEP',
+    officialName: 'Trường Cao đẳng Kinh tế - Kế hoạch Đà Nẵng',
+    shortName: 'CEP',
+    group: 'COLLEGE_JUNIOR_COLLEGE',
+    hasStudentAssoc: true,
+  },
+  {
+    id: 'inst-cd-vhtt-dl',
+    code: 'CDVHNT',
+    officialName: 'Trường Cao đẳng Văn hóa Nghệ thuật Đà Nẵng',
+    shortName: 'CDVHNT',
+    group: 'COLLEGE_JUNIOR_COLLEGE',
+    hasStudentAssoc: true,
+  },
+  {
+    id: 'inst-cd-luongthuc',
+    code: 'CFIT',
+    officialName: 'Trường Cao đẳng Lương thực - Thực phẩm',
+    shortName: 'CFIT',
+    group: 'COLLEGE_JUNIOR_COLLEGE',
+    hasStudentAssoc: true,
+  },
+  {
+    id: 'inst-cd-ptth',
+    code: 'VOV2',
+    officialName: 'Trường Cao đẳng Phát thanh - Truyền hình II (Cơ sở Đà Nẵng)',
+    shortName: 'VOV2',
+    group: 'COLLEGE_JUNIOR_COLLEGE',
+    hasStudentAssoc: false,
+  },
+  {
+    id: 'inst-cd-supham-maugiao',
+    code: 'CDSPTW',
+    officialName: 'Trường Cao đẳng Sư phạm Trung ương Nha Trang (Cơ sở Đà Nẵng)',
+    shortName: 'CDSPTW',
+    group: 'COLLEGE_JUNIOR_COLLEGE',
+    hasStudentAssoc: false,
+  },
+  {
+    id: 'inst-cd-yduoc-pasteur',
+    code: 'PASTEUR',
+    officialName: 'Trường Cao đẳng Y Dược Pasteur Đà Nẵng',
+    shortName: 'PASTEUR',
+    group: 'COLLEGE_JUNIOR_COLLEGE',
+    hasStudentAssoc: false,
+  },
+  {
+    id: 'inst-cd-lacviet',
+    code: 'LACVIET',
+    officialName: 'Trường Cao đẳng Lạc Việt',
+    shortName: 'LACVIET',
+    group: 'COLLEGE_JUNIOR_COLLEGE',
+    hasStudentAssoc: false,
+    isActive: false,
   },
 ];
 
@@ -145,89 +339,39 @@ const SCHOOL_REVIEW_UNITS_SEED: {
   officialName: string;
   shortName: string;
   unitType: string;
+  isActive?: boolean;
 }[] = [
   {
-    id: 'unit-dut',
-    institutionId: 'inst-dut',
-    code: 'SRU-DUT',
-    officialName: 'Trường Đại học Bách khoa – Đại học Đà Nẵng',
-    shortName: 'ĐH Bách khoa',
-    unitType: 'HSV_TRUONG',
+    id: 'unit-udn',
+    institutionId: 'inst-udn',
+    code: 'SRU-UDN',
+    officialName: 'Đại học Đà Nẵng',
+    shortName: 'ĐH Đà Nẵng (08 trường thành viên)',
+    unitType: 'BAN_THU_KY',
   },
-  {
-    id: 'unit-due',
-    institutionId: 'inst-due',
-    code: 'SRU-DUE',
-    officialName: 'Trường Đại học Kinh tế – Đại học Đà Nẵng',
-    shortName: 'ĐH Kinh tế',
-    unitType: 'HSV_TRUONG',
-  },
-  {
-    id: 'unit-ued',
-    institutionId: 'inst-ued',
-    code: 'SRU-UED',
-    officialName: 'Trường Đại học Sư phạm – Đại học Đà Nẵng',
-    shortName: 'ĐH Sư phạm',
-    unitType: 'HSV_TRUONG',
-  },
-  {
-    id: 'unit-ufl',
-    institutionId: 'inst-ufl',
-    code: 'SRU-UFL',
-    officialName: 'Trường Đại học Ngoại ngữ – Đại học Đà Nẵng',
-    shortName: 'ĐH Ngoại ngữ',
-    unitType: 'HSV_TRUONG',
-  },
-  {
-    id: 'unit-ute',
-    institutionId: 'inst-ute',
-    code: 'SRU-UTE',
-    officialName: 'Trường Đại học Sư phạm Kỹ thuật – Đại học Đà Nẵng',
-    shortName: 'ĐH SP Kỹ thuật',
-    unitType: 'HSV_TRUONG',
-  },
-  {
-    id: 'unit-vku',
-    institutionId: 'inst-vku',
-    code: 'SRU-VKU',
-    officialName: 'Trường Đại học CNTT & TT Việt – Hàn – Đại học Đà Nẵng',
-    shortName: 'VKU',
-    unitType: 'HSV_TRUONG',
-  },
-  {
-    id: 'unit-smp',
-    institutionId: 'inst-smp',
-    code: 'SRU-SMP',
-    officialName: 'Trường Y Dược – Đại học Đà Nẵng',
-    shortName: 'Trường Y Dược',
-    unitType: 'HSV_TRUONG',
-  },
-  {
-    id: 'unit-vnuk',
-    institutionId: 'inst-vnuk',
-    code: 'SRU-VNUK',
-    officialName: 'Viện Nghiên cứu và Đào tạo Việt – Anh – Đại học Đà Nẵng',
-    shortName: 'VNUK',
-    unitType: 'HSV_TRUONG',
-  },
-  {
-    id: 'unit-kontum',
-    institutionId: 'inst-kontum',
-    code: 'SRU-KONTUM',
-    officialName: 'Phân hiệu Đại học Đà Nẵng tại Kon Tum',
-    shortName: 'Phân hiệu Kon Tum',
-    unitType: 'HSV_TRUONG',
-  },
+  ...INSTITUTIONS_SEED.filter(
+    (inst) =>
+      inst.group === 'AFFILIATED_UNIVERSITY' || inst.group === 'COLLEGE_JUNIOR_COLLEGE'
+  ).map((inst) => ({
+    id: inst.id.replace(/^inst-/, 'unit-'),
+    institutionId: inst.id,
+    code: `SRU-${inst.code}`,
+    officialName: inst.officialName,
+    shortName: inst.shortName,
+    unitType: inst.hasStudentAssoc ? 'HSV_TRUONG' : 'DOAN_TRUONG',
+    isActive: inst.isActive !== false,
+  })),
 ];
 
 async function main() {
-  console.log('🌱 Starting Neon PostgreSQL Seed (5TOT Đại học Đà Nẵng)...');
+  console.log('🌱 Starting Neon PostgreSQL Seed (5TOT Thành phố Đà Nẵng)...');
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const prisma = (await dbManager.getClient()) as any;
   const defaultHash = await defaultPasswordHasher.hash('MatKhau@2026');
 
   // 0. Clean all sample applications, batches, evidence objects, and legacy users/units/institutions first ("không có hồ sơ mẫu")
+  await prisma.$executeRawUnsafe('DELETE FROM "portal_persistent_records"').catch(() => {});
   await prisma.notification?.deleteMany({}).catch(() => {});
   await prisma.authSession?.deleteMany({}).catch(() => {});
   await prisma.supplementRequest?.deleteMany({}).catch(() => {});
@@ -248,6 +392,7 @@ async function main() {
 
   // 1. Seed Institutions
   for (const inst of INSTITUTIONS_SEED) {
+    const active = inst.isActive !== false;
     await prisma.institution.upsert({
       where: { id: inst.id },
       update: {
@@ -256,7 +401,7 @@ async function main() {
         shortName: inst.shortName,
         group: inst.group,
         hasStudentAssoc: inst.hasStudentAssoc,
-        isActive: true,
+        isActive: active,
       },
       create: {
         id: inst.id,
@@ -265,7 +410,7 @@ async function main() {
         shortName: inst.shortName,
         group: inst.group,
         hasStudentAssoc: inst.hasStudentAssoc,
-        isActive: true,
+        isActive: active,
       },
     });
   }
@@ -273,6 +418,7 @@ async function main() {
 
   // 2. Seed School Review Units
   for (const unit of SCHOOL_REVIEW_UNITS_SEED) {
+    const active = unit.isActive !== false;
     await prisma.schoolReviewUnit.upsert({
       where: { id: unit.id },
       update: {
@@ -281,7 +427,7 @@ async function main() {
         officialName: unit.officialName,
         shortName: unit.shortName,
         unitType: unit.unitType,
-        isActive: true,
+        isActive: active,
       },
       create: {
         id: unit.id,
@@ -290,13 +436,13 @@ async function main() {
         officialName: unit.officialName,
         shortName: unit.shortName,
         unitType: unit.unitType,
-        isActive: true,
+        isActive: active,
       },
     });
   }
   console.log(`✅ Seeded ${SCHOOL_REVIEW_UNITS_SEED.length} School Review Units.`);
 
-  // 2.1 Seed 52 Faculties (2026 Structure)
+  // 2.1 Seed 49 Canonical UDN Faculties (2026 Structure)
   for (const fac of FACULTIES_SEED_2026) {
     await prisma.facultyDepartment.upsert({
       where: {
@@ -363,7 +509,7 @@ async function main() {
       title: 'Đạo đức tốt',
       shortTitle: 'Đạo đức',
       displayOrder: 1,
-      ruleConfig: { minConductScore: 80 },
+      ruleConfig: { minConductScore: 80, requireSupplementItem: true },
     },
     {
       track: 'INDIVIDUAL',
@@ -371,7 +517,12 @@ async function main() {
       title: 'Học tập tốt',
       shortTitle: 'Học tập',
       displayOrder: 2,
-      ruleConfig: { minGpa4: 3.2, minGpa10: 8.0 },
+      ruleConfig: {
+        minGpa4: 3.2,
+        minGpa10: 8.0,
+        collegeMinGpa4: 3.0,
+        collegeMinGpa10: 7.5,
+      },
     },
     {
       track: 'INDIVIDUAL',
@@ -387,7 +538,7 @@ async function main() {
       title: 'Tình nguyện tốt',
       shortTitle: 'Tình nguyện',
       displayOrder: 4,
-      ruleConfig: { minVolunteerDays: 3 },
+      ruleConfig: { minVolunteerDays: 5, allowCommendationAlternative: true },
     },
     {
       track: 'INDIVIDUAL',
@@ -395,7 +546,7 @@ async function main() {
       title: 'Hội nhập tốt',
       shortTitle: 'Hội nhập',
       displayOrder: 5,
-      ruleConfig: { requireForeignLangAndIntegration: true },
+      ruleConfig: { requireSkillAndForeignLangOrIntegration: true },
     },
     {
       track: 'COLLECTIVE',
@@ -675,7 +826,7 @@ async function main() {
       });
     }
   }
-  console.log(`✅ Seeded ${SEEDED_STUDENTS.length} Student Accounts across 9 UDN member units (0 sample applications).`);
+  console.log(`✅ Seeded ${SEEDED_STUDENTS.length} Student Accounts across Da Nang institutions (0 sample applications).`);
 
   const r2UploadedCount = 0;
 

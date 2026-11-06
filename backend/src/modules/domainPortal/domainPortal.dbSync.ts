@@ -1416,7 +1416,7 @@ export async function ensurePortalStateHydratedFromNeonDb(forceRefresh = false):
           portalState.studentApplications[code] = {
             applicationId: code,
             season: 'Năm học 2025–2026',
-            level: 'Cấp Đại học Đà Nẵng',
+            level: 'Cấp Thành phố Đà Nẵng',
             status:
               relApp.currentReviewStage === 'STUDENT_DRAFT'
                 ? 'draft'

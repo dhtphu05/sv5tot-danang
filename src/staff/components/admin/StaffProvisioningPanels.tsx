@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — Staff Provisioning & First-Admin Bootstrap Panels
+ * 5TOT Đà Nẵng — Staff Provisioning & First-Admin Bootstrap Panels
  * Extracted subcomponent for StaffManagement.tsx to keep file size modular (<1,000 lines).
  *
  * Implements ADMIN-REVAMP Sections 10 & 11:
@@ -18,6 +18,10 @@ import {
 } from 'lucide-react';
 import { AdminBootstrapState, StaffAccount } from '../../adminTypes';
 import { Button } from '../../../components/buttons/Button';
+import {
+  AdminResetStaffPasswordModal,
+  AdminResetStaffPasswordResult,
+} from './AdminResetStaffPasswordModal';
 
 export interface StaffProvisioningBannerProps {
   bootstrapState?: AdminBootstrapState;
@@ -31,7 +35,11 @@ export interface StaffProvisioningBannerProps {
     phone?: string;
   }) => { success: boolean; error?: string };
   onResendStaffInvite?: (id: string) => void;
-  onResetStaffPassword?: (id: string, reason?: string) => void;
+  onResetStaffPassword?: (
+    id: string,
+    reason?: string,
+    newTemporaryPassword?: string
+  ) => Promise<AdminResetStaffPasswordResult> | AdminResetStaffPasswordResult | void;
 }
 
 export const StaffProvisioningBanner: React.FC<
@@ -45,6 +53,7 @@ export const StaffProvisioningBanner: React.FC<
   onResetStaffPassword,
 }) => {
   const [isBootstrapModalOpen, setIsBootstrapModalOpen] = useState(false);
+  const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
   const [bootstrapForm, setBootstrapForm] = useState({
     bootstrapToken: '',
     fullName: '',
@@ -77,7 +86,7 @@ export const StaffProvisioningBanner: React.FC<
             </span>{' '}
             <span className="text-[#526B7C]">
               {isBootstrapCompleted
-                ? `Đã hoàn tất khởi tạo Quản trị viên đầu tiên (${bootstrapState?.completedByEmail || 'admin.hethong@5tot.danang.vn'}) · Cơ chế Bootstrap một lần đã khóa vĩnh viễn · Đang có ${activeAdminCount} Quản trị viên hoạt động.`
+                ? `Đã hoàn tất khởi tạo Quản trị viên đầu tiên (${bootstrapState?.completedByEmail || 'admin@hsvdanang.vn'}) · Cơ chế Bootstrap một lần đã khóa vĩnh viễn · Đang có ${activeAdminCount} Quản trị viên hoạt động.`
                 : 'Hệ thống chưa có Quản trị viên hoạt động. Vui lòng khởi tạo bằng Bootstrap Token một lần.'}
             </span>
           </div>
@@ -98,16 +107,11 @@ export const StaffProvisioningBanner: React.FC<
           {selectedStaff && onResetStaffPassword && (
             <button
               type="button"
-              onClick={() =>
-                onResetStaffPassword(
-                  selectedStaff.id,
-                  'Cấp lại mật khẩu tạm thời và thu hồi phiên đăng nhập theo yêu cầu nghiệp vụ'
-                )
-              }
+              onClick={() => setIsResetPasswordModalOpen(true)}
               className="px-2.5 py-1.5 rounded-[7px] text-[11.5px] font-bold text-[#B45309] bg-[#FEF6EB] hover:bg-[#FADDB6] border border-[#FADDB6] flex items-center gap-1.5 cursor-pointer"
             >
               <KeyRound size={12} />
-              <span>Đặt lại mật khẩu tạm thời</span>
+              <span>Đặt lại mật khẩu ({selectedStaff.fullName})</span>
             </button>
           )}
 
@@ -128,6 +132,15 @@ export const StaffProvisioningBanner: React.FC<
           </button>
         </div>
       </div>
+
+      {onResetStaffPassword && (
+        <AdminResetStaffPasswordModal
+          isOpen={isResetPasswordModalOpen}
+          staff={selectedStaff}
+          onClose={() => setIsResetPasswordModalOpen(false)}
+          onConfirmReset={onResetStaffPassword}
+        />
+      )}
 
       {/* First-Admin Bootstrap Modal */}
       {isBootstrapModalOpen && (

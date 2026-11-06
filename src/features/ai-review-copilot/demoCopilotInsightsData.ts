@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Demo AI Copilot Declaration & Evidence Insights Data
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Demo AI Copilot Declaration & Evidence Insights Data
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  */
 
 import {
@@ -26,7 +26,7 @@ export const DEMO_DECLARATION_INSIGHTS: Record<string, AiDeclarationInsight> = {
     sourceEvidenceId: 'ev-vol-mhx-1',
     sourceEvidenceName: 'Giay_xac_nhan_Mua_he_xanh_2026.pdf (Trang 1)',
     sourceEvidencePage: 1,
-    applicableRegulation: 'Điều 7.1 Quy chế SV5T cấp Đại học Đà Nẵng 2025–2026',
+    applicableRegulation: 'Điều 7.1 Quy chế SV5T cấp Thành phố Đà Nẵng 2025–2026',
     observationDetail:
       'Văn bản xác nhận tham gia từ 12/07 đến 15/07/2026 (4 ngày). Cần đối chiếu thêm hoặc yêu cầu minh chứng bổ trợ.',
     suggestedAction: 'inspect',
@@ -45,8 +45,8 @@ export const DEMO_DECLARATION_INSIGHTS: Record<string, AiDeclarationInsight> = {
     aiExtractedValue: 'Đã hoàn thành Ngày Chủ nhật xanh đợt 2/2026 (1 ngày)',
     sourceEvidenceId: 'ev-vol-cnx-1',
     sourceEvidenceName: 'Danh_sach_xac_nhan_Chu_nhat_xanh_dot2.pdf',
-    applicableRegulation: 'Điều 7.1 Quy chế SV5T cấp Đại học Đà Nẵng 2025–2026',
-    observationDetail: 'Thông tin tham gia rõ ràng, có danh sách ký nhận đóng dấu của Hội Sinh viên Đại học Đà Nẵng.',
+    applicableRegulation: 'Điều 7.1 Quy chế SV5T cấp Thành phố Đà Nẵng 2025–2026',
+    observationDetail: 'Thông tin tham gia rõ ràng, có danh sách ký nhận đóng dấu của Hội Sinh viên Thành phố Đà Nẵng.',
     suggestedAction: 'confirm',
   },
   'decl-vol-hm': {
@@ -74,11 +74,11 @@ export const DEMO_DECLARATION_INSIGHTS: Record<string, AiDeclarationInsight> = {
     differenceSummary: 'Thiếu điểm học kỳ 2 và điểm tích lũy toàn khóa năm học',
     sourceEvidenceId: 'ev-acad-transcript-hk1',
     sourceEvidenceName: 'Bang_diem_HK1_2025_2026.pdf',
-    applicableRegulation: 'Điều 5.1 Quy chế SV5T cấp Đại học Đà Nẵng 2025–2026',
+    applicableRegulation: 'Điều 5.1 Quy chế SV5T cấp Thành phố Đà Nẵng 2025–2026',
     observationDetail: 'Quy chế yêu cầu xác nhận điểm trung bình cả năm học hoặc bảng điểm cả 2 học kỳ.',
     suggestedAction: 'supplement_draft',
     draftSupplementMessage:
-      'Kính gửi sinh viên, tệp minh chứng bạn tải lên hiện là bảng điểm Học kỳ 1. Để đảm bảo điều kiện xét chọn danh hiệu cấp Đại học Đà Nẵng, đề nghị bạn bổ sung Bảng điểm chính thức cả năm học 2025–2026 có xác nhận của Phòng Đào tạo trước thời hạn quy định.',
+      'Kính gửi sinh viên, tệp minh chứng bạn tải lên hiện là bảng điểm Học kỳ 1. Để đảm bảo điều kiện xét chọn danh hiệu cấp Thành phố Đà Nẵng, đề nghị bạn bổ sung Bảng điểm chính thức cả năm học 2025–2026 có xác nhận của Phòng Đào tạo trước thời hạn quy định.',
   },
   'decl-phys-khoe-2026': {
     declarationId: 'decl-phys-khoe-2026',
@@ -86,16 +86,16 @@ export const DEMO_DECLARATION_INSIGHTS: Record<string, AiDeclarationInsight> = {
     requirementId: 'physical-khoe',
     status: 'unclear',
     headline: 'Minh chứng giải chạy việt dã cần xem xét quy chuẩn quy đổi tương đương.',
-    studentDeclaredValue: 'Đạt danh hiệu Sinh viên khỏe năm học 2025–2026',
+    studentDeclaredValue: 'Đạt danh hiệu Thanh niên khỏe năm học 2025–2026',
     aiExtractedValue: 'Hoàn thành cự ly 5km Giải chạy Danang Half Marathon 2026',
     differenceSummary: 'Giấy chứng nhận giải chạy phong trào cần xác nhận quy đổi',
     sourceEvidenceId: 'ev-phy-khoe-1',
     sourceEvidenceName: 'Chung_nhan_hoi_thao_the_thao_2026.pdf',
-    applicableRegulation: 'Điều 6.2 Quy chế SV5T cấp Đại học Đà Nẵng 2025–2026',
+    applicableRegulation: 'Điều 6.2 Quy chế SV5T cấp Thành phố Đà Nẵng 2025–2026',
     observationDetail: 'Cần cán bộ thẩm định xem xét quy đổi theo Phụ lục hướng dẫn thi đua thể chất.',
     suggestedAction: 'inspect',
     draftSupplementMessage:
-      'Kính gửi sinh viên, giấy chứng nhận tham gia giải chạy của bạn cần có xác nhận của Trung tâm Thể dục thể thao hoặc Đoàn trường về việc quy đổi sang tiêu chuẩn Sinh viên khỏe năm học 2025–2026.',
+      'Kính gửi sinh viên, giấy chứng nhận tham gia giải chạy của bạn cần có xác nhận của Trung tâm Thể dục thể thao hoặc Đoàn trường về việc quy đổi sang tiêu chuẩn Thanh niên khỏe năm học 2025–2026.',
   },
   'decl-phy-khoe-1': {
     declarationId: 'decl-phy-khoe-1',
@@ -103,12 +103,12 @@ export const DEMO_DECLARATION_INSIGHTS: Record<string, AiDeclarationInsight> = {
     requirementId: 'physical-khoe',
     status: 'unclear',
     headline: 'Minh chứng giải chạy việt dã cần xem xét quy chuẩn quy đổi tương đương.',
-    studentDeclaredValue: 'Chứng nhận Danh hiệu Sinh viên khỏe cấp Trường năm học 2025–2026',
+    studentDeclaredValue: 'Chứng nhận Danh hiệu Thanh niên khỏe cấp Trường năm học 2025–2026',
     aiExtractedValue: 'Hoàn thành cự ly 5km Giải chạy Danang Half Marathon 2026',
     differenceSummary: 'Giấy chứng nhận giải chạy phong trào cần xác nhận quy đổi',
     sourceEvidenceId: 'ev-phy-khoe-1',
     sourceEvidenceName: 'Chung_nhan_hoi_thao_the_thao_2026.pdf',
-    applicableRegulation: 'Điều 6.2 Quy chế SV5T cấp Đại học Đà Nẵng 2025–2026',
+    applicableRegulation: 'Điều 6.2 Quy chế SV5T cấp Thành phố Đà Nẵng 2025–2026',
     observationDetail: 'Cần cán bộ thẩm định xem xét quy đổi theo Phụ lục hướng dẫn thi đua thể chất.',
     suggestedAction: 'inspect',
   },
@@ -122,7 +122,7 @@ export const DEMO_DECLARATION_INSIGHTS: Record<string, AiDeclarationInsight> = {
     aiExtractedValue: 'Điểm rèn luyện năm học: 94/100 (HK1: 92, HK2: 96)',
     sourceEvidenceId: 'ev-ethics-drl-hk1-hk2',
     sourceEvidenceName: 'Bang_diem_ren_luyen_ca_nam_2025_2026.pdf',
-    applicableRegulation: 'Điều 4.1 Quy chế SV5T cấp Đại học Đà Nẵng 2025–2026',
+    applicableRegulation: 'Điều 4.1 Quy chế SV5T cấp Thành phố Đà Nẵng 2025–2026',
     observationDetail: 'Văn bản có đầy đủ chữ ký Trưởng phòng CTSV và con dấu tròn đỏ.',
     suggestedAction: 'confirm',
   },
@@ -136,8 +136,8 @@ export const DEMO_DECLARATION_INSIGHTS: Record<string, AiDeclarationInsight> = {
     aiExtractedValue: 'IELTS Overall 7.0 (TRF IDP Australia, Valid thru 15/03/2027)',
     sourceEvidenceId: 'ev-int-ielts-cert',
     sourceEvidenceName: 'IELTS_Test_Report_Form_2025.pdf',
-    applicableRegulation: 'Điều 8.2 Quy chế SV5T cấp Đại học Đà Nẵng 2025–2026',
-    observationDetail: 'Mã TRF xác thực hợp lệ, thời hạn hiệu lực vượt chuẩn tối thiểu 5.5 của Hội Sinh viên Đại học Đà Nẵng.',
+    applicableRegulation: 'Điều 8.2 Quy chế SV5T cấp Thành phố Đà Nẵng 2025–2026',
+    observationDetail: 'Mã TRF xác thực hợp lệ, thời hạn hiệu lực vượt chuẩn B1 (IELTS >= 4.5) của Hội Sinh viên Thành phố Đà Nẵng.',
     suggestedAction: 'confirm',
   },
 };
@@ -174,7 +174,7 @@ export const DEMO_EVIDENCE_INSIGHTS: Record<string, AiEvidenceInsight> = {
     criterionId: 'volunteer',
     status: 'analyzed',
     badgeLabel: 'AI đã đọc',
-    summaryText: 'Báo cáo hoạt động Chủ nhật xanh cấp Đại học Đà Nẵng đợt 2/2026.',
+    summaryText: 'Báo cáo hoạt động Chủ nhật xanh cấp Thành phố Đà Nẵng đợt 2/2026.',
     candidateFacts: [
       { label: 'Nội dung', value: 'Vệ sinh môi trường biển Nguyễn Tất Thành' },
       { label: 'Thời lượng', value: '1 ngày (18/08/2026)' },
@@ -192,7 +192,7 @@ export const DEMO_EVIDENCE_INSIGHTS: Record<string, AiEvidenceInsight> = {
     pageNumber: 2,
     candidateFacts: [
       { label: 'Số thứ tự / MSSV', value: 'STT 42 - Nguyễn Minh Anh (102220123)' },
-      { label: 'Đơn vị xác nhận', value: 'Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng' },
+      { label: 'Đơn vị xác nhận', value: 'Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng' },
     ],
   },
   'ev-vol-hm-1': {
@@ -238,7 +238,7 @@ export const DEMO_EVIDENCE_INSIGHTS: Record<string, AiEvidenceInsight> = {
     summaryText: 'Giấy chứng nhận giải chạy Danang Half Marathon 2026 (5km).',
     candidateFacts: [
       { label: 'Nội dung ghi nhận', value: 'Hoàn thành cự ly 5km (Thời gian: 28 phút 15 giây)' },
-      { label: 'Quy chuẩn áp dụng', value: 'Cần xác nhận quy đổi sang danh hiệu Sinh viên khỏe', isDiscrepancy: true },
+      { label: 'Quy chuẩn áp dụng', value: 'Cần xác nhận quy đổi sang danh hiệu Thanh niên khỏe', isDiscrepancy: true },
     ],
   },
   'ev-ethics-drl-hk1-hk2': {

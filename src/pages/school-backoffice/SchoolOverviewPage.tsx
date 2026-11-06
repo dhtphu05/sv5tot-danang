@@ -1,5 +1,5 @@
 /**
- * 5TOT ĐHĐN — School Overview Page (FSD Pages Layer)
+ * 5TOT Đà Nẵng — School Overview Page (FSD Pages Layer)
  * Renders 8 actionable summary cards, priority work queue ("Cần xử lý hôm nay"), and featured applications table.
  */
 
@@ -77,18 +77,18 @@ export const SchoolOverviewPage: React.FC<SchoolOverviewPageProps> = ({
   return (
     <div className="p-6 max-w-[1280px] w-full mx-auto space-y-6">
       {/* Top Institutional Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#DCE7EE] pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#DFE5EC] pb-4">
         <div>
-          <div className="text-[12px] font-semibold text-[#526B7C] flex items-center gap-1.5">
-            <span>5TOT ĐHĐN</span>
+          <div className="text-[12px] font-semibold text-[#64748B] flex items-center gap-1.5">
+            <span>5TOT Đà Nẵng</span>
             <span>·</span>
-            <span className="text-[#0D78AE] font-bold">
+            <span className="text-[#007EE5] font-bold">
               Xét sơ tuyển cấp Trường / Đơn vị
             </span>
             <span>·</span>
             <span>{unitName}</span>
           </div>
-          <h1 className="text-[21px] font-extrabold text-[#0F2335] mt-0.5">
+          <h1 className="text-[20px] font-extrabold text-[#0F172A] mt-0.5">
             Bàn làm việc xét sơ tuyển · {currentUser.fullName}
           </h1>
         </div>
@@ -104,31 +104,31 @@ export const SchoolOverviewPage: React.FC<SchoolOverviewPageProps> = ({
       </div>
 
       {/* Institutional Review Unit Scope & Consolidated Forwarding Status */}
-      <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-[12px] p-4 space-y-3">
+      <div className="bg-white border border-[#DFE5EC] border-l-[3px] border-l-[#007EE5] rounded-[6px] p-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-[8px] bg-[#EAF6FC] text-[#0D78AE] flex items-center justify-center shrink-0">
-              <Building2 size={18} />
+            <div className="w-8 h-8 rounded-[4px] bg-[#F0F9FF] border border-[#BAE6FD] text-[#007EE5] flex items-center justify-center shrink-0">
+              <Building2 size={17} />
             </div>
             <div>
-              <div className="text-[13.5px] font-bold text-[#0F2335] flex items-center gap-2">
+              <div className="text-[13.5px] font-bold text-[#0F172A] flex items-center gap-2">
                 <span>Đơn vị xét sơ tuyển cấp Trường: {unitName}</span>
                 {unitShortName && (
-                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#EAF6FC] text-[#0D78AE] border border-[#CCE7F6]">
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-[4px] bg-[#F0F9FF] text-[#0369A1] border border-[#BAE6FD]">
                     {unitShortName}
                   </span>
                 )}
               </div>
               <div className="text-[11.5px] text-[#64748B]">
                 {hasMultipleMemberInstitutions
-                  ? `Tổng hợp hồ sơ từ ${memberBreakdowns.length} đơn vị đào tạo trực thuộc kèm 01 tệp văn bản PDF đề nghị chính thức trình lên Hội Sinh viên Đại học Đà Nẵng.`
-                  : `Toàn bộ hồ sơ đủ điều kiện của ${unitName} được tổng hợp kèm 01 tệp văn bản PDF đề nghị chính thức trình lên Hội Sinh viên Đại học Đà Nẵng.`}
+                  ? `Tổng hợp hồ sơ từ ${memberBreakdowns.length} đơn vị đào tạo trực thuộc kèm 01 tệp văn bản PDF đề nghị chính thức trình lên Hội Sinh viên Thành phố Đà Nẵng.`
+                  : `Toàn bộ hồ sơ đủ điều kiện của ${unitName} được tổng hợp kèm 01 tệp văn bản PDF đề nghị chính thức trình lên Hội Sinh viên Thành phố Đà Nẵng.`}
               </div>
             </div>
           </div>
 
           <Button
-            variant="secondary"
+            variant="primary"
             size="sm"
             onClick={() => onSelectRoute('school_awaiting_forward')}
             iconLeading={<FileText size={13} />}
@@ -143,17 +143,17 @@ export const SchoolOverviewPage: React.FC<SchoolOverviewPageProps> = ({
             {memberBreakdowns.map((m) => (
               <div
                 key={m.id}
-                className="p-2 rounded-[8px] bg-white border border-[#E2E8F0] text-center"
+                className="p-2 rounded-[4px] bg-[#F8FAFC] border border-[#DFE5EC] text-center"
               >
-                <div className="font-bold text-[12px] text-[#0F2335]">{m.code}</div>
+                <div className="font-bold text-[12px] text-[#0F172A]">{m.code}</div>
                 <div className="text-[11px] text-[#64748B] truncate" title={m.name}>
                   {m.name}
                 </div>
-                <div className="text-[11.5px] font-extrabold text-[#0D78AE] mt-1 tabular-nums">
+                <div className="text-[11.5px] font-extrabold text-[#007EE5] mt-1 tabular-nums">
                   {m.count} hồ sơ
                 </div>
                 {m.recCount > 0 && (
-                  <div className="text-[10px] text-[#16A34A] font-bold flex items-center justify-center gap-0.5 mt-0.5">
+                  <div className="text-[10px] text-[#10A37F] font-bold flex items-center justify-center gap-0.5 mt-0.5">
                     <CheckCircle2 size={10} />
                     <span>{m.recCount} đề xuất</span>
                   </div>
@@ -165,23 +165,23 @@ export const SchoolOverviewPage: React.FC<SchoolOverviewPageProps> = ({
       </div>
 
       {/* 8 Actionable Summary Cards */}
-      <div className="bg-white rounded-[12px] border border-[#D4E2EC] shadow-2xs overflow-hidden">
-        <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-[#E6EFF5]">
+      <div className="bg-white rounded-[6px] border border-[#DFE5EC] overflow-hidden">
+        <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-[#DFE5EC]">
           <button
             type="button"
             onClick={() => {
               onSetStatusFilter('all');
               onSelectRoute('school_applications');
             }}
-            className="p-4 text-left hover:bg-[#F7FAFC] transition-colors cursor-pointer"
+            className="p-4 text-left hover:bg-[#F8FAFC] transition-colors cursor-pointer"
           >
-            <div className="text-[12px] font-semibold text-[#526B7C]">
+            <div className="text-[12px] font-semibold text-[#64748B]">
               Tổng hồ sơ đã nhận
             </div>
-            <div className="text-[24px] font-extrabold text-[#0F2335] tabular-nums mt-1">
+            <div className="text-[24px] font-extrabold text-[#0F172A] tabular-nums mt-1">
               {metrics.totalReceived}
             </div>
-            <div className="text-[11.5px] text-[#607483] mt-1">
+            <div className="text-[11.5px] text-[#64748B] mt-1">
               Thuộc đơn vị {unitShortName || unitName}
             </div>
           </button>
@@ -192,15 +192,15 @@ export const SchoolOverviewPage: React.FC<SchoolOverviewPageProps> = ({
               onSetStatusFilter('pending_intake');
               onSelectRoute('school_applications');
             }}
-            className="p-4 text-left hover:bg-[#F7FAFC] transition-colors cursor-pointer"
+            className="p-4 text-left hover:bg-[#F8FAFC] transition-colors cursor-pointer"
           >
-            <div className="text-[12px] font-semibold text-[#526B7C]">
+            <div className="text-[12px] font-semibold text-[#64748B]">
               Chờ bắt đầu xét
             </div>
-            <div className="text-[24px] font-extrabold text-[#172A3A] tabular-nums mt-1">
+            <div className="text-[24px] font-extrabold text-[#1E293B] tabular-nums mt-1">
               {metrics.pendingIntake}
             </div>
-            <div className="text-[11.5px] text-[#0D78AE] font-semibold mt-1">
+            <div className="text-[11.5px] text-[#007EE5] font-semibold mt-1">
               Cần tiếp nhận sơ tuyển →
             </div>
           </button>
@@ -211,15 +211,15 @@ export const SchoolOverviewPage: React.FC<SchoolOverviewPageProps> = ({
               onSetStatusFilter('under_review');
               onSelectRoute('school_applications');
             }}
-            className="p-4 text-left hover:bg-[#F7FAFC] transition-colors cursor-pointer"
+            className="p-4 text-left hover:bg-[#F8FAFC] transition-colors cursor-pointer"
           >
-            <div className="text-[12px] font-semibold text-[#526B7C]">
+            <div className="text-[12px] font-semibold text-[#64748B]">
               Đang xét sơ tuyển
             </div>
-            <div className="text-[24px] font-extrabold text-[#0369A1] tabular-nums mt-1">
+            <div className="text-[24px] font-extrabold text-[#007EE5] tabular-nums mt-1">
               {metrics.underReview}
             </div>
-            <div className="text-[11.5px] text-[#0369A1] font-semibold mt-1">
+            <div className="text-[11.5px] text-[#007EE5] font-semibold mt-1">
               Đang rà soát 05 tiêu chí →
             </div>
           </button>
@@ -230,39 +230,39 @@ export const SchoolOverviewPage: React.FC<SchoolOverviewPageProps> = ({
               onSetStatusFilter('supplement');
               onSelectRoute('school_applications');
             }}
-            className="p-4 text-left hover:bg-[#F7FAFC] transition-colors cursor-pointer"
+            className="p-4 text-left hover:bg-[#F8FAFC] transition-colors cursor-pointer"
           >
-            <div className="text-[12px] font-semibold text-[#526B7C] flex items-center justify-between">
+            <div className="text-[12px] font-semibold text-[#64748B] flex items-center justify-between">
               <span>SV đã gửi bổ sung</span>
               {metrics.supplementReturned > 0 && (
-                <span className="w-2 h-2 rounded-full bg-[#0284C7] animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-[#10A37F] animate-pulse" />
               )}
             </div>
-            <div className="text-[24px] font-extrabold text-[#0B64A0] tabular-nums mt-1">
+            <div className="text-[24px] font-extrabold text-[#0F766E] tabular-nums mt-1">
               {metrics.supplementReturned}
             </div>
-            <div className="text-[11.5px] text-[#0D78AE] font-semibold mt-1">
+            <div className="text-[11.5px] text-[#10A37F] font-semibold mt-1">
               Cần kiểm tra minh chứng mới →
             </div>
           </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-[#E6EFF5] border-t border-[#E6EFF5]">
+        <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-[#DFE5EC] border-t border-[#DFE5EC]">
           <button
             type="button"
             onClick={() => {
               onSetStatusFilter('supplement');
               onSelectRoute('school_applications');
             }}
-            className="p-4 text-left hover:bg-[#F7FAFC] transition-colors cursor-pointer"
+            className="p-4 text-left hover:bg-[#F8FAFC] transition-colors cursor-pointer"
           >
-            <div className="text-[12px] font-semibold text-[#526B7C]">
+            <div className="text-[12px] font-semibold text-[#64748B]">
               Chờ sinh viên bổ sung
             </div>
-            <div className="text-[24px] font-extrabold text-[#B45309] tabular-nums mt-1">
+            <div className="text-[24px] font-extrabold text-[#D97706] tabular-nums mt-1">
               {metrics.waitingSupplement}
             </div>
-            <div className="text-[11.5px] text-[#607483] mt-1">
+            <div className="text-[11.5px] text-[#64748B] mt-1">
               Đang mở cổng cho sinh viên
             </div>
           </button>
@@ -273,15 +273,15 @@ export const SchoolOverviewPage: React.FC<SchoolOverviewPageProps> = ({
               onSetStatusFilter('preliminary_completed');
               onSelectRoute('school_applications');
             }}
-            className="p-4 text-left hover:bg-[#F7FAFC] transition-colors cursor-pointer"
+            className="p-4 text-left hover:bg-[#F8FAFC] transition-colors cursor-pointer"
           >
-            <div className="text-[12px] font-semibold text-[#526B7C]">
+            <div className="text-[12px] font-semibold text-[#64748B]">
               Đã hoàn tất xét sơ tuyển
             </div>
-            <div className="text-[24px] font-extrabold text-[#1D4ED8] tabular-nums mt-1">
+            <div className="text-[24px] font-extrabold text-[#007EE5] tabular-nums mt-1">
               {metrics.preliminaryCompleted}
             </div>
-            <div className="text-[11.5px] text-[#607483] mt-1">
+            <div className="text-[11.5px] text-[#64748B] mt-1">
               5/5 tiêu chí đã hoàn tất
             </div>
           </button>
@@ -289,15 +289,15 @@ export const SchoolOverviewPage: React.FC<SchoolOverviewPageProps> = ({
           <button
             type="button"
             onClick={() => onSelectRoute('school_awaiting_forward')}
-            className="p-4 text-left hover:bg-[#F7FAFC] transition-colors cursor-pointer"
+            className="p-4 text-left hover:bg-[#F8FAFC] transition-colors cursor-pointer"
           >
-            <div className="text-[12px] font-semibold text-[#526B7C]">
+            <div className="text-[12px] font-semibold text-[#64748B]">
               Chờ đề xuất chuyển
             </div>
-            <div className="text-[24px] font-extrabold text-[#15803D] tabular-nums mt-1">
+            <div className="text-[24px] font-extrabold text-[#10A37F] tabular-nums mt-1">
               {metrics.recommendedForwarding}
             </div>
-            <div className="text-[11.5px] text-[#15803D] font-semibold mt-1">
+            <div className="text-[11.5px] text-[#0F766E] font-semibold mt-1">
               Sẵn sàng lập danh sách đề nghị →
             </div>
           </button>
@@ -305,15 +305,15 @@ export const SchoolOverviewPage: React.FC<SchoolOverviewPageProps> = ({
           <button
             type="button"
             onClick={() => onSelectRoute('school_awaiting_forward')}
-            className="p-4 text-left hover:bg-[#F7FAFC] transition-colors cursor-pointer"
+            className="p-4 text-left hover:bg-[#F8FAFC] transition-colors cursor-pointer"
           >
-            <div className="text-[12px] font-semibold text-[#526B7C]">
-              Đã trình ĐHĐN
+            <div className="text-[12px] font-semibold text-[#64748B]">
+              Đã trình Thành phố
             </div>
-            <div className="text-[24px] font-extrabold text-[#047857] tabular-nums mt-1">
+            <div className="text-[24px] font-extrabold text-[#0F766E] tabular-nums mt-1">
               {metrics.forwardedToCity}
             </div>
-            <div className="text-[11.5px] text-[#607483] mt-1">
+            <div className="text-[11.5px] text-[#64748B] mt-1">
               Lịch sử lưu trữ (chỉ đọc)
             </div>
           </button>
@@ -324,11 +324,11 @@ export const SchoolOverviewPage: React.FC<SchoolOverviewPageProps> = ({
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-[16px] font-extrabold text-[#0F2335] flex items-center gap-2">
-              <Clock size={17} className="text-[#0D78AE]" />
+            <h2 className="text-[15.5px] font-extrabold text-[#0F172A] flex items-center gap-2">
+              <Clock size={16.5} className="text-[#007EE5]" />
               <span>Cần xử lý hôm nay</span>
             </h2>
-            <p className="text-[12.5px] text-[#526B7C] mt-0.5">
+            <p className="text-[12.5px] text-[#475569] mt-0.5">
               Các hồ sơ có phản hồi bổ sung, hồ sơ mới hoặc hồ sơ đã rà soát xong cần hoàn tất xét sơ tuyển.
             </p>
           </div>
@@ -338,31 +338,31 @@ export const SchoolOverviewPage: React.FC<SchoolOverviewPageProps> = ({
           {priorityQueues.map((item) => (
             <div
               key={item.category}
-              className="bg-white rounded-[11px] border border-[#DCE7EE] p-4 flex flex-col justify-between hover:border-[#BED6E8] transition-colors"
+              className="bg-white rounded-[6px] border border-[#DFE5EC] p-4 flex flex-col justify-between hover:border-[#94A3B8] transition-colors"
             >
               <div>
-                <div className="text-[12px] font-bold text-[#526B7C]">
+                <div className="text-[12px] font-bold text-[#64748B]">
                   {item.categoryLabel}
                 </div>
-                <div className="text-[26px] font-extrabold text-[#0F2335] tabular-nums mt-1">
+                <div className="text-[25px] font-extrabold text-[#0F172A] tabular-nums mt-1">
                   {item.count}
                 </div>
                 {item.applications.length > 0 ? (
-                  <div className="mt-2 space-y-1.5 border-t border-[#EEF4F8] pt-2">
+                  <div className="mt-2 space-y-1.5 border-t border-[#E2E8F0] pt-2">
                     {item.applications.slice(0, 2).map((app) => (
                       <div
                         key={app.applicationId}
                         onClick={() =>
                           onOpenApplicationReview(app.applicationId)
                         }
-                        className="text-[12px] text-[#172A3A] font-semibold truncate hover:text-[#0D78AE] cursor-pointer"
+                        className="text-[12px] text-[#1E293B] font-semibold truncate hover:text-[#007EE5] cursor-pointer"
                       >
                         {app.student.fullName} ({app.student.studentCode})
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-[11.5px] text-[#8EA1AF] italic mt-2 border-t border-[#EEF4F8] pt-2">
+                  <div className="text-[11.5px] text-[#94A3B8] italic mt-2 border-t border-[#E2E8F0] pt-2">
                     Hiện không có hồ sơ tồn đọng
                   </div>
                 )}
@@ -379,7 +379,7 @@ export const SchoolOverviewPage: React.FC<SchoolOverviewPageProps> = ({
                       onSelectRoute('school_applications');
                     }
                   }}
-                  className="mt-3 text-[12px] font-bold text-[#0D78AE] hover:text-[#095386] flex items-center gap-1 cursor-pointer"
+                  className="mt-3 text-[12px] font-bold text-[#10A37F] hover:text-[#0D8A6B] flex items-center gap-1 cursor-pointer"
                 >
                   <span>Mở xử lý danh sách</span>
                   <ArrowRight size={13} />

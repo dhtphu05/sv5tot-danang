@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Responsive HTML & Plain Text Email Templates
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Responsive HTML & Plain Text Email Templates
+ * Cơ quan chỉ đạo: Thành Đoàn Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Provides standardized, responsive, accessible email templates with unified typography,
  * consistent institutional branding, and neutral administrative tone.
@@ -24,25 +24,35 @@ export function escapeHtml(unsafe: string | null | undefined): string {
 }
 
 export function resolveEmailSubjectTag(awardTitle?: string): string {
-  if (!awardTitle) return '5TOT ĐHĐN';
+  if (!awardTitle) return '5TOT Đà Nẵng';
   const lower = awardTitle.toLowerCase();
-  if (lower.includes('cánh chim trắng') || lower.includes('canh chim trang')) {
-    return 'Cánh chim trắng ĐHĐN';
+  if (
+    lower.includes('9/1') ||
+    lower.includes('9-1') ||
+    lower.includes('cánh chim trắng') ||
+    lower.includes('canh chim trang')
+  ) {
+    return 'Giải thưởng 9/1 Đà Nẵng';
   }
   if (lower.includes('tập thể') || lower.includes('tap the')) {
-    return 'Tập thể 5TOT ĐHĐN';
+    return 'Tập thể 5TOT Đà Nẵng';
   }
-  return '5TOT ĐHĐN';
+  return '5TOT Đà Nẵng';
 }
 
 export function resolveAwardName(awardTitle?: string): string {
-  if (!awardTitle) return 'danh hiệu Sinh viên 5 tốt Đại học Đà Nẵng';
+  if (!awardTitle) return 'danh hiệu Sinh viên 5 tốt Thành phố Đà Nẵng';
   const lower = awardTitle.toLowerCase();
-  if (lower.includes('cánh chim trắng') || lower.includes('canh chim trang')) {
-    return 'Giải thưởng Cánh chim trắng Đại học Đà Nẵng';
+  if (
+    lower.includes('9/1') ||
+    lower.includes('9-1') ||
+    lower.includes('cánh chim trắng') ||
+    lower.includes('canh chim trang')
+  ) {
+    return 'Giải thưởng 9/1 Thành phố Đà Nẵng';
   }
   if (lower.includes('tập thể') || lower.includes('tap the')) {
-    return 'danh hiệu Tập thể Sinh viên 5 tốt Đại học Đà Nẵng';
+    return 'danh hiệu Tập thể Sinh viên 5 tốt Thành phố Đà Nẵng';
   }
   if (lower.startsWith('danh hiệu') || lower.startsWith('giải thưởng')) {
     return awardTitle;
@@ -438,8 +448,8 @@ export function renderSharedEmailLayout(options: SharedEmailLayoutOptions): stri
   <div class="wrapper">
     <div class="container">
       <div class="header">
-        <div class="org-title">HỘI SINH VIÊN VIỆT NAM ĐẠI HỌC ĐÀ NẴNG</div>
-        <div class="system-title">Hệ thống xét chọn danh hiệu và giải thưởng sinh viên</div>
+        <div class="org-title">HỘI SINH VIÊN VIỆT NAM THÀNH PHỐ ĐÀ NẴNG</div>
+        <div class="system-title">Hệ thống xét chọn danh hiệu và giải thưởng sinh viên · 5TOT Đà Nẵng</div>
       </div>
 
       <div class="content">
@@ -470,8 +480,8 @@ export function renderSharedEmailLayout(options: SharedEmailLayoutOptions): stri
       </div>
 
       <div class="footer">
-        <p style="margin: 0 0 4px 0; font-weight: 600; color: #334155;">Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng</p>
-        <p style="margin: 0 0 6px 0;">Email hỗ trợ: <a href="mailto:hoisinhvien@udn.vn">hoisinhvien@udn.vn</a></p>
+        <p style="margin: 0 0 4px 0; font-weight: 600; color: #334155;">Ban Thư ký Hội Sinh viên Việt Nam Thành phố Đà Nẵng</p>
+        <p style="margin: 0 0 6px 0;">Email hỗ trợ: <a href="mailto:hoisinhvien@danang.gov.vn">hoisinhvien@danang.gov.vn</a></p>
         <p style="margin: 0; font-size: 11.5px; color: #94a3b8;">Đây là email được gửi tự động từ hệ thống. Vui lòng không trả lời trực tiếp.</p>
       </div>
     </div>
@@ -530,7 +540,7 @@ export function buildPasswordResetHtmlTemplate({
   `;
 
   return renderSharedEmailLayout({
-    title: 'Yêu cầu đặt lại mật khẩu – Sinh viên 5 tốt ĐHĐN',
+    title: 'Yêu cầu đặt lại mật khẩu – 5TOT Đà Nẵng',
     preheaderText: preheader,
     greetingName: userName,
     introHtml: `<p class="main-text">Hệ thống đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Vui lòng nhấn vào nút bên dưới để thiết lập mật khẩu mới.</p>`,
@@ -551,8 +561,8 @@ export function buildPasswordResetPlainTextTemplate({
   const formattedTime = formatVietnameseDateTime(requestedAt || new Date());
   const accountDisplay = userEmail || userName;
 
-  return `HỘI SINH VIÊN VIỆT NAM ĐẠI HỌC ĐÀ NẴNG
-Hệ thống xét chọn danh hiệu và giải thưởng sinh viên
+  return `HỘI SINH VIÊN VIỆT NAM THÀNH PHỐ ĐÀ NẴNG
+Hệ thống xét chọn danh hiệu và giải thưởng sinh viên · 5TOT Đà Nẵng
 
 YÊU CẦU ĐẶT LẠI MẬT KHẨU
 
@@ -574,8 +584,8 @@ Nếu nút trên không hoạt động, vui lòng sao chép liên kết sau và 
 ${resetUrl}
 
 ---
-Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng
-Email hỗ trợ: hoisinhvien@udn.vn
+Ban Thư ký Hội Sinh viên Việt Nam Thành phố Đà Nẵng
+Email hỗ trợ: hoisinhvien@danang.gov.vn
 Đây là email được gửi tự động từ hệ thống. Vui lòng không trả lời trực tiếp.`;
 }
 
@@ -615,12 +625,12 @@ export function buildPasswordChangedHtmlTemplate({
     <div class="reason-box" style="background-color: #fef2f2; border-left-color: #ef4444; color: #991b1b; padding: 14px 16px;">
       <p style="margin: 0 0 6px 0; font-weight: 700; color: #b91c1c;">CẢNH BÁO BẢO MẬT QUAN TRỌNG:</p>
       <p style="margin: 0 0 6px 0; line-height: 1.5;">Nếu chính bạn đã thực hiện thay đổi này, bạn có thể an tâm sử dụng mật khẩu mới để đăng nhập.</p>
-      <p style="margin: 0; line-height: 1.5;">Nếu bạn <strong>KHÔNG</strong> thực hiện thay đổi mật khẩu, rất có thể tài khoản của bạn đã bị người khác truy cập trái phép. Vui lòng liên hệ ngay với Ban Thư ký Hội Sinh viên Đại học Đà Nẵng qua email <a href="mailto:hoisinhvien@udn.vn" style="color: #b91c1c; font-weight: 700; text-decoration: underline;">hoisinhvien@udn.vn</a> để được hỗ trợ khóa tài khoản và kiểm tra khẩn cấp.</p>
+      <p style="margin: 0; line-height: 1.5;">Nếu bạn <strong>KHÔNG</strong> thực hiện thay đổi mật khẩu, rất có thể tài khoản của bạn đã bị người khác truy cập trái phép. Vui lòng liên hệ ngay với Ban Thư ký Hội Sinh viên Thành phố Đà Nẵng qua email <a href="mailto:hoisinhvien@danang.gov.vn" style="color: #b91c1c; font-weight: 700; text-decoration: underline;">hoisinhvien@danang.gov.vn</a> để được hỗ trợ khóa tài khoản và kiểm tra khẩn cấp.</p>
     </div>
   `;
 
   return renderSharedEmailLayout({
-    title: 'Mật khẩu tài khoản đã được thay đổi – Sinh viên 5 tốt ĐHĐN',
+    title: 'Mật khẩu tài khoản đã được thay đổi – 5TOT Đà Nẵng',
     preheaderText: 'Mật khẩu tài khoản Sinh viên 5 tốt của bạn đã được cập nhật thành công.',
     greetingName: userName,
     introHtml: `<p class="main-text">Thông báo bảo mật: Mật khẩu cho tài khoản Sinh viên 5 tốt của bạn vừa được thay đổi thành công.</p>`,
@@ -638,8 +648,8 @@ export function buildPasswordChangedPlainTextTemplate({
   const formattedTime = formatVietnameseDateTime(changedAt || new Date());
   const accountDisplay = userEmail || userName;
 
-  return `HỘI SINH VIÊN VIỆT NAM ĐẠI HỌC ĐÀ NẴNG
-Hệ thống xét chọn danh hiệu và giải thưởng sinh viên
+  return `HỘI SINH VIÊN VIỆT NAM THÀNH PHỐ ĐÀ NẴNG
+Hệ thống xét chọn danh hiệu và giải thưởng sinh viên · 5TOT Đà Nẵng
 
 THÔNG BÁO THAY ĐỔI MẬT KHẨU TÀI KHOẢN
 
@@ -650,11 +660,11 @@ Mật khẩu cho tài khoản Sinh viên 5 tốt (${accountDisplay}) đã đư�
 Nếu chính bạn đã thực hiện thay đổi này, bạn có thể an tâm sử dụng mật khẩu mới để đăng nhập.
 
 CẢNH BÁO BẢO MẬT QUAN TRỌNG:
-Nếu bạn KHÔNG thực hiện thay đổi này, rất có thể tài khoản của bạn đã bị người khác truy cập trái phép. Vui lòng liên hệ ngay với Ban Thư ký Hội Sinh viên Đại học Đà Nẵng qua email hoisinhvien@udn.vn để được hỗ trợ khóa tài khoản khẩn cấp.
+Nếu bạn KHÔNG thực hiện thay đổi này, rất có thể tài khoản của bạn đã bị người khác truy cập trái phép. Vui lòng liên hệ ngay với Ban Thư ký Hội Sinh viên Thành phố Đà Nẵng qua email hoisinhvien@danang.gov.vn để được hỗ trợ khóa tài khoản khẩn cấp.
 
 ---
-Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng
-Email hỗ trợ: hoisinhvien@udn.vn
+Ban Thư ký Hội Sinh viên Việt Nam Thành phố Đà Nẵng
+Email hỗ trợ: hoisinhvien@danang.gov.vn
 Đây là email được gửi tự động từ hệ thống. Vui lòng không trả lời trực tiếp.`;
 }
 
@@ -665,11 +675,11 @@ Email hỗ trợ: hoisinhvien@udn.vn
 export function buildSubmissionConfirmationHtmlTemplate(
   data: SubmissionConfirmationEmailData
 ): string {
-  const actionUrl = data.actionUrl || 'https://sinhvien5tot.udn.vn';
+  const actionUrl = data.actionUrl || 'https://sv5t.danang.vn';
   const submittedTimeStr = formatVietnameseDateTime(data.submittedAt || new Date());
   const seasonDisplayName = data.seasonName || 'Năm học 2025 - 2026';
   const awardName = resolveAwardName(data.awardTitle);
-  const instName = String(data.institutionName || 'Đại học Đà Nẵng').trim();
+  const instName = String(data.institutionName || 'Cơ sở đào tạo tại Đà Nẵng').trim();
   const unitName = String(data.schoolReviewUnitName || '').trim();
 
   // Deduplication: If unitName is missing, identical to instName, or a substring, don't show duplicate row
@@ -735,11 +745,11 @@ export function buildSubmissionConfirmationHtmlTemplate(
 export function buildSubmissionConfirmationPlainTextTemplate(
   data: SubmissionConfirmationEmailData
 ): string {
-  const actionUrl = data.actionUrl || 'https://sinhvien5tot.udn.vn';
+  const actionUrl = data.actionUrl || 'https://sv5t.danang.vn';
   const submittedTimeStr = formatVietnameseDateTime(data.submittedAt || new Date());
   const seasonDisplayName = data.seasonName || 'Năm học 2025 - 2026';
   const awardName = resolveAwardName(data.awardTitle);
-  const instName = String(data.institutionName || 'Đại học Đà Nẵng').trim();
+  const instName = String(data.institutionName || 'Cơ sở đào tạo tại Đà Nẵng').trim();
   const unitName = String(data.schoolReviewUnitName || '').trim();
 
   const hasSeparateReviewUnit =
@@ -750,8 +760,8 @@ export function buildSubmissionConfirmationPlainTextTemplate(
 
   const statusDisplay = data.statusName || 'Chờ xét sơ tuyển';
 
-  return `HỘI SINH VIÊN VIỆT NAM ĐẠI HỌC ĐÀ NẴNG
-Hệ thống xét chọn danh hiệu và giải thưởng sinh viên
+  return `HỘI SINH VIÊN VIỆT NAM THÀNH PHỐ ĐÀ NẴNG
+Hệ thống xét chọn danh hiệu và giải thưởng sinh viên · 5TOT Đà Nẵng
 
 XÁC NHẬN NỘP HỒ SƠ
 
@@ -772,8 +782,8 @@ Bạn có thể theo dõi tiến độ xử lý hồ sơ tại liên kết sau:
 ${actionUrl}
 
 ---
-Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng
-Email hỗ trợ: hoisinhvien@udn.vn
+Ban Thư ký Hội Sinh viên Việt Nam Thành phố Đà Nẵng
+Email hỗ trợ: hoisinhvien@danang.gov.vn
 Đây là email được gửi tự động từ hệ thống. Vui lòng không trả lời trực tiếp.`;
 }
 
@@ -783,11 +793,11 @@ Email hỗ trợ: hoisinhvien@udn.vn
 
 export function buildSupplementRequestHtmlTemplate(data: SupplementRequestEmailData): string {
   const criterionDisplayName = data.criterionName || resolveCriterionName(data.criterionOrReqCode);
-  const actionUrl = data.actionUrl || 'https://sinhvien5tot.udn.vn';
+  const actionUrl = data.actionUrl || 'https://sv5t.danang.vn';
   const deadlineStr = formatVietnameseDateTime(data.deadlineAt);
   const actionDisplay = formatRequiredActions(data.requiredAction);
   const awardName = resolveAwardName(data.awardTitle);
-  const instName = String(data.institutionName || 'Đại học Đà Nẵng').trim();
+  const instName = String(data.institutionName || 'Cơ sở đào tạo tại Đà Nẵng').trim();
 
   // If declaration title is long, truncate cleanly for email layout
   let declDisplay = data.declarationTitle ? String(data.declarationTitle).trim() : '';
@@ -859,14 +869,14 @@ export function buildSupplementRequestHtmlTemplate(data: SupplementRequestEmailD
 
 export function buildSupplementRequestPlainTextTemplate(data: SupplementRequestEmailData): string {
   const criterionDisplayName = data.criterionName || resolveCriterionName(data.criterionOrReqCode);
-  const actionUrl = data.actionUrl || 'https://sinhvien5tot.udn.vn';
+  const actionUrl = data.actionUrl || 'https://sv5t.danang.vn';
   const deadlineStr = formatVietnameseDateTime(data.deadlineAt);
   const actionDisplay = formatRequiredActions(data.requiredAction);
   const awardName = resolveAwardName(data.awardTitle);
-  const instName = String(data.institutionName || 'Đại học Đà Nẵng').trim();
+  const instName = String(data.institutionName || 'Cơ sở đào tạo tại Đà Nẵng').trim();
 
-  return `HỘI SINH VIÊN VIỆT NAM ĐẠI HỌC ĐÀ NẴNG
-Hệ thống xét chọn danh hiệu và giải thưởng sinh viên
+  return `HỘI SINH VIÊN VIỆT NAM THÀNH PHỐ ĐÀ NẴNG
+Hệ thống xét chọn danh hiệu và giải thưởng sinh viên · 5TOT Đà Nẵng
 
 YÊU CẦU BỔ SUNG MINH CHỨNG
 
@@ -887,8 +897,8 @@ Bạn có thể truy cập liên kết sau để xem yêu cầu và bổ sung mi
 ${actionUrl}
 
 ---
-Ban Thư ký Hội Sinh viên Việt Nam Đại học Đà Nẵng
-Email hỗ trợ: hoisinhvien@udn.vn
+Ban Thư ký Hội Sinh viên Việt Nam Thành phố Đà Nẵng
+Email hỗ trợ: hoisinhvien@danang.gov.vn
 Đây là email được gửi tự động từ hệ thống. Vui lòng không trả lời trực tiếp.`;
 }
 
@@ -1075,7 +1085,7 @@ export function buildFeedbackNotificationHtmlTemplate(data: {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Thông báo Góp ý & Báo lỗi — SV5T ĐHĐN</title>
+  <title>Thông báo Góp ý & Báo lỗi — 5TOT Đà Nẵng</title>
   <style>
     body { margin: 0; padding: 0; background-color: #F4F7F9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #172A3A; -webkit-font-smoothing: antialiased; }
     table { border-collapse: collapse; }
@@ -1099,13 +1109,13 @@ export function buildFeedbackNotificationHtmlTemplate(data: {
   <div class="email-wrapper" style="width: 100%; box-sizing: border-box;">
     <div class="email-card" style="max-width: 640px; margin: 0 auto; background-color: #FFFFFF; border-radius: 12px; border: 1px solid #DCE7EE; box-shadow: 0 4px 16px rgba(15, 35, 53, 0.06); overflow: hidden;">
       
-      <!-- Header: Official UDN Navy -->
+      <!-- Header: Official City Navy -->
       <div class="header-box" style="background-color: #07457E; padding: 22px 28px; border-bottom: 3px solid #0D78AE;">
         <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: rgba(255, 255, 255, 0.85); margin-bottom: 4px;">
-          Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
+          Thành Đoàn Đà Nẵng · Hội Sinh viên Việt Nam Thành phố Đà Nẵng
         </div>
         <div style="font-size: 17px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.01em;">
-          Hệ thống Xét duyệt Sinh viên 5 tốt · Phản hồi & Báo lỗi Kỹ thuật
+          Hệ thống 5TOT Đà Nẵng · Phản hồi & Báo lỗi Kỹ thuật
         </div>
       </div>
 
@@ -1146,12 +1156,12 @@ export function buildFeedbackNotificationHtmlTemplate(data: {
           <table role="presentation" class="action-table" width="100%" cellpadding="0" cellspacing="0" border="0">
             <tr>
               <td align="left" style="vertical-align: middle;">
-                <a href="mailto:${escapeHtml(data.senderEmail)}?subject=Re: [SV5T ĐHĐN] Phản hồi góp ý / báo lỗi kỹ thuật" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #07457E; color: #FFFFFF !important; font-size: 13px; font-weight: 700; padding: 11px 20px; border-radius: 6px; text-decoration: none; box-sizing: border-box;">
+                <a href="mailto:${escapeHtml(data.senderEmail)}?subject=Re: [5TOT Đà Nẵng] Phản hồi góp ý / báo lỗi kỹ thuật" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #07457E; color: #FFFFFF !important; font-size: 13px; font-weight: 700; padding: 11px 20px; border-radius: 6px; text-decoration: none; box-sizing: border-box;">
                   Soạn thư trả lời ${escapeHtml(data.senderName)} &rarr;
                 </a>
               </td>
               <td class="action-note" align="right" style="vertical-align: middle; font-size: 12px; color: #64748B; line-height: 1.4;">
-                <span style="display: block; font-weight: 600; color: #334155;">Đội ngũ Kỹ thuật Hệ thống 5TOT ĐHĐN</span>
+                <span style="display: block; font-weight: 600; color: #334155;">Đội ngũ Kỹ thuật Hệ thống 5TOT Đà Nẵng</span>
                 <span style="font-size: 11px; color: #94A3B8;">Nhấn nút để mở ứng dụng email phản hồi</span>
               </td>
             </tr>
@@ -1170,7 +1180,7 @@ export function buildFeedbackNotificationHtmlTemplate(data: {
           <a href="mailto:dhtphu05@gmail.com" style="color: #07457E; font-weight: 600; text-decoration: none;">dhtphu05@gmail.com</a>
         </p>
         <p style="margin: 0; font-size: 11px; color: #94A3B8;">
-          &copy; 2026 Hội Sinh viên Việt Nam Đại học Đà Nẵng &middot; Hệ thống Xét duyệt Sinh viên 5 tốt
+          &copy; 2026 Hội Sinh viên Việt Nam Thành phố Đà Nẵng &middot; Hệ thống 5TOT Đà Nẵng
         </p>
       </div>
 
@@ -1214,7 +1224,7 @@ export function buildFeedbackNotificationPlainTextTemplate(data: {
     : formatVietnameseDateTime(new Date());
 
   return [
-    '=== [SV5T ĐHĐN] THÔNG BÁO GÓP Ý & BÁO LỖI KỸ THUẬT ===',
+    '=== [5TOT ĐÀ NẴNG] THÔNG BÁO GÓP Ý & BÁO LỖI KỸ THUẬT ===',
     `Thời gian gửi: ${submittedTime}`,
     `Phân loại: ${categoryLabel}`,
     `Người gửi: ${data.senderName} (${roleLabel})`,
@@ -1233,7 +1243,7 @@ export function buildFeedbackNotificationPlainTextTemplate(data: {
     '---',
     'Email thông báo tự động được chuyển tiếp tới Ban Kỹ thuật:',
     'vanngocnhuy30032006@gmail.com · dhtphu05@gmail.com',
-    '© 2026 Hội Sinh viên Việt Nam Đại học Đà Nẵng · Hệ thống Xét duyệt Sinh viên 5 tốt',
+    '© 2026 Hội Sinh viên Việt Nam Thành phố Đà Nẵng · Hệ thống 5TOT Đà Nẵng',
   ]
     .filter(Boolean)
     .join('\n');

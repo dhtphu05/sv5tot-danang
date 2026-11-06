@@ -1,17 +1,5 @@
-/**
- * 5TOT ĐHĐN — Level 2 Requirement Group Header
- * Visually organizes criteria into clear semantic requirement groups.
- * Implements Prompt Section 1, 8, 9, 10, 11, 12, 14, 16:
- * - Level 2 in the 3-level visual hierarchy: Criterion → Requirement Group → Option
- * - Sits on the canonical four-column grid (.app-table-grid)
- * - Column 1 indented 12px (1280–1439px) / 16px (1440px+)
- * - Group title allows up to 2 lines (line-clamp-2) — NEVER truncated into ellipsis
- * - Factual group progress without misleading fractions (e.g. "1 nội dung đã kê khai", NOT "1/3")
- * - Clean Column 2 rule badge (e.g. "[Cần ít nhất 1 nội dung]") without crowded helpers
- */
-
 import React from 'react';
-import { ChevronDown, Layers } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { ApplicationRequirementGroup } from '../../demo/fixtures/studentApplication';
 import { CriterionDefinition } from '../../tokens';
 
@@ -23,93 +11,74 @@ export interface RequirementGroupHeaderProps {
   className?: string;
 }
 
+/**
+ * Administrative Sub-Group Rule Band (Inside Cols 3–5 of CriterionSection)
+ * Renders bold official condition lines matching the Central HSV table:
+ * - "Tiêu chí bắt buộc:"
+ * - "Tiêu chí đạt thêm (đạt thêm 01 trong các điều kiện sau):"
+ */
 export const RequirementGroupHeader: React.FC<RequirementGroupHeaderProps> = ({
   group,
-  criterionToken,
   isCollapsed = false,
   onToggleCollapse,
   className = '',
 }) => {
+  const getAdministrativeRuleTitle = (): string => {
+    if (group.groupType === 'ALL_REQUIRED') {
+      const count = group.requirements?.length || 0;
+      return count > 1
+        ? `Tiêu chí bắt buộc (đạt đồng thời cả ${String(count).padStart(2, '0')} điều kiện sau):`
+        : 'Tiêu chí bắt buộc:';
+    }
+    if (group.groupType === 'REPEATABLE_COLLECTION' || (group.groupType as string) === 'REPEATABLE') {
+      return `${group.title} (${group.ruleBadge}):`;
+    }
+    if (group.groupType === 'OPTIONAL') {
+      return `${group.title} (không bắt buộc):`;
+    }
+    const minSel = group.minSelections || 1;
+    const totalCount = group.requirements?.length || 0;
+    return totalCount > 0
+      ? `Tiêu chí đạt thêm (đạt ít nhất ${String(minSel).padStart(2, '0')} trong ${String(totalCount).padStart(2, '0')} điều kiện sau):`
+      : `Tiêu chí đạt thêm (đạt ít nhất ${String(minSel).padStart(2, '0')} trong các điều kiện sau):`;
+  };
+
   const declaredRequirements = group.requirements.filter(
     (r) => r.declarations && r.declarations.length > 0
   );
   const declaredCount = declaredRequirements.length;
 
-  // Prompt Section 8, 9, 10, 11, 12: Factual progress WITHOUT misleading fractions
-  // Never "1/3 nội dung", "2/5 nội dung", "2/2 đạt", or "33%"
-  const getProgressLabel = () => {
-    if (group.groupType === 'REPEATABLE_COLLECTION' || (group.groupType as string) === 'REPEATABLE') {
-      const totalActivities = group.requirements.reduce(
-        (sum, r) => sum + (r.declarations?.length || 0),
-        0
-      );
-      return `${totalActivities} hoạt động đã khai`;
-    }
-    if (declaredCount === 0) {
-      return 'Chưa kê khai';
-    }
-    if (group.ruleBadge.toLowerCase().includes('hình thức')) {
-      return `${declaredCount} hình thức đã kê khai`;
-    }
-    return `${declaredCount} nội dung đã kê khai`;
-  };
-
-  const progressLabel = getProgressLabel();
+  const progressText =
+    group.groupType === 'REPEATABLE_COLLECTION' || (group.groupType as string) === 'REPEATABLE'
+      ? `${group.requirements.reduce((sum, r) => sum + (r.declarations?.length || 0), 0)} hoạt động`
+      : declaredCount > 0
+      ? `Đã khai ${declaredCount} mục`
+      : '';
 
   return (
     <div
       onClick={onToggleCollapse}
-      style={{
-        backgroundColor: criterionToken?.groupBgTint || '#F8FAFC',
-        boxShadow: `inset 3.5px 0 0 0 ${criterionToken?.accentColor || '#18A6E0'}`,
-      }}
-      className={`app-table-grid px-6 py-2.5 items-center min-h-[46px] border-y border-[#E2EAF0] cursor-pointer hover:brightness-[0.98] transition-all select-none ${className}`}
+      className={`px-4 py-2 bg-[#F8FAFC] border-b border-[#DFE5EC] flex items-center justify-between gap-3 cursor-pointer hover:bg-[#F1F5F9]/70 transition-colors select-none ${className}`}
     >
-      {/* Column 1: Indented 12px (1280–1439px) / 16px (1440px+) (Section 4 & 29) */}
-      <div className="grid-col-1 flex items-center gap-2.5 pr-6 min-w-0 pl-3 xl:pl-4">
+      <div className="flex items-center gap-2 min-w-0">
         {onToggleCollapse && (
-          <button
-            type="button"
-            aria-label={isCollapsed ? 'Mở rộng nhóm' : 'Thu gọn nhóm'}
-            className="text-[#607483] hover:text-[#172A3A] transition-transform duration-200 shrink-0"
+          <ChevronDown
+            size={13.5}
+            strokeWidth={2.3}
+            className="text-[#475569] shrink-0 transition-transform duration-150"
             style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}
-          >
-            <ChevronDown size={14} strokeWidth={2.2} />
-          </button>
+          />
         )}
-
-        <div className="flex items-center gap-2 min-w-0">
-          <Layers size={13.5} className="text-[#4B6476] shrink-0" />
-          {/* Full group title without truncation */}
-          <span
-            className="text-[13px] font-bold text-[#1B3242] whitespace-normal break-words leading-snug"
-            title={group.title}
-          >
-            {group.title}
-          </span>
-        </div>
-      </div>
-
-      {/* Column 2: Clean Rule Badge (Section 16: e.g. [Cần ít nhất 1 nội dung]) */}
-      <div className="grid-col-2 px-6 border-l border-[#E3EBF1] min-w-0 flex items-center h-full">
-        <span className="text-[11px] font-semibold text-[#3D5A6C] bg-white/90 border border-[#CEE1ED] px-2 py-0.5 rounded-[5px] whitespace-normal break-words leading-snug">
-          {group.ruleBadge}
+        <span className="text-[12.5px] font-bold text-[#0F172A] leading-snug">
+          {getAdministrativeRuleTitle()}
         </span>
       </div>
 
-      {/* Column 3: Quiet column (Section 16: Avoid redundant helper clutter) */}
-      <div className="grid-col-3 px-6 border-l border-[#E3EBF1] min-w-0 flex items-center h-full">
-        <span className="text-[11.5px] text-[#728391] italic truncate">
-          {group.groupType === 'REPEATABLE_COLLECTION' || (group.groupType as string) === 'REPEATABLE' ? 'Kê khai nhiều hoạt động' : ''}
+      {progressText && (
+        <span className="text-[11px] font-semibold text-[#047857] bg-[#ECFDF5] border border-[#A7F3D0] px-2 py-0.2 rounded-[3px] shrink-0">
+          {progressText}
         </span>
-      </div>
-
-      {/* Column 4: Factual Progress Badge (Section 8, 9, 12, 16: e.g. "1 nội dung đã kê khai") */}
-      <div className="grid-col-4 pl-6 border-l border-[#E3EBF1] min-w-0 flex items-center justify-end h-full">
-        <span className="text-[11.5px] font-semibold text-[#2C4150] bg-white border border-[#D5E2EC] px-2.5 py-0.5 rounded-[6px] shadow-2xs whitespace-nowrap">
-          {progressLabel}
-        </span>
-      </div>
+      )}
     </div>
   );
 };

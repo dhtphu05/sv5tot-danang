@@ -75,7 +75,7 @@ export const CommitteeQueueQuickPreview: React.FC<CommitteeQueueQuickPreviewProp
         <div className="text-[#526B7C]">
           Cán bộ thẩm định:{' '}
           <strong className="text-[#172A3A]">
-            {selectedRowApp.assignment?.officerName || 'Cán bộ xét duyệt cấp ĐHĐN'}
+            {selectedRowApp.assignment?.officerName || 'Cán bộ xét duyệt cấp Thành phố'}
           </strong>
         </div>
       </div>
@@ -93,7 +93,7 @@ export const CommitteeQueueQuickPreview: React.FC<CommitteeQueueQuickPreviewProp
           </span>
         </div>
         <div className="flex items-center justify-between text-[#526B7C]">
-          <span>Thẩm định cấp ĐHĐN:</span>
+          <span>Thẩm định cấp Thành phố:</span>
           <span className="font-bold text-[#136F3A]">
             {(() => {
               const prg = deriveApplicationCriteriaReviewProgress(selectedRowApp);
@@ -104,7 +104,7 @@ export const CommitteeQueueQuickPreview: React.FC<CommitteeQueueQuickPreviewProp
         <div className="flex items-center justify-between text-[#526B7C]">
           <span>Cán bộ thẩm định:</span>
           <span className="font-bold text-[#172A3A]">
-            {selectedRowApp.assignment?.officerName || 'Tổ thẩm định cấp Đại học Đà Nẵng'}
+            {selectedRowApp.assignment?.officerName || 'Tổ thẩm định cấp Thành phố Đà Nẵng'}
           </span>
         </div>
       </div>

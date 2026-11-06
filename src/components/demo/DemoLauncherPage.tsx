@@ -1,7 +1,7 @@
 /**
- * 5TOT ĐHĐN — Prototype Demo Launcher (/demo)
- * Cơ quan quản lý: Đoàn Thanh niên - Hội Sinh viên Đại học Đà Nẵng
- * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Đại học Đà Nẵng
+ * 5TOT Đà Nẵng — Prototype Demo Launcher (/demo)
+ * Cơ quan quản lý: Thành Đoàn - Hội Sinh viên Thành phố Đà Nẵng
+ * Đơn vị tổ chức / vận hành nghiệp vụ: Hội Sinh viên Việt Nam Thành phố Đà Nẵng
  *
  * Implements Prompt 14.9 Sections 6–10 + Prompt 17 Section 130:
  * - Clean internal presentation surface using the 5TOT design system.
@@ -144,7 +144,7 @@ export const DemoLauncherPage: React.FC<DemoLauncherPageProps> = ({
                 ĐẠI HỌC ĐÀ NẴNG · HỘI SINH VIÊN VIỆT NAM ĐẠI HỌC ĐÀ NẴNG
               </span>
               <span className="text-[14.5px] font-extrabold text-[#0B64A0] tracking-tight truncate">
-                Hệ thống xét duyệt Sinh viên 5 tốt cấp Đại học Đà Nẵng
+                Hệ thống xét duyệt Sinh viên 5 tốt cấp Thành phố Đà Nẵng
               </span>
             </div>
           </div>
@@ -188,7 +188,7 @@ export const DemoLauncherPage: React.FC<DemoLauncherPageProps> = ({
                 className="inline-flex items-center gap-1.5 h-[36px] px-3.5 rounded-[8px] bg-[#0F2335] hover:bg-[#1B3752] text-white text-[13px] font-bold transition-colors cursor-pointer"
               >
                 <FolderKanban size={14} className="text-[#7CC4EE]" />
-                <span>Thẩm định cấp ĐHĐN</span>
+                <span>Thẩm định cấp Thành phố</span>
               </button>
             )}
 
@@ -210,15 +210,15 @@ export const DemoLauncherPage: React.FC<DemoLauncherPageProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-[6px] bg-[#E5F4FC] text-[#0B64A0] text-[11.5px] font-bold mb-2">
-              <span>5TOT ĐHĐN</span>
+              <span>5TOT Đà Nẵng</span>
               <span>·</span>
               <span>Năm học 2025–2026</span>
             </div>
             <h1 className="text-[24px] sm:text-[26px] font-extrabold text-[#0F2335] tracking-tight leading-tight">
-              5TOT ĐHĐN — Chế độ trình diễn
+              5TOT Đà Nẵng — Chế độ trình diễn
             </h1>
             <p className="text-[14px] text-[#4A6275] mt-1">
-              Chọn kịch bản của Hội đồng xét chọn, Cán bộ xét duyệt hoặc Sinh viên để kiểm thử đầy đủ quy trình cấp Đại học Đà Nẵng.
+              Chọn kịch bản của Hội đồng xét chọn, Cán bộ xét duyệt hoặc Sinh viên để kiểm thử đầy đủ quy trình cấp Thành phố Đà Nẵng.
             </p>
           </div>
 
@@ -453,7 +453,7 @@ export const DemoLauncherPage: React.FC<DemoLauncherPageProps> = ({
                 </h2>
               </div>
               <span className="text-[12px] font-semibold text-[#526B7C]">
-                Quy trình Nộp trực tiếp lên cấp Đại học Đà Nẵng · 04 Tiêu chuẩn TT01–TT04
+                Quy trình Nộp trực tiếp lên cấp Thành phố Đà Nẵng · 04 Tiêu chuẩn TT01–TT04
               </span>
             </div>
 
@@ -473,7 +473,7 @@ export const DemoLauncherPage: React.FC<DemoLauncherPageProps> = ({
                       </span>
                     </div>
                     <p className="text-[13px] text-[#526B7C] mt-0.5 leading-snug">
-                      Phụ trách: Nguyễn Thị Mai (mai.nt@dut.udn.vn) · Kê khai TT01 (Cấp trường), TT02 (100% phong trào), TT03 (21.43% SV5T trường), TT04 (Không vi phạm) và nộp trực tiếp cấp ĐHĐN.
+                      Phụ trách: Nguyễn Thị Mai (mai.nt@dut.udn.vn) · Kê khai TT01 (Cấp trường), TT02 (100% phong trào), TT03 (21.43% SV5T trường), TT04 (Không vi phạm) và nộp trực tiếp cấp Thành phố.
                     </p>
                   </div>
                 </div>
@@ -577,7 +577,7 @@ export const DemoLauncherPage: React.FC<DemoLauncherPageProps> = ({
                 </h2>
               </div>
               <span className="text-[12px] font-semibold text-[#526B7C]">
-                Toàn quyền cấu hình · 09 Trường thành viên ĐHĐN · 05 Tiêu chí cấp Đại học Đà Nẵng
+                Toàn quyền cấu hình · 31 Cơ sở đào tạo tại Đà Nẵng · 05 Tiêu chí cấp Thành phố Đà Nẵng
               </span>
             </div>
 
@@ -592,14 +592,14 @@ export const DemoLauncherPage: React.FC<DemoLauncherPageProps> = ({
                 {
                   routeId: 'admin_institutions' as StaffRouteId,
                   code: 'ĐƠN VỊ',
-                  title: 'Quản lý 09 Trường & Đơn vị thành viên Đại học Đà Nẵng',
-                  desc: 'Đầy đủ 09 trường/viện/khoa/phân hiệu thuộc ĐH Đà Nẵng; cơ chế sơ tuyển cấp trường, địa chỉ và mã định danh.',
+                  title: 'Quản lý 31 Cơ sở đào tạo & 24 Đơn vị xét sơ tuyển tại Đà Nẵng',
+                  desc: 'Đầy đủ 08 đơn vị thành viên ĐH Đà Nẵng (unit-udn) và 23 trường Đại học, Học viện, Cao đẳng độc lập trên địa bàn Thành phố.',
                 },
                 {
                   routeId: 'admin_users' as StaffRouteId,
                   code: 'CÁN BỘ',
-                  title: 'Người dùng & Phân quyền cán bộ cấp Đại học Đà Nẵng',
-                  desc: 'Quản lý 13 tài khoản cán bộ sơ tuyển cấp trường, xét duyệt, quản lý, hội đồng; kích hoạt an toàn trước khi đổi quyền.',
+                  title: 'Người dùng & Phân quyền cán bộ cấp Thành phố Đà Nẵng',
+                  desc: 'Quản lý tài khoản cán bộ sơ tuyển cấp trường, xét duyệt, quản lý, hội đồng; kích hoạt an toàn trước khi đổi quyền.',
                 },
                 {
                   routeId: 'admin_criteria' as StaffRouteId,
