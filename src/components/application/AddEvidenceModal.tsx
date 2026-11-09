@@ -26,6 +26,7 @@ import {
 import { FileTypeIcon } from '../evidence/FileTypeIcon';
 import { Button } from '../buttons/Button';
 import { saveEvidenceFile } from '../../staff/demoEvidenceStorage';
+import { triggerEvidenceOcr } from '../../shared/api/copilotApi';
 
 export interface AddEvidenceModalProps {
   isOpen: boolean;
@@ -160,6 +161,33 @@ export const AddEvidenceModal: React.FC<AddEvidenceModalProps> = ({
       saveEvidenceFile(evId, f, name, ext, {
         size: sizeStr,
       }).catch(() => {});
+
+      // Trigger background OpenAI OCR & preliminary check immediately upon upload
+      if (typeof FileReader !== 'undefined' && f.size <= 4 * 1024 * 1024) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64Url = typeof reader.result === 'string' ? reader.result : undefined;
+          triggerEvidenceOcr({
+            evidenceId: evId,
+            fileName: name,
+            mimeType: f.type,
+            fileBase64: base64Url,
+            criterionName,
+            requirementTitle,
+            declaredValue: declarationTitle,
+          }).catch(() => {});
+        };
+        reader.readAsDataURL(f);
+      } else {
+        triggerEvidenceOcr({
+          evidenceId: evId,
+          fileName: name,
+          mimeType: f.type,
+          criterionName,
+          requirementTitle,
+          declaredValue: declarationTitle,
+        }).catch(() => {});
+      }
 
       return {
         id: evId,

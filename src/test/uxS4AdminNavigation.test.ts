@@ -248,13 +248,13 @@ describe('5TOT ĐHĐN — UX-S4 Admin Workspace & Program Navigation Suite', () 
     assert.strictEqual(udnGroup.length, 8);
   });
 
-  test('UX4-14: Invariant: City registry defines 31 active + 1 suspended institutions across 24 active review units', () => {
+  test('UX4-14: Invariant: City registry defines 45 active institutions across 38 active review units (Da Nang & Quang Nam)', () => {
     const udnInstitutions = INITIAL_INSTITUTIONS.filter(
       (i) => i.schoolReviewUnitId === 'unit-udn'
     );
     assert.strictEqual(udnInstitutions.length, 8);
-    assert.strictEqual(INITIAL_INSTITUTIONS.filter((i) => i.status === 'active').length, 31);
-    assert.strictEqual(INITIAL_INSTITUTIONS.length, 32);
+    assert.strictEqual(INITIAL_INSTITUTIONS.filter((i) => i.status === 'active').length, 45);
+    assert.strictEqual(INITIAL_INSTITUTIONS.length, 45);
   });
 
   // ===========================================================================

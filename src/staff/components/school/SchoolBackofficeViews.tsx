@@ -53,6 +53,7 @@ import { SchoolSupplementsPage } from '../../../pages/school-backoffice/SchoolSu
 import { SchoolRecommendationForwardingPage } from '../../../pages/school-backoffice/SchoolRecommendationForwardingPage';
 import { SchoolAnalyticsPage } from '../../../pages/school-backoffice/SchoolAnalyticsPage';
 import { StaffNotificationsRouteView } from '../../../widgets/staff-backoffice/StaffQueueAndUtilityViews';
+import { renderRowAiPreliminaryCell } from '../../../widgets/staff-backoffice/staffTableColumns';
 
 export interface SchoolBackofficeViewsProps {
   currentUser: StaffUser;
@@ -451,6 +452,16 @@ export const SchoolBackofficeViews: React.FC<SchoolBackofficeViewsProps> = ({
           </div>
         </div>
       ),
+    },
+    {
+      key: 'aiPreliminary',
+      header: (
+        <span className="inline-flex items-center gap-1.5 text-[#0F2335]">
+          <Sparkles size={13} className="text-[#0D78AE]" />
+          <span>Đánh giá sơ bộ (AI / OCR)</span>
+        </span>
+      ),
+      renderCell: (app) => renderRowAiPreliminaryCell(app),
     },
     {
       key: 'criteriaOutcomes',

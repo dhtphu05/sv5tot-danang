@@ -140,17 +140,24 @@ export const DANANG_INSTITUTION_REGISTRY: ParticipatingInstitution[] = [
   },
   {
     id: 'inst-dh-mo-hn-dn',
-    officialName: 'Trường Đại học Mở Hà Nội (Trạm đào tạo Đà Nẵng)',
+    officialName: 'Phân hiệu Đại học Mở Hà Nội tại Đà Nẵng',
     organizationContext: 'Bộ Giáo dục và Đào tạo',
     educationLevelHint: 'Đại học',
-    searchKeywords: ['dai hoc mo', 'hou', 'mo ha noi'],
+    searchKeywords: ['dai hoc mo', 'hou', 'mo ha noi', 'phan hieu dai hoc mo'],
   },
   {
     id: 'inst-hv-chinhtri-kv3',
-    officialName: 'Học viện Chính trị khu vực III',
+    officialName: 'Học viện Chính trị Khu vực III',
     organizationContext: 'Học viện Chính trị quốc gia Hồ Chí Minh',
     educationLevelHint: 'Đại học',
     searchKeywords: ['hoc vien chinh tri', 'hcma3', 'khu vuc 3', 'hvct3'],
+  },
+  {
+    id: 'inst-hv-hanhchinh-dn',
+    officialName: 'Phân hiệu Học viện Hành chính Quốc gia tại Đà Nẵng',
+    organizationContext: 'Học viện Hành chính Quốc gia',
+    educationLevelHint: 'Đại học',
+    searchKeywords: ['hoc vien hanh chinh', 'napa', 'hanh chinh quoc gia'],
   },
   {
     id: 'inst-hv-toa-an',
@@ -158,6 +165,20 @@ export const DANANG_INSTITUTION_REGISTRY: ParticipatingInstitution[] = [
     organizationContext: 'Tòa án nhân dân tối cao',
     educationLevelHint: 'Đại học',
     searchKeywords: ['hoc vien toa an', 'hvta', 'luat'],
+  },
+  {
+    id: 'inst-greenwich-dn',
+    officialName: 'Đại học Greenwich Việt Nam (Cơ sở Đà Nẵng)',
+    organizationContext: 'Tập đoàn FPT · Liên kết Vương quốc Anh',
+    educationLevelHint: 'Đại học',
+    searchKeywords: ['greenwich', 'dai hoc greenwich', 'fpt greenwich', 'quoc te'],
+  },
+  {
+    id: 'inst-auv',
+    officialName: 'Trường Đại học Mỹ tại Việt Nam (AUV)',
+    organizationContext: 'Đơn vị đào tạo quốc tế trên địa bàn TP. Đà Nẵng',
+    educationLevelHint: 'Đại học',
+    searchKeywords: ['dai hoc my', 'auv', 'american university', 'quoc te'],
   },
   {
     id: 'inst-cd-thuongmai',
@@ -188,6 +209,13 @@ export const DANANG_INSTITUTION_REGISTRY: ParticipatingInstitution[] = [
     searchKeywords: ['fpt polytechnic', 'poly', 'cao dang fpt'],
   },
   {
+    id: 'inst-cd-btec-fpt',
+    officialName: 'Trường Cao đẳng Quốc tế BTEC FPT (Cơ sở Đà Nẵng)',
+    organizationContext: 'Tập đoàn FPT',
+    educationLevelHint: 'Cao đẳng',
+    searchKeywords: ['btec', 'btec fpt', 'cao dang quoc te btec', 'fpt'],
+  },
+  {
     id: 'inst-cd-nghe-dn',
     officialName: 'Trường Cao đẳng Nghề Đà Nẵng',
     organizationContext: 'UBND Thành phố Đà Nẵng',
@@ -211,7 +239,7 @@ export const DANANG_INSTITUTION_REGISTRY: ParticipatingInstitution[] = [
   {
     id: 'inst-cd-vhtt-dl',
     officialName: 'Trường Cao đẳng Văn hóa Nghệ thuật Đà Nẵng',
-    organizationContext: 'Sở Văn hóa và Thể thao TP. Đà Nẵng',
+    organizationContext: 'UBND Thành phố Đà Nẵng',
     educationLevelHint: 'Cao đẳng',
     searchKeywords: ['van hoa nghe thuat', 'cdvhnt', 'nghe thuat'],
   },
@@ -221,6 +249,34 @@ export const DANANG_INSTITUTION_REGISTRY: ParticipatingInstitution[] = [
     organizationContext: 'Bộ Nông nghiệp và Phát triển nông thôn',
     educationLevelHint: 'Cao đẳng',
     searchKeywords: ['luong thuc thuc pham', 'cfit', 'cao dang'],
+  },
+  {
+    id: 'inst-cd-bachkhoa-dn',
+    officialName: 'Trường Cao đẳng Bách khoa Đà Nẵng',
+    organizationContext: 'Đơn vị đào tạo tư thục trên địa bàn TP. Đà Nẵng',
+    educationLevelHint: 'Cao đẳng',
+    searchKeywords: ['cao dang bach khoa', 'cdbk', 'bach khoa da nang'],
+  },
+  {
+    id: 'inst-cd-daiviet-dn',
+    officialName: 'Trường Cao đẳng Đại Việt Đà Nẵng',
+    organizationContext: 'Đơn vị đào tạo tư thục trên địa bàn TP. Đà Nẵng',
+    educationLevelHint: 'Cao đẳng',
+    searchKeywords: ['dai viet', 'cao dang dai viet', 'cddv'],
+  },
+  {
+    id: 'inst-cd-phuongdong-dn',
+    officialName: 'Trường Cao đẳng Phương Đông Đà Nẵng',
+    organizationContext: 'Đơn vị đào tạo tư thục trên địa bàn TP. Đà Nẵng',
+    educationLevelHint: 'Cao đẳng',
+    searchKeywords: ['phuong dong', 'cao dang phuong dong', 'cdpd'],
+  },
+  {
+    id: 'inst-cd-lacviet',
+    officialName: 'Trường Cao đẳng Lạc Việt',
+    organizationContext: 'Đơn vị đào tạo tư thục trên địa bàn TP. Đà Nẵng',
+    educationLevelHint: 'Cao đẳng',
+    searchKeywords: ['lac viet', 'cao dang lac viet'],
   },
   {
     id: 'inst-cd-ptth',
@@ -242,6 +298,50 @@ export const DANANG_INSTITUTION_REGISTRY: ParticipatingInstitution[] = [
     organizationContext: 'Đơn vị đào tạo ngoài công lập',
     educationLevelHint: 'Cao đẳng',
     searchKeywords: ['pasteur', 'y duoc pasteur', 'duoc', 'cao dang'],
+  },
+
+  // Khu vực Quảng Nam (Sáp nhập địa giới hành chính Thành phố Đà Nẵng)
+  {
+    id: 'inst-dqu',
+    officialName: 'Trường Đại học Quảng Nam',
+    organizationContext: 'UBND Thành phố Đà Nẵng (Khu vực Quảng Nam)',
+    educationLevelHint: 'Đại học',
+    searchKeywords: ['dai hoc quang nam', 'dqu', 'quang nam', 'tam ky'],
+  },
+  {
+    id: 'inst-pctu',
+    officialName: 'Trường Đại học Phan Châu Trinh',
+    organizationContext: 'Đơn vị đào tạo tư thục (Hội An · Khu vực Quảng Nam)',
+    educationLevelHint: 'Đại học',
+    searchKeywords: ['phan chau trinh', 'pctu', 'hoi an', 'y khoa', 'quang nam'],
+  },
+  {
+    id: 'inst-cd-quangnam',
+    officialName: 'Trường Cao đẳng Quảng Nam',
+    organizationContext: 'UBND Thành phố Đà Nẵng (Khu vực Quảng Nam)',
+    educationLevelHint: 'Cao đẳng',
+    searchKeywords: ['cao dang quang nam', 'cdqn', 'kinh te ky thuat quang nam', 'y te quang nam', 'nghe quang nam', 'tam ky'],
+  },
+  {
+    id: 'inst-cd-dienluc-mt',
+    officialName: 'Trường Cao đẳng Điện lực Miền Trung',
+    organizationContext: 'Tập đoàn Điện lực Việt Nam (EVN · Hội An)',
+    educationLevelHint: 'Cao đẳng',
+    searchKeywords: ['dien luc mien trung', 'cepc', 'evn', 'hoi an', 'cao dang dien luc'],
+  },
+  {
+    id: 'inst-cd-kinhte-thuyloi-mt',
+    officialName: 'Trường Cao đẳng Công nghệ Kinh tế và Thủy lợi Miền Trung',
+    organizationContext: 'Bộ Nông nghiệp và Phát triển nông thôn (Hội An)',
+    educationLevelHint: 'Cao đẳng',
+    searchKeywords: ['kinh te va thuy loi mien trung', 'thuy loi mien trung', 'cctw', 'hoi an'],
+  },
+  {
+    id: 'inst-cd-thaco',
+    officialName: 'Trường Cao đẳng THACO',
+    organizationContext: 'Tập đoàn THACO Trường Hải (Chu Lai, Núi Thành)',
+    educationLevelHint: 'Cao đẳng',
+    searchKeywords: ['thaco', 'truong hai', 'chu lai', 'nui thanh', 'cao dang thaco', 'o to'],
   },
 ];
 

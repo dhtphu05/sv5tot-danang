@@ -41,6 +41,8 @@ import {
   MessageSquare,
   Copy,
   RotateCcw,
+  RefreshCw,
+  FileCheck2,
 } from 'lucide-react';
 import { CRITERIA } from '../../../tokens';
 import {
@@ -58,6 +60,11 @@ import {
 import { ReviewStage } from '../../schoolReviewTypes';
 import { getEvidenceAiInsight } from '../../../features/ai-review-copilot/demoCopilotFixtures';
 import { isBackendMode } from '../../../shared/config/executionMode';
+import {
+  triggerEvidenceOcr,
+  getCachedEvidenceOcrSync,
+  type OcrEvidenceExtractionResult,
+} from '../../../shared/api/copilotApi';
 
 export interface EvidenceReviewViewerProps {
   isOpen: boolean;
@@ -460,8 +467,10 @@ export const EvidenceReviewViewer: React.FC<EvidenceReviewViewerProps> = ({
   const [showConsiderationForm, setShowConsiderationForm] = useState<boolean>(false);
   const [considerationReasonInput, setConsiderationReasonInput] = useState<string>('');
   const [considerationReasonError, setConsiderationReasonError] = useState<string | null>(null);
+  const [isScanningOcr, setIsScanningOcr] = useState<boolean>(false);
+  const [ocrResult, setOcrResult] = useState<OcrEvidenceExtractionResult | null>(null);
 
-  // Sync local note with evidence change
+  // Sync local note and trigger OCR with evidence change
   useEffect(() => {
     if (evidence) {
       const rec = evidenceRecord || evidenceRecordsMap[evidence.id];
@@ -472,8 +481,51 @@ export const EvidenceReviewViewer: React.FC<EvidenceReviewViewerProps> = ({
       setShowConsiderationForm(false);
       setUnsuitableReasonError(null);
       setConsiderationReasonError(null);
+
+      const syncOcr = getCachedEvidenceOcrSync({
+        evidenceId: evidence.id,
+        fileName: evidence.name,
+        declaredValue: declaration?.value || requirementTitle,
+        requirementTitle,
+        criterionId: scope.criterionId,
+      });
+      setOcrResult(syncOcr);
+
+      triggerEvidenceOcr({
+        evidenceId: evidence.id,
+        fileName: evidence.name,
+        mimeType: evidence.fileType,
+        fileUrl: evidence.url,
+        criterionId: scope.criterionId,
+        requirementTitle,
+        declaredValue: declaration?.value || requirementTitle,
+      })
+        .then((res) => setOcrResult(res))
+        .catch(() => {});
     }
   }, [evidence?.id, evidenceRecord]);
+
+  const handleRescanOcr = async () => {
+    if (!evidence || isScanningOcr) return;
+    setIsScanningOcr(true);
+    try {
+      const res = await triggerEvidenceOcr(
+        {
+          evidenceId: evidence.id,
+          fileName: evidence.name,
+          mimeType: evidence.fileType,
+          fileUrl: evidence.url,
+          criterionId: scope.criterionId,
+          requirementTitle,
+          declaredValue: declaration?.value || requirementTitle,
+        },
+        true
+      );
+      setOcrResult(res);
+    } finally {
+      setIsScanningOcr(false);
+    }
+  };
 
   // Esc key closes viewer
   useEffect(() => {
@@ -496,7 +548,35 @@ export const EvidenceReviewViewer: React.FC<EvidenceReviewViewerProps> = ({
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex >= 0 && currentIndex < evidenceList.length - 1;
 
-  const recognizedFields = getOfficerRecognizedFields(evidence, declaration);
+  const baseRecognizedFields = getOfficerRecognizedFields(evidence, declaration);
+  const recognizedFields: SystemRecognizedInfoRow[] = ocrResult
+    ? [
+        {
+          label: 'Loại văn bản nhận diện',
+          value: ocrResult.documentType,
+          highlightRegionId: 'award-name',
+        },
+        {
+          label: 'Thông tin đọc từ minh chứng',
+          value: ocrResult.extractedValue,
+          advisoryNote: ocrResult.discrepancyNote,
+          highlightRegionId: 'award-name',
+        },
+        {
+          label: 'Đơn vị cấp & Thời gian',
+          value: `${ocrResult.issuingAuthority} (${ocrResult.issueDate})`,
+          highlightRegionId: 'authority',
+        },
+        {
+          label: 'Tình trạng dấu & chữ ký xác nhận',
+          value:
+            ocrResult.hasRedStampOrSignature === 'verified'
+              ? 'Có dấu xác nhận và chữ ký hợp lệ'
+              : 'Chưa rõ dấu xác nhận — Cần kiểm tra trực tiếp',
+          highlightRegionId: 'authority',
+        },
+      ]
+    : baseRecognizedFields;
   const rawAiInsight = getEvidenceAiInsight(evidence.id);
   const isRealMinhChungFile = Boolean(evidence.url?.includes('/minhchung_test/'));
   const aiInsight =
@@ -850,26 +930,48 @@ export const EvidenceReviewViewer: React.FC<EvidenceReviewViewerProps> = ({
 
               {/* 2. Level 4: Contextual AI Evidence Insights (Section 7) */}
               <section className="space-y-2">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div className="flex items-center gap-1.5">
-                    <Sparkles size={14} className="text-[#0D78AE]" />
+                    <FileCheck2 size={14} className="text-[#0D78AE]" />
                     <h4 className="text-[12.5px] font-bold text-[#172A3A]">
-                      Gợi ý từ AI: Đối chiếu minh chứng
+                      Thông tin đọc từ minh chứng (OCR)
                     </h4>
                   </div>
-                  {aiInsight && (
-                    <span
-                      className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full border ${
-                        aiInsight.status === 'analyzed'
-                          ? 'bg-[#EAFBF1] text-[#136F3A] border-[#C3EDD2]'
-                          : aiInsight.status === 'needs_attention'
-                          ? 'bg-[#FEF6EB] text-[#B45309] border-[#FDE68A]'
-                          : 'bg-[#F0F8FD] text-[#0D78AE] border-[#CFE3F0]'
-                      }`}
+                  <div className="flex items-center gap-1.5">
+                    {ocrResult && (
+                      <span
+                        className={`inline-flex items-center gap-1 text-[10.5px] font-bold px-2 py-0.5 rounded-full border ${
+                          ocrResult.matchWithDeclaration === 'matched' &&
+                          ocrResult.hasRedStampOrSignature === 'verified'
+                            ? 'bg-[#EAFBF1] text-[#136F3A] border-[#C3EDD2]'
+                            : 'bg-[#FEF6EB] text-[#B45309] border-[#FDE68A]'
+                        }`}
+                      >
+                        {ocrResult.matchWithDeclaration === 'matched' &&
+                        ocrResult.hasRedStampOrSignature === 'verified' ? (
+                          <CheckCircle2 size={11} className="shrink-0" />
+                        ) : (
+                          <AlertTriangle size={11} className="shrink-0" />
+                        )}
+                        <span>
+                          {ocrResult.matchWithDeclaration === 'matched' &&
+                          ocrResult.hasRedStampOrSignature === 'verified'
+                            ? 'Đạt sơ bộ · Khớp kê khai'
+                            : 'Cần kiểm tra thêm'}
+                        </span>
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleRescanOcr}
+                      disabled={isScanningOcr}
+                      title="Quét lại tệp minh chứng này bằng OpenAI"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[6px] text-[11px] font-semibold bg-white hover:bg-[#F1F5F9] text-[#334E68] border border-[#CBD5E1] transition-colors cursor-pointer disabled:opacity-50"
                     >
-                      {aiInsight.badgeLabel}
-                    </span>
-                  )}
+                      <RefreshCw size={11} className={isScanningOcr ? 'animate-spin text-[#0D78AE]' : ''} />
+                      <span>{isScanningOcr ? 'Đang quét...' : 'Quét lại tệp'}</span>
+                    </button>
+                  </div>
                 </div>
 
                 {aiInsight && (

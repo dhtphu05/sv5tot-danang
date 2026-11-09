@@ -33,6 +33,9 @@ export interface BackendEnvironment {
   RESEND_FROM_EMAIL: string;
   RESEND_MODE: 'mock' | 'safe' | 'live';
   RESEND_SAFE_OVERRIDE_EMAIL?: string;
+  OPENAI_API_KEY?: string;
+  OPENAI_MODEL: string;
+  OPENAI_BASE_URL: string;
   APP_PUBLIC_URL: string;
   APP_URL: string;
 }
@@ -195,6 +198,9 @@ export function parseEnvironment(env: Record<string, string | undefined> = proce
     RESEND_FROM_EMAIL: resendFromEmail,
     RESEND_MODE: resendMode,
     RESEND_SAFE_OVERRIDE_EMAIL: resendSafeOverride,
+    OPENAI_API_KEY: env.OPENAI_API_KEY?.trim() || undefined,
+    OPENAI_MODEL: env.OPENAI_MODEL?.trim() || 'gpt-4o-mini',
+    OPENAI_BASE_URL: (env.OPENAI_BASE_URL?.trim() || 'https://api.openai.com/v1').replace(/\/+$/, ''),
     APP_PUBLIC_URL: appPublicUrl,
     APP_URL: appPublicUrl,
   };

@@ -79,6 +79,11 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { isBackendMode } from '../../../shared/config/executionMode';
+import { OfficerReviewAiQuietSection } from '../../../widgets/officer-review/OfficerReviewAiQuietSection';
+import {
+  evaluateDeclarationQuickInsight,
+  triggerEvidenceOcr,
+} from '../../../shared/api/copilotApi';
 
 export interface OfficerReviewWorkspaceProps {
   currentUser: StaffUser;
@@ -786,6 +791,117 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
         </div>
       </div>
 
+      {/* PRELIMINARY OCR & CRITERIA EVALUATION BAR (Non-Tech Friendly) */}
+      <OfficerReviewAiQuietSection
+        verdict={applicationAiVerdict}
+        completedCriteriaCount={dossierReview.concludedCriteriaCount}
+        onOpenDetailedSummary={() => {
+          setVirtualAiReportScope({ scope: 'application' });
+          setIsVirtualAiReportOpen(true);
+        }}
+        onSelectCriterion={(critId) => handleSelectCriterion(critId as any)}
+        validUnreviewedDeclarationsCount={
+          effectiveCanMutate
+            ? (effectiveStudentApp?.criteria || []).reduce((acc, crit) => {
+                for (const req of crit.requirements || []) {
+                  for (const decl of req.declarations || []) {
+                    const st = getDeclarationReviewState(
+                      workspaceState,
+                      req.id,
+                      decl.id
+                    );
+                    if (st === 'not_reviewed') {
+                      const insight = evaluateDeclarationQuickInsight({
+                        criterionId: crit.id,
+                        requirementTitle: req.title,
+                        declaredValue: decl.value || req.title,
+                        evidenceFiles: decl.evidenceFiles || [],
+                      });
+                      if (insight.status === 'preliminary_meets') {
+                        acc++;
+                      }
+                    }
+                  }
+                }
+                return acc;
+              }, 0)
+            : 0
+        }
+        onBatchAcceptValidDeclarations={
+          effectiveCanMutate
+            ? () => {
+                let count = 0;
+                for (const crit of effectiveStudentApp?.criteria || []) {
+                  for (const req of crit.requirements || []) {
+                    for (const decl of req.declarations || []) {
+                      const st = getDeclarationReviewState(
+                        workspaceState,
+                        req.id,
+                        decl.id
+                      );
+                      if (st === 'not_reviewed') {
+                        const insight = evaluateDeclarationQuickInsight({
+                          criterionId: crit.id,
+                          requirementTitle: req.title,
+                          declaredValue: decl.value || req.title,
+                          evidenceFiles: decl.evidenceFiles || [],
+                        });
+                        if (insight.status === 'preliminary_meets') {
+                          handleUpdateScopeStatus(
+                            {
+                              criterionId: crit.id as any,
+                              requirementId: req.id,
+                              declarationId: decl.id,
+                            },
+                            'suitable'
+                          );
+                          count++;
+                        }
+                      }
+                    }
+                  }
+                }
+                if (count > 0) {
+                  showToast(
+                    `Đã áp dụng kết quả Đạt cho ${count} mục kê khai có minh chứng hợp lệ.`
+                  );
+                }
+              }
+            : undefined
+        }
+        onReanalyzeAllEvidence={async () => {
+          showToast('Đang quét và đối chiếu lại toàn bộ minh chứng...');
+          const tasks: Promise<any>[] = [];
+          for (const crit of effectiveStudentApp?.criteria || []) {
+            for (const req of crit.requirements || []) {
+              for (const decl of req.declarations || []) {
+                for (const ev of decl.evidenceFiles || []) {
+                  tasks.push(
+                    triggerEvidenceOcr(
+                      {
+                        evidenceId: ev.id,
+                        fileName: ev.name,
+                        mimeType: ev.fileType,
+                        fileUrl: ev.url,
+                        studentFullName: applicationRecord?.student?.fullName,
+                        studentCode: applicationRecord?.student?.studentCode,
+                        schoolName: applicationRecord?.institution?.officialName,
+                        criterionId: crit.id,
+                        requirementTitle: req.title,
+                        declaredValue: decl.value,
+                      },
+                      true
+                    )
+                  );
+                }
+              }
+            }
+          }
+          await Promise.allSettled(tasks);
+          showToast('Đã cập nhật kết quả đọc minh chứng và đánh giá sơ bộ 5 tiêu chí.');
+        }}
+      />
+
       {/* FULL WIDTH CANONICAL DOSSIER (UX-S5.2) */}
       <div className="w-full relative">
         <SharedStudentDossier
@@ -838,9 +954,9 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
                 canMutate={effectiveCanMutate}
                 onUpdateScopeStatus={handleUpdateScopeStatus}
                 onSaveInternalNote={handleSaveInternalNote}
-                onOpenSupplementModal={(scope) => {
+                onOpenSupplementModal={(scope, initialDraft) => {
                   setSelectedScope(scope);
-                  setSupplementModalState({ isOpen: true, scope });
+                  setSupplementModalState({ isOpen: true, scope, initialDraft });
                 }}
                 onSendSupplementRequest={handleConfirmSendSupplement}
                 isSchoolStage={isSchoolStage}
@@ -858,9 +974,9 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
               canMutate={effectiveCanMutate}
               onUpdateScopeStatus={handleUpdateScopeStatus}
               onSaveInternalNote={handleSaveInternalNote}
-              onOpenSupplementModal={(scope) => {
+              onOpenSupplementModal={(scope, initialDraft) => {
                 setSelectedScope(scope);
-                setSupplementModalState({ isOpen: true, scope });
+                setSupplementModalState({ isOpen: true, scope, initialDraft });
               }}
               onSendSupplementRequest={handleConfirmSendSupplement}
               isSchoolStage={isSchoolStage}

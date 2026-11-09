@@ -52,8 +52,8 @@ describe('5TOT ĐHĐN — UX-S5 Final Integration & Acceptance Suite', () => {
     assert.strictEqual(CRITERIA.integration.number, 5);
   });
 
-  test('UX5-02: All 31 active Da Nang institutions resolve to their 24 respective units while preserving school identities', () => {
-    assert.strictEqual(AUTHORITATIVE_SCHOOL_REVIEW_UNITS.length, 24);
+  test('UX5-02: All 45 active Da Nang & Quang Nam institutions resolve to their 38 respective units while preserving school identities', () => {
+    assert.strictEqual(AUTHORITATIVE_SCHOOL_REVIEW_UNITS.length, 38);
 
     for (const unit of AUTHORITATIVE_SCHOOL_REVIEW_UNITS) {
       for (const instId of unit.memberInstitutionIds) {

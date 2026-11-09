@@ -3,7 +3,14 @@
  */
 
 import React from 'react';
-import { Users, CheckCircle2 } from 'lucide-react';
+import {
+  Users,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  FileScan,
+  Sparkles,
+} from 'lucide-react';
 import {
   StaffApplicationRecord,
   StaffOfficerWorkloadSummary,
@@ -28,6 +35,232 @@ import {
 import { Button } from '../../components/buttons/Button';
 import { deriveApplicationCriteriaReviewProgress } from '../../staff/criteriaProgress';
 import { getApplicationCriteriaSummary } from '../../staff/schoolSelectors';
+
+export interface RowAiCriterionChip {
+  shortCode: 'ĐĐ' | 'HT' | 'TL' | 'TN' | 'HN';
+  name: string;
+  aiStatus: 'passed' | 'needs_check' | 'failed';
+  reason: string;
+}
+
+export interface RowAiPreliminarySummary {
+  overallStatus: 'passed' | 'needs_check' | 'failed';
+  passedCount: number;
+  badgeLabel: string;
+  ocrNote: string;
+  criteriaChips: RowAiCriterionChip[];
+}
+
+const SHORT_CODES: Record<string, 'ĐĐ' | 'HT' | 'TL' | 'TN' | 'HN'> = {
+  ethics: 'ĐĐ',
+  academic: 'HT',
+  physical: 'TL',
+  volunteer: 'TN',
+  integration: 'HN',
+};
+
+export function deriveRowAiPreliminarySummary(
+  app: StaffApplicationRecord
+): RowAiPreliminarySummary {
+  // Hero dossier (Nguyễn Minh Anh) matches the exact 2 passed / 3 needs_check inside OfficerReviewWorkspace
+  if (app.applicationId === 'APP-2026-DN-102220123') {
+    return {
+      overallStatus: 'needs_check',
+      passedCount: 2,
+      badgeLabel: 'AI: Cần kiểm tra (2/5 Đạt)',
+      ocrNote: 'OCR: Kiểm tra GPA cả năm, TL & lệch ngày TN',
+      criteriaChips: [
+        {
+          shortCode: 'ĐĐ',
+          name: 'Đạo đức tốt',
+          aiStatus: 'passed',
+          reason: 'AI: Đạt sơ bộ (ĐRL 88/100 · Có dấu xác nhận)',
+        },
+        {
+          shortCode: 'HT',
+          name: 'Học tập tốt',
+          aiStatus: 'needs_check',
+          reason: 'AI: Cần kiểm tra thêm (Bảng điểm mới thể hiện HK1)',
+        },
+        {
+          shortCode: 'TL',
+          name: 'Thể lực tốt',
+          aiStatus: 'needs_check',
+          reason: 'AI: Cần kiểm tra quy đổi giải chạy phong trào',
+        },
+        {
+          shortCode: 'TN',
+          name: 'Tình nguyện tốt',
+          aiStatus: 'needs_check',
+          reason: 'AI: Minh chứng ghi 04 ngày so với kê khai 05 ngày',
+        },
+        {
+          shortCode: 'HN',
+          name: 'Hội nhập tốt',
+          aiStatus: 'passed',
+          reason: 'AI: Đạt sơ bộ (IELTS 6.5 & hoạt động hội nhập hợp lệ)',
+        },
+      ],
+    };
+  }
+
+  const baseOrder: Array<{
+    id: 'ethics' | 'academic' | 'physical' | 'volunteer' | 'integration';
+    name: string;
+  }> = [
+    { id: 'ethics', name: 'Đạo đức tốt' },
+    { id: 'academic', name: 'Học tập tốt' },
+    { id: 'physical', name: 'Thể lực tốt' },
+    { id: 'volunteer', name: 'Tình nguyện tốt' },
+    { id: 'integration', name: 'Hội nhập tốt' },
+  ];
+
+  const chips: RowAiCriterionChip[] = baseOrder.map(({ id, name }) => {
+    const found = app.criteriaReview?.find((c) => c.criterionId === id);
+    const shortCode = SHORT_CODES[id];
+
+    if (!found || found.evidenceCount === 0 || found.declaredCount === 0) {
+      return {
+        shortCode,
+        name,
+        aiStatus: 'failed',
+        reason: `AI: Chưa đạt sơ bộ (${name} thiếu tệp minh chứng)`,
+      };
+    }
+
+    if (
+      found.status === 'needs_supplement' ||
+      found.status === 'needs_discussion' ||
+      (found.noteSummary &&
+        /bổ sung|kiểm tra|chưa rõ|thiếu|xem xét/i.test(found.noteSummary))
+    ) {
+      return {
+        shortCode,
+        name,
+        aiStatus: 'needs_check',
+        reason: `AI: Cần kiểm tra thêm (${
+          found.noteSummary || 'Cần xác minh mộc dấu / nội dung OCR'
+        })`,
+      };
+    }
+
+    return {
+      shortCode,
+      name,
+      aiStatus: 'passed',
+      reason: `AI: Đạt sơ bộ (${found.evidenceCount} minh chứng khớp kê khai)`,
+    };
+  });
+
+  // Also check application-level supplement/recheck workflow status
+  if (
+    (app.workflowStatus === 'supplement_requested' ||
+      app.workflowStatus === 'needs_recheck') &&
+    chips.every((c) => c.aiStatus === 'passed')
+  ) {
+    chips[3] = {
+      ...chips[3],
+      aiStatus: 'needs_check',
+      reason: 'AI: Cần kiểm tra thêm minh chứng bổ sung tiêu chí Tình nguyện',
+    };
+  }
+
+  const passedCount = chips.filter((c) => c.aiStatus === 'passed').length;
+  const failedChips = chips.filter((c) => c.aiStatus === 'failed');
+  const checkChips = chips.filter((c) => c.aiStatus === 'needs_check');
+
+  if (failedChips.length > 0 || app.totalEvidence === 0) {
+    const missingNames = failedChips.map((c) => c.shortCode).join(', ');
+    return {
+      overallStatus: 'failed',
+      passedCount,
+      badgeLabel: `AI: Chưa đạt sơ bộ (${passedCount}/5 Đạt)`,
+      ocrNote: missingNames
+        ? `OCR: Thiếu minh chứng hợp lệ tại ${missingNames}`
+        : 'OCR: Hồ sơ thiếu tệp minh chứng bắt buộc',
+      criteriaChips: chips,
+    };
+  }
+
+  if (checkChips.length > 0) {
+    const checkNames = checkChips.map((c) => c.shortCode).join(', ');
+    return {
+      overallStatus: 'needs_check',
+      passedCount,
+      badgeLabel: `AI: Cần kiểm tra (${passedCount}/5 Đạt)`,
+      ocrNote: `OCR: Cần đối chiếu thêm minh chứng ${checkNames}`,
+      criteriaChips: chips,
+    };
+  }
+
+  return {
+    overallStatus: 'passed',
+    passedCount: 5,
+    badgeLabel: 'AI: Đạt sơ bộ (5/5 tiêu chí)',
+    ocrNote: `OCR: Khớp ${app.totalEvidence}/${app.totalEvidence} minh chứng · Có dấu xác nhận`,
+    criteriaChips: chips,
+  };
+}
+
+export function renderRowAiPreliminaryCell(
+  app: StaffApplicationRecord
+): React.ReactNode {
+  const ai = deriveRowAiPreliminarySummary(app);
+
+  return (
+    <div className="space-y-1 min-w-[205px]">
+      <div>
+        {ai.overallStatus === 'passed' ? (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[5px] text-[11px] font-bold bg-[#EAFBF1] text-[#136F3A] border border-[#B6E6C9]">
+            <CheckCircle2 size={11.5} className="shrink-0 text-[#16A34A]" />
+            <span>{ai.badgeLabel}</span>
+          </span>
+        ) : ai.overallStatus === 'needs_check' ? (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[5px] text-[11px] font-bold bg-[#FEF6EB] text-[#B45309] border border-[#FADDB6]">
+            <AlertTriangle size={11.5} className="shrink-0 text-[#D97706]" />
+            <span>{ai.badgeLabel}</span>
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[5px] text-[11px] font-bold bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA]">
+            <XCircle size={11.5} className="shrink-0 text-[#DC2626]" />
+            <span>{ai.badgeLabel}</span>
+          </span>
+        )}
+      </div>
+
+      <div className="flex items-center gap-1">
+        {ai.criteriaChips.map((chip) => {
+          const isPass = chip.aiStatus === 'passed';
+          const isCheck = chip.aiStatus === 'needs_check';
+          return (
+            <span
+              key={chip.shortCode}
+              title={chip.reason}
+              className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-bold rounded-[4px] border ${
+                isPass
+                  ? 'bg-[#EAFBF1] text-[#15803D] border-[#BBF7D0]'
+                  : isCheck
+                  ? 'bg-[#FEF6EB] text-[#B45309] border-[#FADDB6]'
+                  : 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]'
+              }`}
+            >
+              <span>{chip.shortCode}</span>
+              <span>{isPass ? '✓' : isCheck ? '!' : '✕'}</span>
+            </span>
+          );
+        })}
+      </div>
+
+      <div
+        className="flex items-center gap-1 text-[10.5px] text-[#526B7C] line-clamp-1"
+        title={ai.ocrNote}
+      >
+        <FileScan size={11} className="shrink-0 text-[#0D78AE]" />
+        <span className="truncate">{ai.ocrNote}</span>
+      </div>
+    </div>
+  );
+}
 
 export function deriveOfficerWorkloadSummaries(
   applications: StaffApplicationRecord[]
@@ -129,18 +362,6 @@ export function buildCollectiveTableColumns(params: {
       ),
     },
     {
-      key: 'submittedAt',
-      header: 'Ngày nộp trực tiếp',
-      align: 'center',
-      renderCell: (app) => (
-        <span className="text-[12px] text-[#607483] tabular-nums">
-          {app.submittedAt
-            ? new Date(app.submittedAt).toLocaleDateString('vi-VN')
-            : '05/10/2026'}
-        </span>
-      ),
-    },
-    {
       key: 'evidenceCount',
       header: 'Minh chứng',
       align: 'center',
@@ -154,6 +375,55 @@ export function buildCollectiveTableColumns(params: {
           <span className="font-bold text-[#0D78AE] tabular-nums">
             {count} tệp
           </span>
+        );
+      },
+    },
+    {
+      key: 'aiPreliminary',
+      header: 'Đánh giá sơ bộ (AI / OCR)',
+      renderCell: (app) => {
+        const count =
+          (app.tt01?.evidenceFiles?.length || 0) +
+          (app.tt02?.evidenceFiles?.length || 0) +
+          (app.tt03?.evidenceFiles?.length || 0) +
+          (app.tt04?.evidenceFiles?.length || 0);
+        const isPendingSupplement = app.status === 'city_supplement_pending';
+        if (count < 4) {
+          return (
+            <div className="space-y-1">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[5px] text-[11px] font-bold bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA]">
+                <XCircle size={11.5} className="shrink-0" />
+                <span>AI: Chưa đạt sơ bộ</span>
+              </span>
+              <div className="text-[10.5px] text-[#526B7C]">
+                OCR: Thiếu tệp minh chứng tiêu chuẩn TT01–TT04
+              </div>
+            </div>
+          );
+        }
+        if (isPendingSupplement) {
+          return (
+            <div className="space-y-1">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[5px] text-[11px] font-bold bg-[#FEF6EB] text-[#B45309] border border-[#FADDB6]">
+                <AlertTriangle size={11.5} className="shrink-0" />
+                <span>AI: Cần kiểm tra (3/4 Đạt)</span>
+              </span>
+              <div className="text-[10.5px] text-[#526B7C]">
+                OCR: Cần đối chiếu danh sách thành viên & dấu xác nhận
+              </div>
+            </div>
+          );
+        }
+        return (
+          <div className="space-y-1">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[5px] text-[11px] font-bold bg-[#EAFBF1] text-[#136F3A] border border-[#B6E6C9]">
+              <CheckCircle2 size={11.5} className="shrink-0" />
+              <span>AI: Đạt sơ bộ (4/4 TT)</span>
+            </span>
+            <div className="text-[10.5px] text-[#526B7C]">
+              OCR: Khớp {count}/{count} minh chứng · Có dấu xác nhận
+            </div>
+          </div>
         );
       },
     },
@@ -265,8 +535,11 @@ export function buildIndividualApplicationTableColumns(params: {
       key: 'institution',
       header: 'Trường / Đơn vị',
       renderCell: (app) => (
-        <div className="max-w-[260px]">
-          <div className="text-[12.5px] font-semibold text-[#172A3A] line-clamp-1">
+        <div className="min-w-[205px] max-w-[260px]">
+          <div
+            className="text-[12.5px] font-semibold text-[#172A3A] line-clamp-1"
+            title={app.institution.officialName}
+          >
             {app.institution.officialName}
           </div>
           <div className="text-[11.5px] text-[#607483] tabular-nums mt-0.5">
@@ -311,8 +584,18 @@ export function buildIndividualApplicationTableColumns(params: {
       },
     },
     {
+      key: 'aiPreliminary',
+      header: (
+        <span className="inline-flex items-center gap-1.5 text-[#0F2335]">
+          <Sparkles size={13} className="text-[#0D78AE]" />
+          <span>Đánh giá sơ bộ (AI / OCR)</span>
+        </span>
+      ),
+      renderCell: (app) => renderRowAiPreliminaryCell(app),
+    },
+    {
       key: 'progress',
-      header: 'Tiêu chí (05 tiêu chí)',
+      header: 'Tiến độ cán bộ xét',
       renderCell: (app) => {
         const critSummary = getApplicationCriteriaSummary(app);
         const progress = deriveApplicationCriteriaReviewProgress(app);
@@ -351,9 +634,9 @@ export function buildIndividualApplicationTableColumns(params: {
               >
                 {progress.compactProgressLabel}
               </span>
-              <span className="text-[11px] text-[#607483] tabular-nums ml-1.5">
-                ({app.totalDeclarations} mục · {app.totalEvidence} minh chứng)
-              </span>
+              <div className="text-[11px] text-[#607483] tabular-nums">
+                {app.totalDeclarations} mục · {app.totalEvidence} minh chứng
+              </div>
             </div>
           </div>
         );
@@ -361,41 +644,31 @@ export function buildIndividualApplicationTableColumns(params: {
     },
     {
       key: 'status',
-      header: 'Thẩm định',
+      header: 'Thẩm định & Cập nhật',
       renderCell: (app) => {
         const statusMeta = resolveUserFacingStatus(
           app,
           isManager ? 'CITY_MANAGER' : 'CITY_OFFICER'
         );
-        return (
-          <span
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[11.5px] font-bold border whitespace-nowrap"
-            style={{
-              backgroundColor: statusMeta.badgeBg,
-              color: statusMeta.badgeText,
-              borderColor: statusMeta.badgeBorder,
-            }}
-          >
-            <span
-              className="w-1.5 h-1.5 rounded-full shrink-0"
-              style={{ backgroundColor: statusMeta.dotColor }}
-            />
-            {statusMeta.label}
-          </span>
-        );
-      },
-    },
-    {
-      key: 'updated',
-      header: 'Cập nhật',
-      hideBelowLg: true,
-      renderCell: (app) => {
         const isHero = app.applicationId === 'APP-2026-DN-102220123';
         return (
-          <div className="text-[12px] text-[#526B7C] whitespace-nowrap tabular-nums">
-            <div>{isHero ? '15 phút trước' : app.updatedAt}</div>
-            <div className="text-[11px] text-[#607483]">
-              Hạn nội bộ: {app.internalDeadline}
+          <div className="space-y-1">
+            <span
+              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] text-[11px] font-bold border whitespace-nowrap"
+              style={{
+                backgroundColor: statusMeta.badgeBg,
+                color: statusMeta.badgeText,
+                borderColor: statusMeta.badgeBorder,
+              }}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full shrink-0"
+                style={{ backgroundColor: statusMeta.dotColor }}
+              />
+              {statusMeta.label}
+            </span>
+            <div className="text-[10.5px] text-[#607483] whitespace-nowrap tabular-nums">
+              {isHero ? '15 phút trước' : app.updatedAt} · Hạn: {app.internalDeadline}
             </div>
           </div>
         );

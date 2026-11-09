@@ -45,33 +45,44 @@ export const CANONICAL_INSTITUTION_TO_REVIEW_UNIT: Record<string, string> = {
   'inst-smp': 'unit-udn',
   'inst-vnuk': 'unit-udn',
 
-  // 23 Active Standalone Universities / Academies / Campuses / Colleges in Da Nang
+  // 37 Active Standalone Universities / Academies / Campuses / Colleges in Da Nang & Quang Nam
   'inst-dtu': 'unit-dtu',
   'inst-donga': 'unit-donga',
   'inst-dau': 'unit-dau',
   'inst-upes3': 'unit-upes3',
   'inst-tyd': 'unit-tyd',
   'inst-fpt': 'unit-fpt',
+  'inst-greenwich-dn': 'unit-greenwich-dn',
+  'inst-auv': 'unit-auv',
   'inst-dh-ngan-hang-dn': 'unit-dh-ngan-hang-dn',
   'inst-dh-luat-hanoi-dn': 'unit-dh-luat-hanoi-dn',
   'inst-dh-mo-hn-dn': 'unit-dh-mo-hn-dn',
   'inst-hv-chinhtri-kv3': 'unit-hv-chinhtri-kv3',
+  'inst-hv-hanhchinh-dn': 'unit-hv-hanhchinh-dn',
   'inst-hv-toa-an': 'unit-hv-toa-an',
   'inst-cd-thuongmai': 'unit-cd-thuongmai',
   'inst-cd-dulich': 'unit-cd-dulich',
   'inst-cd-congnghe': 'unit-cd-congnghe',
   'inst-cd-fptpoly': 'unit-cd-fptpoly',
+  'inst-cd-btec-fpt': 'unit-cd-btec-fpt',
   'inst-cd-nghe-dn': 'unit-cd-nghe-dn',
   'inst-cd-gtvt-tw5': 'unit-cd-gtvt-tw5',
   'inst-cd-kinhte-kh': 'unit-cd-kinhte-kh',
   'inst-cd-vhtt-dl': 'unit-cd-vhtt-dl',
   'inst-cd-luongthuc': 'unit-cd-luongthuc',
+  'inst-cd-bachkhoa-dn': 'unit-cd-bachkhoa-dn',
+  'inst-cd-daiviet-dn': 'unit-cd-daiviet-dn',
+  'inst-cd-phuongdong-dn': 'unit-cd-phuongdong-dn',
   'inst-cd-ptth': 'unit-cd-ptth',
   'inst-cd-supham-maugiao': 'unit-cd-supham-maugiao',
   'inst-cd-yduoc-pasteur': 'unit-cd-yduoc-pasteur',
-
-  // 01 Suspended College in Da Nang
   'inst-cd-lacviet': 'unit-cd-lacviet',
+  'inst-dqu': 'unit-dqu',
+  'inst-pctu': 'unit-pctu',
+  'inst-cd-quangnam': 'unit-cd-quangnam',
+  'inst-cd-dienluc-mt': 'unit-cd-dienluc-mt',
+  'inst-cd-kinhte-thuyloi-mt': 'unit-cd-kinhte-thuyloi-mt',
+  'inst-cd-thaco': 'unit-cd-thaco',
 };
 
 export class SchoolReviewUnitService {

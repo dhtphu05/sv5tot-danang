@@ -1,35 +1,40 @@
 /**
- * 5TOT Đà Nẵng — Officer Review Quiet & Useful AI Section (SRW-4 Section 16)
- * - Default state: Collapsed (zero intrusion)
- * - Preferred entry: "AI hỗ trợ thẩm định"
- * - On request: Displays preliminary verdict, material findings, links to evidence
- * - Advisory only: Does not record official judgments or mutate application state autonomously
+ * 5TOT Đà Nẵng — Officer Review Preliminary OCR & Criteria Assessment Bar
+ * - Scannable at a glance for non-tech officers ("Nhìn là hiểu")
+ * - 100% Lucide icons (zero emojis)
+ * - 1-Click batch accept for valid preliminary items + Live OpenAI re-analysis trigger
+ * - Advisory only: Final judgment always belongs to the reviewing officer
  */
 
 import React, { useState } from 'react';
 import {
-  Bot,
   Sparkles,
   ChevronDown,
   ChevronUp,
   CheckCircle2,
-  AlertCircle,
-  FileText,
-  HelpCircle,
-  ExternalLink,
+  AlertTriangle,
+  XCircle,
+  CheckCheck,
+  RefreshCw,
+  FileCheck2,
 } from 'lucide-react';
 import {
   ApplicationPreliminaryVerdictState,
   CriterionPreliminaryAssessment,
   AiFinding,
 } from '../../features/ai-review-copilot';
-import { Button } from '../../components/buttons/Button';
+import { CriterionId } from '../../types/application';
 
 export interface OfficerReviewAiQuietSectionProps {
   verdict: ApplicationPreliminaryVerdictState;
   onOpenDetailedSummary: () => void;
   onInspectFinding?: (finding: AiFinding) => void;
   completedCriteriaCount: number;
+  validUnreviewedDeclarationsCount?: number;
+  onBatchAcceptValidDeclarations?: () => void;
+  onReanalyzeAllEvidence?: () => void;
+  isReanalyzing?: boolean;
+  onSelectCriterion?: (criterionId: CriterionId) => void;
 }
 
 export const OfficerReviewAiQuietSection: React.FC<
@@ -37,108 +42,183 @@ export const OfficerReviewAiQuietSection: React.FC<
 > = ({
   verdict,
   onOpenDetailedSummary,
-  onInspectFinding,
-  completedCriteriaCount,
+  validUnreviewedDeclarationsCount = 0,
+  onBatchAcceptValidDeclarations,
+  onReanalyzeAllEvidence,
+  isReanalyzing = false,
+  onSelectCriterion,
 }) => {
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [isExpanded, setIsExpanded] = useState<boolean>(true);
 
   const verdictTone =
     verdict.verdict === 'preliminary_meets'
-      ? { text: '#16A34A', bg: '#EAFBF1', border: '#B6E6C9', label: 'Đạt yêu cầu (Sơ bộ)' }
+      ? {
+          text: '#136F3A',
+          bg: '#EAFBF1',
+          border: '#B6E6C9',
+          label: 'Đạt sơ bộ 5/5 tiêu chí',
+          Icon: CheckCircle2,
+        }
       : verdict.verdict === 'preliminary_not_meets'
-      ? { text: '#DC2626', bg: '#FEF2F2', border: '#FECACA', label: 'Không đạt (Sơ bộ)' }
-      : { text: '#B45309', bg: '#FEF6EB', border: '#FADDB6', label: 'Cần kiểm tra thêm minh chứng' };
+      ? {
+          text: '#B91C1C',
+          bg: '#FEF2F2',
+          border: '#FECACA',
+          label: 'Chưa đạt (Sơ bộ)',
+          Icon: XCircle,
+        }
+      : {
+          text: '#B45309',
+          bg: '#FEF6EB',
+          border: '#FADDB6',
+          label: 'Cần kiểm tra thêm minh chứng',
+          Icon: AlertTriangle,
+        };
+
+  const VerdictIcon = verdictTone.Icon;
 
   return (
-    <div className="bg-white rounded-[14px] border border-[#DCE7EE] overflow-hidden shadow-2xs">
-      <div className="p-3.5 px-4 bg-[#F8FBFD] flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-[7px] bg-[#EAF5FC] text-[#0D78AE] flex items-center justify-center shrink-0">
-            <Bot size={16} />
+    <div className="bg-white rounded-[10px] border border-[#DCE7EE] overflow-hidden shadow-2xs">
+      <div className="p-3 px-3.5 bg-[#F8FBFD] flex flex-wrap items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="w-7 h-7 rounded-[7px] bg-[#EAF5FC] text-[#0D78AE] flex items-center justify-center shrink-0 border border-[#CBE5F6]">
+            <FileCheck2 size={15} />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[13px] font-extrabold text-[#0F2335]">
-                AI hỗ trợ thẩm định
-              </span>
-              <span className="text-[11px] text-[#64748B] font-medium">
-                (Tư vấn độc lập · Không thay thế cán bộ thẩm định)
-              </span>
-            </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[13px] font-extrabold text-[#0F2335]">
+              Đánh giá sơ bộ & Đọc minh chứng (OCR)
+            </span>
+            <span
+              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[5px] text-[11.5px] font-bold border"
+              style={{
+                color: verdictTone.text,
+                backgroundColor: verdictTone.bg,
+                borderColor: verdictTone.border,
+              }}
+            >
+              <VerdictIcon size={12.5} className="shrink-0" />
+              <span>{verdictTone.label}</span>
+            </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span
-            className="px-2 py-0.5 rounded-[5px] text-[11px] font-bold border"
-            style={{
-              color: verdictTone.text,
-              backgroundColor: verdictTone.bg,
-              borderColor: verdictTone.border,
-            }}
+        <div className="flex items-center gap-2 flex-wrap">
+          {onBatchAcceptValidDeclarations && validUnreviewedDeclarationsCount > 0 && (
+            <button
+              type="button"
+              onClick={onBatchAcceptValidDeclarations}
+              className="inline-flex items-center gap-1.5 h-[30px] px-3 rounded-[6px] bg-[#16A34A] hover:bg-[#15803D] text-white text-[12px] font-bold transition-colors cursor-pointer border-0 shadow-2xs"
+              title="Tự động đánh dấu Đạt cho tất cả các mục kê khai có minh chứng hợp lệ"
+            >
+              <CheckCheck size={13.5} />
+              <span>Áp dụng Đạt cho các mục hợp lệ ({validUnreviewedDeclarationsCount})</span>
+            </button>
+          )}
+
+          {onReanalyzeAllEvidence && (
+            <button
+              type="button"
+              onClick={onReanalyzeAllEvidence}
+              disabled={isReanalyzing}
+              className="inline-flex items-center gap-1.5 h-[30px] px-2.5 rounded-[6px] border border-[#CBD5E1] bg-white hover:bg-[#F1F5F9] text-[12px] font-semibold text-[#334E68] transition-colors cursor-pointer disabled:opacity-60"
+              title="Quét lại toàn bộ minh chứng bằng OpenAI"
+            >
+              <RefreshCw size={12.5} className={isReanalyzing ? 'animate-spin text-[#0D78AE]' : ''} />
+              <span>{isReanalyzing ? 'Đang quét minh chứng...' : 'Phân tích lại'}</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={onOpenDetailedSummary}
+            className="inline-flex items-center gap-1.5 h-[30px] px-2.5 rounded-[6px] border border-[#BFDBFE] bg-[#EFF6FF] hover:bg-[#DBEAFE] text-[12px] font-bold text-[#0066CC] transition-colors cursor-pointer"
           >
-            {verdictTone.label}
-          </span>
+            <Sparkles size={12.5} />
+            <span>Báo cáo chi tiết</span>
+          </button>
 
           <button
             type="button"
             onClick={() => setIsExpanded((prev) => !prev)}
-            className="inline-flex items-center gap-1 h-[30px] px-2.5 rounded-[6px] border border-[#CBD5E1] bg-white hover:bg-[#F1F5F9] text-[12px] font-bold text-[#334E68] transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1 h-[30px] px-2 rounded-[6px] border border-[#CBD5E1] bg-white hover:bg-[#F1F5F9] text-[12px] font-bold text-[#334E68] transition-colors cursor-pointer"
           >
-            <span>{isExpanded ? 'Thu gọn' : 'Xem tư vấn'}</span>
-            {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            <span>{isExpanded ? 'Thu gọn' : 'Mở rộng'}</span>
+            {isExpanded ? <ChevronUp size={13.5} /> : <ChevronDown size={13.5} />}
           </button>
         </div>
       </div>
 
       {isExpanded && (
-        <div className="p-4 border-t border-[#EEF4F8] bg-white space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2 text-[12px]">
-            <div className="text-[#475569]">
-              Nhận định sơ bộ của AI dựa trên đối chiếu quy chế năm học 2025–2026 và các tệp minh chứng đính kèm.
-            </div>
-
-            <Button
-              variant="secondary"
-              size="sm"
-              iconLeading={<Sparkles size={12} />}
-              onClick={onOpenDetailedSummary}
-            >
-              Báo cáo phân tích chi tiết
-            </Button>
+        <div className="p-3 px-3.5 border-t border-[#EEF4F8] bg-white space-y-2.5">
+          <div className="text-[12px] text-[#475569] flex items-center justify-between gap-2 flex-wrap">
+            <span>
+              {verdict.headline} — Bấm vào từng tiêu chí bên dưới để chuyển nhanh tới vị trí cần kiểm tra:
+            </span>
+            <span className="text-[11px] text-[#64748B] font-medium">
+              Gợi ý sơ bộ hỗ trợ cán bộ · Quyết định chính thức do cán bộ xác nhận
+            </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 pt-1 text-[11.5px]">
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 text-[11.5px]">
             {Object.entries(verdict.criteriaAssessments).map(([critId, rawAssessment]) => {
               const assessment = rawAssessment as CriterionPreliminaryAssessment;
+              const isMeets = assessment.status === 'meets';
+              const isNotMeets = assessment.status === 'not_meets';
+
               return (
-              <div
-                key={critId}
-                className="p-2.5 rounded-[8px] bg-[#F8FAFC] border border-[#E2E8F0] space-y-1"
-              >
-                <div className="font-bold text-[#1E293B] truncate capitalize">
-                  {critId}
-                </div>
-                <div className="flex items-center gap-1">
-                  <span
-                    className={`font-semibold ${
-                      assessment.status === 'meets'
-                        ? 'text-[#16A34A]'
-                        : assessment.status === 'not_meets'
-                        ? 'text-[#DC2626]'
-                        : 'text-[#D97706]'
-                    }`}
-                  >
-                    {assessment.status === 'meets'
-                      ? 'Đạt'
-                      : assessment.status === 'not_meets'
-                      ? 'Không đạt'
-                      : 'Cần bổ sung'}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+                <button
+                  key={critId}
+                  type="button"
+                  onClick={() => {
+                    onSelectCriterion?.(critId as CriterionId);
+                    const el = document.getElementById(`criterion-section-${critId}`);
+                    if (el) {
+                      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }}
+                  className={`p-2.5 rounded-[8px] border text-left transition-all cursor-pointer space-y-1 ${
+                    isMeets
+                      ? 'bg-[#F8FEFA] hover:bg-[#EAFBF1] border-[#C6EED5]'
+                      : isNotMeets
+                      ? 'bg-[#FEF2F2] hover:bg-[#FEE2E2] border-[#FECACA]'
+                      : 'bg-[#FFFBEB] hover:bg-[#FEF3C7] border-[#FDE68A]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-bold text-[#0F2335] truncate">
+                      {assessment.criterionNumber}. {assessment.criterionName}
+                    </span>
+                    {isMeets ? (
+                      <CheckCircle2 size={13} className="text-[#16A34A] shrink-0" />
+                    ) : isNotMeets ? (
+                      <XCircle size={13} className="text-[#DC2626] shrink-0" />
+                    ) : (
+                      <AlertTriangle size={13} className="text-[#D97706] shrink-0" />
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span
+                      className={`text-[11px] font-bold ${
+                        isMeets
+                          ? 'text-[#136F3A]'
+                          : isNotMeets
+                          ? 'text-[#B91C1C]'
+                          : 'text-[#B45309]'
+                      }`}
+                    >
+                      {isMeets
+                        ? 'Đạt sơ bộ'
+                        : isNotMeets
+                        ? 'Chưa đạt (Sơ bộ)'
+                        : 'Cần kiểm tra thêm'}
+                    </span>
+                  </div>
+                  <div className="text-[10.5px] text-[#526B7C] line-clamp-1">
+                    {assessment.headline}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

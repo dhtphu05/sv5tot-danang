@@ -11,7 +11,7 @@
  * Discreet inline note editor ("Ghi nhận xét") and scoped supplement trigger ("Yêu cầu bổ sung").
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Check,
   X,
@@ -21,6 +21,9 @@ import {
   CheckCircle2,
   XCircle,
   FileText,
+  FileCheck2,
+  ScanSearch,
+  MessageSquareWarning,
   RotateCcw,
 } from 'lucide-react';
 import { CriterionDefinition } from '../../../tokens';
@@ -41,6 +44,10 @@ import {
 import { ContextualSupplementEditor } from './ContextualSupplementEditor';
 import { SupplementRequestFormPayload } from './SupplementRequestFormModal';
 import { SupplementAllowedAction } from '../../../components/supplement/supplementTypes';
+import {
+  evaluateDeclarationQuickInsight,
+  subscribeCopilotOcrUpdates,
+} from '../../../shared/api/copilotApi';
 
 export interface InlineRowReviewControlsProps {
   criterionId: CriterionDefinition['id'];
@@ -53,7 +60,7 @@ export interface InlineRowReviewControlsProps {
     nextStatus: StaffItemReviewStatus
   ) => void;
   onSaveInternalNote?: (scope: SelectedReviewScope, note: string) => void;
-  onOpenSupplementModal?: (scope: SelectedReviewScope) => void;
+  onOpenSupplementModal?: (scope: SelectedReviewScope, initialDraft?: string) => void;
   onSendSupplementRequest?: (
     payload: SupplementRequestFormPayload
   ) => boolean | Promise<boolean>;
@@ -82,12 +89,18 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
   const declarationCount = requirement.declarations.length;
   const isMultiDeclaration = declarationCount > 1 && !declaration;
 
-  // Multi-declaration summary in collapsed row
+  // Multi-declaration summary in collapsed row (always shows AI status on the row!)
   if (isMultiDeclaration) {
     let passCount = 0;
     let failCount = 0;
     let unreviewedCount = 0;
     let supplementCount = 0;
+
+    let aiPassCount = 0;
+    let aiFailCount = 0;
+    let aiCheckCount = 0;
+    let firstReason = '';
+    let firstExtracted = '';
 
     for (const d of requirement.declarations) {
       const st = getDeclarationReviewState(workspaceState, requirement.id, d.id);
@@ -95,44 +108,120 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
       else if (st === 'unsuitable') failCount++;
       else if (st === 'needs_supplement') supplementCount++;
       else unreviewedCount++;
+
+      const insight = evaluateDeclarationQuickInsight({
+        criterionId,
+        requirementTitle: requirement.title,
+        declaredValue: d.value || requirement.title,
+        evidenceFiles: d.evidenceFiles || [],
+      });
+      if (!firstExtracted && insight.extractedText) {
+        firstExtracted = insight.extractedText;
+      }
+      if (insight.status === 'preliminary_meets') {
+        aiPassCount++;
+      } else if (insight.status === 'preliminary_not_meets') {
+        aiFailCount++;
+        if (!firstReason) firstReason = insight.reasonText;
+      } else {
+        aiCheckCount++;
+        if (!firstReason) firstReason = insight.reasonText;
+      }
     }
 
     const allReviewed = unreviewedCount === 0;
+    const isAiAllPass = aiPassCount === declarationCount;
+    const isAiFail = aiFailCount > 0 && aiPassCount === 0;
 
     return (
-      <div className="flex items-center gap-2 select-none">
+      <div className="flex flex-col items-end gap-1.5 select-none w-full">
+        {/* AI Preliminary Status on Multi-Declaration Row */}
         <div
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[12px] font-semibold border ${
-            allReviewed
-              ? passCount === declarationCount
-                ? 'bg-[#EAFBF1] border-[#B6E6C9] text-[#136F3A]'
-                : 'bg-[#FEF2F2] border-[#FECACA] text-[#B91C1C]'
-              : supplementCount > 0
-              ? 'bg-[#FEF6EB] border-[#FADDB6] text-[#B45309]'
-              : 'bg-[#F3F7FA] border-[#DCE7EE] text-[#4A6275]'
+          className={`w-full max-w-[340px] rounded-[8px] px-2.5 py-1.5 border text-left space-y-1 ${
+            isAiAllPass
+              ? 'bg-[#F8FEFA] border-[#C6EED5]'
+              : isAiFail
+              ? 'bg-[#FEF2F2] border-[#FECACA]'
+              : 'bg-[#FFFBEB] border-[#FDE68A]'
           }`}
         >
-          {allReviewed ? (
-            passCount === declarationCount ? (
-              <>
-                <Check size={13} className="text-[#1A934E] stroke-[2.5]" />
-                <span>{declarationCount}/{declarationCount} Đạt</span>
-              </>
-            ) : (
-              <>
-                <X size={13} className="text-[#DC2626] stroke-[2.5]" />
-                <span>{passCount}/{declarationCount} Đạt</span>
-              </>
-            )
-          ) : (
-            <span>
-              {passCount > 0 ? `${passCount}/${declarationCount} Đạt` : `${declarationCount} mục kê khai`}
+          <div className="flex items-center justify-between gap-1.5 flex-wrap">
+            <span
+              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] text-[10.5px] font-bold border ${
+                isAiAllPass
+                  ? 'bg-[#EAFBF1] text-[#136F3A] border-[#B6E6C9]'
+                  : isAiFail
+                  ? 'bg-[#FEE2E2] text-[#B91C1C] border-[#FCA5A5]'
+                  : 'bg-[#FEF3C7] text-[#B45309] border-[#FCD34D]'
+              }`}
+            >
+              {isAiAllPass ? (
+                <CheckCircle2 size={11} className="shrink-0" />
+              ) : isAiFail ? (
+                <XCircle size={11} className="shrink-0" />
+              ) : (
+                <AlertTriangle size={11} className="shrink-0" />
+              )}
+              <span>
+                {isAiAllPass
+                  ? `AI: Đạt sơ bộ (${aiPassCount}/${declarationCount} mục)`
+                  : isAiFail
+                  ? `AI: Chưa đạt sơ bộ`
+                  : `AI: Cần kiểm tra thêm (${aiPassCount}/${declarationCount} Đạt)`}
+              </span>
             </span>
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#526B7C]">
+              <FileCheck2 size={11} className="text-[#0D78AE] shrink-0" />
+              <span>{isAiAllPass ? 'Có dấu xác nhận' : 'Cần kiểm tra tệp'}</span>
+            </span>
+          </div>
+          {firstExtracted && (
+            <div className="text-[10.5px] text-[#334E68] line-clamp-1">
+              <span className="font-semibold text-[#0F2335]">Đọc từ minh chứng: </span>
+              <span>{firstExtracted}</span>
+            </div>
+          )}
+          {!isAiAllPass && firstReason && (
+            <div className="text-[10px] font-medium text-[#B45309] line-clamp-1">
+              {firstReason}
+            </div>
           )}
         </div>
-        <span className="text-[11px] text-[#728391] font-medium hidden lg:inline">
-          (Bấm để xem từng mục)
-        </span>
+
+        <div className="flex items-center gap-2">
+          <div
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[12px] font-semibold border ${
+              allReviewed
+                ? passCount === declarationCount
+                  ? 'bg-[#EAFBF1] border-[#B6E6C9] text-[#136F3A]'
+                  : 'bg-[#FEF2F2] border-[#FECACA] text-[#B91C1C]'
+                : supplementCount > 0
+                ? 'bg-[#FEF6EB] border-[#FADDB6] text-[#B45309]'
+                : 'bg-[#F3F7FA] border-[#DCE7EE] text-[#4A6275]'
+            }`}
+          >
+            {allReviewed ? (
+              passCount === declarationCount ? (
+                <>
+                  <Check size={13} className="text-[#1A934E] stroke-[2.5]" />
+                  <span>{declarationCount}/{declarationCount} Đạt</span>
+                </>
+              ) : (
+                <>
+                  <X size={13} className="text-[#DC2626] stroke-[2.5]" />
+                  <span>{passCount}/{declarationCount} Đạt</span>
+                </>
+              )
+            ) : (
+              <span>
+                {passCount > 0 ? `${passCount}/${declarationCount} Đạt` : `${declarationCount} mục kê khai`}
+              </span>
+            )}
+          </div>
+          <span className="text-[11px] text-[#728391] font-medium hidden lg:inline">
+            (Bấm để xem từng mục)
+          </span>
+        </div>
       </div>
     );
   }
@@ -157,37 +246,43 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
       );
     }
 
-    // Mandatory missing declaration (neutral per customer UX directive)
+    // Mandatory missing declaration
     const scopeKey = getScopeKey(requirement.id);
     const reqStatus = workspaceState.scopeRecords[scopeKey]?.status || 'not_reviewed';
     const isFail = reqStatus === 'unsuitable';
 
     return (
-      <div className="flex items-center gap-2 select-none">
-        <span className="text-[11.5px] font-medium text-[#64748B] bg-[#F1F5F9] border border-[#E2E8F0] px-2 py-0.5 rounded-[5px]">
-          Chưa có kê khai
+      <div className="flex flex-col items-end gap-1.5 select-none">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[5px] text-[10.5px] font-bold bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA]">
+          <XCircle size={11} className="shrink-0" />
+          <span>AI: Chưa đạt sơ bộ (Thiếu kê khai)</span>
         </span>
-        {canMutate && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onUpdateScopeStatus(
-                { criterionId, requirementId: requirement.id },
-                isFail ? 'not_reviewed' : 'unsuitable'
-              );
-            }}
-            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-[6px] text-[12px] font-semibold border transition-all cursor-pointer ${
-              isFail
-                ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]'
-                : 'bg-white text-[#64748B] border-[#CBD5E1] hover:bg-[#F8FAFC]'
-            }`}
-            title={isFail ? 'Hủy đánh giá' : 'Đánh giá không đạt'}
-          >
-            <X size={12} strokeWidth={2.5} />
-            <span>{isFail ? 'Không đạt' : 'Đánh giá'}</span>
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          <span className="text-[11.5px] font-medium text-[#64748B] bg-[#F1F5F9] border border-[#E2E8F0] px-2 py-0.5 rounded-[5px]">
+            Chưa có kê khai
+          </span>
+          {canMutate && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onUpdateScopeStatus(
+                  { criterionId, requirementId: requirement.id },
+                  isFail ? 'not_reviewed' : 'unsuitable'
+                );
+              }}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-[6px] text-[12px] font-semibold border transition-all cursor-pointer ${
+                isFail
+                  ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]'
+                  : 'bg-white text-[#64748B] border-[#CBD5E1] hover:bg-[#F8FAFC]'
+              }`}
+              title={isFail ? 'Hủy đánh giá' : 'Đánh giá không đạt'}
+            >
+              <X size={12} strokeWidth={2.5} />
+              <span>{isFail ? 'Không đạt' : 'Đánh giá'}</span>
+            </button>
+          )}
+        </div>
       </div>
     );
   }
@@ -207,6 +302,20 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
   const [isSavingNote, setIsSavingNote] = useState(false);
   const [isContextualSupplementOpen, setIsContextualSupplementOpen] = useState(false);
   const [isViewingDiff, setIsViewingDiff] = useState(false);
+  const [, setOcrTick] = useState(0);
+
+  useEffect(() => {
+    return subscribeCopilotOcrUpdates(() => {
+      setOcrTick((t) => t + 1);
+    });
+  }, []);
+
+  const quickInsight = evaluateDeclarationQuickInsight({
+    criterionId,
+    requirementTitle: requirement.title,
+    declaredValue: decl?.value || requirement.title,
+    evidenceFiles: decl?.evidenceFiles || [],
+  });
 
   const isPass = currentStatus === 'suitable' || currentStatus === 'review_completed';
   const isFail = currentStatus === 'unsuitable';
@@ -250,14 +359,17 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
     );
   };
 
-  const handleOpenSupplement = (e: React.MouseEvent) => {
+  const handleOpenSupplement = (e: React.MouseEvent, customDraft?: string) => {
     e.stopPropagation();
     if (onOpenSupplementModal) {
-      onOpenSupplementModal({
-        criterionId,
-        requirementId: requirement.id,
-        declarationId: declId,
-      });
+      onOpenSupplementModal(
+        {
+          criterionId,
+          requirementId: requirement.id,
+          declarationId: declId,
+        },
+        customDraft || quickInsight.draftSupplementMessage
+      );
     } else {
       setIsContextualSupplementOpen((prev) => !prev);
     }
@@ -278,7 +390,7 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
       });
       return true;
     } else if (onOpenSupplementModal) {
-      onOpenSupplementModal(payload.scope);
+      onOpenSupplementModal(payload.scope, payload.message);
       return true;
     }
     return false;
@@ -306,32 +418,52 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
   // If read-only mode (Student, Committee, or Forwarded)
   if (!canMutate) {
     return (
-      <div className="flex items-center gap-2 select-none">
-        {isPass ? (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[12px] font-bold bg-[#EAFBF1] border border-[#B6E6C9] text-[#136F3A]">
-            <Check size={13} strokeWidth={2.8} />
-            <span>Đạt</span>
-          </span>
-        ) : isFail ? (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[12px] font-bold bg-[#FEF2F2] border border-[#FECACA] text-[#B91C1C]">
-            <X size={13} strokeWidth={2.8} />
-            <span>Không đạt</span>
-          </span>
-        ) : isNeedsSupplement ? (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[12px] font-bold bg-[#FEF6EB] border border-[#FADDB6] text-[#B45309]">
-            <AlertTriangle size={13} strokeWidth={2.4} />
-            <span>Cần bổ sung</span>
-          </span>
-        ) : isSupplementReturned ? (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[12px] font-bold bg-[#E0F2FE] border border-[#BAE6FD] text-[#0369A1]">
-            <CheckCircle2 size={13} strokeWidth={2.4} />
-            <span>Đã bổ sung — Chờ xét lại</span>
-          </span>
-        ) : (
-          <span className="inline-flex items-center px-2 py-0.5 rounded-[5px] text-[11.5px] font-medium bg-[#F3F7FA] border border-[#DCE7EE] text-[#607483]">
-            Chưa xét
-          </span>
-        )}
+      <div className="flex flex-col items-end gap-1 select-none">
+        <span
+          className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] text-[10px] font-bold border ${
+            quickInsight.status === 'preliminary_meets'
+              ? 'bg-[#EAFBF1] text-[#136F3A] border-[#B6E6C9]'
+              : quickInsight.status === 'preliminary_not_meets'
+              ? 'bg-[#FEE2E2] text-[#B91C1C] border-[#FCA5A5]'
+              : 'bg-[#FEF3C7] text-[#B45309] border-[#FCD34D]'
+          }`}
+        >
+          {quickInsight.status === 'preliminary_meets' ? (
+            <CheckCircle2 size={10.5} className="shrink-0" />
+          ) : quickInsight.status === 'preliminary_not_meets' ? (
+            <XCircle size={10.5} className="shrink-0" />
+          ) : (
+            <AlertTriangle size={10.5} className="shrink-0" />
+          )}
+          <span>AI: {quickInsight.badgeLabel}</span>
+        </span>
+        <div className="flex items-center gap-2">
+          {isPass ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[12px] font-bold bg-[#EAFBF1] border border-[#B6E6C9] text-[#136F3A]">
+              <Check size={13} strokeWidth={2.8} />
+              <span>Đạt</span>
+            </span>
+          ) : isFail ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[12px] font-bold bg-[#FEF2F2] border border-[#FECACA] text-[#B91C1C]">
+              <X size={13} strokeWidth={2.8} />
+              <span>Không đạt</span>
+            </span>
+          ) : isNeedsSupplement ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[12px] font-bold bg-[#FEF6EB] border border-[#FADDB6] text-[#B45309]">
+              <AlertTriangle size={13} strokeWidth={2.4} />
+              <span>Cần bổ sung</span>
+            </span>
+          ) : isSupplementReturned ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[12px] font-bold bg-[#E0F2FE] border border-[#BAE6FD] text-[#0369A1]">
+              <CheckCircle2 size={13} strokeWidth={2.4} />
+              <span>Đã bổ sung — Chờ xét lại</span>
+            </span>
+          ) : (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-[5px] text-[11.5px] font-medium bg-[#F3F7FA] border border-[#DCE7EE] text-[#607483]">
+              Chưa xét
+            </span>
+          )}
+        </div>
       </div>
     );
   }
@@ -342,6 +474,66 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
       className="flex flex-col items-end gap-1.5 min-w-0 w-full"
       onClick={(e) => e.stopPropagation()}
     >
+      {/* Non-Tech Friendly Preliminary OCR & Criteria Check Card */}
+      <div
+        className={`w-full max-w-[340px] rounded-[8px] px-2.5 py-2 border text-left space-y-1 transition-colors ${
+          quickInsight.status === 'preliminary_meets'
+            ? 'bg-[#F8FEFA] border-[#C6EED5]'
+            : quickInsight.status === 'preliminary_not_meets'
+            ? 'bg-[#FEF2F2] border-[#FECACA]'
+            : 'bg-[#FFFBEB] border-[#FDE68A]'
+        }`}
+      >
+        <div className="flex items-center justify-between gap-1.5 flex-wrap">
+          <span
+            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] text-[10.5px] font-bold border ${
+              quickInsight.status === 'preliminary_meets'
+                ? 'bg-[#EAFBF1] text-[#136F3A] border-[#B6E6C9]'
+                : quickInsight.status === 'preliminary_not_meets'
+                ? 'bg-[#FEE2E2] text-[#B91C1C] border-[#FCA5A5]'
+                : 'bg-[#FEF3C7] text-[#B45309] border-[#FCD34D]'
+            }`}
+          >
+            {quickInsight.status === 'preliminary_meets' ? (
+              <CheckCircle2 size={11} className="shrink-0" />
+            ) : quickInsight.status === 'preliminary_not_meets' ? (
+              <XCircle size={11} className="shrink-0" />
+            ) : (
+              <AlertTriangle size={11} className="shrink-0" />
+            )}
+            <span>AI: {quickInsight.badgeLabel}</span>
+          </span>
+
+          <span className="inline-flex items-center gap-1 text-[10.5px] font-medium text-[#526B7C]">
+            <FileCheck2 size={11} className="text-[#0D78AE] shrink-0" />
+            <span>{quickInsight.stampVerified ? 'Có dấu xác nhận' : 'Cần kiểm tra tệp'}</span>
+          </span>
+        </div>
+
+        <div className="text-[11px] text-[#334E68] leading-snug line-clamp-2">
+          <span className="font-semibold text-[#0F2335]">Đọc từ minh chứng: </span>
+          <span>{quickInsight.extractedText}</span>
+        </div>
+
+        {quickInsight.status !== 'preliminary_meets' && (
+          <div className="pt-0.5 flex items-center justify-between gap-2 flex-wrap">
+            <span className="text-[10.5px] font-medium text-[#B45309] leading-tight">
+              {quickInsight.reasonText}
+            </span>
+            {quickInsight.draftSupplementMessage && !isNeedsSupplement && (
+              <button
+                type="button"
+                onClick={(e) => handleOpenSupplement(e, quickInsight.draftSupplementMessage)}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[5px] bg-white hover:bg-[#FEF3C7] text-[#92400E] border border-[#F59E0B] text-[10.5px] font-bold transition-colors cursor-pointer"
+              >
+                <MessageSquareWarning size={11} className="shrink-0" />
+                <span>Yêu cầu bổ sung (gợi ý sẵn)</span>
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Returned supplement indicator banner */}
       {isSupplementReturned && (
         <div className="flex items-center gap-2 mb-1 flex-wrap justify-end">

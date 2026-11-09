@@ -220,8 +220,8 @@ export const ReviewCopilotPanel: React.FC<ReviewCopilotPanelProps> = ({
           </div>
           <div>
             <div className="text-[12px] font-bold text-[#172A3A] flex items-center gap-1.5">
-              <span>Trợ lý AI Thẩm định 5TOT</span>
-              <span className="text-[11px] font-semibold text-[#0D78AE]">· Gemini 3.8 Flash</span>
+              <span>Trợ lý Thẩm định & Đọc minh chứng</span>
+              <span className="text-[11px] font-semibold text-[#0D78AE]">· OpenAI OCR</span>
             </div>
             <div className="text-[11px] text-[#607483]">
               Hướng dẫn số 14-HD/BTK-HSVTP · Năm học 2025–2026
