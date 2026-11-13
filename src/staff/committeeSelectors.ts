@@ -166,8 +166,12 @@ export function isApplicationForwardedToCityScope(
   }
   if (
     app.schoolPreliminaryStatus === 'forwarded_to_city' ||
+    app.schoolPreliminaryStatus === 'recommended_forwarding' ||
+    app.schoolPreliminaryStatus === 'preliminary_completed' ||
     app.schoolReviewSummary?.isForwardedToCity === true ||
-    app.schoolReviewSummary?.status === 'forwarded_to_city'
+    app.schoolReviewSummary?.status === 'forwarded_to_city' ||
+    app.schoolReviewSummary?.status === 'recommended_forwarding' ||
+    app.schoolReviewSummary?.recommendation === 'recommended'
   ) {
     return true;
   }

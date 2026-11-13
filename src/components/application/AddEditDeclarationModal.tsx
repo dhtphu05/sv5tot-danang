@@ -15,6 +15,7 @@ import {
   AlertCircle,
   Info,
   FileCheck2,
+  RefreshCw,
 } from 'lucide-react';
 import {
   ApplicationDeclaration,
@@ -30,6 +31,12 @@ import { DropZone } from '../forms/DropZone';
 import { Button } from '../buttons/Button';
 import { CRITERIA } from '../../tokens';
 import { saveEvidenceFile } from '../../staff/demoEvidenceStorage';
+import {
+  triggerEvidenceOcr,
+  subscribeCopilotOcrUpdates,
+  isEvidenceOcrInFlight,
+  getExactEvidenceOcrResult,
+} from '../../shared/api/copilotApi';
 
 export interface AddEditDeclarationModalProps {
   isOpen: boolean;
@@ -183,6 +190,14 @@ export const AddEditDeclarationModal: React.FC<AddEditDeclarationModalProps> = (
   const [duplicateNotice, setDuplicateNotice] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [, setOcrTick] = useState(0);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    return subscribeCopilotOcrUpdates(() => {
+      setOcrTick((t) => t + 1);
+    });
+  }, [isOpen]);
 
   const draftStorageKey = reqId
     ? `5tot_decl_modal_draft_${reqId}_${declaration?.id || 'new'}`
@@ -326,6 +341,12 @@ export const AddEditDeclarationModal: React.FC<AddEditDeclarationModalProps> = (
       saveEvidenceFile(evId, f, f.name, ext, {
         size: sizeStr,
         reqId,
+        ocrContext: {
+          criterionId: criterion.id,
+          criterionName: criterion.name,
+          requirementTitle: requirement.title,
+          declaredValue: content.trim() || requirement.title,
+        },
       }).catch(() => {});
 
       return {
@@ -365,6 +386,15 @@ export const AddEditDeclarationModal: React.FC<AddEditDeclarationModalProps> = (
       return;
     }
     setDuplicateNotice(null);
+    void triggerEvidenceOcr({
+      evidenceId: item.id,
+      fileName: item.name,
+      fileUrl: item.url,
+      criterionId: criterion.id,
+      criterionName: criterion.name,
+      requirementTitle: requirement.title,
+      declaredValue: content.trim() || item.title || requirement.title,
+    });
     setAttachedFiles((prev) => [
       ...prev,
       {
@@ -416,7 +446,37 @@ export const AddEditDeclarationModal: React.FC<AddEditDeclarationModalProps> = (
       requirementId: reqId,
     };
 
-    const finalEvidenceFiles = [...attachedFiles];
+    const finalEvidenceFiles = attachedFiles.map((file) => {
+      const exactOcr = getExactEvidenceOcrResult(file.id);
+      if (!exactOcr && !isEvidenceOcrInFlight(file.id)) {
+        void triggerEvidenceOcr({
+          evidenceId: file.id,
+          fileName: file.name,
+          fileUrl: file.url,
+          criterionId: criterion.id,
+          criterionName: criterion.name,
+          requirementTitle: requirement.title,
+          declaredValue: finalValue || requirement.title,
+        });
+      }
+      if (exactOcr) {
+        metadataObj.ocrDocumentType = exactOcr.documentType;
+        metadataObj.ocrExtractedValue = exactOcr.extractedValue;
+        metadataObj.ocrIssuingAuthority = exactOcr.issuingAuthority;
+        metadataObj.ocrIssueDate = exactOcr.issueDate;
+        metadataObj.ocrMatchStatus = exactOcr.matchWithDeclaration;
+        return {
+          ...file,
+          aiSuggestedInfo: {
+            title: exactOcr.extractedValue,
+            date: exactOcr.issueDate,
+            issuer: exactOcr.issuingAuthority,
+            criterionId: criterion.id,
+          },
+        };
+      }
+      return file;
+    });
 
     if (finalEvidenceFiles.length > 0) {
       syncEvidenceFilesToPersonalLibrary(finalEvidenceFiles, {
@@ -719,36 +779,69 @@ export const AddEditDeclarationModal: React.FC<AddEditDeclarationModalProps> = (
                   Tệp sẽ lưu cùng kê khai này:
                 </div>
                 <div className="divide-y divide-[#E8F0F5] bg-[#F8FBFD] rounded-[9px] border border-[#DCE7EE] overflow-hidden">
-                  {attachedFiles.map((file) => (
-                    <div
-                      key={file.id}
-                      className="p-2.5 flex items-center justify-between gap-3 hover:bg-white transition-colors"
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <FileTypeIcon fileName={file.name} fileType={file.fileType} size="sm" />
-                        <div className="flex flex-col min-w-0">
-                          <span
-                            className="text-[12.5px] font-semibold text-[#172A3A] truncate"
-                            title={file.name}
-                          >
-                            {file.name}
-                          </span>
-                          <span className="text-[10.5px] text-[#607483]">
-                            {file.size} · Đã gắn vào kê khai
-                          </span>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveAttachedFile(file.id)}
-                        className="p-1 text-[#728391] hover:text-[#DC2626] rounded-[5px] hover:bg-[#FEE2E2]/60 transition-colors cursor-pointer shrink-0"
-                        title="Xóa minh chứng này"
+                  {attachedFiles.map((file) => {
+                    const ocrLoading = isEvidenceOcrInFlight(file.id);
+                    const exactOcr = getExactEvidenceOcrResult(file.id);
+                    return (
+                      <div
+                        key={file.id}
+                        className="p-2.5 flex items-center justify-between gap-3 hover:bg-white transition-colors"
                       >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  ))}
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <FileTypeIcon fileName={file.name} fileType={file.fileType} size="sm" />
+                          <div className="flex flex-col min-w-0">
+                            <span
+                              className="text-[12.5px] font-semibold text-[#172A3A] truncate"
+                              title={file.name}
+                            >
+                              {file.name}
+                            </span>
+                            <span className="text-[10.5px] text-[#607483]">
+                              {file.size} · Đã gắn vào kê khai
+                            </span>
+                            {ocrLoading && (
+                              <span className="inline-flex items-center gap-1 text-[10.5px] font-medium text-[#0D78AE] mt-0.5">
+                                <RefreshCw size={10} className="animate-spin shrink-0" />
+                                <span>Đang đọc minh chứng ngầm...</span>
+                              </span>
+                            )}
+                            {!ocrLoading && exactOcr && (
+                              <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                                <span className="inline-flex items-center gap-1 text-[10.5px] font-medium text-[#0F766E] truncate">
+                                  <FileCheck2 size={11} className="shrink-0" />
+                                  <span className="truncate">
+                                    Đã đọc: {exactOcr.documentType} — {exactOcr.extractedValue}
+                                  </span>
+                                </span>
+                                {!content.trim() && exactOcr.extractedValue && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setContent(exactOcr.extractedValue);
+                                      setIsDirty(true);
+                                      setValidationError(null);
+                                    }}
+                                    className="text-[10px] font-semibold text-[#0D78AE] hover:underline cursor-pointer shrink-0"
+                                  >
+                                    Điền vào tên kê khai
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveAttachedFile(file.id)}
+                          className="p-1 text-[#728391] hover:text-[#DC2626] rounded-[5px] hover:bg-[#FEE2E2]/60 transition-colors cursor-pointer shrink-0"
+                          title="Xóa minh chứng này"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ) : (

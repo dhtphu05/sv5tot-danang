@@ -76,8 +76,9 @@ export class PrismaSchoolReviewUnitRepository implements ISchoolReviewUnitReposi
       'inst-ufl',
       'inst-ute',
       'inst-vku',
-      'inst-smp',
       'inst-vnuk',
+      'inst-udck',
+      'inst-smp',
     ];
     if (uIds.includes(institutionId)) {
       const udn = (await prisma.schoolReviewUnit.findUnique({
@@ -148,8 +149,9 @@ export class PrismaSchoolReviewUnitRepository implements ISchoolReviewUnitReposi
       'inst-ufl',
       'inst-ute',
       'inst-vku',
-      'inst-smp',
       'inst-vnuk',
+      'inst-udck',
+      'inst-smp',
     ];
     return {
       id: unit.id,

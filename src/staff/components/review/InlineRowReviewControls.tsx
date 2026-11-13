@@ -479,8 +479,6 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
         className={`w-full max-w-[340px] rounded-[8px] px-2.5 py-2 border text-left space-y-1 transition-colors ${
           quickInsight.status === 'preliminary_meets'
             ? 'bg-[#F8FEFA] border-[#C6EED5]'
-            : quickInsight.status === 'preliminary_not_meets'
-            ? 'bg-[#FEF2F2] border-[#FECACA]'
             : 'bg-[#FFFBEB] border-[#FDE68A]'
         }`}
       >
@@ -489,19 +487,17 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
             className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] text-[10.5px] font-bold border ${
               quickInsight.status === 'preliminary_meets'
                 ? 'bg-[#EAFBF1] text-[#136F3A] border-[#B6E6C9]'
-                : quickInsight.status === 'preliminary_not_meets'
-                ? 'bg-[#FEE2E2] text-[#B91C1C] border-[#FCA5A5]'
                 : 'bg-[#FEF3C7] text-[#B45309] border-[#FCD34D]'
             }`}
           >
             {quickInsight.status === 'preliminary_meets' ? (
               <CheckCircle2 size={11} className="shrink-0" />
-            ) : quickInsight.status === 'preliminary_not_meets' ? (
-              <XCircle size={11} className="shrink-0" />
             ) : (
               <AlertTriangle size={11} className="shrink-0" />
             )}
-            <span>AI: {quickInsight.badgeLabel}</span>
+            <span>
+              AI: {quickInsight.status === 'preliminary_meets' ? quickInsight.badgeLabel : 'Cần kiểm tra thêm'}
+            </span>
           </span>
 
           <span className="inline-flex items-center gap-1 text-[10.5px] font-medium text-[#526B7C]">
@@ -514,6 +510,12 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
           <span className="font-semibold text-[#0F2335]">Đọc từ minh chứng: </span>
           <span>{quickInsight.extractedText}</span>
         </div>
+        {quickInsight.authorityText && (
+          <div className="text-[10.5px] text-[#526B7C] leading-snug truncate">
+            <span className="font-medium text-[#334E68]">Cấp bởi: </span>
+            <span>{quickInsight.authorityText}</span>
+          </div>
+        )}
 
         {quickInsight.status !== 'preliminary_meets' && (
           <div className="pt-0.5 flex items-center justify-between gap-2 flex-wrap">

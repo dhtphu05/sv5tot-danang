@@ -8,7 +8,64 @@
  * with deterministic fallback when OPENAI_API_KEY is not configured.
  */
 
-import { getEnvironment } from '../../config/environment';
+import fs from 'node:fs';
+import path from 'node:path';
+import dotenv from 'dotenv';
+import { getEnvironment, normalizeOpenAiKey, resetEnvironmentCache } from '../../config/environment';
+import { portalState } from '../domainPortal/domainPortal.state';
+import { hydrateEvidenceRecordFromNeonDb } from '../domainPortal/domainPortal.dbSync';
+import { r2StorageClient } from '../../shared/storage/r2StorageClient';
+
+export function resolveLiveOpenAiConfig(): {
+  apiKey: string;
+  model: string;
+  baseUrl: string;
+} {
+  let apiKey = '';
+  let model = 'gpt-5';
+  let baseUrl = 'https://api.openai.com/v1';
+
+  try {
+    const env = getEnvironment();
+    apiKey = env.OPENAI_API_KEY || '';
+    model = env.OPENAI_MODEL || 'gpt-5';
+    baseUrl = env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
+  } catch {
+    // ignore
+  }
+
+  const candidateFiles = [
+    path.resolve(process.cwd(), 'backend/.env'),
+    path.resolve(process.cwd(), '.env'),
+    path.resolve(process.cwd(), '../.env'),
+  ];
+  for (const envPath of candidateFiles) {
+    try {
+      if (fs.existsSync(envPath)) {
+        const parsed = dotenv.parse(fs.readFileSync(envPath, 'utf8'));
+        const candidateKey = normalizeOpenAiKey(parsed.OPENAI_API_KEY);
+        if (candidateKey) {
+          apiKey = candidateKey;
+          process.env.OPENAI_API_KEY = candidateKey;
+          if (parsed.OPENAI_MODEL?.trim()) {
+            model = parsed.OPENAI_MODEL.trim();
+            process.env.OPENAI_MODEL = model;
+          }
+          if (parsed.OPENAI_BASE_URL?.trim()) {
+            baseUrl = parsed.OPENAI_BASE_URL.trim().replace(/\/+$/, '');
+            process.env.OPENAI_BASE_URL = baseUrl;
+          }
+          resetEnvironmentCache();
+          break;
+        }
+      }
+    } catch {
+      // ignore file read error
+    }
+  }
+
+  return { apiKey, model, baseUrl };
+}
 
 export interface OcrExtractionRequest {
   evidenceId: string;
@@ -56,13 +113,65 @@ export interface OpenAiRuntimeOptions {
 }
 
 const ocrCache = new Map<string, OcrEvidenceExtraction>();
+const ocrCacheByEvidenceId = new Map<string, OcrEvidenceExtraction>();
+
+const OCR_DISK_CACHE_PATH = path.resolve(process.cwd(), '.data/ocr_extractions_cache.json');
+
+function loadOcrDiskCache(): void {
+  try {
+    if (fs.existsSync(OCR_DISK_CACHE_PATH)) {
+      const raw = fs.readFileSync(OCR_DISK_CACHE_PATH, 'utf8');
+      const parsed = JSON.parse(raw) as Record<string, OcrEvidenceExtraction>;
+      if (parsed && typeof parsed === 'object') {
+        for (const [evId, ext] of Object.entries(parsed)) {
+          if (ext && ext.evidenceId) {
+            ocrCacheByEvidenceId.set(evId, ext);
+          }
+        }
+      }
+    }
+  } catch {
+    // ignore disk cache read errors
+  }
+}
+
+function saveOcrDiskCache(): void {
+  try {
+    const dir = path.dirname(OCR_DISK_CACHE_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const obj: Record<string, OcrEvidenceExtraction> = {};
+    for (const [evId, ext] of ocrCacheByEvidenceId.entries()) {
+      obj[evId] = ext;
+    }
+    fs.writeFileSync(OCR_DISK_CACHE_PATH, JSON.stringify(obj, null, 2), 'utf8');
+  } catch {
+    // ignore disk cache write errors
+  }
+}
+
+loadOcrDiskCache();
 
 export function clearOcrCache(): void {
   ocrCache.clear();
+  ocrCacheByEvidenceId.clear();
 }
 
 export function getCachedOcrExtraction(cacheKey: string): OcrEvidenceExtraction | undefined {
   return ocrCache.get(cacheKey);
+}
+
+export function getOcrExtractionByEvidenceId(evidenceId: string): OcrEvidenceExtraction | undefined {
+  return ocrCacheByEvidenceId.get(evidenceId);
+}
+
+export function getAllCachedOcrExtractions(): Record<string, OcrEvidenceExtraction> {
+  const result: Record<string, OcrEvidenceExtraction> = {};
+  for (const [evId, ext] of ocrCacheByEvidenceId.entries()) {
+    result[evId] = ext;
+  }
+  return result;
 }
 
 export function buildOcrCacheKey(req: OcrExtractionRequest): string {
@@ -86,80 +195,55 @@ function parseNumericFromText(text: string): number | undefined {
   return undefined;
 }
 
-export function buildDeterministicOcrExtraction(
-  req: OcrExtractionRequest
+function reconcileCachedExtractionWithDeclaration(
+  cached: OcrEvidenceExtraction,
+  declaredValue?: string
 ): OcrEvidenceExtraction {
-  const lowerName = (req.fileName || '').toLowerCase();
-  const lowerDecl = `${req.declaredValue || ''} ${req.declaredDetail || ''} ${req.requirementTitle || ''}`.toLowerCase();
-  const nowStr = new Date().toISOString();
-
-  // Detect document type from filename & context
-  let documentType = 'Văn bản xác nhận minh chứng';
-  let issuingAuthority = req.schoolName || 'Đơn vị đào tạo / Tổ chức Đoàn - Hội có thẩm quyền';
-  let issueDate = 'Năm học 2025–2026';
-  let extractedValue = req.declaredValue || req.studentNote || req.requirementTitle || 'Minh chứng hợp lệ';
-  let numericMetric = parseNumericFromText(extractedValue);
-  let hasRedStampOrSignature: OcrEvidenceExtraction['hasRedStampOrSignature'] = 'verified';
-  let matchWithDeclaration: OcrEvidenceExtraction['matchWithDeclaration'] = 'matched';
-  let discrepancyNote: string | undefined;
-  let isReadable = true;
-
-  if (lowerName.includes('bang_diem') || lowerName.includes('bangdiem') || lowerName.includes('gpa') || lowerDecl.includes('gpa') || lowerDecl.includes('điểm trung bình')) {
-    documentType = 'Bảng điểm học tập năm học';
-    issuingAuthority = req.schoolName ? `Phòng Đào tạo · ${req.schoolName}` : 'Phòng Đào tạo Nhà trường';
-    if (!req.declaredValue) {
-      extractedValue = 'GPA năm học đạt chuẩn quy định (>= 3.2/4.0)';
-      numericMetric = 3.45;
-    }
-  } else if (lowerName.includes('ren_luyen') || lowerName.includes('drl') || lowerDecl.includes('rèn luyện')) {
-    documentType = 'Bảng kết quả đánh giá điểm rèn luyện';
-    issuingAuthority = req.schoolName ? `Phòng Công tác Sinh viên · ${req.schoolName}` : 'Hội đồng Đánh giá Rèn luyện';
-    if (!numericMetric) numericMetric = 85;
-  } else if (lowerName.includes('ielts') || lowerName.includes('toeic') || lowerName.includes('vstep') || lowerName.includes('b1') || lowerDecl.includes('ngoại ngữ')) {
-    documentType = 'Chứng chỉ / Xác nhận năng lực ngoại ngữ';
-    issuingAuthority = 'Tổ chức khảo thí / Đơn vị đào tạo cấp chứng chỉ';
-  } else if (lowerName.includes('mhx') || lowerName.includes('muahexanh') || lowerName.includes('tinh_nguyen') || lowerName.includes('tinhnguyen') || lowerDecl.includes('tình nguyện')) {
-    documentType = 'Giấy chứng nhận tham gia hoạt động tình nguyện';
-    issuingAuthority = req.schoolName ? `BCH Đoàn - Hội Sinh viên · ${req.schoolName}` : 'Ban Chỉ huy Chiến dịch Tình nguyện';
-    // Check specific known discrepancy pattern (e.g. 4 days in file vs 5 days declared)
-    if (lowerName.includes('4ngay') || lowerName.includes('thieu') || (req.evidenceId && req.evidenceId.includes('mhx-discrepancy'))) {
-      extractedValue = 'Tham gia 04 ngày Chiến dịch tình nguyện';
-      numericMetric = 4;
-      matchWithDeclaration = 'mismatch';
-      discrepancyNote = 'Tệp minh chứng ghi nhận 04 ngày tham gia, trong khi nội dung kê khai là 05 ngày.';
-    }
-  } else if (lowerName.includes('thanh_nien_khoe') || lowerName.includes('the_luc') || lowerDecl.includes('thể lực') || lowerDecl.includes('thanh niên khỏe')) {
-    documentType = 'Giấy chứng nhận đạt danh hiệu Thanh niên khỏe / Giải thể thao';
-    issuingAuthority = req.schoolName ? `Hội Sinh viên · ${req.schoolName}` : 'Ban Tổ chức Hội thao Sinh viên';
-  } else if (lowerName.includes('nckh') || lowerName.includes('smartcampus') || lowerName.includes('518') || lowerDecl.includes('nghiên cứu khoa học')) {
-    documentType = 'Quyết định / Giấy khen thành tích Nghiên cứu khoa học & Học thuật';
-    issuingAuthority = req.schoolName ? `Ban Giám hiệu / Đoàn Trường · ${req.schoolName}` : 'Hội đồng Khoa học & Đào tạo';
+  if (!declaredValue || !declaredValue.trim()) {
+    return cached;
   }
-
-  // Detect blurry or unverified files from filename hints
-  if (lowerName.includes('blur') || lowerName.includes('mo_') || lowerName.includes('chua_dau') || lowerName.includes('nhap')) {
-    hasRedStampOrSignature = 'unclear';
-    matchWithDeclaration = 'partial';
-    discrepancyNote = 'Ảnh chụp minh chứng chưa rõ mộc dấu xác nhận hoặc bị khuất thông tin ngày cấp.';
+  const declaredNum = parseNumericFromText(declaredValue);
+  if (
+    typeof declaredNum === 'number' &&
+    typeof cached.numericMetric === 'number' &&
+    Math.abs(declaredNum - cached.numericMetric) >= 0.5 &&
+    !declaredValue.includes('2025') &&
+    !declaredValue.includes('2026')
+  ) {
+    return {
+      ...cached,
+      matchWithDeclaration: 'mismatch',
+      discrepancyNote:
+        cached.discrepancyNote ||
+        `Nội dung tên kê khai ghi nhận "${declaredValue}", nhưng số liệu đọc từ tệp minh chứng là "${cached.extractedValue}".`,
+    };
   }
+  return cached;
+}
 
+export function buildDeterministicOcrExtraction(
+  req: OcrExtractionRequest,
+  reason?: string
+): OcrEvidenceExtraction {
   return {
     evidenceId: req.evidenceId,
     fileName: req.fileName,
-    isReadable,
-    documentType,
-    extractedStudentName: req.studentFullName || 'Khớp họ tên sinh viên trên hồ sơ',
-    extractedStudentCode: req.studentCode,
-    extractedValue,
-    numericMetric,
-    issuingAuthority,
-    issueDate,
-    hasRedStampOrSignature,
-    matchWithDeclaration,
-    discrepancyNote,
-    extractedAt: nowStr,
+    isReadable: false,
+    documentType: 'Tệp minh chứng đính kèm',
+    extractedStudentName: req.studentFullName || undefined,
+    extractedStudentCode: req.studentCode || undefined,
+    extractedValue: 'Thiếu dữ liệu (chưa trích xuất được nội dung chi tiết từ tệp)',
+    numericMetric: undefined,
+    issuingAuthority: 'Cần kiểm tra trực tiếp trên tệp minh chứng',
+    issueDate: 'Cần kiểm tra trực tiếp',
+    hasRedStampOrSignature: 'unclear',
+    matchWithDeclaration: 'partial',
+    discrepancyNote:
+      reason ||
+      'Thiếu dữ liệu: Hệ thống chưa đọc được nội dung chi tiết từ tệp minh chứng. Đề nghị cán bộ mở tệp để kiểm tra trực tiếp hoặc yêu cầu sinh viên tải lại bản rõ nét.',
+    extractedAt: new Date().toISOString(),
     aiSource: 'rule_engine',
-    modelUsed: 'rule_engine',
+    modelUsed: 'none',
   };
 }
 
@@ -175,7 +259,7 @@ const OCR_JSON_SCHEMA = {
       },
       documentType: {
         type: 'string',
-        description: 'Loại giấy tờ (VD: Bảng điểm học tập, Giấy chứng nhận tình nguyện, Chứng chỉ ngoại ngữ, Quyết định khen thưởng)',
+        description: 'Loại giấy tờ đọc được từ tệp (VD: Bảng điểm học tập năm học, Giấy chứng nhận tình nguyện, Chứng chỉ ngoại ngữ, Quyết định khen thưởng)',
       },
       extractedStudentName: {
         type: 'string',
@@ -187,15 +271,15 @@ const OCR_JSON_SCHEMA = {
       },
       extractedValue: {
         type: 'string',
-        description: 'Tóm tắt ngắn gọn kết quả/thành tích đọc được từ minh chứng (VD: GPA 3.45/4.0, Tham gia 05 ngày tình nguyện, IELTS 6.5)',
+        description: 'Tóm tắt đầy đủ kết quả/thành tích/số liệu đọc được trực tiếp từ minh chứng (VD: GPA cả năm 3.52/4.0 - ĐRL 88/100, Tham gia 05 ngày Chiến dịch Mùa hè xanh, IELTS 6.5)',
       },
       numericMetric: {
         type: ['number', 'null'],
-        description: 'Giá trị số học quan trọng trích xuất được (VD: điểm GPA 3.45, điểm rèn luyện 85, số ngày tình nguyện 5, điểm IELTS 6.5)',
+        description: 'Giá trị số học quan trọng trích xuất được từ minh chứng (VD: điểm GPA 3.52, điểm rèn luyện 88, số ngày tình nguyện 5, điểm IELTS 6.5)',
       },
       issuingAuthority: {
         type: 'string',
-        description: 'Cơ quan / Đơn vị cấp văn bản minh chứng',
+        description: 'Cơ quan / Đơn vị cấp văn bản minh chứng đọc được trên dấu đỏ hoặc tiêu đề văn bản',
       },
       issueDate: {
         type: 'string',
@@ -204,16 +288,16 @@ const OCR_JSON_SCHEMA = {
       hasRedStampOrSignature: {
         type: 'string',
         enum: ['verified', 'missing', 'unclear'],
-        description: 'Tình trạng con dấu đỏ hoặc chữ ký xác nhận có thẩm quyền',
+        description: 'Tình trạng con dấu đỏ hoặc chữ ký xác nhận có thẩm quyền trên tệp minh chứng',
       },
       matchWithDeclaration: {
         type: 'string',
         enum: ['matched', 'mismatch', 'partial'],
-        description: 'Mức độ khớp giữa nội dung đọc được trên minh chứng và thông tin sinh viên kê khai',
+        description: 'Đánh giá tính hợp lệ của minh chứng: matched khi đủ dữ liệu đạt chuẩn; partial hoặc mismatch khi thiếu dữ liệu hoặc số liệu cần kiểm tra lại',
       },
       discrepancyNote: {
         type: ['string', 'null'],
-        description: 'Giải thích ngắn gọn bằng tiếng Việt nếu có sự sai lệch, thiếu dấu, hoặc cần cán bộ kiểm tra thêm',
+        description: 'Giải thích ngắn gọn bằng tiếng Việt nếu thiếu dữ liệu, ảnh mờ, số liệu cần kiểm tra lại, hoặc thiếu dấu xác nhận',
       },
     },
     required: [
@@ -233,50 +317,99 @@ const OCR_JSON_SCHEMA = {
   },
 };
 
+function tryLoadLocalEvidenceFileAsDataUrl(fileName?: string, fileUrl?: string): string {
+  const candidates: string[] = [];
+  const baseName = path.basename(fileName || fileUrl || '');
+  if (baseName) {
+    candidates.push(
+      path.resolve(process.cwd(), 'public/minhchung_test', baseName),
+      path.resolve(process.cwd(), '../public/minhchung_test', baseName)
+    );
+  }
+  if (fileUrl && fileUrl.startsWith('/minhchung_test/')) {
+    const decoded = decodeURIComponent(fileUrl.replace(/^\/minhchung_test\//, ''));
+    candidates.push(
+      path.resolve(process.cwd(), 'public/minhchung_test', decoded),
+      path.resolve(process.cwd(), '../public/minhchung_test', decoded)
+    );
+  }
+
+  for (const candidate of candidates) {
+    try {
+      if (fs.existsSync(candidate)) {
+        const stat = fs.statSync(candidate);
+        if (stat.isFile() && stat.size > 0 && stat.size <= 15 * 1024 * 1024) {
+          const buf = fs.readFileSync(candidate);
+          const ext = path.extname(candidate).toLowerCase();
+          const mime =
+            ext === '.pdf'
+              ? 'application/pdf'
+              : ext === '.png'
+              ? 'image/png'
+              : ext === '.webp'
+              ? 'image/webp'
+              : 'image/jpeg';
+          return `data:${mime};base64,${buf.toString('base64')}`;
+        }
+      }
+    } catch {
+      // ignore local file read error
+    }
+  }
+  return '';
+}
+
 export async function extractEvidenceWithOpenAI(
   req: OcrExtractionRequest,
   options?: OpenAiRuntimeOptions
 ): Promise<OcrEvidenceExtraction> {
-  const cacheKey = buildOcrCacheKey(req);
-  if (!req.forceRefresh && ocrCache.has(cacheKey)) {
-    return ocrCache.get(cacheKey)!;
-  }
-
-  let envApiKey = '';
-  let envModel = 'gpt-4o-mini';
-  let envBaseUrl = 'https://api.openai.com/v1';
-
-  try {
-    const env = getEnvironment();
-    envApiKey = env.OPENAI_API_KEY || '';
-    envModel = env.OPENAI_MODEL || 'gpt-4o-mini';
-    envBaseUrl = env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
-  } catch {
-    // Fallback if environment is not initialized
-  }
-
-  const apiKey = options?.apiKey !== undefined ? options.apiKey : envApiKey;
-  const model = options?.model || envModel;
-  const baseUrl = (options?.baseUrl || envBaseUrl).replace(/\/+$/, '');
+  const liveConfig = resolveLiveOpenAiConfig();
+  const apiKey = options?.apiKey !== undefined ? normalizeOpenAiKey(options.apiKey) || '' : liveConfig.apiKey;
+  const model = options?.model || liveConfig.model || 'gpt-5';
+  const baseUrl = (options?.baseUrl || liveConfig.baseUrl || 'https://api.openai.com/v1').replace(/\/+$/, '');
   const fetchFn = options?.fetchImpl || globalThis.fetch;
 
+  const cacheKey = buildOcrCacheKey(req);
+  if (!req.forceRefresh) {
+    if (ocrCache.has(cacheKey)) {
+      const cached = ocrCache.get(cacheKey)!;
+      if (cached.aiSource === 'openai') {
+        return cached;
+      }
+    }
+    if (req.evidenceId && ocrCacheByEvidenceId.has(req.evidenceId)) {
+      const byId = ocrCacheByEvidenceId.get(req.evidenceId)!;
+      if (byId.aiSource === 'openai') {
+        const reconciled = reconcileCachedExtractionWithDeclaration(byId, req.declaredValue);
+        ocrCache.set(cacheKey, reconciled);
+        return reconciled;
+      }
+    }
+  }
+
   if (!apiKey || !fetchFn) {
-    const fallback = buildDeterministicOcrExtraction(req);
-    ocrCache.set(cacheKey, fallback);
-    return fallback;
+    return buildDeterministicOcrExtraction(
+      req,
+      'Thiếu dữ liệu: Chưa cấu hình khóa kết nối OpenAI OCR nên chưa thể bóc tách tự động tệp minh chứng.'
+    );
   }
 
   const systemPrompt = [
-    'Bạn là hệ thống OCR và thẩm định minh chứng chuyên nghiệp phục vụ xét chọn danh hiệu "Sinh viên 5 tốt" cấp Thành phố Đà Nẵng năm học 2025–2026 (Hướng dẫn số 14-HD/BTK-HSVTP).',
-    'Nhiệm vụ: Đọc nội dung tệp minh chứng (hoặc thông tin tệp đính kèm) và đối chiếu trực tiếp với nội dung sinh viên kê khai.',
-    'Ngôn ngữ trả về: Tiếng Việt hành chính, rõ ràng, dễ hiểu cho cán bộ xét duyệt.',
+    'Bạn là hệ thống OCR bóc tách dữ liệu minh chứng phục vụ xét chọn danh hiệu "Sinh viên 5 tốt" cấp Thành phố Đà Nẵng năm học 2025–2026 (Hướng dẫn số 14-HD/BTK-HSVTP).',
+    'Nhiệm vụ: Đọc trực tiếp nội dung tệp minh chứng (ảnh chụp/scan hoặc PDF) để bóc tách dữ liệu chi tiết giúp cán bộ xét duyệt.',
+    'LƯU Ý VỀ BIỂU MẪU KÊ KHAI: Hiện tại sinh viên chỉ nhập "Tên kê khai" ngắn gọn và tải tệp minh chứng lên (không có các trường nhập liệu chi tiết riêng lẻ). Bạn phải tự đọc từ tệp minh chứng để lấy: loại giấy tờ (documentType), họ tên (extractedStudentName), MSSV (extractedStudentCode), kết quả/điểm số/thành tích cụ thể (extractedValue), con số định lượng (numericMetric), đơn vị cấp (issuingAuthority), ngày cấp/năm học (issueDate), và mộc dấu/chữ ký (hasRedStampOrSignature).',
+    'QUY TẮC AN TOÀN TUYỆT ĐỐI (KHÔNG BAO GIỜ ĐÁNH RỚT / KHÔNG BỊA DỮ LIỆU):',
+    '1. TUYỆT ĐỐI KHÔNG tự bịa ra điểm số, số ngày, hoặc tên cơ quan cấp nếu trên tệp minh chứng không hiển thị.',
+    '2. KHÔNG BAO GIỜ kết luận sinh viên "Không đạt" hay "Chưa đạt". Để phòng ngừa rủi ro OCR đọc nhầm chữ số trên bản scan mờ hoặc thiếu trang, mọi trường hợp số liệu đọc được thấp hơn chuẩn (VD: GPA < 3.2, ĐRL < 80, tình nguyện < 5 ngày), lệch với tên kê khai, ảnh mờ, hoặc thiếu dấu xác nhận đều phải chuyển về trạng thái "Thiếu dữ liệu" (đặt matchWithDeclaration = "partial" hoặc "mismatch" và bắt đầu discrepancyNote bằng "Thiếu dữ liệu / Cần kiểm tra: ...").',
+    '3. Chỉ đặt matchWithDeclaration = "matched" khi bạn đọc được rõ ràng nội dung tệp minh chứng và các thông tin trên tệp đầy đủ, hợp lệ theo tiêu chí.',
+    'Ngôn ngữ trả về: Tiếng Việt hành chính, trung thực, rõ ràng.',
   ].join('\n');
 
   const userContextText = [
-    `Thông tin sinh viên: ${req.studentFullName || 'Chưa rõ'} (MSSV: ${req.studentCode || 'Chưa rõ'}, Trường: ${req.schoolName || 'ĐH Đà Nẵng'})`,
-    `Tiêu chí: ${req.criterionName || req.criterionId || 'Sinh viên 5 tốt'}`,
-    `Yêu cầu tiêu chuẩn: ${req.requirementTitle || 'Theo quy chế'}`,
-    `Nội dung sinh viên kê khai: "${req.declaredValue || ''}" ${req.declaredDetail ? `(${req.declaredDetail})` : ''}`,
+    `Thông tin sinh viên trên hồ sơ: ${req.studentFullName || 'Đang cập nhật'} (MSSV: ${req.studentCode || 'Đang cập nhật'}, Trường: ${req.schoolName || 'ĐH Đà Nẵng'})`,
+    `Tiêu chí xét duyệt: ${req.criterionName || req.criterionId || 'Sinh viên 5 tốt'}`,
+    `Yêu cầu tiêu chuẩn: ${req.requirementTitle || 'Theo quy chế Sinh viên 5 tốt'}`,
+    `Tên kê khai của sinh viên: "${req.declaredValue || '(Đang tải tệp minh chứng - hãy tự bóc tách thông tin từ tệp)'}"`,
     `Tên tệp minh chứng: "${req.fileName}"`,
     req.studentNote ? `Ghi chú tệp: "${req.studentNote}"` : '',
   ]
@@ -290,15 +423,82 @@ export async function extractEvidenceWithOpenAI(
     },
   ];
 
-  const rawUrl = req.fileBase64 || req.fileUrl || '';
+  let rawUrl = req.fileBase64 || req.fileUrl || '';
+  if (
+    req.evidenceId &&
+    (!rawUrl || (!rawUrl.startsWith('data:') && !rawUrl.startsWith('https://') && !rawUrl.startsWith('http://')))
+  ) {
+    try {
+      let record = portalState.evidenceIndex.get(req.evidenceId);
+      if (!record || (!record.r2ObjectKey && !record.base64Content)) {
+        const hydrated = await hydrateEvidenceRecordFromNeonDb(req.evidenceId);
+        if (hydrated) {
+          record = hydrated;
+        }
+      }
+      if (record?.base64Content && record.base64Content.startsWith('data:')) {
+        rawUrl = record.base64Content;
+      } else if (record?.base64Content) {
+        const ext = path.extname(record.name || req.fileName).toLowerCase();
+        const mime = ext === '.pdf' ? 'application/pdf' : ext === '.png' ? 'image/png' : 'image/jpeg';
+        rawUrl = `data:${mime};base64,${record.base64Content}`;
+      } else if (record?.r2ObjectKey && r2StorageClient.isConfigured()) {
+        const presigned = await r2StorageClient.createPresignedGetUrl({
+          objectKey: record.r2ObjectKey,
+          fileName: record.name || req.fileName,
+          mimeType: req.mimeType || 'application/octet-stream',
+        });
+        if (presigned?.viewUrl) {
+          rawUrl = presigned.viewUrl;
+        }
+      }
+    } catch {
+      // ignore evidence lookup error
+    }
+  }
+
+  if (!rawUrl || (!rawUrl.startsWith('data:') && !rawUrl.startsWith('https://') && !rawUrl.startsWith('http://'))) {
+    const localDataUrl = tryLoadLocalEvidenceFileAsDataUrl(req.fileName, req.fileUrl);
+    if (localDataUrl) {
+      rawUrl = localDataUrl;
+    }
+  }
+
   const isImage =
     /\.(jpg|jpeg|png|webp|gif)$/i.test(req.fileName) ||
     rawUrl.startsWith('data:image/') ||
-    (req.mimeType && req.mimeType.startsWith('image/'));
+    Boolean(req.mimeType && req.mimeType.startsWith('image/'));
+
+  const isPdfExtOrMime =
+    /\.pdf$/i.test(req.fileName) ||
+    req.mimeType === 'application/pdf' ||
+    rawUrl.startsWith('data:application/pdf');
+
+  // If PDF is hosted via HTTP(S) (e.g. Cloudflare R2 presigned URL), fetch and convert to data:application/pdf;base64
+  if (
+    isPdfExtOrMime &&
+    (rawUrl.startsWith('https://') || rawUrl.startsWith('http://')) &&
+    !options?.fetchImpl
+  ) {
+    try {
+      const pdfCtrl = new AbortController();
+      const pdfTimer = setTimeout(() => pdfCtrl.abort(), 10000);
+      const pdfRes = await fetch(rawUrl, { signal: pdfCtrl.signal });
+      clearTimeout(pdfTimer);
+      if (pdfRes.ok) {
+        const buf = Buffer.from(await pdfRes.arrayBuffer());
+        if (buf.byteLength > 0 && buf.byteLength <= 15 * 1024 * 1024) {
+          rawUrl = `data:application/pdf;base64,${buf.toString('base64')}`;
+        }
+      }
+    } catch {
+      // fallback if remote PDF fetch fails
+    }
+  }
 
   const isPdfData =
     rawUrl.startsWith('data:application/pdf') ||
-    (req.mimeType === 'application/pdf' && rawUrl.startsWith('data:'));
+    (isPdfExtOrMime && rawUrl.startsWith('data:'));
 
   if (rawUrl && isImage && (rawUrl.startsWith('data:image/') || rawUrl.startsWith('https://') || rawUrl.startsWith('http://'))) {
     userContentParts.push({
@@ -318,9 +518,29 @@ export async function extractEvidenceWithOpenAI(
     });
   }
 
+  const isReasoningModel = /^(gpt-5|o1|o3|o4)/i.test(model);
+
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+    const requestBody: Record<string, unknown> = {
+      model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userContentParts },
+      ],
+      response_format: {
+        type: 'json_schema',
+        json_schema: OCR_JSON_SCHEMA,
+      },
+    };
+
+    if (isReasoningModel) {
+      requestBody.reasoning_effort = 'low';
+    } else {
+      requestBody.temperature = 0.1;
+    }
 
     const response = await fetchFn(`${baseUrl}/chat/completions`, {
       method: 'POST',
@@ -328,18 +548,7 @@ export async function extractEvidenceWithOpenAI(
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        model,
-        temperature: 0.1,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userContentParts },
-        ],
-        response_format: {
-          type: 'json_schema',
-          json_schema: OCR_JSON_SCHEMA,
-        },
-      }),
+      body: JSON.stringify(requestBody),
       signal: controller.signal,
     });
 
@@ -363,12 +572,12 @@ export async function extractEvidenceWithOpenAI(
       documentType: parsed.documentType || 'Văn bản minh chứng',
       extractedStudentName: parsed.extractedStudentName || req.studentFullName,
       extractedStudentCode: parsed.extractedStudentCode || req.studentCode,
-      extractedValue: parsed.extractedValue || req.declaredValue || 'Đã đọc nội dung minh chứng',
+      extractedValue: parsed.extractedValue || 'Thiếu dữ liệu đọc từ tệp minh chứng',
       numericMetric: typeof parsed.numericMetric === 'number' ? parsed.numericMetric : undefined,
-      issuingAuthority: parsed.issuingAuthority || req.schoolName || 'Đơn vị cấp minh chứng',
-      issueDate: parsed.issueDate || 'Năm học 2025–2026',
-      hasRedStampOrSignature: parsed.hasRedStampOrSignature || 'verified',
-      matchWithDeclaration: parsed.matchWithDeclaration || 'matched',
+      issuingAuthority: parsed.issuingAuthority || 'Cần kiểm tra trên tệp minh chứng',
+      issueDate: parsed.issueDate || 'Cần kiểm tra trên tệp minh chứng',
+      hasRedStampOrSignature: parsed.hasRedStampOrSignature || 'unclear',
+      matchWithDeclaration: parsed.isReadable ? (parsed.matchWithDeclaration || 'partial') : 'partial',
       discrepancyNote: parsed.discrepancyNote || undefined,
       extractedAt: new Date().toISOString(),
       aiSource: 'openai',
@@ -376,10 +585,17 @@ export async function extractEvidenceWithOpenAI(
     };
 
     ocrCache.set(cacheKey, extraction);
+    if (req.evidenceId) {
+      ocrCacheByEvidenceId.set(req.evidenceId, extraction);
+      if (!options?.fetchImpl) {
+        saveOcrDiskCache();
+      }
+    }
     return extraction;
-  } catch {
-    const fallback = buildDeterministicOcrExtraction(req);
-    ocrCache.set(cacheKey, fallback);
-    return fallback;
+  } catch (err: any) {
+    return buildDeterministicOcrExtraction(
+      req,
+      `Thiếu dữ liệu: Không thể trích xuất tự động tệp "${req.fileName}" (${err?.message || 'lỗi kết nối OCR'}). Cán bộ vui lòng kiểm tra trực tiếp tệp đính kèm.`
+    );
   }
 }

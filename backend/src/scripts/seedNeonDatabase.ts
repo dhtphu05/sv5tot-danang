@@ -121,14 +121,6 @@ const INSTITUTIONS_SEED: {
     hasStudentAssoc: true,
   },
   {
-    id: 'inst-smp',
-    code: 'SMP',
-    officialName: 'Trường Y Dược – Đại học Đà Nẵng',
-    shortName: 'Trường Y Dược - ĐHĐN',
-    group: 'UD_MEMBER_UNIVERSITY',
-    hasStudentAssoc: true,
-  },
-  {
     id: 'inst-vnuk',
     code: 'VNUK',
     officialName: 'Viện Nghiên cứu và Đào tạo Việt – Anh – Đại học Đà Nẵng',
@@ -136,7 +128,15 @@ const INSTITUTIONS_SEED: {
     group: 'UD_MEMBER_UNIVERSITY',
     hasStudentAssoc: true,
   },
-  // 23 Active Standalone Universities / Academies / Campuses / Colleges in Da Nang
+  {
+    id: 'inst-udck',
+    code: 'UDCK',
+    officialName: 'Phân hiệu Đại học Đà Nẵng tại Kon Tum',
+    shortName: 'Phân hiệu ĐHĐN tại Kon Tum',
+    group: 'UD_MEMBER_UNIVERSITY',
+    hasStudentAssoc: true,
+  },
+  // 17 Trường Đại học, Học viện, Cao đẳng độc lập theo danh sách chính thức
   {
     id: 'inst-dtu',
     code: 'DTU',
@@ -146,26 +146,10 @@ const INSTITUTIONS_SEED: {
     hasStudentAssoc: true,
   },
   {
-    id: 'inst-dau',
-    code: 'DAU',
-    officialName: 'Trường Đại học Kiến trúc Đà Nẵng',
-    shortName: 'DAU',
-    group: 'AFFILIATED_UNIVERSITY',
-    hasStudentAssoc: true,
-  },
-  {
-    id: 'inst-upes3',
-    code: 'UPES3',
-    officialName: 'Trường Đại học Thể dục Thể thao Đà Nẵng',
-    shortName: 'UPES3',
-    group: 'AFFILIATED_UNIVERSITY',
-    hasStudentAssoc: true,
-  },
-  {
-    id: 'inst-donga',
-    code: 'UDA',
-    officialName: 'Trường Đại học Đông Á',
-    shortName: 'UDA',
+    id: 'inst-dqu',
+    code: 'DQU',
+    officialName: 'Trường Đại học Quảng Nam',
+    shortName: 'DQU',
     group: 'AFFILIATED_UNIVERSITY',
     hasStudentAssoc: true,
   },
@@ -178,76 +162,36 @@ const INSTITUTIONS_SEED: {
     hasStudentAssoc: true,
   },
   {
-    id: 'inst-fpt',
-    code: 'FPTU',
-    officialName: 'Trường Đại học FPT phân hiệu Đà Nẵng',
-    shortName: 'FPTU',
+    id: 'inst-upes3',
+    code: 'UPES3',
+    officialName: 'Trường Đại học Thể dục Thể thao Đà Nẵng',
+    shortName: 'UPES3',
     group: 'AFFILIATED_UNIVERSITY',
     hasStudentAssoc: true,
   },
   {
-    id: 'inst-hv-chinhtri-kv3',
-    code: 'HVCT3',
-    officialName: 'Học viện Chính trị khu vực III',
-    shortName: 'HVCT3',
-    group: 'AFFILIATED_UNIVERSITY',
-    hasStudentAssoc: false,
-  },
-  {
-    id: 'inst-hv-toa-an',
-    code: 'HVTA',
-    officialName: 'Học viện Tòa án (Cơ sở đào tạo thực hành Đà Nẵng)',
-    shortName: 'HVTA',
-    group: 'AFFILIATED_UNIVERSITY',
-    hasStudentAssoc: false,
-  },
-  {
-    id: 'inst-dh-ngan-hang-dn',
-    code: 'HUB-DN',
-    officialName: 'Trường Đại học Ngân hàng TP.HCM (Phân hiệu Đà Nẵng)',
-    shortName: 'HUB-DN',
+    id: 'inst-dau',
+    code: 'DAU',
+    officialName: 'Trường Đại học Kiến trúc Đà Nẵng',
+    shortName: 'DAU',
     group: 'AFFILIATED_UNIVERSITY',
     hasStudentAssoc: true,
   },
   {
-    id: 'inst-dh-luat-hanoi-dn',
-    code: 'HLU-DN',
-    officialName: 'Trường Đại học Luật Hà Nội (Phân hiệu Đà Nẵng)',
-    shortName: 'HLU-DN',
-    group: 'AFFILIATED_UNIVERSITY',
-    hasStudentAssoc: false,
-  },
-  {
-    id: 'inst-dh-mo-hn-dn',
-    code: 'HOU-DN',
-    officialName: 'Phân hiệu Đại học Mở Hà Nội tại Đà Nẵng',
-    shortName: 'HOU-DN',
-    group: 'AFFILIATED_UNIVERSITY',
-    hasStudentAssoc: false,
-  },
-  {
-    id: 'inst-hv-hanhchinh-dn',
-    code: 'NAPA-DN',
-    officialName: 'Phân hiệu Học viện Hành chính Quốc gia tại Đà Nẵng',
-    shortName: 'NAPA-DN',
-    group: 'AFFILIATED_UNIVERSITY',
-    hasStudentAssoc: false,
-  },
-  {
-    id: 'inst-greenwich-dn',
-    code: 'GREENWICH',
-    officialName: 'Đại học Greenwich Việt Nam (Cơ sở Đà Nẵng)',
-    shortName: 'GREENWICH',
+    id: 'inst-donga',
+    code: 'UDA',
+    officialName: 'Trường Đại học Đông Á',
+    shortName: 'UDA',
     group: 'AFFILIATED_UNIVERSITY',
     hasStudentAssoc: true,
   },
   {
-    id: 'inst-auv',
-    code: 'AUV',
-    officialName: 'Trường Đại học Mỹ tại Việt Nam (AUV)',
-    shortName: 'AUV',
-    group: 'AFFILIATED_UNIVERSITY',
-    hasStudentAssoc: false,
+    id: 'inst-cddn',
+    code: 'CDDN',
+    officialName: 'Trường Cao đẳng Đà Nẵng',
+    shortName: 'CĐ Đà Nẵng',
+    group: 'COLLEGE_JUNIOR_COLLEGE',
+    hasStudentAssoc: true,
   },
   {
     id: 'inst-cd-thuongmai',
@@ -266,38 +210,6 @@ const INSTITUTIONS_SEED: {
     hasStudentAssoc: true,
   },
   {
-    id: 'inst-cd-congnghe',
-    code: 'YDVN',
-    officialName: 'Trường Cao đẳng Công nghệ Y - Dược Việt Nam',
-    shortName: 'YDVN',
-    group: 'COLLEGE_JUNIOR_COLLEGE',
-    hasStudentAssoc: false,
-  },
-  {
-    id: 'inst-cd-fptpoly',
-    code: 'POLY',
-    officialName: 'Trường Cao đẳng FPT Polytechnic cơ sở Đà Nẵng',
-    shortName: 'POLY',
-    group: 'COLLEGE_JUNIOR_COLLEGE',
-    hasStudentAssoc: false,
-  },
-  {
-    id: 'inst-cd-btec-fpt',
-    code: 'BTEC-FPT',
-    officialName: 'Trường Cao đẳng Quốc tế BTEC FPT (Cơ sở Đà Nẵng)',
-    shortName: 'BTEC-FPT',
-    group: 'COLLEGE_JUNIOR_COLLEGE',
-    hasStudentAssoc: false,
-  },
-  {
-    id: 'inst-cd-nghe-dn',
-    code: 'DANAVTC',
-    officialName: 'Trường Cao đẳng Nghề Đà Nẵng',
-    shortName: 'DANAVTC',
-    group: 'COLLEGE_JUNIOR_COLLEGE',
-    hasStudentAssoc: true,
-  },
-  {
     id: 'inst-cd-gtvt-tw5',
     code: 'C5',
     officialName: 'Trường Cao đẳng Giao thông Vận tải Trung ương V',
@@ -306,34 +218,26 @@ const INSTITUTIONS_SEED: {
     hasStudentAssoc: false,
   },
   {
-    id: 'inst-cd-kinhte-kh',
-    code: 'CEP',
-    officialName: 'Trường Cao đẳng Kinh tế - Kế hoạch Đà Nẵng',
-    shortName: 'CEP',
+    id: 'inst-cd-phuongdong-dn',
+    code: 'CDPD',
+    officialName: 'Trường Cao đẳng Phương Đông',
+    shortName: 'CĐ Phương Đông',
     group: 'COLLEGE_JUNIOR_COLLEGE',
-    hasStudentAssoc: true,
-  },
-  {
-    id: 'inst-cd-vhtt-dl',
-    code: 'CDVHNT',
-    officialName: 'Trường Cao đẳng Văn hóa Nghệ thuật Đà Nẵng',
-    shortName: 'CDVHNT',
-    group: 'COLLEGE_JUNIOR_COLLEGE',
-    hasStudentAssoc: true,
+    hasStudentAssoc: false,
   },
   {
     id: 'inst-cd-luongthuc',
     code: 'CFIT',
-    officialName: 'Trường Cao đẳng Lương thực - Thực phẩm',
-    shortName: 'CFIT',
+    officialName: 'Trường Cao đẳng Lương thực Thực phẩm',
+    shortName: 'CĐ Lương thực Thực phẩm',
     group: 'COLLEGE_JUNIOR_COLLEGE',
     hasStudentAssoc: true,
   },
   {
-    id: 'inst-cd-bachkhoa-dn',
-    code: 'CDBK',
-    officialName: 'Trường Cao đẳng Bách khoa Đà Nẵng',
-    shortName: 'CDBK',
+    id: 'inst-cd-congnghe',
+    code: 'YDVN',
+    officialName: 'Trường Cao đẳng Công nghệ Y – Dược Việt Nam',
+    shortName: 'YDVN',
     group: 'COLLEGE_JUNIOR_COLLEGE',
     hasStudentAssoc: false,
   },
@@ -346,93 +250,27 @@ const INSTITUTIONS_SEED: {
     hasStudentAssoc: false,
   },
   {
-    id: 'inst-cd-phuongdong-dn',
-    code: 'CDPD',
-    officialName: 'Trường Cao đẳng Phương Đông Đà Nẵng',
-    shortName: 'CDPD',
-    group: 'COLLEGE_JUNIOR_COLLEGE',
-    hasStudentAssoc: false,
-  },
-  {
-    id: 'inst-cd-ptth',
-    code: 'VOV2',
-    officialName: 'Trường Cao đẳng Phát thanh - Truyền hình II (Cơ sở Đà Nẵng)',
-    shortName: 'VOV2',
-    group: 'COLLEGE_JUNIOR_COLLEGE',
-    hasStudentAssoc: false,
-  },
-  {
-    id: 'inst-cd-supham-maugiao',
-    code: 'CDSPTW',
-    officialName: 'Trường Cao đẳng Sư phạm Trung ương Nha Trang (Cơ sở Đà Nẵng)',
-    shortName: 'CDSPTW',
-    group: 'COLLEGE_JUNIOR_COLLEGE',
-    hasStudentAssoc: false,
-  },
-  {
-    id: 'inst-cd-yduoc-pasteur',
-    code: 'PASTEUR',
-    officialName: 'Trường Cao đẳng Y Dược Pasteur Đà Nẵng',
-    shortName: 'PASTEUR',
-    group: 'COLLEGE_JUNIOR_COLLEGE',
-    hasStudentAssoc: false,
-  },
-  {
-    id: 'inst-cd-lacviet',
-    code: 'LACVIET',
-    officialName: 'Trường Cao đẳng Lạc Việt',
-    shortName: 'LACVIET',
-    group: 'COLLEGE_JUNIOR_COLLEGE',
-    hasStudentAssoc: false,
-    isActive: true,
-  },
-  // Khu vực Quảng Nam (Sáp nhập địa giới hành chính Thành phố Đà Nẵng)
-  {
-    id: 'inst-dqu',
-    code: 'DQU',
-    officialName: 'Trường Đại học Quảng Nam',
-    shortName: 'DQU',
-    group: 'AFFILIATED_UNIVERSITY',
-    hasStudentAssoc: true,
-  },
-  {
-    id: 'inst-pctu',
-    code: 'PCTU',
-    officialName: 'Trường Đại học Phan Châu Trinh',
-    shortName: 'PCTU',
-    group: 'AFFILIATED_UNIVERSITY',
-    hasStudentAssoc: true,
-  },
-  {
-    id: 'inst-cd-quangnam',
-    code: 'CDQN',
-    officialName: 'Trường Cao đẳng Quảng Nam',
-    shortName: 'CDQN',
-    group: 'COLLEGE_JUNIOR_COLLEGE',
-    hasStudentAssoc: true,
-  },
-  {
-    id: 'inst-cd-dienluc-mt',
-    code: 'CEPC',
-    officialName: 'Trường Cao đẳng Điện lực Miền Trung',
-    shortName: 'CEPC',
-    group: 'COLLEGE_JUNIOR_COLLEGE',
-    hasStudentAssoc: true,
-  },
-  {
     id: 'inst-cd-kinhte-thuyloi-mt',
     code: 'CCTW',
-    officialName: 'Trường Cao đẳng Công nghệ Kinh tế và Thủy lợi Miền Trung',
-    shortName: 'CCTW',
+    officialName: 'Trường Cao đẳng Kinh tế Công nghệ và Thủy lợi Miền Trung',
+    shortName: 'CĐ KTCN & Thủy lợi MT',
     group: 'COLLEGE_JUNIOR_COLLEGE',
     hasStudentAssoc: false,
   },
   {
-    id: 'inst-cd-thaco',
-    code: 'THACO',
-    officialName: 'Trường Cao đẳng THACO',
-    shortName: 'THACO',
-    group: 'COLLEGE_JUNIOR_COLLEGE',
+    id: 'inst-muce-dn',
+    code: 'MUCE-DN',
+    officialName: 'Phân hiệu Trường Đại học Xây dựng Miền Trung tại TP. Đà Nẵng',
+    shortName: 'Phân hiệu ĐH Xây dựng MT',
+    group: 'AFFILIATED_UNIVERSITY',
+    hasStudentAssoc: false,
+  },
+  {
+    id: 'inst-apd-dn',
+    code: 'APD-DN',
+    officialName: 'Học viện Chính sách và Phát triển - Phân hiệu TP. Đà Nẵng',
+    shortName: 'Phân hiệu HV Chính sách & Phát triển',
+    group: 'AFFILIATED_UNIVERSITY',
     hasStudentAssoc: false,
   },
 ];
@@ -475,102 +313,75 @@ async function main() {
   const prisma = (await dbManager.getClient()) as any;
   const defaultHash = await defaultPasswordHasher.hash('MatKhau@2026');
 
-  // 0. Clean all sample applications, batches, evidence objects, and legacy users/units/institutions first ("không có hồ sơ mẫu")
-  await prisma.$executeRawUnsafe('DELETE FROM "portal_persistent_records"').catch(() => {});
-  await prisma.notification?.deleteMany({}).catch(() => {});
-  await prisma.authSession?.deleteMany({}).catch(() => {});
-  await prisma.supplementRequest?.deleteMany({}).catch(() => {});
-  await prisma.evidenceObject?.deleteMany({}).catch(() => {});
-  await prisma.applicationFinalResult?.deleteMany({}).catch(() => {});
-  await prisma.recognitionDecisionBatch?.deleteMany({}).catch(() => {});
-  await prisma.schoolForwardingBatch?.deleteMany({}).catch(() => {});
-  await prisma.individualApplication?.deleteMany({}).catch(() => {});
-  await prisma.collectiveApplication?.deleteMany({}).catch(() => {});
-  await prisma.collectivePreparerAuthorization?.deleteMany({}).catch(() => {});
-  await prisma.collectiveUnit?.deleteMany({}).catch(() => {});
-  await prisma.userRoleAssignment?.deleteMany({}).catch(() => {});
-  await prisma.user?.deleteMany({}).catch(() => {});
-  await prisma.academicClass?.deleteMany({}).catch(() => {});
-  await prisma.facultyDepartment?.deleteMany({}).catch(() => {});
-  await prisma.schoolReviewUnit?.deleteMany({}).catch(() => {});
-  await prisma.institution?.deleteMany({}).catch(() => {});
+  const shouldCleanApps =
+    process.argv.includes('--clean') || process.env.CLEAN_APPLICATIONS === '1';
 
-  // 1. Seed Institutions
-  for (const inst of INSTITUTIONS_SEED) {
-    const active = inst.isActive !== false;
-    await prisma.institution.upsert({
-      where: { id: inst.id },
-      update: {
-        code: inst.code,
-        officialName: inst.officialName,
-        shortName: inst.shortName,
-        group: inst.group,
-        hasStudentAssoc: inst.hasStudentAssoc,
-        isActive: active,
-      },
-      create: {
-        id: inst.id,
-        code: inst.code,
-        officialName: inst.officialName,
-        shortName: inst.shortName,
-        group: inst.group,
-        hasStudentAssoc: inst.hasStudentAssoc,
-        isActive: active,
-      },
-    });
+  if (shouldCleanApps) {
+    await prisma.$executeRawUnsafe('DELETE FROM "portal_persistent_records"').catch(() => {});
+    await prisma.notification?.deleteMany({}).catch(() => {});
+    await prisma.authSession?.deleteMany({}).catch(() => {});
+    await prisma.supplementRequest?.deleteMany({}).catch(() => {});
+    await prisma.evidenceObject?.deleteMany({}).catch(() => {});
+    await prisma.applicationFinalResult?.deleteMany({}).catch(() => {});
+    await prisma.recognitionDecisionBatch?.deleteMany({}).catch(() => {});
+    await prisma.schoolForwardingBatch?.deleteMany({}).catch(() => {});
+    await prisma.individualApplication?.deleteMany({}).catch(() => {});
+    await prisma.collectiveApplication?.deleteMany({}).catch(() => {});
   }
+  const validInstIds = INSTITUTIONS_SEED.map((i) => i.id);
+  const validUnitIds = SCHOOL_REVIEW_UNITS_SEED.map((u) => u.id);
+  await prisma.facultyDepartment
+    ?.deleteMany({ where: { institutionId: { notIn: validInstIds } } })
+    .catch(() => {});
+  await prisma.schoolReviewUnit
+    ?.deleteMany({ where: { id: { notIn: validUnitIds } } })
+    .catch(() => {});
+  await prisma.institution
+    ?.deleteMany({ where: { id: { notIn: validInstIds } } })
+    .catch(() => {});
+
+  // 1. Seed Institutions (Bulk)
+  await prisma.institution.createMany({
+    data: INSTITUTIONS_SEED.map((inst) => ({
+      id: inst.id,
+      code: inst.code,
+      officialName: inst.officialName,
+      shortName: inst.shortName,
+      group: inst.group,
+      hasStudentAssoc: inst.hasStudentAssoc,
+      isActive: inst.isActive !== false,
+    })),
+    skipDuplicates: true,
+  });
   console.log(`✅ Seeded ${INSTITUTIONS_SEED.length} Institutions.`);
 
-  // 2. Seed School Review Units
-  for (const unit of SCHOOL_REVIEW_UNITS_SEED) {
-    const active = unit.isActive !== false;
-    await prisma.schoolReviewUnit.upsert({
-      where: { id: unit.id },
-      update: {
-        institutionId: unit.institutionId,
-        code: unit.code,
-        officialName: unit.officialName,
-        shortName: unit.shortName,
-        unitType: unit.unitType,
-        isActive: active,
-      },
-      create: {
-        id: unit.id,
-        institutionId: unit.institutionId,
-        code: unit.code,
-        officialName: unit.officialName,
-        shortName: unit.shortName,
-        unitType: unit.unitType,
-        isActive: active,
-      },
-    });
-  }
+  // 2. Seed School Review Units (Bulk)
+  await prisma.schoolReviewUnit.createMany({
+    data: SCHOOL_REVIEW_UNITS_SEED.map((unit) => ({
+      id: unit.id,
+      institutionId: unit.institutionId,
+      code: unit.code,
+      officialName: unit.officialName,
+      shortName: unit.shortName,
+      unitType: unit.unitType,
+      isActive: unit.isActive !== false,
+    })),
+    skipDuplicates: true,
+  });
   console.log(`✅ Seeded ${SCHOOL_REVIEW_UNITS_SEED.length} School Review Units.`);
 
-  // 2.1 Seed 49 Canonical UDN Faculties (2026 Structure)
-  for (const fac of FACULTIES_SEED_2026) {
-    await prisma.facultyDepartment.upsert({
-      where: {
-        institutionId_code: {
-          institutionId: fac.institutionId,
-          code: fac.code,
-        },
-      },
-      update: {
-        schoolReviewUnitId: fac.schoolReviewUnitId,
-        name: fac.name,
-        isActive: true,
-      },
-      create: {
-        id: fac.id,
-        institutionId: fac.institutionId,
-        schoolReviewUnitId: fac.schoolReviewUnitId,
-        code: fac.code,
-        name: fac.name,
-        isActive: true,
-      },
-    });
-  }
+  // 2.1 Seed Canonical UDN Faculties (Bulk)
+  await prisma.facultyDepartment.createMany({
+    data: FACULTIES_SEED_2026.map((fac) => ({
+      id: fac.id,
+      institutionId: fac.institutionId,
+      schoolReviewUnitId: fac.schoolReviewUnitId,
+      code: fac.code,
+      name: fac.name,
+      isActive: true,
+    })),
+    skipDuplicates: true,
+  });
   console.log(`✅ Seeded ${FACULTIES_SEED_2026.length} Faculties.`);
 
   // 3. Seed Active AwardSeason
@@ -687,117 +498,71 @@ async function main() {
     },
   ];
 
-  for (const cg of criterionGroups) {
-    await prisma.criterionGroupDefinition.upsert({
-      where: {
-        seasonId_track_code: {
-          seasonId: season.id,
-          track: cg.track,
-          code: cg.code,
-        },
-      },
-      update: {
-        title: cg.title,
-        shortTitle: cg.shortTitle,
-        displayOrder: cg.displayOrder,
-        ruleConfig: cg.ruleConfig,
-      },
-      create: {
-        seasonId: season.id,
-        track: cg.track,
-        code: cg.code,
-        title: cg.title,
-        shortTitle: cg.shortTitle,
-        displayOrder: cg.displayOrder,
-        ruleConfig: cg.ruleConfig,
-      },
-    });
-  }
+  await prisma.criterionGroupDefinition.createMany({
+    data: criterionGroups.map((cg) => ({
+      seasonId: season.id,
+      track: cg.track,
+      code: cg.code,
+      title: cg.title,
+      shortTitle: cg.shortTitle,
+      displayOrder: cg.displayOrder,
+      ruleConfig: cg.ruleConfig,
+    })),
+    skipDuplicates: true,
+  });
   console.log(`✅ Seeded ${criterionGroups.length} CriterionGroupDefinitions.`);
 
   // 5. Seed Staff Accounts (Admin, City Manager, City Officer, City Committee, School Officers)
-  for (const staff of STAFF_SEED_ACCOUNTS) {
-    const validInstId = INSTITUTIONS_SEED.some((i) => i.id === staff.institutionId)
-      ? staff.institutionId
-      : 'inst-hsv-dn';
-    const validUnitId =
-      staff.role === 'SCHOOL_OFFICER' &&
-      SCHOOL_REVIEW_UNITS_SEED.some((u) => u.id === staff.unitId)
-        ? staff.unitId
-        : null;
-
-    const user = await prisma.user.upsert({
-      where: { email: staff.email.toLowerCase() },
-      update: {
-        fullName: staff.fullName,
-        passwordHash: defaultHash,
-        status: 'ACTIVE',
-        institutionId: validInstId,
-      },
-      create: {
+  await prisma.user.createMany({
+    data: STAFF_SEED_ACCOUNTS.map((staff) => {
+      const validInstId = INSTITUTIONS_SEED.some((i) => i.id === staff.institutionId)
+        ? staff.institutionId
+        : 'inst-hsv-dn';
+      return {
         id: staff.id,
         email: staff.email.toLowerCase(),
         fullName: staff.fullName,
         passwordHash: defaultHash,
         status: 'ACTIVE',
         institutionId: validInstId,
-      },
-    });
+      };
+    }),
+    skipDuplicates: true,
+  });
 
-    const roleCode = staff.role as SystemRoleCode;
-    const existingRole = await prisma.userRoleAssignment.findFirst({
-      where: {
-        userId: user.id,
-        roleCode,
-      },
-    });
-
-    if (existingRole) {
-      await prisma.userRoleAssignment.update({
-        where: { id: existingRole.id },
-        data: {
-          schoolReviewUnitId: validUnitId,
-          isActive: true,
-        },
-      });
-    } else {
-      await prisma.userRoleAssignment.create({
-        data: {
-          userId: user.id,
-          roleCode,
-          schoolReviewUnitId: validUnitId,
-          isActive: true,
-        },
-      });
-    }
-  }
+  await prisma.userRoleAssignment.createMany({
+    data: STAFF_SEED_ACCOUNTS.map((staff) => {
+      const validUnitId =
+        staff.role === 'SCHOOL_OFFICER' &&
+        SCHOOL_REVIEW_UNITS_SEED.some((u) => u.id === staff.unitId)
+          ? staff.unitId
+          : null;
+      return {
+        userId: staff.id,
+        roleCode: staff.role as SystemRoleCode,
+        schoolReviewUnitId: validUnitId,
+        isActive: true,
+      };
+    }),
+    skipDuplicates: true,
+  });
   console.log(`✅ Seeded ${STAFF_SEED_ACCOUNTS.length} Staff Accounts (Admin, Manager, Officers, Committee, School Officers).`);
 
-  // 6. Seed Collective Units & Collective Preparer Accounts across all 14 universities
-  for (const prep of COLLECTIVE_PREPARERS) {
-    const collectiveUnitId = `col-${prep.id.replace('prep-col-', '')}`;
-    const collectiveType: CollectiveType =
-      prep.collectiveName.includes('Liên chi hội')
-        ? 'LIEN_CHI_HOI'
-        : prep.collectiveName.includes('Liên chi đoàn')
-        ? 'LIEN_CHI_DOAN'
-        : prep.collectiveName.includes('CLB') || prep.collectiveName.includes('Câu lạc bộ')
-        ? 'CLUB_TEAM_GROUP'
-        : prep.collectiveName.includes('Chi đoàn')
-        ? 'CHI_DOAN'
-        : 'CHI_HOI';
-
-    await prisma.collectiveUnit.upsert({
-      where: { id: collectiveUnitId },
-      update: {
-        officialName: prep.collectiveName,
-        collectiveType,
-        institutionId: prep.institutionId,
-        schoolReviewUnitId: prep.schoolReviewUnitId,
-        facultyOrParentName: prep.institutionName,
-        isActive: true,
-      },
-      create: {
+  // 6. Seed Collective Units & Collective Preparer Accounts
+  await prisma.collectiveUnit.createMany({
+    data: COLLECTIVE_PREPARERS.map((prep) => {
+      const collectiveUnitId = `col-${prep.id.replace('prep-col-', '')}`;
+      const collectiveType: CollectiveType =
+        prep.collectiveName.includes('Liên chi hội')
+          ? 'LIEN_CHI_HOI'
+          : prep.collectiveName.includes('Liên chi đoàn')
+          ? 'LIEN_CHI_DOAN'
+          : prep.collectiveName.includes('CLB') || prep.collectiveName.includes('Câu lạc bộ')
+          ? 'CLUB_TEAM_GROUP'
+          : prep.collectiveName.includes('Chi đoàn')
+          ? 'CHI_DOAN'
+          : 'CHI_HOI';
+      return {
         id: collectiveUnitId,
         code: collectiveUnitId.toUpperCase(),
         officialName: prep.collectiveName,
@@ -806,131 +571,86 @@ async function main() {
         schoolReviewUnitId: prep.schoolReviewUnitId,
         facultyOrParentName: prep.institutionName,
         isActive: true,
-      },
-    });
+      };
+    }),
+    skipDuplicates: true,
+  });
 
-    const user = await prisma.user.upsert({
-      where: { email: prep.email.toLowerCase() },
-      update: {
-        fullName: prep.fullName,
-        passwordHash: defaultHash,
-        status: 'ACTIVE',
-        institutionId: prep.institutionId,
-      },
-      create: {
-        id: prep.id,
-        email: prep.email.toLowerCase(),
-        fullName: prep.fullName,
-        passwordHash: defaultHash,
-        status: 'ACTIVE',
-        institutionId: prep.institutionId,
-      },
-    });
+  await prisma.user.createMany({
+    data: COLLECTIVE_PREPARERS.map((prep) => ({
+      id: prep.id,
+      email: prep.email.toLowerCase(),
+      fullName: prep.fullName,
+      passwordHash: defaultHash,
+      status: 'ACTIVE',
+      institutionId: prep.institutionId,
+    })),
+    skipDuplicates: true,
+  });
 
-    const existingRole = await prisma.userRoleAssignment.findFirst({
-      where: {
-        userId: user.id,
-        roleCode: 'COLLECTIVE_PREPARER',
-      },
-    });
-    if (!existingRole) {
-      await prisma.userRoleAssignment.create({
-        data: {
-          userId: user.id,
-          roleCode: 'COLLECTIVE_PREPARER',
-          schoolReviewUnitId: prep.schoolReviewUnitId,
-          isActive: true,
-        },
-      });
-    }
+  await prisma.userRoleAssignment.createMany({
+    data: COLLECTIVE_PREPARERS.map((prep) => ({
+      userId: prep.id,
+      roleCode: 'COLLECTIVE_PREPARER' as SystemRoleCode,
+      schoolReviewUnitId: prep.schoolReviewUnitId,
+      isActive: true,
+    })),
+    skipDuplicates: true,
+  });
 
-    await prisma.collectivePreparerAuthorization.upsert({
-      where: {
-        collectiveUnitId_userId_seasonId: {
-          collectiveUnitId,
-          userId: user.id,
-          seasonId: season.id,
-        },
-      },
-      update: {
-        positionTitle: 'Người lập hồ sơ Tập thể được phân quyền',
-        isActive: true,
-      },
-      create: {
-        collectiveUnitId,
-        userId: user.id,
-        seasonId: season.id,
-        positionTitle: 'Người lập hồ sơ Tập thể được phân quyền',
-        isActive: true,
-      },
-    });
-  }
+  await prisma.collectivePreparerAuthorization.createMany({
+    data: COLLECTIVE_PREPARERS.map((prep) => ({
+      collectiveUnitId: `col-${prep.id.replace('prep-col-', '')}`,
+      userId: prep.id,
+      seasonId: season.id,
+      positionTitle: 'Người lập hồ sơ Tập thể được phân quyền',
+      isActive: true,
+    })),
+    skipDuplicates: true,
+  });
   console.log(`✅ Seeded ${COLLECTIVE_PREPARERS.length} Collective Preparer Accounts & Authorizations.`);
 
-  // 7. Seed Student Accounts across all 9 UDN member units (0 sample IndividualApplications)
-  await prisma.schoolForwardingBatch.deleteMany({}).catch(() => {});
-  await prisma.individualApplication.deleteMany({}).catch(() => {});
-
-  for (let idx = 0; idx < SEEDED_STUDENTS.length; idx++) {
-    const stu = SEEDED_STUDENTS[idx];
-    const profilePayload = {
+  // 7. Seed Student Accounts (0 sample IndividualApplications)
+  await prisma.user.createMany({
+    data: SEEDED_STUDENTS.map((stu, idx) => ({
+      id: stu.id,
+      email: stu.email.toLowerCase(),
       fullName: stu.fullName,
       studentCode: stu.studentCode,
-      dateOfBirth: '2004-05-15',
-      gender: idx % 2 === 0 ? 'Nam' : 'Nữ',
-      ethnicity: 'Kinh',
-      citizenId: `04820400${String(1000 + idx)}`,
-      phoneNumber: `0905${String(123400 + idx)}`,
-      email: stu.email.toLowerCase(),
-      permanentAddress: 'Thành phố Đà Nẵng',
-      trainingInstitutionId: stu.institutionId,
-      trainingInstitutionName: stu.institutionName,
-      faculty: 'Khoa Đào tạo Chuyên ngành',
-      className: `22CLC-${idx + 1}`,
-      academicYear: '2025-2026',
-      youthUnionRole: 'Đoàn viên / Hội viên ưu tú',
-      updatedAt: new Date().toISOString(),
-    };
-
-    const user = await prisma.user.upsert({
-      where: { email: stu.email.toLowerCase() },
-      update: {
+      passwordHash: defaultHash,
+      status: 'ACTIVE',
+      institutionId: stu.institutionId,
+      profile: {
         fullName: stu.fullName,
         studentCode: stu.studentCode,
-        passwordHash: defaultHash,
-        status: 'ACTIVE',
-        institutionId: stu.institutionId,
-        profile: profilePayload,
-      },
-      create: {
-        id: stu.id,
+        dateOfBirth: '2004-05-15',
+        gender: idx % 2 === 0 ? 'Nam' : 'Nữ',
+        ethnicity: 'Kinh',
+        citizenId: `04820400${String(1000 + idx)}`,
+        phoneNumber: `0905${String(123400 + idx)}`,
         email: stu.email.toLowerCase(),
-        fullName: stu.fullName,
-        studentCode: stu.studentCode,
-        passwordHash: defaultHash,
-        status: 'ACTIVE',
-        institutionId: stu.institutionId,
-        profile: profilePayload,
+        permanentAddress: 'Thành phố Đà Nẵng',
+        trainingInstitutionId: stu.institutionId,
+        trainingInstitutionName: stu.institutionName,
+        faculty: 'Khoa Đào tạo Chuyên ngành',
+        className: `22CLC-${idx + 1}`,
+        academicYear: '2025-2026',
+        youthUnionRole: 'Đoàn viên / Hội viên ưu tú',
+        updatedAt: new Date().toISOString(),
       },
-    });
+    })),
+    skipDuplicates: true,
+  });
 
-    const existingRole = await prisma.userRoleAssignment.findFirst({
-      where: {
-        userId: user.id,
-        roleCode: 'STUDENT',
-      },
-    });
-    if (!existingRole) {
-      await prisma.userRoleAssignment.create({
-        data: {
-          userId: user.id,
-          roleCode: 'STUDENT',
-          schoolReviewUnitId: stu.unitId,
-          isActive: true,
-        },
-      });
-    }
-  }
+  await prisma.userRoleAssignment.createMany({
+    data: SEEDED_STUDENTS.map((stu) => ({
+      userId: stu.id,
+      roleCode: 'STUDENT' as SystemRoleCode,
+      schoolReviewUnitId: stu.unitId,
+      isActive: true,
+    })),
+    skipDuplicates: true,
+  });
   console.log(`✅ Seeded ${SEEDED_STUDENTS.length} Student Accounts across Da Nang institutions (0 sample applications).`);
 
   const r2UploadedCount = 0;

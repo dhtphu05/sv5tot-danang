@@ -14,6 +14,8 @@
 import { Router, type Request, type Response } from 'express';
 import {
   extractEvidenceWithOpenAI,
+  getAllCachedOcrExtractions,
+  resolveLiveOpenAiConfig,
   type OcrExtractionRequest,
   type OcrEvidenceExtraction,
 } from './openaiOcr.service';
@@ -30,32 +32,147 @@ export type CopilotScopeAnalysisPayload = ScopeEvaluationPayload;
 export type CopilotScopeAnalysisResult = ScopeEvaluationResult;
 export type { OcrExtractionRequest, OcrEvidenceExtraction };
 
-function buildHeuristicDossierSummary(appData: { studentName?: string; fullName?: string } | undefined) {
+async function generateLiveDossierSummary(
+  appData: Record<string, any> | undefined,
+  criteriaProgress: any
+) {
+  const studentName = appData?.studentName || appData?.fullName || 'sinh viên';
+  const liveConfig = resolveLiveOpenAiConfig();
+  const ocrExtractions = getAllCachedOcrExtractions();
+
+  if (liveConfig.apiKey && typeof globalThis.fetch === 'function') {
+    try {
+      const isReasoning = /^(gpt-5|o1|o3|o4)/i.test(liveConfig.model);
+      const reqBody: Record<string, unknown> = {
+        model: liveConfig.model,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'Bạn là Thư ký Hội đồng Xét chọn danh hiệu "Sinh viên 5 tốt" cấp Thành phố Đà Nẵng năm học 2025–2026. ' +
+              'Hãy tổng hợp nhận định tờ trình dựa trên dữ liệu thực tế của hồ sơ và kết quả OCR. ' +
+              'QUY TẮC BẮT BUỘC: Không bao giờ kết luận "CHƯA ĐẠT CHUẨN" hay "Không đạt". Nếu bất kỳ tiêu chí nào chưa rõ hoặc thiếu minh chứng, hãy đặt committeeReadiness = "CHỜ BỔ SUNG" và ghi rõ "Thiếu dữ liệu" cần kiểm tra thêm.',
+          },
+          {
+            role: 'user',
+            content: JSON.stringify({
+              studentName,
+              applicationData: appData,
+              criteriaProgress,
+              ocrExtractions,
+            }),
+          },
+        ],
+        response_format: {
+          type: 'json_schema',
+          json_schema: {
+            name: 'sv5t_dossier_summary',
+            strict: true,
+            schema: {
+              type: 'object',
+              properties: {
+                candidateRating: {
+                  type: 'string',
+                  enum: ['XUẤT SẮC', 'TIÊU BIỂU', 'ĐẠT CHUẨN', 'CẦN HỘI CHẨN'],
+                },
+                committeeReadiness: {
+                  type: 'string',
+                  enum: ['ĐỦ ĐIỀU KIỆN BIỂU QUYẾT', 'CHỜ BỔ SUNG'],
+                },
+                overallVerdict: { type: 'string' },
+                criteriaReadinessMatrix: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      criterionName: { type: 'string' },
+                      status: { type: 'string', enum: ['Đạt', 'Cần lưu ý'] },
+                      highlight: { type: 'string' },
+                    },
+                    required: ['criterionName', 'status', 'highlight'],
+                    additionalProperties: false,
+                  },
+                },
+                exceptionalAchievements: {
+                  type: 'array',
+                  items: { type: 'string' },
+                },
+                potentialCaveats: {
+                  type: 'array',
+                  items: { type: 'string' },
+                },
+                recommendedCommitteeVote: { type: 'string' },
+                executiveMemo: { type: 'string' },
+              },
+              required: [
+                'candidateRating',
+                'committeeReadiness',
+                'overallVerdict',
+                'criteriaReadinessMatrix',
+                'exceptionalAchievements',
+                'potentialCaveats',
+                'recommendedCommitteeVote',
+                'executiveMemo',
+              ],
+              additionalProperties: false,
+            },
+          },
+        },
+      };
+      if (isReasoning) {
+        reqBody.reasoning_effort = 'low';
+      } else {
+        reqBody.temperature = 0.2;
+      }
+
+      const res = await fetch(`${liveConfig.baseUrl.replace(/\/+$/, '')}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${liveConfig.apiKey}`,
+        },
+        body: JSON.stringify(reqBody),
+      });
+      if (res.ok) {
+        const data: any = await res.json();
+        const raw = data?.choices?.[0]?.message?.content;
+        if (raw) {
+          return JSON.parse(raw);
+        }
+      }
+    } catch {
+      // fall through to conservative insufficient-data summary
+    }
+  }
+
   return {
-    candidateRating: 'XUẤT SẮC',
-    committeeReadiness: 'ĐỦ ĐIỀU KIỆN BIỂU QUYẾT',
+    candidateRating: 'CẦN HỘI CHẨN',
+    committeeReadiness: 'CHỜ BỔ SUNG',
     overallVerdict:
-      'Ứng viên có kết quả rèn luyện toàn diện, hoàn thành xuất sắc 5/5 tiêu chí cấp Thành phố Đà Nẵng, minh chứng đầy đủ và rõ ràng.',
+      'Thiếu dữ liệu: Hệ thống cần thêm dữ liệu bóc tách từ tệp minh chứng của 5 tiêu chí trước khi tổng hợp tờ trình.',
     criteriaReadinessMatrix: [
-      { criterionName: 'Đạo đức tốt', status: 'Đạt', highlight: 'ĐRL >= 80 điểm, chấp hành tốt quy chế và đạt chuẩn bổ sung' },
-      { criterionName: 'Học tập tốt', status: 'Đạt', highlight: 'GPA năm học đạt chuẩn, có thành tích NCKH / học thuật' },
-      { criterionName: 'Thể lực tốt', status: 'Đạt', highlight: 'Đạt danh hiệu Thanh niên khỏe / giải thể thao phong trào' },
-      { criterionName: 'Tình nguyện tốt', status: 'Đạt', highlight: 'Tích lũy đủ tối thiểu 05 ngày tình nguyện / có khen thưởng' },
-      { criterionName: 'Hội nhập tốt', status: 'Đạt', highlight: 'Đạt chuẩn cả Nhóm A (Kỹ năng/Đoàn-Hội) và Nhóm B (Ngoại ngữ/Quốc tế)' },
+      { criterionName: 'Đạo đức tốt', status: 'Cần lưu ý', highlight: 'Cần đối chiếu trực tiếp tệp minh chứng điểm rèn luyện' },
+      { criterionName: 'Học tập tốt', status: 'Cần lưu ý', highlight: 'Cần đối chiếu trực tiếp bảng điểm năm học và NCKH' },
+      { criterionName: 'Thể lực tốt', status: 'Cần lưu ý', highlight: 'Cần đối chiếu trực tiếp giấy chứng nhận thể lực' },
+      { criterionName: 'Tình nguyện tốt', status: 'Cần lưu ý', highlight: 'Cần đối chiếu trực tiếp số ngày hoạt động tình nguyện' },
+      { criterionName: 'Hội nhập tốt', status: 'Cần lưu ý', highlight: 'Cần đối chiếu trực tiếp chứng chỉ ngoại ngữ và kỹ năng' },
     ],
-    exceptionalAchievements: [
-      'Gương sáng học tập và rèn luyện cấp Thành phố Đà Nẵng',
-      'Minh chứng được số hóa chuẩn mực, không có sai lệch dữ liệu',
-    ],
-    potentialCaveats: [],
-    recommendedCommitteeVote:
-      'Khuyến nghị biểu quyết ĐỒNG Ý công nhận danh hiệu Sinh viên 5 tốt cấp Thành phố Đà Nẵng',
-    executiveMemo: `Kính trình Hội đồng Xét chọn: Hồ sơ của ứng viên ${appData?.studentName || appData?.fullName || 'sinh viên'} đã qua 2 vòng thẩm định độc lập tại cấp Trường/ĐHĐN và Ban Thư ký Hội Sinh viên TP. Đà Nẵng. Toàn bộ 5 tiêu chí đều đáp ứng đầy đủ quy chuẩn theo Hướng dẫn số 14-HD/BTK-HSVTP. Kính đề nghị Hội đồng thông qua.`,
+    exceptionalAchievements: [],
+    potentialCaveats: ['Thiếu dữ liệu trích xuất tự động từ một số tệp minh chứng.'],
+    recommendedCommitteeVote: 'Đề nghị cán bộ kiểm tra trực tiếp các tệp minh chứng đang báo Thiếu dữ liệu.',
+    executiveMemo: `Hồ sơ của ứng viên ${studentName} hiện đang ở trạng thái Thiếu dữ liệu trích xuất tự động. Đề nghị cán bộ rà soát trực tiếp tệp minh chứng đính kèm.`,
   };
 }
 
 export function createCopilotRouter(): Router {
   const router = Router();
+
+  router.get('/ocr-cache', (_req: Request, res: Response): void => {
+    res.status(200).json({
+      success: true,
+      extractions: getAllCachedOcrExtractions(),
+    });
+  });
 
   router.post('/ocr-evidence', async (req: Request, res: Response): Promise<void> => {
     try {
@@ -144,12 +261,20 @@ export function createCopilotRouter(): Router {
     }
   });
 
-  router.post('/dossier-summary', (req: Request, res: Response): void => {
-    const { applicationData } = (req.body || {}) as {
-      applicationData?: { studentName?: string; fullName?: string };
-    };
-    const summary = buildHeuristicDossierSummary(applicationData);
-    res.status(200).json(summary);
+  router.post('/dossier-summary', async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { applicationData, criteriaProgress } = (req.body || {}) as {
+        applicationData?: Record<string, any>;
+        criteriaProgress?: any;
+      };
+      const summary = await generateLiveDossierSummary(applicationData, criteriaProgress);
+      res.status(200).json(summary);
+    } catch (err: any) {
+      res.status(500).json({
+        success: false,
+        error: err?.message || 'Không thể tổng hợp hồ sơ lúc này.',
+      });
+    }
   });
 
   return router;

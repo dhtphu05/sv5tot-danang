@@ -13,7 +13,6 @@ import {
   ChevronUp,
   CheckCircle2,
   AlertTriangle,
-  XCircle,
   CheckCheck,
   RefreshCw,
   FileCheck2,
@@ -58,14 +57,6 @@ export const OfficerReviewAiQuietSection: React.FC<
           border: '#B6E6C9',
           label: 'Đạt sơ bộ 5/5 tiêu chí',
           Icon: CheckCircle2,
-        }
-      : verdict.verdict === 'preliminary_not_meets'
-      ? {
-          text: '#B91C1C',
-          bg: '#FEF2F2',
-          border: '#FECACA',
-          label: 'Chưa đạt (Sơ bộ)',
-          Icon: XCircle,
         }
       : {
           text: '#B45309',
@@ -163,7 +154,6 @@ export const OfficerReviewAiQuietSection: React.FC<
             {Object.entries(verdict.criteriaAssessments).map(([critId, rawAssessment]) => {
               const assessment = rawAssessment as CriterionPreliminaryAssessment;
               const isMeets = assessment.status === 'meets';
-              const isNotMeets = assessment.status === 'not_meets';
 
               return (
                 <button
@@ -179,8 +169,6 @@ export const OfficerReviewAiQuietSection: React.FC<
                   className={`p-2.5 rounded-[8px] border text-left transition-all cursor-pointer space-y-1 ${
                     isMeets
                       ? 'bg-[#F8FEFA] hover:bg-[#EAFBF1] border-[#C6EED5]'
-                      : isNotMeets
-                      ? 'bg-[#FEF2F2] hover:bg-[#FEE2E2] border-[#FECACA]'
                       : 'bg-[#FFFBEB] hover:bg-[#FEF3C7] border-[#FDE68A]'
                   }`}
                 >
@@ -190,8 +178,6 @@ export const OfficerReviewAiQuietSection: React.FC<
                     </span>
                     {isMeets ? (
                       <CheckCircle2 size={13} className="text-[#16A34A] shrink-0" />
-                    ) : isNotMeets ? (
-                      <XCircle size={13} className="text-[#DC2626] shrink-0" />
                     ) : (
                       <AlertTriangle size={13} className="text-[#D97706] shrink-0" />
                     )}
@@ -199,18 +185,10 @@ export const OfficerReviewAiQuietSection: React.FC<
                   <div className="flex items-center gap-1">
                     <span
                       className={`text-[11px] font-bold ${
-                        isMeets
-                          ? 'text-[#136F3A]'
-                          : isNotMeets
-                          ? 'text-[#B91C1C]'
-                          : 'text-[#B45309]'
+                        isMeets ? 'text-[#136F3A]' : 'text-[#B45309]'
                       }`}
                     >
-                      {isMeets
-                        ? 'Đạt sơ bộ'
-                        : isNotMeets
-                        ? 'Chưa đạt (Sơ bộ)'
-                        : 'Cần kiểm tra thêm'}
+                      {isMeets ? 'Đạt sơ bộ' : 'Cần kiểm tra thêm'}
                     </span>
                   </div>
                   <div className="text-[10.5px] text-[#526B7C] line-clamp-1">

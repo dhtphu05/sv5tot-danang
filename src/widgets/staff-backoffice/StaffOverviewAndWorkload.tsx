@@ -134,7 +134,8 @@ export const StaffOverviewDashboard: React.FC<StaffOverviewDashboardProps> = ({
   const notStartedCityCount = sharedCityApps.filter(
     (a) =>
       a.workflowStatus === 'unassigned' ||
-      a.workflowStatus === 'assigned_not_started'
+      a.workflowStatus === 'assigned_not_started' ||
+      (a.workflowStatus as string) === 'assigned'
   ).length;
   const supplementReturnedCount = sharedCityApps.filter(
     (a) => a.workflowStatus === 'supplement_returned'

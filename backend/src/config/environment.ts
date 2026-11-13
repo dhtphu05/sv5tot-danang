@@ -198,12 +198,25 @@ export function parseEnvironment(env: Record<string, string | undefined> = proce
     RESEND_FROM_EMAIL: resendFromEmail,
     RESEND_MODE: resendMode,
     RESEND_SAFE_OVERRIDE_EMAIL: resendSafeOverride,
-    OPENAI_API_KEY: env.OPENAI_API_KEY?.trim() || undefined,
-    OPENAI_MODEL: env.OPENAI_MODEL?.trim() || 'gpt-4o-mini',
+    OPENAI_API_KEY: normalizeOpenAiKey(env.OPENAI_API_KEY),
+    OPENAI_MODEL: env.OPENAI_MODEL?.trim() || 'gpt-5',
     OPENAI_BASE_URL: (env.OPENAI_BASE_URL?.trim() || 'https://api.openai.com/v1').replace(/\/+$/, ''),
     APP_PUBLIC_URL: appPublicUrl,
     APP_URL: appPublicUrl,
   };
+}
+
+export function normalizeOpenAiKey(raw?: string): string | undefined {
+  const trimmed = raw?.trim().replace(/^["']|["']$/g, '') || '';
+  if (
+    !trimmed ||
+    trimmed === 'sk-replace-with-your-openai-api-key' ||
+    trimmed === 'YOUR_OPENAI_API_KEY' ||
+    trimmed === 'MY_OPENAI_API_KEY'
+  ) {
+    return undefined;
+  }
+  return trimmed;
 }
 
 let cachedEnv: BackendEnvironment | null = null;
@@ -218,4 +231,5 @@ export function getEnvironment(): BackendEnvironment {
 export function resetEnvironmentCache(): void {
   cachedEnv = null;
 }
+
 

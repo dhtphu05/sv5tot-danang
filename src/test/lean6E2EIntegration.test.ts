@@ -326,8 +326,8 @@ describe('5TOT ĐHĐN — LEAN-6 Full End-to-End System Integration Suite', () =
       }
     });
 
-    it('UDN09: Independent universities resolve to their own isolated Review Units across 38 active units', () => {
-      assert.strictEqual(AUTHORITATIVE_SCHOOL_REVIEW_UNITS.length, 38, 'Must have 38 active review units');
+    it('UDN09: Independent universities resolve to their own isolated Review Units across 18 active units', () => {
+      assert.strictEqual(AUTHORITATIVE_SCHOOL_REVIEW_UNITS.length, 18, 'Must have 18 active review units');
       for (const unit of AUTHORITATIVE_SCHOOL_REVIEW_UNITS) {
         assert.ok(unit.memberInstitutionIds.length > 0);
       }

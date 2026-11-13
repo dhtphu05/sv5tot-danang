@@ -22,6 +22,28 @@ import {
   isNonUdnInstitutionRecord,
 } from '../domainPortal/domainPortal.state';
 
+const UDN_EQUIVALENT_UNIT_IDS = new Set([
+  'unit-udn',
+  'unit-dut',
+  'unit-due',
+  'unit-ued',
+  'unit-ufl',
+  'unit-ufls',
+  'unit-ute',
+  'unit-vku',
+  'unit-vnuk',
+  'unit-udck',
+  'unit-smp',
+]);
+
+function normalizeCanonicalUnitId(unitId?: string | null): string {
+  const raw = String(unitId || '').trim();
+  if (!raw) return '';
+  if (UDN_EQUIVALENT_UNIT_IDS.has(raw)) return 'unit-udn';
+  if (raw === 'unit-cd-nghe-dn') return 'unit-cddn';
+  return raw;
+}
+
 export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingBatchRepository {
   private async getClient() {
     const env = getEnvironment();
@@ -54,11 +76,12 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
     seasonId: string
   ): Promise<SchoolForwardingBatchDto | null> {
     const prisma = await this.getClient();
+    const canonicalUnitId = normalizeCanonicalUnitId(unitId) || unitId;
     const effectiveSeasonId = await this.resolveEffectiveSeasonId(prisma, seasonId);
     const batch = await (prisma as any).schoolForwardingBatch.findUnique({
       where: {
         schoolReviewUnitId_seasonId: {
-          schoolReviewUnitId: unitId,
+          schoolReviewUnitId: canonicalUnitId,
           seasonId: effectiveSeasonId,
         },
       },
@@ -88,6 +111,7 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
     _userId: string
   ): Promise<SchoolForwardingBatchDto> {
     const prisma = await this.getClient();
+    const canonicalUnitId = normalizeCanonicalUnitId(unitId) || unitId;
     const effectiveSeasonId = await this.resolveEffectiveSeasonId(prisma, input.seasonId);
     const parsedDecisionDate = input.decisionMetadata?.decisionDate
       ? new Date(input.decisionMetadata.decisionDate)
@@ -100,12 +124,12 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
     const batch = await (prisma as any).schoolForwardingBatch.upsert({
       where: {
         schoolReviewUnitId_seasonId: {
-          schoolReviewUnitId: unitId,
+          schoolReviewUnitId: canonicalUnitId,
           seasonId: effectiveSeasonId,
         },
       },
       create: {
-        schoolReviewUnitId: unitId,
+        schoolReviewUnitId: canonicalUnitId,
         seasonId: effectiveSeasonId,
         status: 'DRAFT',
         forwardingNote: input.forwardingNote,
@@ -142,6 +166,7 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
     _userId: string
   ): Promise<SchoolForwardingBatchDto> {
     const prisma = await this.getClient();
+    const canonicalUnitId = normalizeCanonicalUnitId(unitId) || unitId;
     const effectiveSeasonId = await this.resolveEffectiveSeasonId(prisma, input.seasonId);
     const parsedDecisionDate = input.decisionDate ? new Date(input.decisionDate) : undefined;
     const validDecisionDate =
@@ -152,12 +177,12 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
     const batch = await (prisma as any).schoolForwardingBatch.upsert({
       where: {
         schoolReviewUnitId_seasonId: {
-          schoolReviewUnitId: unitId,
+          schoolReviewUnitId: canonicalUnitId,
           seasonId: effectiveSeasonId,
         },
       },
       create: {
-        schoolReviewUnitId: unitId,
+        schoolReviewUnitId: canonicalUnitId,
         seasonId: effectiveSeasonId,
         status: 'DRAFT',
         decisionNumber: input.decisionNumber,
@@ -202,6 +227,7 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
     payloadHash?: string
   ): Promise<SchoolForwardingBatchDto> {
     const prisma = await this.getClient();
+    const canonicalUnitId = normalizeCanonicalUnitId(unitId) || unitId;
     const effectiveSeasonId = await this.resolveEffectiveSeasonId(prisma, seasonId);
     const now = new Date();
 
@@ -241,7 +267,10 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
               { applicationCode: { in: selectedIds } },
             ],
             seasonId: effectiveSeasonId,
-            schoolReviewUnitId: unitId,
+            schoolReviewUnitId:
+              canonicalUnitId === 'unit-udn'
+                ? { in: Array.from(UDN_EQUIVALENT_UNIT_IDS) }
+                : canonicalUnitId,
           },
           data: {
             forwardingBatchId: batchId,
@@ -352,6 +381,7 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
     reasons: string[];
   }> {
     const prisma = await this.getClient();
+    const canonicalUnitId = normalizeCanonicalUnitId(unitId) || unitId;
     const effectiveSeasonId = await this.resolveEffectiveSeasonId(prisma, seasonId);
     const invalidIds: string[] = [];
     const reasons: string[] = [];
@@ -396,10 +426,11 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
       if (!app) {
         const portalApp = portalMap.get(appId);
         if (portalApp) {
-          if (portalApp.schoolReviewUnitId && portalApp.schoolReviewUnitId !== unitId) {
+          const portalCanonicalUnitId = normalizeCanonicalUnitId(portalApp.schoolReviewUnitId);
+          if (portalCanonicalUnitId && portalCanonicalUnitId !== canonicalUnitId) {
             invalidIds.push(appId);
             reasons.push(
-              `Hồ sơ ${appId} thuộc đơn vị khác (${portalApp.schoolReviewUnitId}), không thuộc ${unitId}`
+              `Hồ sơ ${appId} thuộc đơn vị khác (${portalApp.schoolReviewUnitId}), không thuộc ${canonicalUnitId}`
             );
           }
           continue;
@@ -419,9 +450,10 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
         continue;
       }
 
-      if (app.schoolReviewUnitId !== unitId) {
+      const appCanonicalUnitId = normalizeCanonicalUnitId(app.schoolReviewUnitId);
+      if (appCanonicalUnitId !== canonicalUnitId) {
         invalidIds.push(appId);
-        reasons.push(`Hồ sơ ${appId} thuộc đơn vị khác (${app.schoolReviewUnitId}), không thuộc ${unitId}`);
+        reasons.push(`Hồ sơ ${appId} thuộc đơn vị khác (${app.schoolReviewUnitId}), không thuộc ${canonicalUnitId}`);
         continue;
       }
 
@@ -456,16 +488,20 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
     seasonId: string
   ): Promise<SchoolForwardingBatchSummaryDto> {
     const prisma = await this.getClient();
+    const canonicalUnitId = normalizeCanonicalUnitId(unitId) || unitId;
     const effectiveSeasonId = await this.resolveEffectiveSeasonId(prisma, seasonId);
 
     const unit = await (prisma as any).schoolReviewUnit.findUnique({
-      where: { id: unitId },
+      where: { id: canonicalUnitId },
       include: { institution: true },
     });
 
     const rawDbApplications = await (prisma as any).individualApplication.findMany({
       where: {
-        schoolReviewUnitId: unitId,
+        schoolReviewUnitId:
+          canonicalUnitId === 'unit-udn'
+            ? { in: Array.from(UDN_EQUIVALENT_UNIT_IDS) }
+            : canonicalUnitId,
         seasonId: effectiveSeasonId,
       },
       include: {
@@ -480,10 +516,12 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
       if (isNonUdnInstitutionRecord(a)) {
         return false;
       }
-      // Exclude unsubmitted student drafts from School Officer review & batch summary
+      // Exclude unsubmitted student drafts only if they have no submission timestamp
       if (
-        a.schoolPreliminaryStatus === 'NOT_SUBMITTED' ||
-        a.currentReviewStage === 'STUDENT_DRAFT'
+        (a.schoolPreliminaryStatus === 'NOT_SUBMITTED' ||
+          a.currentReviewStage === 'STUDENT_DRAFT') &&
+        !a.submittedToSchoolAt &&
+        !a.submittedAt
       ) {
         return false;
       }
@@ -497,17 +535,16 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
     }
     const portalUnitRecords = (portalState?.individualStaffRecords || []).filter(
       (r: any) =>
-        r.schoolReviewUnitId === unitId &&
+        normalizeCanonicalUnitId(r.schoolReviewUnitId) === canonicalUnitId &&
         !dbAppIds.has(r.applicationId) &&
-        r.schoolPreliminaryStatus !== 'school_not_submitted' &&
         (isTestRuntime() ||
           (!isLegacyMockOrTestAppId(r.applicationId) && !isNonUdnInstitutionRecord(r)))
     );
     const mergedPortalApps = portalUnitRecords.map((r: any) => ({
       id: r.applicationId,
       applicationCode: r.applicationId,
-      institutionId: r.institution?.id || r.institutionId || unitId,
-      institution: { officialName: r.institution?.officialName || r.university || r.schoolReviewUnitName || unitId },
+      institutionId: r.institution?.id || r.institutionId || canonicalUnitId,
+      institution: { officialName: r.institution?.officialName || r.university || r.schoolReviewUnitName || canonicalUnitId },
       openSupplementCount:
         r.supplementSummary?.activeStatus === 'pending_student' ||
         r.supplementSummary?.activeStatus === 'waiting_student'
@@ -516,18 +553,24 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
       schoolPreliminaryStatus:
         r.schoolPreliminaryStatus === 'forwarded_to_city' || r.currentReviewStage === 'CITY'
           ? 'FORWARDED_TO_CITY'
-          : r.schoolPreliminaryStatus === 'recommended_forwarding'
+          : r.schoolPreliminaryStatus === 'recommended_forwarding' ||
+            r.schoolRecommendation === 'recommended' ||
+            r.schoolReviewSummary?.recommendation === 'recommended'
             ? 'ELIGIBLE_FOR_CITY'
-            : r.schoolPreliminaryStatus === 'not_recommended'
+            : r.schoolPreliminaryStatus === 'not_recommended' ||
+              r.schoolRecommendation === 'not_recommended' ||
+              r.schoolReviewSummary?.recommendation === 'not_recommended'
               ? 'NOT_ELIGIBLE_AT_SCHOOL'
-              : 'PENDING_SCHOOL_REVIEW',
+              : r.schoolPreliminaryStatus === 'preliminary_completed' || (r.reviewedCriteriaCount || 0) >= 5
+                ? 'SCHOOL_COMPLETED'
+                : 'PENDING_SCHOOL_REVIEW',
     }));
     const applications = [...dbApplications, ...mergedPortalApps];
 
     const existingBatch = await (prisma as any).schoolForwardingBatch.findUnique({
       where: {
         schoolReviewUnitId_seasonId: {
-          schoolReviewUnitId: unitId,
+          schoolReviewUnitId: canonicalUnitId,
           seasonId: effectiveSeasonId,
         },
       },
@@ -579,11 +622,18 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
         portalRec?.schoolPreliminaryStatus === 'forwarded_to_city' ||
         portalRec?.currentReviewStage === 'CITY'
           ? 'FORWARDED_TO_CITY'
-          : portalRec?.schoolPreliminaryStatus === 'recommended_forwarding'
+          : portalRec?.schoolPreliminaryStatus === 'recommended_forwarding' ||
+            portalRec?.schoolRecommendation === 'recommended' ||
+            portalRec?.schoolReviewSummary?.recommendation === 'recommended'
             ? 'ELIGIBLE_FOR_CITY'
-            : portalRec?.schoolPreliminaryStatus === 'not_recommended'
+            : portalRec?.schoolPreliminaryStatus === 'not_recommended' ||
+              portalRec?.schoolRecommendation === 'not_recommended' ||
+              portalRec?.schoolReviewSummary?.recommendation === 'not_recommended'
               ? 'NOT_ELIGIBLE_AT_SCHOOL'
-              : app.schoolPreliminaryStatus;
+              : portalRec?.schoolPreliminaryStatus === 'preliminary_completed' ||
+                (portalRec?.reviewedCriteriaCount || 0) >= 5
+                ? 'SCHOOL_COMPLETED'
+                : app.schoolPreliminaryStatus;
 
       if (
         effectivePrelim === 'FORWARDED_TO_CITY' ||
@@ -597,6 +647,8 @@ export class PrismaSchoolForwardingBatchRepository implements ISchoolForwardingB
       } else if (effectivePrelim === 'NOT_ELIGIBLE_AT_SCHOOL') {
         reviewed++;
         notSelected++;
+      } else if (effectivePrelim === 'SCHOOL_COMPLETED') {
+        reviewed++;
       } else {
         pending++;
         item.pending++;

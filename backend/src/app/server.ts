@@ -2,7 +2,13 @@
  * 5TOT ĐHĐN — Production Backend V2 HTTP Listener
  */
 
-import 'dotenv/config';
+import path from 'node:path';
+import dotenv from 'dotenv';
+
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
+dotenv.config({ path: path.resolve(process.cwd(), 'backend/.env') });
+
 import { createApp } from './createApp';
 import { getEnvironment } from '../config/environment';
 import { registerGracefulShutdown } from './lifecycle';

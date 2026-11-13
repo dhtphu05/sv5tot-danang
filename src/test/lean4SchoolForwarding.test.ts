@@ -203,8 +203,8 @@ describe('5TOT Đà Nẵng — LEAN-4 Production Lean School Review Suite (SF01�
       assert.equal(check.canMutate, true);
     });
 
-    test('SF07: Unit configuration defines 38 authoritative scopes across Da Nang & Quang Nam (unit-udn + 37 standalone units)', () => {
-      assert.equal(AUTHORITATIVE_SCHOOL_REVIEW_UNITS.length, 38);
+    test('SF07: Unit configuration defines 18 authoritative scopes (unit-udn + 17 standalone units)', () => {
+      assert.equal(AUTHORITATIVE_SCHOOL_REVIEW_UNITS.length, 18);
       const udnConfig = AUTHORITATIVE_SCHOOL_REVIEW_UNITS.find((u) => u.id === 'unit-udn');
       assert.ok(udnConfig);
       assert.equal(udnConfig.code, 'UDN');

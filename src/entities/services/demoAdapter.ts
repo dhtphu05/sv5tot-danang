@@ -322,6 +322,7 @@ export const demoServicesAdapter: DomainServicesBundle = {
           (user.primaryRole === 'SCHOOL_OFFICER' &&
             [
               'canbo.udn@udn.vn',
+              'canbo.dhdn@udn.vn',
               'canbo.dut@udn.vn',
               'canbo.due@udn.vn',
               'canbo.ued@udn.vn',
@@ -331,13 +332,13 @@ export const demoServicesAdapter: DomainServicesBundle = {
               'canbo.vku@udn.vn',
               'canbo.smp@udn.vn',
               'canbo.vnuk@udn.vn',
+              'canbo.udck@udn.vn',
               'an.nv@udn.vn',
               'tien.nv@udn.vn',
             ].includes(normalized)) ||
           (user.primaryRole === 'CITY_OFFICER' &&
             (normalized === 'nam.th@hsvdanang.vn' ||
-              normalized === 'canbo.thanhpho@hsvdanang.vn' ||
-              normalized === 'canbo.dhdn@udn.vn')) ||
+              normalized === 'canbo.thanhpho@hsvdanang.vn')) ||
           (user.primaryRole === 'CITY_MANAGER' &&
             (normalized === 'ha.nt@hsvdanang.vn' ||
               normalized === 'quanly.thanhpho@hsvdanang.vn' ||

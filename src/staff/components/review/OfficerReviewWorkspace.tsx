@@ -83,6 +83,7 @@ import { OfficerReviewAiQuietSection } from '../../../widgets/officer-review/Off
 import {
   evaluateDeclarationQuickInsight,
   triggerEvidenceOcr,
+  subscribeCopilotOcrUpdates,
 } from '../../../shared/api/copilotApi';
 
 export interface OfficerReviewWorkspaceProps {
@@ -214,20 +215,66 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
   );
 
   const isRealBackend = isBackendMode();
+  const [ocrTick, setOcrTick] = useState<number>(0);
+  const [isReanalyzing, setIsReanalyzing] = useState<boolean>(false);
+
+  useEffect(() => {
+    return subscribeCopilotOcrUpdates(() => {
+      setOcrTick((t) => t + 1);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!effectiveStudentApp?.criteria) return;
+    let cancelled = false;
+    const tasks: Promise<any>[] = [];
+    for (const crit of effectiveStudentApp.criteria) {
+      for (const req of crit.requirements || []) {
+        for (const decl of req.declarations || []) {
+          for (const ev of decl.evidenceFiles || []) {
+            tasks.push(
+              triggerEvidenceOcr(
+                {
+                  evidenceId: ev.id,
+                  fileName: ev.name,
+                  mimeType: ev.fileType,
+                  fileUrl: ev.url,
+                  studentFullName: applicationRecord?.student?.fullName,
+                  studentCode: applicationRecord?.student?.studentCode,
+                  schoolName: applicationRecord?.institution?.officialName,
+                  criterionId: crit.id,
+                  requirementTitle: req.title,
+                  declaredValue: decl.value,
+                },
+                false
+              )
+            );
+          }
+        }
+      }
+    }
+    if (tasks.length > 0 && !cancelled) {
+      void Promise.allSettled(tasks);
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [workspaceState.applicationId, effectiveStudentApp]);
 
   const applicationAiVerdict = useMemo(() => {
     return evaluateApplicationPreliminaryVerdict({
       applicationId: workspaceState.applicationId,
-      studentApp,
+      studentApp: effectiveStudentApp,
       customFindings: isRealBackend ? [] : scenarioConfig.findings,
       forcedVerdict: isRealBackend ? undefined : scenarioConfig.expectedVerdict,
       policySeason: '2025–2026',
     });
   }, [
     workspaceState.applicationId,
-    studentApp,
+    effectiveStudentApp,
     scenarioConfig,
     isRealBackend,
+    ocrTick,
   ]);
 
   const [evidenceViewerState, setEvidenceViewerState] = useState<{
@@ -869,36 +916,50 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
               }
             : undefined
         }
+        isReanalyzing={isReanalyzing}
         onReanalyzeAllEvidence={async () => {
+          if (isReanalyzing) return;
+          setIsReanalyzing(true);
           showToast('Đang quét và đối chiếu lại toàn bộ minh chứng...');
-          const tasks: Promise<any>[] = [];
-          for (const crit of effectiveStudentApp?.criteria || []) {
-            for (const req of crit.requirements || []) {
-              for (const decl of req.declarations || []) {
-                for (const ev of decl.evidenceFiles || []) {
-                  tasks.push(
-                    triggerEvidenceOcr(
-                      {
-                        evidenceId: ev.id,
-                        fileName: ev.name,
-                        mimeType: ev.fileType,
-                        fileUrl: ev.url,
-                        studentFullName: applicationRecord?.student?.fullName,
-                        studentCode: applicationRecord?.student?.studentCode,
-                        schoolName: applicationRecord?.institution?.officialName,
-                        criterionId: crit.id,
-                        requirementTitle: req.title,
-                        declaredValue: decl.value,
-                      },
-                      true
-                    )
-                  );
+          try {
+            const tasks: Promise<any>[] = [];
+            for (const crit of effectiveStudentApp?.criteria || []) {
+              for (const req of crit.requirements || []) {
+                for (const decl of req.declarations || []) {
+                  for (const ev of decl.evidenceFiles || []) {
+                    tasks.push(
+                      triggerEvidenceOcr(
+                        {
+                          evidenceId: ev.id,
+                          fileName: ev.name,
+                          mimeType: ev.fileType,
+                          fileUrl: ev.url,
+                          studentFullName: applicationRecord?.student?.fullName,
+                          studentCode: applicationRecord?.student?.studentCode,
+                          schoolName: applicationRecord?.institution?.officialName,
+                          criterionId: crit.id,
+                          requirementTitle: req.title,
+                          declaredValue: decl.value,
+                        },
+                        true
+                      )
+                    );
+                  }
                 }
               }
             }
+            const results = await Promise.allSettled(tasks);
+            const usedOpenAi = results.some(
+              (r) => r.status === 'fulfilled' && r.value?.aiSource === 'openai'
+            );
+            showToast(
+              usedOpenAi
+                ? 'Đã cập nhật kết quả đọc minh chứng trực tiếp từ OpenAI.'
+                : 'Đã cập nhật kết quả đối chiếu minh chứng (Chế độ Rule Engine — chưa điền OPENAI_API_KEY).'
+            );
+          } finally {
+            setIsReanalyzing(false);
           }
-          await Promise.allSettled(tasks);
-          showToast('Đã cập nhật kết quả đọc minh chứng và đánh giá sơ bộ 5 tiêu chí.');
         }}
       />
 

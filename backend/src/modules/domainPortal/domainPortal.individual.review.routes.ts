@@ -8,6 +8,7 @@
 
 import { type Router, type Request, type Response } from 'express';
 import {
+  SCHOOL_UNIT_MAP,
   STAFF_SEED_ACCOUNTS,
   createDefaultCriteriaReviewList,
   portalState,
@@ -24,6 +25,42 @@ import {
   ensureAllSubmittedApplicationsHaveStaffRecords,
 } from './domainPortal.individual.sync';
 
+const LEGACY_UDN_UNIT_IDS = new Set([
+  'unit-dut',
+  'unit-due',
+  'unit-ued',
+  'unit-ufl',
+  'unit-ute',
+  'unit-vku',
+  'unit-vnuk',
+  'unit-udck',
+  'unit-smp',
+]);
+
+function normalizeUnitId(unitId?: string | null): string | undefined {
+  if (!unitId) return undefined;
+  const trimmed = String(unitId).trim();
+  if (!trimmed) return undefined;
+  if (LEGACY_UDN_UNIT_IDS.has(trimmed)) return 'unit-udn';
+  if (trimmed === 'unit-cd-nghe-dn') return 'unit-cddn';
+  return trimmed;
+}
+
+function resolveCanonicalRecordUnitId(record?: Record<string, any> | null): string | undefined {
+  if (!record) return undefined;
+  const directUnit = normalizeUnitId(
+    record.schoolReviewUnitId || record.schoolReviewSummary?.schoolReviewUnitId
+  );
+  if (directUnit) return directUnit;
+  const instId = String(
+    record.institution?.id || record.institutionId || ''
+  ).trim();
+  if (instId && SCHOOL_UNIT_MAP[instId]) {
+    return SCHOOL_UNIT_MAP[instId].unitId;
+  }
+  return undefined;
+}
+
 function assertSchoolOfficerUnitAndMutable(
   req: Request,
   res: Response,
@@ -31,11 +68,13 @@ function assertSchoolOfficerUnitAndMutable(
 ): boolean {
   const actor = resolveSessionActor(req);
   if (actor.authenticated && actor.role === 'SCHOOL_OFFICER') {
-    if (actor.unitId && record.schoolReviewUnitId && actor.unitId !== record.schoolReviewUnitId) {
+    const actorUnitId = normalizeUnitId(actor.unitId);
+    const recordUnitId = resolveCanonicalRecordUnitId(record);
+    if (actorUnitId && recordUnitId && actorUnitId !== recordUnitId) {
       res.status(403).json({
         success: false,
         errorCode: 'CROSS_UNIT_FORBIDDEN',
-        error: `Hồ sơ thuộc đơn vị xét sơ tuyển "${record.schoolReviewUnitId}", ngoài phạm vi của bạn.`,
+        error: `Hồ sơ thuộc đơn vị xét sơ tuyển "${recordUnitId}", ngoài phạm vi của bạn.`,
       });
       return false;
     }
@@ -56,18 +95,20 @@ export function registerIndividualReviewPortalRoutes(router: Router): void {
     ensureAllSubmittedApplicationsHaveStaffRecords();
     const actor = resolveSessionActor(req);
     const enforceUnitId =
-      actor.authenticated && actor.role === 'SCHOOL_OFFICER' ? actor.unitId : undefined;
+      actor.authenticated && actor.role === 'SCHOOL_OFFICER'
+        ? normalizeUnitId(actor.unitId)
+        : undefined;
     const enriched = portalState.individualStaffRecords
       .filter(
         (r) =>
-          (!enforceUnitId || r?.schoolReviewUnitId === enforceUnitId) &&
+          (!enforceUnitId || resolveCanonicalRecordUnitId(r) === enforceUnitId) &&
           (isTestRuntime() ||
             (!isLegacyMockOrTestAppId(r?.applicationId) &&
-              !isNonUdnInstitutionRecord(r) &&
-              r?.schoolPreliminaryStatus !== 'school_not_submitted'))
+              !isNonUdnInstitutionRecord(r)))
       )
       .map((r) => ({
         ...r,
+        schoolReviewUnitId: resolveCanonicalRecordUnitId(r) || r.schoolReviewUnitId,
         studentApplication: portalState.studentApplications[r.applicationId] || undefined,
       }));
     res.status(200).json({
@@ -91,12 +132,14 @@ export function registerIndividualReviewPortalRoutes(router: Router): void {
       return;
     }
     const actor = resolveSessionActor(req);
+    const actorUnitId = normalizeUnitId(actor.unitId);
+    const recordUnitId = resolveCanonicalRecordUnitId(record);
     if (
       actor.authenticated &&
       actor.role === 'SCHOOL_OFFICER' &&
-      actor.unitId &&
-      record.schoolReviewUnitId &&
-      actor.unitId !== record.schoolReviewUnitId
+      actorUnitId &&
+      recordUnitId &&
+      actorUnitId !== recordUnitId
     ) {
       res.status(403).json({
         success: false,
@@ -109,6 +152,7 @@ export function registerIndividualReviewPortalRoutes(router: Router): void {
       success: true,
       data: {
         ...record,
+        schoolReviewUnitId: recordUnitId || record.schoolReviewUnitId,
         studentApplication: portalState.studentApplications[record.applicationId] || undefined,
       },
     });
@@ -117,24 +161,27 @@ export function registerIndividualReviewPortalRoutes(router: Router): void {
   router.get('/school-review/applications', (req: Request, res: Response): void => {
     ensureAllSubmittedApplicationsHaveStaffRecords();
     const actor = resolveSessionActor(req);
-    const unitId =
+    const unitId = normalizeUnitId(
       actor.authenticated && actor.role === 'SCHOOL_OFFICER' && actor.unitId
         ? actor.unitId
-        : (req.query.unitId as string | undefined);
+        : (req.query.unitId as string | undefined)
+    );
     const list = (
       unitId
-        ? portalState.individualStaffRecords.filter((r) => r.schoolReviewUnitId === unitId)
+        ? portalState.individualStaffRecords.filter(
+            (r) => resolveCanonicalRecordUnitId(r) === unitId
+          )
         : portalState.individualStaffRecords
     )
       .filter(
         (r) =>
           isTestRuntime() ||
           (!isLegacyMockOrTestAppId(r?.applicationId) &&
-            !isNonUdnInstitutionRecord(r) &&
-            r?.schoolPreliminaryStatus !== 'school_not_submitted')
+            !isNonUdnInstitutionRecord(r))
       )
       .map((r) => ({
         ...r,
+        schoolReviewUnitId: resolveCanonicalRecordUnitId(r) || r.schoolReviewUnitId,
         studentApplication: portalState.studentApplications[r.applicationId] || undefined,
       }));
     res.status(200).json({ success: true, count: list.length, data: list });

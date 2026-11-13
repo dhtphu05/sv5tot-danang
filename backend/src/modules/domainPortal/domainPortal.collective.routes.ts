@@ -26,6 +26,7 @@ import {
   persistEvidenceRecordToNeonDb,
   deleteEvidenceRecordFromNeonDb,
 } from './domainPortal.dbSync';
+import { extractEvidenceWithOpenAI } from '../copilot/openaiOcr.service';
 
 const EXT_TO_MIME: Record<string, string> = {
   pdf: 'application/pdf',
@@ -907,6 +908,23 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
       details: `Tải lên minh chứng "${metadataRecord.name}" (${metadataRecord.size}) cho ${requirementOrCriterionId}`,
     });
     savePortalStateToDisk();
+
+    // Trigger background OpenAI OCR immediately upon student upload so detailed fields are extracted before review
+    const studentApp = portalState.studentApplications[applicationId] as Record<string, any> | undefined;
+    void extractEvidenceWithOpenAI({
+      evidenceId,
+      fileName,
+      mimeType: EXT_TO_MIME[ext] || 'application/pdf',
+      fileBase64: base64Content,
+      fileUrl: resolvedViewUrl,
+      studentFullName: studentApp?.fullName || studentApp?.studentName,
+      studentCode: studentApp?.studentCode,
+      schoolName: studentApp?.schoolName || studentApp?.university,
+      criterionId: requirementOrCriterionId,
+      declaredValue: typeof (req.body as any)?.declaredValue === 'string' ? (req.body as any).declaredValue : undefined,
+    }).catch(() => {
+      // background OCR failure is non-blocking for student upload
+    });
 
     res.status(201).json({
       success: true,

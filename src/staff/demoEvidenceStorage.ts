@@ -21,6 +21,7 @@ import {
   getCachedEvidenceViewUrl,
   type EvidenceUploadState,
 } from '../shared/api/r2EvidenceClient';
+import { triggerEvidenceOcr } from '../shared/api/copilotApi';
 
 export interface StoredEvidenceRecord {
   id: string;
@@ -146,6 +147,16 @@ export async function saveEvidenceFile(
     applicationId?: string;
     ownerTrack?: 'INDIVIDUAL' | 'COLLECTIVE';
     onStateChange?: (state: EvidenceUploadState) => void;
+    ocrContext?: {
+      criterionId?: string;
+      criterionName?: string;
+      requirementTitle?: string;
+      declaredValue?: string;
+      studentFullName?: string;
+      studentCode?: string;
+      schoolName?: string;
+      studentNote?: string;
+    };
   }
 ): Promise<void> {
   const sizeBytes = fileOrBlob.size;
@@ -189,6 +200,33 @@ export async function saveEvidenceFile(
 
   // Persist locally first so page reload (F5) never loses the binary even if network is slow
   await persistRecordLocally(record);
+
+  // Automatically trigger background OpenAI OCR (gpt-5) as soon as the student uploads the evidence file
+  if (sizeBytes > 0 && sizeBytes <= 15 * 1024 * 1024 && typeof fileOrBlob.arrayBuffer === 'function') {
+    void fileOrBlob
+      .arrayBuffer()
+      .then((ab) => {
+        const base64Raw = uint8ToBase64(new Uint8Array(ab));
+        const dataUrl = `data:${resolvedMime};base64,${base64Raw}`;
+        return triggerEvidenceOcr({
+          evidenceId: id,
+          fileName,
+          mimeType: resolvedMime,
+          fileBase64: dataUrl,
+          criterionId: meta?.ocrContext?.criterionId || meta?.reqId,
+          criterionName: meta?.ocrContext?.criterionName,
+          requirementTitle: meta?.ocrContext?.requirementTitle,
+          declaredValue: meta?.ocrContext?.declaredValue,
+          studentFullName: meta?.ocrContext?.studentFullName,
+          studentCode: meta?.ocrContext?.studentCode,
+          schoolName: meta?.ocrContext?.schoolName,
+          studentNote: meta?.ocrContext?.studentNote,
+        });
+      })
+      .catch(() => {
+        // Background OCR is non-blocking for student upload
+      });
+  }
 
   if (isBackendMode()) {
     const ownerTrack =

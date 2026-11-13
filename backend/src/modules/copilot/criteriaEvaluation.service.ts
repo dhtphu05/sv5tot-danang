@@ -11,9 +11,9 @@
  * - preliminary_not_meets ("Chưa đạt")
  */
 
-import { getEnvironment } from '../../config/environment';
 import {
   extractEvidenceWithOpenAI,
+  resolveLiveOpenAiConfig,
   type OcrEvidenceExtraction,
   type OpenAiRuntimeOptions,
 } from './openaiOcr.service';
@@ -56,7 +56,7 @@ export interface ScopeEvaluationPayload {
 export interface ScopeEvaluationResult {
   suggestedVerdict: 'SATISFIED' | 'SUPPLEMENT_REQUIRED' | 'CONSIDERATION_NEEDED' | 'UNSUITABLE';
   preliminaryStatus: PreliminaryStatusCode;
-  preliminaryBadgeLabel: 'Đạt sơ bộ' | 'Cần kiểm tra thêm' | 'Chưa đạt (Sơ bộ)';
+  preliminaryBadgeLabel: 'Đạt sơ bộ' | 'Thiếu dữ liệu' | 'Cần kiểm tra thêm' | 'Chưa đạt (Sơ bộ)';
   confidenceScore: number;
   headlineSummary: string;
   detailedAnalysis: string;
@@ -115,7 +115,7 @@ export interface FullApplicationEvalRequest {
 export interface FullApplicationEvalResponse {
   applicationId: string;
   overallVerdict: PreliminaryStatusCode;
-  overallBadgeLabel: 'Đạt sơ bộ 5/5 tiêu chí' | 'Cần kiểm tra thêm' | 'Chưa đạt (Sơ bộ)';
+  overallBadgeLabel: 'Đạt sơ bộ 5/5 tiêu chí' | 'Thiếu dữ liệu' | 'Cần kiểm tra thêm' | 'Chưa đạt (Sơ bộ)';
   headlineSummary: string;
   passedCriteriaCount: number;
   verifyNeededCriteriaCount: number;
@@ -127,7 +127,7 @@ export interface FullApplicationEvalResponse {
       criterionName: string;
       criterionNumber: number;
       status: PreliminaryStatusCode;
-      badgeLabel: 'Đạt sơ bộ' | 'Cần kiểm tra thêm' | 'Chưa đạt';
+      badgeLabel: 'Đạt sơ bộ' | 'Thiếu dữ liệu' | 'Cần kiểm tra thêm' | 'Chưa đạt';
       headline: string;
       declarations: Record<string, ScopeEvaluationResult>;
     }
@@ -152,6 +152,19 @@ export function inferEducationLevelFromSchool(schoolName?: string): 'Đại họ
   return 'Đại học';
 }
 
+function parseMetricFromTextFallback(text: string): number | undefined {
+  if (!text) return undefined;
+  const gpaMatch = text.match(/(\d+[.,]\d+)\s*\/\s*(4(?:\.0)?|10(?:\.0)?)/i);
+  if (gpaMatch) {
+    return parseFloat(gpaMatch[1].replace(',', '.'));
+  }
+  const drlMatch = text.match(/(\d+)\s*\/\s*100/i);
+  if (drlMatch) {
+    return parseFloat(drlMatch[1]);
+  }
+  return undefined;
+}
+
 function evaluateMandatoryThresholdBreach(
   criterionId: string,
   requirementTitle: string,
@@ -164,49 +177,55 @@ function evaluateMandatoryThresholdBreach(
   reason?: string;
 } {
   const lowerCrit = (criterionId || '').toLowerCase();
-  const lowerReq = `${requirementTitle} ${declaredTitle}`.toLowerCase();
-  const primaryMetric = extractions.find((e) => typeof e.numericMetric === 'number')?.numericMetric;
+  const extractedContext = extractions.map((e) => `${e.documentType} ${e.extractedValue}`).join(' ');
+  const lowerReq = `${requirementTitle} ${declaredTitle} ${extractedContext}`.toLowerCase();
+  const primaryMetric =
+    extractions.find((e) => typeof e.numericMetric === 'number')?.numericMetric ??
+    parseMetricFromTextFallback(`${extractedContext} ${declaredTitle}`);
   const eduLevel = inferEducationLevelFromSchool(schoolName);
+
+  // Safety Policy: Never return isHardFail = true ("Không đạt" / "Chưa đạt") in case OCR misreads a blurry number.
+  // Always return isVerifyNeeded = true ("Cần kiểm tra thêm") so the officer verifies or requests supplementation.
 
   // 1. Academic GPA Check (Đại học >= 3.2/4.0 or >= 8.0/10; Cao đẳng >= 3.0/4.0 or >= 7.5/10)
   if (
     lowerCrit.includes('academic') &&
-    (lowerReq.includes('gpa') || lowerReq.includes('điểm trung bình'))
+    (lowerReq.includes('gpa') || lowerReq.includes('điểm trung bình') || lowerReq.includes('bảng điểm'))
   ) {
     if (typeof primaryMetric === 'number') {
-      const isScale4 = declaredTitle.includes('/4') || primaryMetric <= 4.0;
+      const isScale4 = lowerReq.includes('/4') || primaryMetric <= 4.0;
       const minScale4 = schoolName ? (eduLevel === 'Cao đẳng' ? 3.0 : 3.2) : 3.0;
       const minScale10 = schoolName ? (eduLevel === 'Cao đẳng' ? 7.5 : 8.0) : 7.5;
       if (isScale4 && primaryMetric < minScale4) {
         return {
-          isHardFail: true,
-          isVerifyNeeded: false,
-          reason: `Điểm trung bình học tập đọc được (${primaryMetric}/4.0) thấp hơn ngưỡng quy chuẩn tối thiểu (${minScale4.toFixed(1)}/4.0 đối với hệ ${eduLevel}).`,
+          isHardFail: false,
+          isVerifyNeeded: true,
+          reason: `Cần kiểm tra thêm: Điểm GPA đọc sơ bộ (${primaryMetric}/4.0) chưa đủ ngưỡng quy chuẩn (${minScale4.toFixed(1)}/4.0 hệ ${eduLevel}) hoặc cần kiểm tra lại bản gốc.`,
         };
       }
       if (!isScale4 && primaryMetric < minScale10) {
         return {
-          isHardFail: true,
-          isVerifyNeeded: false,
-          reason: `Điểm trung bình học tập hệ 10 (${primaryMetric}/10) thấp hơn ngưỡng tối thiểu quy định (${minScale10.toFixed(1)}/10 đối với hệ ${eduLevel}).`,
+          isHardFail: false,
+          isVerifyNeeded: true,
+          reason: `Cần kiểm tra thêm: Điểm GPA hệ 10 đọc sơ bộ (${primaryMetric}/10) chưa đủ ngưỡng quy chuẩn (${minScale10.toFixed(1)}/10 hệ ${eduLevel}) hoặc cần kiểm tra lại bản gốc.`,
         };
       }
     }
   }
 
   // 2. Ethics Conduct Score Check (>= 80/100)
-  if (lowerCrit.includes('ethics') && lowerReq.includes('rèn luyện')) {
+  if (lowerCrit.includes('ethics') && (lowerReq.includes('rèn luyện') || lowerReq.includes('đrl'))) {
     if (typeof primaryMetric === 'number' && primaryMetric > 10 && primaryMetric < 80) {
       return {
-        isHardFail: true,
-        isVerifyNeeded: false,
-        reason: `Điểm rèn luyện (${primaryMetric}/100) chưa đạt ngưỡng tối thiểu 80/100 điểm theo quy chế.`,
+        isHardFail: false,
+        isVerifyNeeded: true,
+        reason: `Cần kiểm tra thêm: Điểm rèn luyện đọc sơ bộ (${primaryMetric}/100) chưa đủ ngưỡng 80/100 điểm hoặc cần kiểm tra lại bản gốc.`,
       };
     }
   }
 
   // 3. Volunteer Days Check (>= 5 days cumulative)
-  if (lowerCrit.includes('volunteer') && lowerReq.includes('ngày')) {
+  if (lowerCrit.includes('volunteer') && (lowerReq.includes('ngày') || lowerReq.includes('tình nguyện'))) {
     const totalDays = extractions.reduce(
       (sum, e) => sum + (typeof e.numericMetric === 'number' ? e.numericMetric : 0),
       0
@@ -215,7 +234,7 @@ function evaluateMandatoryThresholdBreach(
       return {
         isHardFail: false,
         isVerifyNeeded: true,
-        reason: `Minh chứng hiện tại xác nhận ${totalDays.toString().replace(/^(\d)$/, '0$1')} ngày tình nguyện (quy chế yêu cầu tích lũy tối thiểu 05 ngày/năm học). Cần kiểm tra hoặc yêu cầu bổ sung thêm giấy chứng nhận.`,
+        reason: `Cần kiểm tra thêm: Minh chứng hiện tại xác nhận ${totalDays.toString().replace(/^(\d)$/, '0$1')} ngày tình nguyện (quy chế yêu cầu tích lũy tối thiểu 05 ngày/năm học).`,
       };
     }
   }
@@ -239,7 +258,7 @@ export async function evaluateScopeWithOpenAiAndRules(
       preliminaryStatus: 'insufficient_evidence',
       preliminaryBadgeLabel: 'Cần kiểm tra thêm',
       confidenceScore: 98,
-      headlineSummary: 'Chưa đính kèm tệp minh chứng cho nội dung kê khai này.',
+      headlineSummary: 'Cần kiểm tra thêm: Chưa đính kèm tệp minh chứng cho nội dung kê khai này.',
       detailedAnalysis: `Sinh viên đã kê khai "${declaredSummary}" nhưng chưa tải lên tệp minh chứng đối chiếu. Cán bộ có thể gửi yêu cầu bổ sung minh chứng.`,
       declaredSummary,
       extractedSummary: 'Chưa có tệp minh chứng đính kèm',
@@ -247,13 +266,13 @@ export async function evaluateScopeWithOpenAiAndRules(
       complianceChecks: [
         {
           item: 'Đính kèm minh chứng xác thực',
-          passed: false,
-          detail: 'Chưa có tệp minh chứng tải lên cho mục kê khai này.',
+          passed: 'warning',
+          detail: 'Cần kiểm tra thêm: Chưa có tệp minh chứng tải lên cho mục kê khai này.',
         },
       ],
       evidenceAssessment: [],
       flaggedRisks: ['Thiếu tệp minh chứng để đối chiếu thông tin kê khai.'],
-      draftInternalNote: `[Đánh giá sơ bộ] Mục "${declaredSummary}" thiếu tệp minh chứng đính kèm.`,
+      draftInternalNote: `[Đánh giá sơ bộ: Cần kiểm tra thêm] Mục "${declaredSummary}" thiếu tệp minh chứng đính kèm.`,
       draftSupplementMessage,
       regulationCitation: `Hướng dẫn số 14-HD/BTK-HSVTP · Tiêu chí 0${payload.criterionNumber} (${payload.criterionName})`,
       aiSource: 'rule_engine',
@@ -312,51 +331,37 @@ export async function evaluateScopeWithOpenAiAndRules(
   let suggestedVerdict: ScopeEvaluationResult['suggestedVerdict'] = 'SATISFIED';
   let preliminaryStatus: PreliminaryStatusCode = 'preliminary_meets';
   let preliminaryBadgeLabel: ScopeEvaluationResult['preliminaryBadgeLabel'] = 'Đạt sơ bộ';
-  let headlineSummary = 'Thông tin đọc từ minh chứng khớp với kê khai và đạt chuẩn quy chế.';
+  let headlineSummary = 'Thông tin đọc từ minh chứng đầy đủ và đạt chuẩn quy chế.';
   let draftSupplementMessage: string | undefined;
   const flaggedRisks: string[] = [];
 
-  if (thresholdCheck.isHardFail) {
-    suggestedVerdict = 'UNSUITABLE';
-    preliminaryStatus = 'preliminary_not_meets';
-    preliminaryBadgeLabel = 'Chưa đạt (Sơ bộ)';
-    headlineSummary = thresholdCheck.reason || 'Chưa đạt ngưỡng bắt buộc của quy chế.';
-    flaggedRisks.push(headlineSummary);
-  } else if (thresholdCheck.isVerifyNeeded || hasMismatch) {
+  // Never output UNSUITABLE / preliminary_not_meets ("Chưa đạt") — convert any shortfall or OCR uncertainty to "Cần kiểm tra thêm"
+  if (thresholdCheck.isHardFail || thresholdCheck.isVerifyNeeded || hasMismatch || hasPartialOrUnclear) {
     suggestedVerdict = 'SUPPLEMENT_REQUIRED';
     preliminaryStatus = 'insufficient_evidence';
     preliminaryBadgeLabel = 'Cần kiểm tra thêm';
-    const mismatchNote =
+    const note =
       thresholdCheck.reason ||
       ocrExtractions.find((e) => e.discrepancyNote)?.discrepancyNote ||
-      'Có sự chênh lệch giữa số liệu kê khai và thông tin đọc được trên minh chứng.';
-    headlineSummary = mismatchNote;
-    flaggedRisks.push(mismatchNote);
-    draftSupplementMessage = `Kính gửi sinh viên ${payload.studentInfo?.fullName || ''}, qua đối chiếu mục "${declaredSummary}" (${payload.criterionName}), hệ thống ghi nhận: ${mismatchNote} Đề nghị bạn kiểm tra và bổ sung minh chứng xác nhận đầy đủ theo quy định.`;
-  } else if (hasPartialOrUnclear) {
-    suggestedVerdict = 'CONSIDERATION_NEEDED';
-    preliminaryStatus = 'insufficient_evidence';
-    preliminaryBadgeLabel = 'Cần kiểm tra thêm';
-    const unclearNote =
-      ocrExtractions.find((e) => e.discrepancyNote)?.discrepancyNote ||
-      'Tệp minh chứng cần cán bộ kiểm tra trực tiếp dấu xác nhận hoặc tính tương đương.';
-    headlineSummary = unclearNote;
-    flaggedRisks.push(unclearNote);
-    draftSupplementMessage = `Kính gửi sinh viên ${payload.studentInfo?.fullName || ''}, tệp minh chứng tại mục "${declaredSummary}" chưa hiển thị rõ dấu xác nhận hoặc thông tin ngày cấp. Đề nghị bạn tải lại bản chụp/scan rõ nét hơn.`;
+      'Cần kiểm tra thêm: Cần cán bộ kiểm tra trực tiếp tệp minh chứng hoặc yêu cầu bổ sung.';
+    headlineSummary = note;
+    flaggedRisks.push(note);
+    draftSupplementMessage = `Kính gửi sinh viên ${payload.studentInfo?.fullName || ''}, qua rà soát mục "${declaredSummary}" (${payload.criterionName}), hệ thống ghi nhận: ${note} Đề nghị bạn kiểm tra và bổ sung minh chứng rõ nét, đầy đủ theo quy định.`;
   }
 
   const complianceChecks: ScopeEvaluationResult['complianceChecks'] = [
     {
-      item: 'Đối chiếu nội dung kê khai và tệp minh chứng',
-      passed: preliminaryStatus === 'preliminary_meets' ? true : preliminaryStatus === 'preliminary_not_meets' ? false : 'warning',
+      item: 'Đối chiếu dữ liệu trích xuất từ tệp minh chứng',
+      passed: preliminaryStatus === 'preliminary_meets' ? true : 'warning',
       detail: headlineSummary,
     },
     {
       item: 'Ngưỡng tiêu chuẩn quy chế năm học 2025–2026',
-      passed: !thresholdCheck.isHardFail,
-      detail: thresholdCheck.isHardFail
-        ? thresholdCheck.reason || 'Chưa đạt ngưỡng bắt buộc.'
-        : `Đáp ứng quy chuẩn ${payload.criterionName} theo Hướng dẫn số 14-HD/BTK-HSVTP.`,
+      passed: !thresholdCheck.isVerifyNeeded && !thresholdCheck.isHardFail ? true : 'warning',
+      detail:
+        thresholdCheck.isVerifyNeeded || thresholdCheck.isHardFail
+          ? thresholdCheck.reason || 'Cần kiểm tra thêm dữ liệu đạt ngưỡng quy chuẩn.'
+          : `Đáp ứng quy chuẩn ${payload.criterionName} theo Hướng dẫn số 14-HD/BTK-HSVTP.`,
     },
     {
       item: 'Thẩm quyền ban hành và dấu xác nhận',
@@ -393,7 +398,7 @@ export async function evaluateScopeWithOpenAiAndRules(
     suggestedVerdict,
     preliminaryStatus,
     preliminaryBadgeLabel,
-    confidenceScore: preliminaryStatus === 'preliminary_meets' ? 95 : 88,
+    confidenceScore: preliminaryStatus === 'preliminary_meets' ? 95 : 85,
     headlineSummary,
     detailedAnalysis: `Kê khai: "${declaredSummary}". Đọc từ ${ocrExtractions.length} minh chứng: "${extractedSummary}". ${headlineSummary}`,
     declaredSummary,
@@ -419,7 +424,7 @@ export async function evaluateFullApplicationWithOcr(
 
   let passedCriteriaCount = 0;
   let verifyNeededCriteriaCount = 0;
-  let failedCriteriaCount = 0;
+  const failedCriteriaCount = 0;
   let usedOpenAi = false;
 
   const criteriaResults: FullApplicationEvalResponse['criteriaResults'] = {};
@@ -451,7 +456,7 @@ export async function evaluateFullApplicationWithOcr(
     }
 
     let critStatus: PreliminaryStatusCode = 'preliminary_meets';
-    let critBadgeLabel: 'Đạt sơ bộ' | 'Cần kiểm tra thêm' | 'Chưa đạt' = 'Đạt sơ bộ';
+    let critBadgeLabel: 'Đạt sơ bộ' | 'Thiếu dữ liệu' | 'Cần kiểm tra thêm' | 'Chưa đạt' = 'Đạt sơ bộ';
     let critHeadline = `Tiêu chí 0${crit.criterionNumber} (${crit.criterionName}): Các mục kê khai và minh chứng khớp quy chế.`;
 
     if (declResults.length === 0) {
@@ -459,17 +464,11 @@ export async function evaluateFullApplicationWithOcr(
       critBadgeLabel = 'Cần kiểm tra thêm';
       critHeadline = `Tiêu chí 0${crit.criterionNumber} (${crit.criterionName}): Chưa có mục kê khai hoặc minh chứng.`;
       verifyNeededCriteriaCount++;
-    } else if (declResults.some((d) => d.preliminaryStatus === 'preliminary_not_meets')) {
-      critStatus = 'preliminary_not_meets';
-      critBadgeLabel = 'Chưa đạt';
-      const firstFail = declResults.find((d) => d.preliminaryStatus === 'preliminary_not_meets');
-      critHeadline = firstFail?.headlineSummary || 'Có điều kiện bắt buộc chưa đạt ngưỡng.';
-      failedCriteriaCount++;
-    } else if (declResults.some((d) => d.preliminaryStatus === 'insufficient_evidence')) {
+    } else if (declResults.some((d) => d.preliminaryStatus !== 'preliminary_meets')) {
       critStatus = 'insufficient_evidence';
       critBadgeLabel = 'Cần kiểm tra thêm';
-      const firstVerify = declResults.find((d) => d.preliminaryStatus === 'insufficient_evidence');
-      critHeadline = firstVerify?.headlineSummary || 'Có minh chứng cần kiểm tra thêm hoặc bổ sung.';
+      const firstIssue = declResults.find((d) => d.preliminaryStatus !== 'preliminary_meets');
+      critHeadline = firstIssue?.headlineSummary || 'Có minh chứng cần kiểm tra thêm hoặc bổ sung.';
       verifyNeededCriteriaCount++;
     } else {
       passedCriteriaCount++;
@@ -488,13 +487,9 @@ export async function evaluateFullApplicationWithOcr(
 
   let overallVerdict: PreliminaryStatusCode = 'preliminary_meets';
   let overallBadgeLabel: FullApplicationEvalResponse['overallBadgeLabel'] = 'Đạt sơ bộ 5/5 tiêu chí';
-  let headlineSummary = 'Toàn bộ 05 tiêu chí đều có minh chứng khớp kê khai và đạt ngưỡng sơ bộ.';
+  let headlineSummary = 'Toàn bộ 05 tiêu chí đều có minh chứng đầy đủ và đạt ngưỡng sơ bộ.';
 
-  if (failedCriteriaCount > 0) {
-    overallVerdict = 'preliminary_not_meets';
-    overallBadgeLabel = 'Chưa đạt (Sơ bộ)';
-    headlineSummary = `Phát hiện ${failedCriteriaCount} tiêu chí chưa đạt ngưỡng quy chuẩn bắt buộc.`;
-  } else if (verifyNeededCriteriaCount > 0 || passedCriteriaCount < 5) {
+  if (verifyNeededCriteriaCount > 0 || passedCriteriaCount < 5) {
     overallVerdict = 'insufficient_evidence';
     overallBadgeLabel = 'Cần kiểm tra thêm';
     headlineSummary = `Đã đạt sơ bộ ${passedCriteriaCount}/5 tiêu chí · Có ${verifyNeededCriteriaCount} tiêu chí cần cán bộ kiểm tra thêm.`;
@@ -522,52 +517,50 @@ export async function askOpenAiWithRegulations(
   context?: Record<string, string | undefined>,
   options?: OpenAiRuntimeOptions
 ): Promise<{ answer: string; model: string }> {
-  let apiKey = options?.apiKey;
-  let model = options?.model || 'gpt-4o-mini';
-  let baseUrl = options?.baseUrl || 'https://api.openai.com/v1';
-
-  if (apiKey === undefined) {
-    try {
-      const env = getEnvironment();
-      apiKey = env.OPENAI_API_KEY;
-      model = env.OPENAI_MODEL || 'gpt-4o-mini';
-      baseUrl = env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
-    } catch {
-      // ignore
-    }
-  }
+  const liveConfig = resolveLiveOpenAiConfig();
+  const apiKey = options?.apiKey !== undefined ? options.apiKey : liveConfig.apiKey;
+  const model = options?.model || liveConfig.model || 'gpt-5';
+  const baseUrl = options?.baseUrl || liveConfig.baseUrl || 'https://api.openai.com/v1';
 
   const fetchFn = options?.fetchImpl || globalThis.fetch;
 
   if (apiKey && fetchFn) {
     try {
+      const isReasoningModel = /^(gpt-5|o1|o3|o4)/i.test(model);
+      const reqBody: Record<string, unknown> = {
+        model,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'Bạn là Cố vấn Quy chế xét chọn danh hiệu "Sinh viên 5 tốt" cấp Thành phố Đà Nẵng năm học 2025–2026 (Hướng dẫn số 14-HD/BTK-HSVTP). Trả lời ngắn gọn, chính xác, ngôn ngữ hành chính dễ hiểu cho cán bộ xét duyệt.\n' +
+              'Các ngưỡng chuẩn:\n' +
+              '1. Đạo đức tốt: ĐRL >= 80/100, không vi phạm kỷ luật + 1 điều kiện tự chọn.\n' +
+              '2. Học tập tốt: GPA >= 3.2/4.0 (8.0/10) đối với ĐH, >= 3.0/4.0 (7.5/10) đối với CĐ + 1 hoạt động NCKH/thi học thuật.\n' +
+              '3. Thể lực tốt: Danh hiệu Thanh niên khỏe hoặc giải thể thao từ cấp Trường.\n' +
+              '4. Tình nguyện tốt: >= 05 ngày tình nguyện/năm (hiến máu tính 1 ngày/lần) hoặc giấy khen tình nguyện từ cấp Khoa/Trường.\n' +
+              '5. Hội nhập tốt: Đạt cả Nhóm A (Kỹ năng/Đoàn-Hội/Giao lưu quốc tế) và Nhóm B (Ngoại ngữ B1 / IELTS >= 4.5 / TOEIC >= 405 / GPA ngoại ngữ >= 3.0/4.0).',
+          },
+          {
+            role: 'user',
+            content: `Ngữ cảnh hồ sơ: ${JSON.stringify(context || {})}\nCâu hỏi của cán bộ: ${question}`,
+          },
+        ],
+      };
+
+      if (isReasoningModel) {
+        reqBody.reasoning_effort = 'low';
+      } else {
+        reqBody.temperature = 0.2;
+      }
+
       const response = await fetchFn(`${baseUrl.replace(/\/+$/, '')}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({
-          model,
-          temperature: 0.2,
-          messages: [
-            {
-              role: 'system',
-              content:
-                'Bạn là Cố vấn Quy chế xét chọn danh hiệu "Sinh viên 5 tốt" cấp Thành phố Đà Nẵng năm học 2025–2026 (Hướng dẫn số 14-HD/BTK-HSVTP). Trả lời ngắn gọn, chính xác, ngôn ngữ hành chính dễ hiểu cho cán bộ xét duyệt.\n' +
-                'Các ngưỡng chuẩn:\n' +
-                '1. Đạo đức tốt: ĐRL >= 80/100, không vi phạm kỷ luật + 1 điều kiện tự chọn.\n' +
-                '2. Học tập tốt: GPA >= 3.2/4.0 (8.0/10) đối với ĐH, >= 3.0/4.0 (7.5/10) đối với CĐ + 1 hoạt động NCKH/thi học thuật.\n' +
-                '3. Thể lực tốt: Danh hiệu Thanh niên khỏe hoặc giải thể thao từ cấp Trường.\n' +
-                '4. Tình nguyện tốt: >= 05 ngày tình nguyện/năm (hiến máu tính 1 ngày/lần) hoặc giấy khen tình nguyện từ cấp Khoa/Trường.\n' +
-                '5. Hội nhập tốt: Đạt cả Nhóm A (Kỹ năng/Đoàn-Hội/Giao lưu quốc tế) và Nhóm B (Ngoại ngữ B1 / IELTS >= 4.5 / TOEIC >= 405 / GPA ngoại ngữ >= 3.0/4.0).',
-            },
-            {
-              role: 'user',
-              content: `Ngữ cảnh hồ sơ: ${JSON.stringify(context || {})}\nCâu hỏi của cán bộ: ${question}`,
-            },
-          ],
-        }),
+        body: JSON.stringify(reqBody),
       });
 
       if (response.ok) {

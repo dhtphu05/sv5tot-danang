@@ -116,9 +116,24 @@ async function upsertPersistentRecord(
   return true;
 }
 
-function isDraftAppStatus(status?: string | null, schoolPreliminaryStatus?: string | null): boolean {
+function isDraftAppStatus(
+  status?: string | null,
+  schoolPreliminaryStatus?: string | null,
+  submittedAt?: string | null
+): boolean {
+  if (submittedAt && String(submittedAt).trim() !== '') {
+    return false;
+  }
   const s = String(status || '').trim();
   const sp = String(schoolPreliminaryStatus || '').trim();
+  if (
+    sp &&
+    sp !== 'school_not_submitted' &&
+    sp !== 'NOT_SUBMITTED' &&
+    sp !== 'draft'
+  ) {
+    return false;
+  }
   if (
     !s ||
     s === 'draft' ||
@@ -1130,7 +1145,13 @@ export async function ensurePortalStateHydratedFromNeonDb(forceRefresh = false):
               loadedCount++;
               break;
             case 'student_application':
-              if (isDraftAppStatus(data.status, data.schoolPreliminaryStatus)) {
+              if (
+                isDraftAppStatus(
+                  data.status,
+                  data.schoolPreliminaryStatus,
+                  data.submittedAt || data.submittedToSchoolAt
+                )
+              ) {
                 data.status = 'draft';
                 data.schoolPreliminaryStatus = 'school_not_submitted';
               }
@@ -1183,7 +1204,7 @@ export async function ensurePortalStateHydratedFromNeonDb(forceRefresh = false):
           }
         }
 
-        // Remove any legacy mock/test records, non-UDN records, or staff_record whose corresponding student_application is still an un-submitted draft
+        // Remove any legacy mock/test records or non-UDN records
         for (const [appId, app] of Object.entries(portalState.studentApplications)) {
           if (
             !isTestRuntime() &&
@@ -1199,18 +1220,8 @@ export async function ensurePortalStateHydratedFromNeonDb(forceRefresh = false):
           ) {
             return false;
           }
-          const matchingStudentApp = portalState.studentApplications[rec.applicationId];
-          if (
-            matchingStudentApp &&
-            isDraftAppStatus(
-              matchingStudentApp.status,
-              matchingStudentApp.schoolPreliminaryStatus
-            )
-          ) {
-            return false;
-          }
           if (rec.schoolPreliminaryStatus === 'school_not_submitted') {
-            return false;
+            rec.schoolPreliminaryStatus = 'pending_intake';
           }
           return true;
         });
@@ -1397,6 +1408,9 @@ export async function ensurePortalStateHydratedFromNeonDb(forceRefresh = false):
 
           const mapped =
             SCHOOL_UNIT_MAP[relApp.institutionId] || SCHOOL_UNIT_MAP['inst-dut'];
+          const hasRelSubmittedOrDecls =
+            Boolean(relApp.submittedToSchoolAt) ||
+            (Array.isArray(relApp.declarations) && relApp.declarations.length > 0);
           const mappedPrelim =
             relApp.schoolPreliminaryStatus === 'FORWARDED_TO_CITY'
               ? 'forwarded_to_city'
@@ -1410,15 +1424,19 @@ export async function ensurePortalStateHydratedFromNeonDb(forceRefresh = false):
               ? 'supplement_returned'
               : relApp.schoolPreliminaryStatus === 'SCHOOL_IN_REVIEW'
               ? 'under_review'
-              : relApp.currentReviewStage === 'STUDENT_DRAFT'
+              : relApp.currentReviewStage === 'STUDENT_DRAFT' && !hasRelSubmittedOrDecls
               ? 'school_not_submitted'
               : 'pending_intake';
           portalState.studentApplications[code] = {
             applicationId: code,
             season: 'Năm học 2025–2026',
             level: 'Cấp Thành phố Đà Nẵng',
+            submittedAt: relApp.submittedToSchoolAt
+              ? new Date(relApp.submittedToSchoolAt).toLocaleDateString('vi-VN')
+              : undefined,
+            submittedToSchoolAt: relApp.submittedToSchoolAt || undefined,
             status:
-              relApp.currentReviewStage === 'STUDENT_DRAFT'
+              relApp.currentReviewStage === 'STUDENT_DRAFT' && !hasRelSubmittedOrDecls
                 ? 'draft'
                 : relApp.schoolPreliminaryStatus === 'SCHOOL_SUPPLEMENT_REQUESTED' ||
                   relApp.cityWorkflowStatus === 'CITY_SUPPLEMENT_REQUESTED'

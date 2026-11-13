@@ -89,6 +89,11 @@ export const AddEvidenceInspector: React.FC<AddEvidenceInspectorProps> = ({
               : undefined;
           saveEvidenceFile(evId, file, file.name, ext, {
             size: sizeStr,
+            ocrContext: {
+              criterionName,
+              requirementTitle,
+              declaredValue: requirementTitle,
+            },
           }).catch(() => {});
           return {
             id: evId,

@@ -425,9 +425,12 @@ export const StaffPortalPage: React.FC<StaffPortalPageProps> = ({
   const assignedCount = cityScopedApplications.length;
   const attentionCount = cityScopedApplications.filter(
     (a) =>
+      a.workflowStatus === 'unassigned' ||
+      a.workflowStatus === 'assigned_not_started' ||
+      (a.workflowStatus as string) === 'assigned' ||
+      (a.workflowStatus === 'under_review' && (a.reviewedCriteriaCount || 0) < 5) ||
       a.workflowStatus === 'supplement_returned' ||
       a.workflowStatus === 'needs_recheck' ||
-      a.workflowStatus === 'assigned_not_started' ||
       a.isAging
   ).length;
   const supplementCount = cityScopedApplications.filter(

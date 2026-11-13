@@ -267,9 +267,12 @@ export const StaffApplicationQueueRouteView: React.FC<
     if (activeRouteId === 'attention') {
       return applications.filter(
         (a) =>
+          a.workflowStatus === 'unassigned' ||
+          a.workflowStatus === 'assigned_not_started' ||
+          (a.workflowStatus as string) === 'assigned' ||
+          (a.workflowStatus === 'under_review' && (a.reviewedCriteriaCount || 0) < 5) ||
           a.workflowStatus === 'supplement_returned' ||
           a.workflowStatus === 'needs_recheck' ||
-          a.workflowStatus === 'assigned_not_started' ||
           a.isAging
       );
     }
@@ -296,7 +299,8 @@ export const StaffApplicationQueueRouteView: React.FC<
       } else if (statusFilter === 'assigned_not_started') {
         if (
           app.workflowStatus !== 'assigned_not_started' &&
-          app.workflowStatus !== 'unassigned'
+          app.workflowStatus !== 'unassigned' &&
+          (app.workflowStatus as string) !== 'assigned'
         ) {
           return false;
         }

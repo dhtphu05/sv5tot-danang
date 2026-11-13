@@ -11,7 +11,33 @@ describe('Criteria Preliminary Evaluation Service', () => {
     clearOcrCache();
   });
 
-  it('marks scope as SATISFIED when evidence matches declaration and meets SV5T threshold', async () => {
+  it('marks scope as SATISFIED when OpenAI OCR extracts matching evidence that meets SV5T threshold', async () => {
+    const mockFetch = async () =>
+      ({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  isReadable: true,
+                  documentType: 'Bảng điểm học tập',
+                  extractedStudentName: 'Nguyễn Văn An',
+                  extractedStudentCode: '102220123',
+                  extractedValue: 'GPA: 3.45/4.0 (8.6/10)',
+                  numericMetric: 3.45,
+                  issuingAuthority: 'Phòng Đào tạo - Trường ĐH Bách khoa ĐHĐN',
+                  issueDate: '10/06/2026',
+                  hasRedStampOrSignature: 'verified',
+                  matchWithDeclaration: 'matched',
+                  discrepancyNote: null,
+                }),
+              },
+            },
+          ],
+        }),
+      }) as any;
+
     const res = await evaluateScopeWithOpenAiAndRules(
       {
         criterionId: 'academic',
@@ -20,7 +46,7 @@ describe('Criteria Preliminary Evaluation Service', () => {
         requirementId: 'academic-gpa',
         requirementTitle: 'Điểm trung bình học tập cả năm học đạt từ 3.2/4.0 trở lên',
         declarationId: 'decl-gpa-1',
-        declarationTitle: 'GPA: 3.45/4.0 (8.6/10)',
+        declarationTitle: 'Bảng điểm năm học',
         evidenceList: [
           {
             id: 'ev-gpa-1',
@@ -33,7 +59,7 @@ describe('Criteria Preliminary Evaluation Service', () => {
           schoolName: 'Trường Đại học Bách khoa - ĐHĐN',
         },
       },
-      { apiKey: '' }
+      { apiKey: 'sk-test-key', fetchImpl: mockFetch }
     );
 
     assert.equal(res.suggestedVerdict, 'SATISFIED');
@@ -42,7 +68,34 @@ describe('Criteria Preliminary Evaluation Service', () => {
     assert.equal(res.ocrExtractions[0].matchWithDeclaration, 'matched');
   });
 
-  it('marks scope as SUPPLEMENT_REQUIRED when volunteer days in evidence are fewer than declared (4 vs 5)', async () => {
+  it('marks scope as SUPPLEMENT_REQUIRED when volunteer days in evidence are fewer than required (4 vs 5)', async () => {
+    const mockFetch = async () =>
+      ({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  isReadable: true,
+                  documentType: 'Giấy chứng nhận tình nguyện',
+                  extractedStudentName: 'Nguyễn Văn An',
+                  extractedStudentCode: '102220123',
+                  extractedValue: 'Tham gia 04 ngày Chiến dịch Mùa hè xanh',
+                  numericMetric: 4,
+                  issuingAuthority: 'Đoàn Trường ĐH Bách khoa - ĐHĐN',
+                  issueDate: '20/08/2026',
+                  hasRedStampOrSignature: 'verified',
+                  matchWithDeclaration: 'mismatch',
+                  discrepancyNote:
+                    'Kê khai 05 ngày nhưng văn bản minh chứng chỉ ghi nhận 04 ngày tham gia Chiến dịch Mùa hè xanh.',
+                }),
+              },
+            },
+          ],
+        }),
+      }) as any;
+
     const res = await evaluateScopeWithOpenAiAndRules(
       {
         criterionId: 'volunteer',
@@ -51,7 +104,7 @@ describe('Criteria Preliminary Evaluation Service', () => {
         requirementId: 'volunteer-days',
         requirementTitle: 'Tham gia ít nhất 05 ngày tình nguyện/năm',
         declarationId: 'decl-vol-1',
-        declarationTitle: 'Tham gia 05 ngày Chiến dịch Mùa hè xanh',
+        declarationTitle: 'Tham gia Chiến dịch Mùa hè xanh',
         evidenceList: [
           {
             id: 'ev-mhx-discrepancy',
@@ -64,15 +117,42 @@ describe('Criteria Preliminary Evaluation Service', () => {
           schoolName: 'Trường Đại học Bách khoa - ĐHĐN',
         },
       },
-      { apiKey: '' }
+      { apiKey: 'sk-test-key', fetchImpl: mockFetch }
     );
 
     assert.equal(res.suggestedVerdict, 'SUPPLEMENT_REQUIRED');
     assert.equal(res.preliminaryStatus, 'insufficient_evidence');
+    assert.equal(res.preliminaryBadgeLabel, 'Cần kiểm tra thêm');
     assert.ok(res.draftSupplementMessage?.includes('04 ngày'));
   });
 
-  it('marks scope as UNSUITABLE when declared GPA is below mandatory 3.2/4.0 university threshold', async () => {
+  it('converts threshold shortfall (GPA 2.85/4.0) to SUPPLEMENT_REQUIRED / insufficient_evidence (never returns Chưa đạt)', async () => {
+    const mockFetch = async () =>
+      ({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  isReadable: true,
+                  documentType: 'Bảng điểm học tập',
+                  extractedStudentName: 'Trần Thị B',
+                  extractedStudentCode: '102220999',
+                  extractedValue: 'GPA: 2.85/4.0',
+                  numericMetric: 2.85,
+                  issuingAuthority: 'Trường Đại học Kinh tế - ĐHĐN',
+                  issueDate: '15/06/2026',
+                  hasRedStampOrSignature: 'verified',
+                  matchWithDeclaration: 'matched',
+                  discrepancyNote: null,
+                }),
+              },
+            },
+          ],
+        }),
+      }) as any;
+
     const res = await evaluateScopeWithOpenAiAndRules(
       {
         criterionId: 'academic',
@@ -94,14 +174,41 @@ describe('Criteria Preliminary Evaluation Service', () => {
           schoolName: 'Trường Đại học Kinh tế - ĐHĐN',
         },
       },
-      { apiKey: '' }
+      { apiKey: 'sk-test-key', fetchImpl: mockFetch }
     );
 
-    assert.equal(res.suggestedVerdict, 'UNSUITABLE');
-    assert.equal(res.preliminaryStatus, 'preliminary_not_meets');
+    assert.equal(res.suggestedVerdict, 'SUPPLEMENT_REQUIRED');
+    assert.equal(res.preliminaryStatus, 'insufficient_evidence');
+    assert.equal(res.preliminaryBadgeLabel, 'Cần kiểm tra thêm');
   });
 
   it('evaluates full application across 5 criteria and returns overall preliminary status', async () => {
+    const mockFetch = async () =>
+      ({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  isReadable: true,
+                  documentType: 'Minh chứng hợp lệ',
+                  extractedStudentName: 'Nguyễn Văn An',
+                  extractedStudentCode: '102220123',
+                  extractedValue: 'Đạt chuẩn theo quy chế',
+                  numericMetric: 90,
+                  issuingAuthority: 'Trường Đại học Bách khoa - ĐHĐN',
+                  issueDate: '10/06/2026',
+                  hasRedStampOrSignature: 'verified',
+                  matchWithDeclaration: 'matched',
+                  discrepancyNote: null,
+                }),
+              },
+            },
+          ],
+        }),
+      }) as any;
+
     const appEval = await evaluateFullApplicationWithOcr(
       {
         applicationId: 'APP-2026-001',
@@ -183,7 +290,7 @@ describe('Criteria Preliminary Evaluation Service', () => {
           },
         ],
       },
-      { apiKey: '' }
+      { apiKey: 'sk-test-key', fetchImpl: mockFetch }
     );
 
     assert.equal(appEval.overallVerdict, 'preliminary_meets');

@@ -266,16 +266,30 @@ export function useStaffWorkflowCoordination({
   useEffect(() => {
     if (!isActive || !staffUser) return;
     const current = getApiActorContext();
-    if (!current || current.userId !== staffUser.id || current.role !== staffUser.primaryRole) {
-      const isSchoolRole = staffUser.primaryRole === 'SCHOOL_OFFICER';
+    const isSchoolRole = staffUser.primaryRole === 'SCHOOL_OFFICER';
+    const expectedUnitId = isSchoolRole
+      ? staffUser.schoolReviewUnitId || 'unit-udn'
+      : undefined;
+    const unitMismatch = isSchoolRole
+      ? current?.unitId !== expectedUnitId
+      : Boolean(current?.unitId && current.unitId !== 'unit-city');
+    if (
+      !current ||
+      current.userId !== staffUser.id ||
+      current.role !== staffUser.primaryRole ||
+      unitMismatch
+    ) {
       setApiActorContext({
         userId: staffUser.id || (isSchoolRole ? 'staff-sch-udn' : 'staff-off-nam'),
         userName: staffUser.fullName,
         userEmail:
           staffUser.email || (isSchoolRole ? 'canbo.udn@udn.vn' : 'canbo.thanhpho@hsvdanang.vn'),
         role: staffUser.primaryRole || 'CITY_OFFICER',
-        unitId: isSchoolRole ? staffUser.schoolReviewUnitId || 'unit-udn' : undefined,
-        token: `staff-token-${staffUser.id || (isSchoolRole ? 'staff-sch-udn' : 'staff-off-nam')}`,
+        unitId: isSchoolRole ? expectedUnitId : current?.unitId,
+        token:
+          current?.userId === staffUser.id && current?.token
+            ? current.token
+            : `staff-token-${staffUser.id || (isSchoolRole ? 'staff-sch-udn' : 'staff-off-nam')}`,
       });
     }
   }, [staffUser, isActive]);

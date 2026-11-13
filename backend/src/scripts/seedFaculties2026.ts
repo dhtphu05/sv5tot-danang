@@ -60,16 +60,16 @@ export const FACULTIES_SEED_2026 = [
   { id: 'fac-vku-ktmtdt', institutionId: 'inst-vku', schoolReviewUnitId: 'unit-udn', code: 'VKU_KTMT_DT', name: 'Khoa Kỹ thuật máy tính và Điện tử' },
   { id: 'fac-vku-ktstmdt', institutionId: 'inst-vku', schoolReviewUnitId: 'unit-udn', code: 'VKU_KTS_TMDT', name: 'Khoa Kinh tế số và Thương mại điện tử' },
 
-  // 7. Trường Y Dược (SMP) - 04 Khoa
-  { id: 'fac-smp-y', institutionId: 'inst-smp', schoolReviewUnitId: 'unit-udn', code: 'SMP_Y', name: 'Khoa Y' },
-  { id: 'fac-smp-rhm', institutionId: 'inst-smp', schoolReviewUnitId: 'unit-udn', code: 'SMP_RHM', name: 'Khoa Răng - Hàm - Mặt' },
-  { id: 'fac-smp-duoc', institutionId: 'inst-smp', schoolReviewUnitId: 'unit-udn', code: 'SMP_DUOC', name: 'Khoa Dược' },
-  { id: 'fac-smp-ddktyh', institutionId: 'inst-smp', schoolReviewUnitId: 'unit-udn', code: 'SMP_DD_KTYH', name: 'Khoa Điều dưỡng và Kỹ thuật y học' },
-
-  // 8. Viện Nghiên cứu và Đào tạo Việt - Anh (VNUK) - 03 Khoa
+  // 7. Viện Nghiên cứu và Đào tạo Việt - Anh (VNUK) - 03 Khoa
   { id: 'fac-vnuk-ktkd', institutionId: 'inst-vnuk', schoolReviewUnitId: 'unit-udn', code: 'VNUK_KT_KD', name: 'Khoa Kinh tế và Kinh doanh' },
   { id: 'fac-vnuk-cntttt', institutionId: 'inst-vnuk', schoolReviewUnitId: 'unit-udn', code: 'VNUK_CNTT_TT', name: 'Khoa Công nghệ thông tin và Truyền thông' },
   { id: 'fac-vnuk-khcn', institutionId: 'inst-vnuk', schoolReviewUnitId: 'unit-udn', code: 'VNUK_KH_CN', name: 'Khoa Khoa học và Công nghệ' },
+
+  // 8. Phân hiệu Đại học Đà Nẵng tại Kon Tum (UDCK) - 04 Khoa
+  { id: 'fac-udck-kt', institutionId: 'inst-udck', schoolReviewUnitId: 'unit-udn', code: 'UDCK_KT', name: 'Khoa Kinh tế' },
+  { id: 'fac-udck-spkhxh', institutionId: 'inst-udck', schoolReviewUnitId: 'unit-udn', code: 'UDCK_SP_KHXH', name: 'Khoa Sư phạm và Khoa học Xã hội' },
+  { id: 'fac-udck-ktnn', institutionId: 'inst-udck', schoolReviewUnitId: 'unit-udn', code: 'UDCK_KT_NN', name: 'Khoa Kỹ thuật - Nông nghiệp' },
+  { id: 'fac-udck-cntt', institutionId: 'inst-udck', schoolReviewUnitId: 'unit-udn', code: 'UDCK_CNTT', name: 'Khoa Công nghệ Thông tin' },
 ];
 
 export async function runFacultySeed() {

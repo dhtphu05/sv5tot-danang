@@ -131,7 +131,7 @@ describe('5TOT ĐHĐN — Lean UX Feedback Consolidation (Fix 01–Fix 10)', () 
   // FIX 06: Consolidated School Recommendation Forwarding Navigation
   // ---------------------------------------------------------------------------
   it('Fix 06: School recommendation forwarding has singular route school_awaiting_forward', () => {
-    assert.equal(AUTHORITATIVE_SCHOOL_REVIEW_UNITS.length, 38);
+    assert.equal(AUTHORITATIVE_SCHOOL_REVIEW_UNITS.length, 18);
     const udn = AUTHORITATIVE_SCHOOL_REVIEW_UNITS.find((u) => u.id === 'unit-udn');
     assert.ok(udn);
     assert.equal(udn?.memberInstitutionIds.length, 8);

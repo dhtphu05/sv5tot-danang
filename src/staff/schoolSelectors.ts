@@ -44,6 +44,7 @@ const LEGACY_UDN_MEMBER_UNIT_IDS = new Set<string>([
   'unit-vku',
   'unit-smp',
   'unit-vnuk',
+  'unit-udck',
 ]);
 
 function normalizeSchoolUnitId(
@@ -60,9 +61,15 @@ function normalizeSchoolUnitId(
 export function getApplicationSchoolReviewUnitId(
   app: StaffApplicationRecord
 ): SchoolReviewUnitId | null {
-  const resolution = resolveSchoolReviewUnit(app.institution.id);
+  const resolution = resolveSchoolReviewUnit(app.institution?.id || '');
   if (resolution.resolved && resolution.unit) {
     return resolution.unit.id;
+  }
+  if (app.institution?.officialName) {
+    const byName = resolveSchoolReviewUnit(app.institution.officialName);
+    if (byName.resolved && byName.unit) {
+      return byName.unit.id;
+    }
   }
   if (app.schoolReviewUnitId) {
     return normalizeSchoolUnitId(app.schoolReviewUnitId);
@@ -298,11 +305,6 @@ export function getSchoolPriorityQueue(
     return appUnitId === effectiveUnitId;
   });
 
-  const newOrNotStarted = scopedApps.filter((app) => {
-    const st = resolveSchoolPreliminaryStatus(app);
-    return st === 'pending_intake';
-  });
-
   const supplementReturned = scopedApps.filter((app) => {
     const st = resolveSchoolPreliminaryStatus(app);
     return st === 'supplement_returned';
@@ -319,13 +321,20 @@ export function getSchoolPriorityQueue(
     );
     return hasDecl || hasEv;
   });
+  const needsConsiderationIds = new Set(needsConsideration.map((a) => a.applicationId));
+
+  const newOrNotStarted = scopedApps.filter((app) => {
+    if (needsConsiderationIds.has(app.applicationId)) return false;
+    const st = resolveSchoolPreliminaryStatus(app);
+    if (st === 'pending_intake') return true;
+    if (st === 'under_review' && (app.reviewedCriteriaCount || 0) < 5) return true;
+    return false;
+  });
 
   const readyToComplete = scopedApps.filter((app) => {
     const st = resolveSchoolPreliminaryStatus(app);
-    const ws = workspaces[app.applicationId];
     if (st !== 'under_review') return false;
-    if (!ws) return false;
-    return app.reviewedCriteriaCount >= 5;
+    return (app.reviewedCriteriaCount || 0) >= 5;
   });
 
   return [
@@ -338,7 +347,7 @@ export function getSchoolPriorityQueue(
     },
     {
       category: 'not_started',
-      categoryLabel: 'Hồ sơ mới nộp / Chưa bắt đầu xét',
+      categoryLabel: 'Hồ sơ mới nộp / Đang xét sơ tuyển',
       count: newOrNotStarted.length,
       tone: 'brand',
       applications: newOrNotStarted,

@@ -65,46 +65,48 @@ export const REVIEW_STAGE_META: Record<ReviewStage, ReviewStageMeta> = {
 // =============================================================================
 
 export type SchoolReviewUnitId =
-  | 'unit-udn'                  // Đại học Đà Nẵng (Hub xét sơ cho 08 trường/viện thành viên ĐHĐN)
-  | 'unit-dtu'                  // Đại học Duy Tân
-  | 'unit-donga'                // Trường Đại học Đông Á
-  | 'unit-dau'                  // Trường Đại học Kiến trúc Đà Nẵng
-  | 'unit-upes3'                // Trường Đại học Thể dục Thể thao Đà Nẵng
-  | 'unit-tyd'                  // Trường Đại học Kỹ thuật Y - Dược Đà Nẵng
-  | 'unit-fpt'                  // Trường Đại học FPT phân hiệu Đà Nẵng
-  | 'unit-dh-ngan-hang-dn'      // Trường Đại học Ngân hàng TP.HCM (Phân hiệu Đà Nẵng)
-  | 'unit-dh-luat-hanoi-dn'     // Trường Đại học Luật Hà Nội (Phân hiệu Đà Nẵng)
-  | 'unit-dh-mo-hn-dn'          // Trường Đại học Mở Hà Nội (Trạm đào tạo Đà Nẵng)
-  | 'unit-hv-chinhtri-kv3'      // Học viện Chính trị Khu vực III
-  | 'unit-hv-hanhchinh-dn'      // Phân hiệu Học viện Hành chính Quốc gia tại Đà Nẵng
-  | 'unit-hv-toa-an'            // Học viện Tòa án (Cơ sở Đà Nẵng)
-  | 'unit-greenwich-dn'         // Đại học Greenwich Việt Nam (Cơ sở Đà Nẵng)
-  | 'unit-auv'                  // Trường Đại học Mỹ tại Việt Nam (AUV)
-  | 'unit-cd-thuongmai'         // Trường Cao đẳng Thương mại
-  | 'unit-cd-dulich'            // Trường Cao đẳng Du lịch Đà Nẵng
-  | 'unit-cd-congnghe'          // Trường Cao đẳng Công nghệ Y - Dược Việt Nam
-  | 'unit-cd-fptpoly'           // Trường Cao đẳng FPT Polytechnic cơ sở Đà Nẵng
-  | 'unit-cd-btec-fpt'          // Trường Cao đẳng Quốc tế BTEC FPT (Cơ sở Đà Nẵng)
-  | 'unit-cd-nghe-dn'           // Trường Cao đẳng Nghề Đà Nẵng
-  | 'unit-cd-gtvt-tw5'          // Trường Cao đẳng Giao thông Vận tải Trung ương V
-  | 'unit-cd-kinhte-kh'         // Trường Cao đẳng Kinh tế - Kế hoạch Đà Nẵng
-  | 'unit-cd-vhtt-dl'           // Trường Cao đẳng Văn hóa Nghệ thuật Đà Nẵng
-  | 'unit-cd-luongthuc'         // Trường Cao đẳng Lương thực - Thực phẩm
-  | 'unit-cd-bachkhoa-dn'       // Trường Cao đẳng Bách khoa Đà Nẵng
-  | 'unit-cd-daiviet-dn'        // Trường Cao đẳng Đại Việt Đà Nẵng
-  | 'unit-cd-phuongdong-dn'     // Trường Cao đẳng Phương Đông Đà Nẵng
-  | 'unit-cd-ptth'              // Trường Cao đẳng Phát thanh - Truyền hình II (Cơ sở Đà Nẵng)
-  | 'unit-cd-supham-maugiao'    // Trường Cao đẳng Sư phạm Trung ương Nha Trang (Cơ sở Đà Nẵng)
-  | 'unit-cd-yduoc-pasteur'     // Trường Cao đẳng Y Dược Pasteur Đà Nẵng
-  | 'unit-cd-lacviet'           // Trường Cao đẳng Lạc Việt
-  // Khu vực Quảng Nam (Sáp nhập địa giới hành chính Thành phố Đà Nẵng)
-  | 'unit-dqu'                  // Trường Đại học Quảng Nam
-  | 'unit-pctu'                 // Trường Đại học Phan Châu Trinh
-  | 'unit-cd-quangnam'          // Trường Cao đẳng Quảng Nam
-  | 'unit-cd-dienluc-mt'        // Trường Cao đẳng Điện lực Miền Trung
-  | 'unit-cd-kinhte-thuyloi-mt' // Trường Cao đẳng Công nghệ Kinh tế và Thủy lợi Miền Trung
-  | 'unit-cd-thaco'             // Trường Cao đẳng THACO
-  // Legacy UDN unit IDs preserved in union for historical snapshot type compatibility
+  | 'unit-udn'                  // 1. Đại học Đà Nẵng (Hub xét sơ cho 08 trường/viện/phân hiệu thành viên ĐHĐN)
+  | 'unit-dtu'                  // 2. Đại học Duy Tân
+  | 'unit-dqu'                  // 3. Trường Đại học Quảng Nam
+  | 'unit-tyd'                  // 4. Trường Đại học Kỹ thuật Y - Dược Đà Nẵng
+  | 'unit-upes3'                // 5. Trường Đại học Thể dục Thể thao Đà Nẵng
+  | 'unit-dau'                  // 6. Trường Đại học Kiến trúc Đà Nẵng
+  | 'unit-donga'                // 7. Trường Đại học Đông Á
+  | 'unit-cddn'                 // 8. Trường Cao đẳng Đà Nẵng
+  | 'unit-cd-thuongmai'         // 9. Trường Cao đẳng Thương mại
+  | 'unit-cd-dulich'            // 10. Trường Cao đẳng Du lịch Đà Nẵng
+  | 'unit-cd-gtvt-tw5'          // 11. Trường Cao đẳng Giao thông Vận tải Trung ương V
+  | 'unit-cd-phuongdong-dn'     // 12. Trường Cao đẳng Phương Đông
+  | 'unit-cd-luongthuc'         // 13. Trường Cao đẳng Lương thực Thực phẩm
+  | 'unit-cd-congnghe'          // 14. Trường Cao đẳng Công nghệ Y – Dược Việt Nam
+  | 'unit-cd-daiviet-dn'        // 15. Trường Cao đẳng Đại Việt Đà Nẵng
+  | 'unit-cd-kinhte-thuyloi-mt' // 16. Trường Cao đẳng Kinh tế Công nghệ và Thủy lợi Miền Trung
+  | 'unit-muce-dn'              // 17. Phân hiệu Trường Đại học Xây dựng Miền Trung tại TP. Đà Nẵng
+  | 'unit-apd-dn'               // 18. Học viện Chính sách và Phát triển - Phân hiệu TP. Đà Nẵng
+  // Legacy IDs preserved in union for historical snapshot type compatibility
+  | 'unit-cd-nghe-dn'
+  | 'unit-fpt'
+  | 'unit-dh-ngan-hang-dn'
+  | 'unit-dh-luat-hanoi-dn'
+  | 'unit-dh-mo-hn-dn'
+  | 'unit-hv-chinhtri-kv3'
+  | 'unit-hv-hanhchinh-dn'
+  | 'unit-hv-toa-an'
+  | 'unit-greenwich-dn'
+  | 'unit-auv'
+  | 'unit-cd-fptpoly'
+  | 'unit-cd-btec-fpt'
+  | 'unit-cd-kinhte-kh'
+  | 'unit-cd-vhtt-dl'
+  | 'unit-cd-bachkhoa-dn'
+  | 'unit-cd-ptth'
+  | 'unit-cd-supham-maugiao'
+  | 'unit-cd-yduoc-pasteur'
+  | 'unit-cd-lacviet'
+  | 'unit-pctu'
+  | 'unit-cd-quangnam'
+  | 'unit-cd-dienluc-mt'
+  | 'unit-cd-thaco'
   | 'unit-dut'
   | 'unit-due'
   | 'unit-ued'
@@ -113,6 +115,7 @@ export type SchoolReviewUnitId =
   | 'unit-vku'
   | 'unit-smp'
   | 'unit-vnuk'
+  | 'unit-udck'
   | 'unit-kontum';
 
 export interface SchoolReviewUnit {
@@ -130,8 +133,8 @@ export interface SchoolReviewUnit {
 }
 
 /**
- * Danh mục thẩm quyền chính thức của 38 Đơn vị xét sơ tuyển đang hoạt động tại TP. Đà Nẵng (bao gồm khu vực Quảng Nam sáp nhập)
- * (01 đầu mối chung Đại học Đà Nẵng cho 08 trường/viện thành viên + 37 đơn vị độc lập)
+ * Danh mục thẩm quyền chính thức của 18 Đơn vị xét sơ tuyển đang hoạt động
+ * (01 đầu mối chung Đại học Đà Nẵng cho 08 trường/viện/phân hiệu thành viên + 17 đơn vị độc lập)
  */
 export const AUTHORITATIVE_SCHOOL_REVIEW_UNITS: SchoolReviewUnit[] = [
   {
@@ -146,18 +149,18 @@ export const AUTHORITATIVE_SCHOOL_REVIEW_UNITS: SchoolReviewUnit[] = [
     memberInstitutionIds: [
       'inst-dut',
       'inst-due',
-      'inst-ued',
       'inst-ufl',
+      'inst-ued',
       'inst-ute',
       'inst-vku',
-      'inst-smp',
       'inst-vnuk',
+      'inst-udck',
     ],
-    description: 'Đơn vị xét sơ tuyển tập trung cho toàn bộ 08 trường thành viên và viện thuộc Đại học Đà Nẵng tại Đà Nẵng.',
+    description: 'Đơn vị xét sơ tuyển tập trung cho toàn bộ 08 trường thành viên, viện và phân hiệu thuộc Đại học Đà Nẵng.',
   },
   {
     id: 'unit-dtu',
-    officialName: 'Trường Đại học Duy Tân',
+    officialName: 'Đại học Duy Tân',
     shortName: 'DTU',
     code: 'DTU',
     status: 'active',
@@ -168,40 +171,16 @@ export const AUTHORITATIVE_SCHOOL_REVIEW_UNITS: SchoolReviewUnit[] = [
     description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Đại học Duy Tân.',
   },
   {
-    id: 'unit-dau',
-    officialName: 'Trường Đại học Kiến trúc Đà Nẵng',
-    shortName: 'ĐH Kiến trúc',
-    code: 'DAU',
+    id: 'unit-dqu',
+    officialName: 'Trường Đại học Quảng Nam',
+    shortName: 'ĐH Quảng Nam',
+    code: 'DQU',
     status: 'active',
-    contactEmail: 'canbo.dau@dau.edu.vn',
-    contactPhone: '0236 3740 666',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường Đại học Kiến trúc Đà Nẵng',
-    memberInstitutionIds: ['inst-dau'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Đại học Kiến trúc Đà Nẵng.',
-  },
-  {
-    id: 'unit-upes3',
-    officialName: 'Trường Đại học Thể dục Thể thao Đà Nẵng',
-    shortName: 'ĐH TDTT',
-    code: 'UPES3',
-    status: 'active',
-    contactEmail: 'canbo.upes3@upes3.edu.vn',
-    contactPhone: '0236 3759 123',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường Đại học Thể dục Thể thao Đà Nẵng',
-    memberInstitutionIds: ['inst-upes3'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Đại học Thể dục Thể thao Đà Nẵng.',
-  },
-  {
-    id: 'unit-donga',
-    officialName: 'Trường Đại học Đông Á',
-    shortName: 'ĐH Đông Á',
-    code: 'UDA',
-    status: 'active',
-    contactEmail: 'canbo.donga@donga.edu.vn',
-    contactPhone: '0236 3519 929',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường Đại học Đông Á',
-    memberInstitutionIds: ['inst-donga'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Đại học Đông Á.',
+    contactEmail: 'canbo.dqu@dqu.edu.vn',
+    contactPhone: '0235 3812 834',
+    unitOfficerName: 'Cán bộ xét cấp trường Trường Đại học Quảng Nam',
+    memberInstitutionIds: ['inst-dqu'],
+    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Đại học Quảng Nam.',
   },
   {
     id: 'unit-tyd',
@@ -216,112 +195,52 @@ export const AUTHORITATIVE_SCHOOL_REVIEW_UNITS: SchoolReviewUnit[] = [
     description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Đại học Kỹ thuật Y - Dược Đà Nẵng.',
   },
   {
-    id: 'unit-fpt',
-    officialName: 'Trường Đại học FPT phân hiệu Đà Nẵng',
-    shortName: 'ĐH FPT',
-    code: 'FPTU',
+    id: 'unit-upes3',
+    officialName: 'Trường Đại học Thể dục Thể thao Đà Nẵng',
+    shortName: 'ĐH TDTT',
+    code: 'UPES3',
     status: 'active',
-    contactEmail: 'canbo.fpt@fpt.edu.vn',
-    contactPhone: '0236 7300 999',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường Đại học FPT phân hiệu Đà Nẵng',
-    memberInstitutionIds: ['inst-fpt'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Phân hiệu Đại học FPT tại Đà Nẵng.',
+    contactEmail: 'canbo.upes3@upes3.edu.vn',
+    contactPhone: '0236 3759 123',
+    unitOfficerName: 'Cán bộ xét cấp trường Trường Đại học Thể dục Thể thao Đà Nẵng',
+    memberInstitutionIds: ['inst-upes3'],
+    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Đại học Thể dục Thể thao Đà Nẵng.',
   },
   {
-    id: 'unit-greenwich-dn',
-    officialName: 'Đại học Greenwich Việt Nam (Cơ sở Đà Nẵng)',
-    shortName: 'Greenwich ĐN',
-    code: 'GREENWICH',
+    id: 'unit-dau',
+    officialName: 'Trường Đại học Kiến trúc Đà Nẵng',
+    shortName: 'ĐH Kiến trúc',
+    code: 'DAU',
     status: 'active',
-    contactEmail: 'canbo.greenwich@fe.edu.vn',
-    contactPhone: '0236 730 2266',
-    unitOfficerName: 'Cán bộ xét cấp trường Đại học Greenwich Việt Nam (Cơ sở Đà Nẵng)',
-    memberInstitutionIds: ['inst-greenwich-dn'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Đại học Greenwich Việt Nam (Cơ sở Đà Nẵng).',
+    contactEmail: 'canbo.dau@dau.edu.vn',
+    contactPhone: '0236 3740 666',
+    unitOfficerName: 'Cán bộ xét cấp trường Trường Đại học Kiến trúc Đà Nẵng',
+    memberInstitutionIds: ['inst-dau'],
+    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Đại học Kiến trúc Đà Nẵng.',
   },
   {
-    id: 'unit-auv',
-    officialName: 'Trường Đại học Mỹ tại Việt Nam (AUV)',
-    shortName: 'ĐH Mỹ AUV',
-    code: 'AUV',
+    id: 'unit-donga',
+    officialName: 'Trường Đại học Đông Á',
+    shortName: 'ĐH Đông Á',
+    code: 'UDA',
     status: 'active',
-    contactEmail: 'canbo.auv@auv.edu.vn',
-    contactPhone: '0236 3967 585',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường Đại học Mỹ tại Việt Nam (AUV)',
-    memberInstitutionIds: ['inst-auv'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Đại học Mỹ tại Việt Nam (AUV).',
+    contactEmail: 'canbo.donga@donga.edu.vn',
+    contactPhone: '0236 3519 929',
+    unitOfficerName: 'Cán bộ xét cấp trường Trường Đại học Đông Á',
+    memberInstitutionIds: ['inst-donga'],
+    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Đại học Đông Á.',
   },
   {
-    id: 'unit-dh-ngan-hang-dn',
-    officialName: 'Trường Đại học Ngân hàng TP.HCM (Phân hiệu Đà Nẵng)',
-    shortName: 'HUB-DN',
-    code: 'HUB-DN',
+    id: 'unit-cddn',
+    officialName: 'Trường Cao đẳng Đà Nẵng',
+    shortName: 'CĐ Đà Nẵng',
+    code: 'CDDN',
     status: 'active',
-    contactEmail: 'canbo.hubdn@hub.edu.vn',
-    contactPhone: '0236 3736 888',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường ĐH Ngân hàng TP.HCM (Phân hiệu Đà Nẵng)',
-    memberInstitutionIds: ['inst-dh-ngan-hang-dn'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường ĐH Ngân hàng TP.HCM (Phân hiệu Đà Nẵng).',
-  },
-  {
-    id: 'unit-dh-luat-hanoi-dn',
-    officialName: 'Trường Đại học Luật Hà Nội (Phân hiệu Đà Nẵng)',
-    shortName: 'HLU-DN',
-    code: 'HLU-DN',
-    status: 'active',
-    contactEmail: 'canbo.hludn@hlu.edu.vn',
-    contactPhone: '0236 3824 555',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường ĐH Luật Hà Nội (Phân hiệu Đà Nẵng)',
-    memberInstitutionIds: ['inst-dh-luat-hanoi-dn'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường ĐH Luật Hà Nội (Phân hiệu Đà Nẵng).',
-  },
-  {
-    id: 'unit-dh-mo-hn-dn',
-    officialName: 'Phân hiệu Đại học Mở Hà Nội tại Đà Nẵng',
-    shortName: 'HOU-DN',
-    code: 'HOU-DN',
-    status: 'active',
-    contactEmail: 'canbo.houdn@hou.edu.vn',
-    contactPhone: '0236 3829 111',
-    unitOfficerName: 'Cán bộ xét cấp trường Phân hiệu Đại học Mở Hà Nội tại Đà Nẵng',
-    memberInstitutionIds: ['inst-dh-mo-hn-dn'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Phân hiệu Đại học Mở Hà Nội tại Đà Nẵng.',
-  },
-  {
-    id: 'unit-hv-chinhtri-kv3',
-    officialName: 'Học viện Chính trị Khu vực III',
-    shortName: 'HVCT3',
-    code: 'HVCT3',
-    status: 'active',
-    contactEmail: 'canbo.hvct3@hcma3.vn',
-    contactPhone: '0236 3822 411',
-    unitOfficerName: 'Cán bộ xét cấp trường Học viện Chính trị Khu vực III',
-    memberInstitutionIds: ['inst-hv-chinhtri-kv3'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho học viên Học viện Chính trị Khu vực III.',
-  },
-  {
-    id: 'unit-hv-hanhchinh-dn',
-    officialName: 'Phân hiệu Học viện Hành chính Quốc gia tại Đà Nẵng',
-    shortName: 'NAPA-DN',
-    code: 'NAPA-DN',
-    status: 'active',
-    contactEmail: 'canbo.napa@napa.vn',
-    contactPhone: '0236 3846 111',
-    unitOfficerName: 'Cán bộ xét cấp trường Phân hiệu Học viện Hành chính Quốc gia tại Đà Nẵng',
-    memberInstitutionIds: ['inst-hv-hanhchinh-dn'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Phân hiệu Học viện Hành chính Quốc gia tại Đà Nẵng.',
-  },
-  {
-    id: 'unit-hv-toa-an',
-    officialName: 'Học viện Tòa án (Cơ sở đào tạo thực hành Đà Nẵng)',
-    shortName: 'HVTA',
-    code: 'HVTA',
-    status: 'active',
-    contactEmail: 'canbo.hvta@toaan.gov.vn',
-    contactPhone: '0236 3889 001',
-    unitOfficerName: 'Cán bộ xét cấp trường Học viện Tòa án (Cơ sở Đà Nẵng)',
-    memberInstitutionIds: ['inst-hv-toa-an'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Học viện Tòa án (Cơ sở Đà Nẵng).',
+    contactEmail: 'canbo.cddn@danavtc.edu.vn',
+    contactPhone: '0236 3940 946',
+    unitOfficerName: 'Cán bộ xét cấp trường Trường Cao đẳng Đà Nẵng',
+    memberInstitutionIds: ['inst-cddn'],
+    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Đà Nẵng.',
   },
   {
     id: 'unit-cd-thuongmai',
@@ -348,54 +267,6 @@ export const AUTHORITATIVE_SCHOOL_REVIEW_UNITS: SchoolReviewUnit[] = [
     description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Du lịch Đà Nẵng.',
   },
   {
-    id: 'unit-cd-congnghe',
-    officialName: 'Trường Cao đẳng Công nghệ Y - Dược Việt Nam',
-    shortName: 'CĐ CN Y Dược VN',
-    code: 'YDVN',
-    status: 'active',
-    contactEmail: 'canbo.ydvn@ydvn.edu.vn',
-    contactPhone: '0236 3888 333',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường CĐ Công nghệ Y - Dược Việt Nam',
-    memberInstitutionIds: ['inst-cd-congnghe'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Công nghệ Y - Dược Việt Nam.',
-  },
-  {
-    id: 'unit-cd-fptpoly',
-    officialName: 'Trường Cao đẳng FPT Polytechnic cơ sở Đà Nẵng',
-    shortName: 'FPTPoly ĐN',
-    code: 'POLY',
-    status: 'active',
-    contactEmail: 'canbo.poly@fpt.edu.vn',
-    contactPhone: '0236 7300 888',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường CĐ FPT Polytechnic Đà Nẵng',
-    memberInstitutionIds: ['inst-cd-fptpoly'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng FPT Polytechnic cơ sở Đà Nẵng.',
-  },
-  {
-    id: 'unit-cd-btec-fpt',
-    officialName: 'Trường Cao đẳng Quốc tế BTEC FPT (Cơ sở Đà Nẵng)',
-    shortName: 'BTEC FPT ĐN',
-    code: 'BTEC-FPT',
-    status: 'active',
-    contactEmail: 'canbo.btec@fe.edu.vn',
-    contactPhone: '0236 730 9268',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường CĐ Quốc tế BTEC FPT Đà Nẵng',
-    memberInstitutionIds: ['inst-cd-btec-fpt'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Quốc tế BTEC FPT (Cơ sở Đà Nẵng).',
-  },
-  {
-    id: 'unit-cd-nghe-dn',
-    officialName: 'Trường Cao đẳng Nghề Đà Nẵng',
-    shortName: 'CĐ Nghề ĐN',
-    code: 'DANAVTC',
-    status: 'active',
-    contactEmail: 'canbo.danavtc@danavtc.edu.vn',
-    contactPhone: '0236 3940 946',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường Cao đẳng Nghề Đà Nẵng',
-    memberInstitutionIds: ['inst-cd-nghe-dn'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Nghề Đà Nẵng.',
-  },
-  {
     id: 'unit-cd-gtvt-tw5',
     officialName: 'Trường Cao đẳng Giao thông Vận tải Trung ương V',
     shortName: 'CĐ GTVT TW5',
@@ -403,57 +274,45 @@ export const AUTHORITATIVE_SCHOOL_REVIEW_UNITS: SchoolReviewUnit[] = [
     status: 'active',
     contactEmail: 'canbo.c5@c5.edu.vn',
     contactPhone: '0236 3842 266',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường CĐ GTVT Trung ương V',
+    unitOfficerName: 'Cán bộ xét cấp trường Trường Cao đẳng Giao thông Vận tải Trung ương V',
     memberInstitutionIds: ['inst-cd-gtvt-tw5'],
     description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Giao thông Vận tải Trung ương V.',
   },
   {
-    id: 'unit-cd-kinhte-kh',
-    officialName: 'Trường Cao đẳng Kinh tế - Kế hoạch Đà Nẵng',
-    shortName: 'CĐ Kinh tế - KH',
-    code: 'CEP',
+    id: 'unit-cd-phuongdong-dn',
+    officialName: 'Trường Cao đẳng Phương Đông',
+    shortName: 'CĐ Phương Đông',
+    code: 'CDPD',
     status: 'active',
-    contactEmail: 'canbo.cep@cep.edu.vn',
-    contactPhone: '0236 3842 062',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường CĐ Kinh tế - Kế hoạch Đà Nẵng',
-    memberInstitutionIds: ['inst-cd-kinhte-kh'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Kinh tế - Kế hoạch Đà Nẵng.',
-  },
-  {
-    id: 'unit-cd-vhtt-dl',
-    officialName: 'Trường Cao đẳng Văn hóa Nghệ thuật Đà Nẵng',
-    shortName: 'CĐ VHNT',
-    code: 'CDVHNT',
-    status: 'active',
-    contactEmail: 'canbo.vhnt@vhntdn.edu.vn',
-    contactPhone: '0236 3840 215',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường CĐ Văn hóa Nghệ thuật Đà Nẵng',
-    memberInstitutionIds: ['inst-cd-vhtt-dl'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Văn hóa Nghệ thuật Đà Nẵng.',
+    contactEmail: 'canbo.cdpd@cdpd.edu.vn',
+    contactPhone: '0236 3893 823',
+    unitOfficerName: 'Cán bộ xét cấp trường Trường Cao đẳng Phương Đông',
+    memberInstitutionIds: ['inst-cd-phuongdong-dn'],
+    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Phương Đông.',
   },
   {
     id: 'unit-cd-luongthuc',
-    officialName: 'Trường Cao đẳng Lương thực - Thực phẩm',
+    officialName: 'Trường Cao đẳng Lương thực Thực phẩm',
     shortName: 'CĐ LTTP',
     code: 'CFIT',
     status: 'active',
     contactEmail: 'canbo.cfit@cfit.edu.vn',
     contactPhone: '0236 3831 228',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường CĐ Lương thực - Thực phẩm',
+    unitOfficerName: 'Cán bộ xét cấp trường Trường Cao đẳng Lương thực Thực phẩm',
     memberInstitutionIds: ['inst-cd-luongthuc'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Lương thực - Thực phẩm.',
+    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Lương thực Thực phẩm.',
   },
   {
-    id: 'unit-cd-bachkhoa-dn',
-    officialName: 'Trường Cao đẳng Bách khoa Đà Nẵng',
-    shortName: 'CĐ Bách khoa ĐN',
-    code: 'CDBK',
+    id: 'unit-cd-congnghe',
+    officialName: 'Trường Cao đẳng Công nghệ Y – Dược Việt Nam',
+    shortName: 'CĐ CN Y Dược VN',
+    code: 'YDVN',
     status: 'active',
-    contactEmail: 'canbo.cdbk@bachkhoadanang.edu.vn',
-    contactPhone: '0236 3640 666',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường Cao đẳng Bách khoa Đà Nẵng',
-    memberInstitutionIds: ['inst-cd-bachkhoa-dn'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Bách khoa Đà Nẵng.',
+    contactEmail: 'canbo.ydvn@ydvn.edu.vn',
+    contactPhone: '0236 3888 333',
+    unitOfficerName: 'Cán bộ xét cấp trường Trường Cao đẳng Công nghệ Y – Dược Việt Nam',
+    memberInstitutionIds: ['inst-cd-congnghe'],
+    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Công nghệ Y – Dược Việt Nam.',
   },
   {
     id: 'unit-cd-daiviet-dn',
@@ -468,137 +327,40 @@ export const AUTHORITATIVE_SCHOOL_REVIEW_UNITS: SchoolReviewUnit[] = [
     description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Đại Việt Đà Nẵng.',
   },
   {
-    id: 'unit-cd-phuongdong-dn',
-    officialName: 'Trường Cao đẳng Phương Đông Đà Nẵng',
-    shortName: 'CĐ Phương Đông ĐN',
-    code: 'CDPD',
-    status: 'active',
-    contactEmail: 'canbo.cdpd@cdpd.edu.vn',
-    contactPhone: '0236 3893 823',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường Cao đẳng Phương Đông Đà Nẵng',
-    memberInstitutionIds: ['inst-cd-phuongdong-dn'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Phương Đông Đà Nẵng.',
-  },
-  {
-    id: 'unit-cd-lacviet',
-    officialName: 'Trường Cao đẳng Lạc Việt',
-    shortName: 'CĐ Lạc Việt',
-    code: 'LACVIET',
-    status: 'active',
-    contactEmail: 'canbo.lacviet@lacviet.edu.vn',
-    contactPhone: '0236 3553 111',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường Cao đẳng Lạc Việt',
-    memberInstitutionIds: ['inst-cd-lacviet'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Lạc Việt.',
-  },
-  {
-    id: 'unit-cd-ptth',
-    officialName: 'Trường Cao đẳng Phát thanh - Truyền hình II (Cơ sở Đà Nẵng)',
-    shortName: 'CĐ PT-TH II',
-    code: 'VOV2',
-    status: 'active',
-    contactEmail: 'canbo.vov2@vov.edu.vn',
-    contactPhone: '0236 3821 543',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường CĐ Phát thanh - Truyền hình II',
-    memberInstitutionIds: ['inst-cd-ptth'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Phát thanh - Truyền hình II (Cơ sở Đà Nẵng).',
-  },
-  {
-    id: 'unit-cd-supham-maugiao',
-    officialName: 'Trường Cao đẳng Sư phạm Trung ương Nha Trang (Cơ sở Đà Nẵng)',
-    shortName: 'CĐ SPTW',
-    code: 'CDSPTW',
-    status: 'active',
-    contactEmail: 'canbo.cdsptw@edu.vn',
-    contactPhone: '0236 3847 213',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường CĐ Sư phạm Trung ương Nha Trang',
-    memberInstitutionIds: ['inst-cd-supham-maugiao'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Sư phạm Trung ương Nha Trang (Cơ sở Đà Nẵng).',
-  },
-  {
-    id: 'unit-cd-yduoc-pasteur',
-    officialName: 'Trường Cao đẳng Y Dược Pasteur Đà Nẵng',
-    shortName: 'CĐ Pasteur ĐN',
-    code: 'PASTEUR',
-    status: 'active',
-    contactEmail: 'canbo.pasteur@pasteur.edu.vn',
-    contactPhone: '0236 3887 777',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường Cao đẳng Y Dược Pasteur Đà Nẵng',
-    memberInstitutionIds: ['inst-cd-yduoc-pasteur'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Y Dược Pasteur Đà Nẵng.',
-  },
-  // Khu vực Quảng Nam (Sáp nhập địa giới hành chính Thành phố Đà Nẵng)
-  {
-    id: 'unit-dqu',
-    officialName: 'Trường Đại học Quảng Nam',
-    shortName: 'ĐH Quảng Nam',
-    code: 'DQU',
-    status: 'active',
-    contactEmail: 'canbo.dqu@dqu.edu.vn',
-    contactPhone: '0235 3812 834',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường Đại học Quảng Nam',
-    memberInstitutionIds: ['inst-dqu'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Đại học Quảng Nam.',
-  },
-  {
-    id: 'unit-pctu',
-    officialName: 'Trường Đại học Phan Châu Trinh',
-    shortName: 'ĐH Phan Châu Trinh',
-    code: 'PCTU',
-    status: 'active',
-    contactEmail: 'canbo.pctu@pctu.edu.vn',
-    contactPhone: '0235 3757 959',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường Đại học Phan Châu Trinh',
-    memberInstitutionIds: ['inst-pctu'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Đại học Phan Châu Trinh.',
-  },
-  {
-    id: 'unit-cd-quangnam',
-    officialName: 'Trường Cao đẳng Quảng Nam',
-    shortName: 'CĐ Quảng Nam',
-    code: 'CDQN',
-    status: 'active',
-    contactEmail: 'canbo.cdqn@cdqnam.edu.vn',
-    contactPhone: '0235 3851 446',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường Cao đẳng Quảng Nam',
-    memberInstitutionIds: ['inst-cd-quangnam'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Quảng Nam.',
-  },
-  {
-    id: 'unit-cd-dienluc-mt',
-    officialName: 'Trường Cao đẳng Điện lực Miền Trung',
-    shortName: 'CĐ Điện lực MT',
-    code: 'CEPC',
-    status: 'active',
-    contactEmail: 'canbo.cepc@cepc.edu.vn',
-    contactPhone: '0235 3861 245',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường Cao đẳng Điện lực Miền Trung',
-    memberInstitutionIds: ['inst-cd-dienluc-mt'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Điện lực Miền Trung.',
-  },
-  {
     id: 'unit-cd-kinhte-thuyloi-mt',
-    officialName: 'Trường Cao đẳng Công nghệ Kinh tế và Thủy lợi Miền Trung',
+    officialName: 'Trường Cao đẳng Kinh tế Công nghệ và Thủy lợi Miền Trung',
     shortName: 'CĐ KT-TL Miền Trung',
     code: 'CCTW',
     status: 'active',
     contactEmail: 'canbo.cctw@cctw.edu.vn',
     contactPhone: '0235 3861 312',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường CĐ Công nghệ Kinh tế và Thủy lợi Miền Trung',
+    unitOfficerName: 'Cán bộ xét cấp trường Trường Cao đẳng Kinh tế Công nghệ và Thủy lợi Miền Trung',
     memberInstitutionIds: ['inst-cd-kinhte-thuyloi-mt'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Công nghệ Kinh tế và Thủy lợi Miền Trung.',
+    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng Kinh tế Công nghệ và Thủy lợi Miền Trung.',
   },
   {
-    id: 'unit-cd-thaco',
-    officialName: 'Trường Cao đẳng THACO',
-    shortName: 'CĐ THACO',
-    code: 'THACO',
+    id: 'unit-muce-dn',
+    officialName: 'Phân hiệu Trường Đại học Xây dựng Miền Trung tại TP. Đà Nẵng',
+    shortName: 'ĐH XD Miền Trung - ĐN',
+    code: 'MUCE-DN',
     status: 'active',
-    contactEmail: 'canbo.thaco@thacocollege.edu.vn',
-    contactPhone: '0235 3567 111',
-    unitOfficerName: 'Cán bộ xét cấp trường Trường Cao đẳng THACO',
-    memberInstitutionIds: ['inst-cd-thaco'],
-    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Trường Cao đẳng THACO.',
+    contactEmail: 'canbo.muce@muce.edu.vn',
+    contactPhone: '0236 3842 100',
+    unitOfficerName: 'Cán bộ xét cấp trường Phân hiệu Trường Đại học Xây dựng Miền Trung tại TP. Đà Nẵng',
+    memberInstitutionIds: ['inst-muce-dn'],
+    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Phân hiệu Trường Đại học Xây dựng Miền Trung tại TP. Đà Nẵng.',
+  },
+  {
+    id: 'unit-apd-dn',
+    officialName: 'Học viện Chính sách và Phát triển - Phân hiệu TP. Đà Nẵng',
+    shortName: 'HV CS&PT - ĐN',
+    code: 'APD-DN',
+    status: 'active',
+    contactEmail: 'canbo.apd@apd.edu.vn',
+    contactPhone: '0236 3842 200',
+    unitOfficerName: 'Cán bộ xét cấp trường Học viện Chính sách và Phát triển - Phân hiệu TP. Đà Nẵng',
+    memberInstitutionIds: ['inst-apd-dn'],
+    description: 'Đơn vị xét sơ tuyển độc lập cho sinh viên Học viện Chính sách và Phát triển - Phân hiệu TP. Đà Nẵng.',
   },
 ];
 
@@ -608,8 +370,8 @@ export const AUTHORITATIVE_SCHOOL_REVIEW_UNITS: SchoolReviewUnit[] = [
 
 /**
  * Mapping dứt khoát từ Training Institution ID -> School Review Unit ID
- * - 08 trường/viện thành viên ĐHĐN -> Định tuyến chung về 'unit-udn'
- * - 37 cơ sở đào tạo độc lập tại Đà Nẵng & Quảng Nam -> Tự đảm nhận xét sơ tại đơn vị riêng
+ * - 08 trường/viện/phân hiệu thành viên ĐHĐN -> Định tuyến chung về 'unit-udn'
+ * - 17 cơ sở đào tạo độc lập -> Tự đảm nhận xét sơ tại đơn vị riêng
  */
 export const INSTITUTION_TO_SCHOOL_REVIEW_UNIT_MAP: Record<string, SchoolReviewUnitId> = {
   // Thành viên Đại học Đà Nẵng -> Định tuyến về 'unit-udn'
@@ -620,47 +382,29 @@ export const INSTITUTION_TO_SCHOOL_REVIEW_UNIT_MAP: Record<string, SchoolReviewU
   'inst-ufls': 'unit-udn',
   'inst-ute': 'unit-udn',
   'inst-vku': 'unit-udn',
-  'inst-smp': 'unit-udn',
   'inst-vnuk': 'unit-udn',
+  'inst-udck': 'unit-udn',
+  'inst-smp': 'unit-udn',
 
-  // Các cơ sở đào tạo độc lập trên địa bàn TP. Đà Nẵng (bao gồm khu vực Quảng Nam)
+  // 17 cơ sở đào tạo độc lập thuộc danh sách chính thức
   'inst-dtu': 'unit-dtu',
-  'inst-donga': 'unit-donga',
-  'inst-dau': 'unit-dau',
-  'inst-upes3': 'unit-upes3',
+  'inst-dqu': 'unit-dqu',
   'inst-tyd': 'unit-tyd',
-  'inst-fpt': 'unit-fpt',
-  'inst-greenwich-dn': 'unit-greenwich-dn',
-  'inst-auv': 'unit-auv',
-  'inst-dh-ngan-hang-dn': 'unit-dh-ngan-hang-dn',
-  'inst-dh-luat-hanoi-dn': 'unit-dh-luat-hanoi-dn',
-  'inst-dh-mo-hn-dn': 'unit-dh-mo-hn-dn',
-  'inst-hv-chinhtri-kv3': 'unit-hv-chinhtri-kv3',
-  'inst-hv-hanhchinh-dn': 'unit-hv-hanhchinh-dn',
-  'inst-hv-toa-an': 'unit-hv-toa-an',
+  'inst-upes3': 'unit-upes3',
+  'inst-dau': 'unit-dau',
+  'inst-donga': 'unit-donga',
+  'inst-cddn': 'unit-cddn',
+  'inst-cd-nghe-dn': 'unit-cddn',
   'inst-cd-thuongmai': 'unit-cd-thuongmai',
   'inst-cd-dulich': 'unit-cd-dulich',
-  'inst-cd-congnghe': 'unit-cd-congnghe',
-  'inst-cd-fptpoly': 'unit-cd-fptpoly',
-  'inst-cd-btec-fpt': 'unit-cd-btec-fpt',
-  'inst-cd-nghe-dn': 'unit-cd-nghe-dn',
   'inst-cd-gtvt-tw5': 'unit-cd-gtvt-tw5',
-  'inst-cd-kinhte-kh': 'unit-cd-kinhte-kh',
-  'inst-cd-vhtt-dl': 'unit-cd-vhtt-dl',
-  'inst-cd-luongthuc': 'unit-cd-luongthuc',
-  'inst-cd-bachkhoa-dn': 'unit-cd-bachkhoa-dn',
-  'inst-cd-daiviet-dn': 'unit-cd-daiviet-dn',
   'inst-cd-phuongdong-dn': 'unit-cd-phuongdong-dn',
-  'inst-cd-lacviet': 'unit-cd-lacviet',
-  'inst-cd-ptth': 'unit-cd-ptth',
-  'inst-cd-supham-maugiao': 'unit-cd-supham-maugiao',
-  'inst-cd-yduoc-pasteur': 'unit-cd-yduoc-pasteur',
-  'inst-dqu': 'unit-dqu',
-  'inst-pctu': 'unit-pctu',
-  'inst-cd-quangnam': 'unit-cd-quangnam',
-  'inst-cd-dienluc-mt': 'unit-cd-dienluc-mt',
+  'inst-cd-luongthuc': 'unit-cd-luongthuc',
+  'inst-cd-congnghe': 'unit-cd-congnghe',
+  'inst-cd-daiviet-dn': 'unit-cd-daiviet-dn',
   'inst-cd-kinhte-thuyloi-mt': 'unit-cd-kinhte-thuyloi-mt',
-  'inst-cd-thaco': 'unit-cd-thaco',
+  'inst-muce-dn': 'unit-muce-dn',
+  'inst-apd-dn': 'unit-apd-dn',
 };
 
 const LEGACY_UDN_MEMBER_UNIT_IDS = new Set<string>([
@@ -673,6 +417,8 @@ const LEGACY_UDN_MEMBER_UNIT_IDS = new Set<string>([
   'unit-vku',
   'unit-smp',
   'unit-vnuk',
+  'unit-udck',
+  'unit-kontum',
 ]);
 
 /**
@@ -681,6 +427,9 @@ const LEGACY_UDN_MEMBER_UNIT_IDS = new Set<string>([
 export function normalizeLegacySchoolReviewUnitId(unitId: string): SchoolReviewUnitId {
   if (LEGACY_UDN_MEMBER_UNIT_IDS.has(unitId)) {
     return 'unit-udn';
+  }
+  if (unitId === 'unit-cd-nghe-dn') {
+    return 'unit-cddn';
   }
   return unitId as SchoolReviewUnitId;
 }

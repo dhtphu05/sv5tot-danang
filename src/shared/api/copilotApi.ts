@@ -129,13 +129,52 @@ export interface DeclarationQuickOcrInsight {
   aiSource: 'openai' | 'rule_engine';
 }
 
-// Client-side caches for instant 0ms rendering
+// Client-side caches for instant 0ms rendering + localStorage persistence across student/officer views
+const OCR_STORAGE_KEY = '5tot_ocr_extractions_v2';
 const analysisCache = new Map<string, CopilotScopeAnalysisResponse>();
 const ocrExtractionCache = new Map<string, OcrEvidenceExtractionResult>();
+const inFlightOcrIds = new Set<string>();
 const listeners = new Set<() => void>();
+let serverCacheHydrated = false;
+
+function loadOcrCacheFromStorage(): void {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    const raw = window.localStorage.getItem(OCR_STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw) as Record<string, OcrEvidenceExtractionResult>;
+    if (parsed && typeof parsed === 'object') {
+      for (const [evId, ext] of Object.entries(parsed)) {
+        if (ext && ext.evidenceId) {
+          ocrExtractionCache.set(evId, ext);
+        }
+      }
+    }
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function saveOcrCacheToStorage(): void {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    const obj: Record<string, OcrEvidenceExtractionResult> = {};
+    for (const [evId, ext] of ocrExtractionCache.entries()) {
+      obj[evId] = ext;
+    }
+    window.localStorage.setItem(OCR_STORAGE_KEY, JSON.stringify(obj));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+loadOcrCacheFromStorage();
 
 export function subscribeCopilotOcrUpdates(listener: () => void): () => void {
   listeners.add(listener);
+  if (!serverCacheHydrated) {
+    void hydrateCopilotOcrCacheFromServer();
+  }
   return () => listeners.delete(listener);
 }
 
@@ -149,6 +188,43 @@ function notifyOcrListeners(): void {
   }
 }
 
+export function isEvidenceOcrInFlight(evidenceId: string): boolean {
+  return inFlightOcrIds.has(evidenceId);
+}
+
+export function getExactEvidenceOcrResult(evidenceId: string): OcrEvidenceExtractionResult | undefined {
+  return ocrExtractionCache.get(evidenceId);
+}
+
+export async function hydrateCopilotOcrCacheFromServer(): Promise<void> {
+  if (serverCacheHydrated) return;
+  serverCacheHydrated = true;
+  try {
+    const response = await fetch(`${getApiBaseUrl()}/api/v2/copilot/ocr-cache`);
+    if (!response.ok) return;
+    const data = await response.json();
+    const extractions = data?.extractions as Record<string, OcrEvidenceExtractionResult> | undefined;
+    if (extractions && typeof extractions === 'object') {
+      let updated = false;
+      for (const [evId, ext] of Object.entries(extractions)) {
+        if (ext && ext.evidenceId) {
+          const current = ocrExtractionCache.get(evId);
+          if (!current || (ext.aiSource === 'openai' && current.aiSource !== 'openai')) {
+            ocrExtractionCache.set(evId, ext);
+            updated = true;
+          }
+        }
+      }
+      if (updated) {
+        saveOcrCacheToStorage();
+        notifyOcrListeners();
+      }
+    }
+  } catch {
+    // ignore network errors during background cache hydration
+  }
+}
+
 export function buildLocalFallbackOcr(params: {
   evidenceId: string;
   fileName: string;
@@ -157,74 +233,23 @@ export function buildLocalFallbackOcr(params: {
   criterionId?: string;
   studentName?: string;
 }): OcrEvidenceExtractionResult {
-  const lowerName = (params.fileName || '').toLowerCase();
-  const lowerContext = `${params.declaredValue || ''} ${params.requirementTitle || ''} ${params.criterionId || ''}`.toLowerCase();
-
-  let documentType = 'Văn bản xác nhận minh chứng';
-  let issuingAuthority = 'Đơn vị đào tạo / Tổ chức Đoàn - Hội có thẩm quyền';
-  let extractedValue = params.declaredValue || params.requirementTitle || 'Thông tin khớp minh chứng';
-  let hasRedStampOrSignature: OcrEvidenceExtractionResult['hasRedStampOrSignature'] = 'verified';
-  let matchWithDeclaration: OcrEvidenceExtractionResult['matchWithDeclaration'] = 'matched';
-  let discrepancyNote: string | undefined;
-
-  if (lowerName.includes('bang_diem') || lowerName.includes('bangdiem') || lowerName.includes('gpa') || lowerContext.includes('gpa') || lowerContext.includes('học tập')) {
-    documentType = 'Bảng điểm học tập năm học';
-    issuingAuthority = 'Phòng Đào tạo Nhà trường';
-  } else if (lowerName.includes('ren_luyen') || lowerName.includes('drl') || lowerContext.includes('rèn luyện')) {
-    documentType = 'Bảng kết quả đánh giá điểm rèn luyện';
-    issuingAuthority = 'Hội đồng Đánh giá Rèn luyện Sinh viên';
-  } else if (lowerName.includes('ielts') || lowerName.includes('toeic') || lowerName.includes('vstep') || lowerName.includes('b1') || lowerContext.includes('ngoại ngữ')) {
-    documentType = 'Chứng chỉ / Xác nhận năng lực ngoại ngữ';
-    issuingAuthority = 'Đơn vị khảo thí / cấp chứng chỉ hợp lệ';
-  } else if (lowerName.includes('mhx') || lowerName.includes('muahexanh') || lowerName.includes('tinh_nguyen') || lowerContext.includes('tình nguyện')) {
-    documentType = 'Giấy chứng nhận hoạt động tình nguyện';
-    issuingAuthority = 'BCH Đoàn - Hội Sinh viên Đơn vị';
-    if (
-      lowerName.includes('4ngay') ||
-      lowerName.includes('thieu') ||
-      params.evidenceId.includes('mhx') ||
-      (params.declaredValue?.includes('5 ngày') && lowerName.includes('mua_he_xanh'))
-    ) {
-      extractedValue = 'Xác nhận tham gia 04 ngày Chiến dịch Mùa hè xanh';
-      matchWithDeclaration = 'mismatch';
-      discrepancyNote = 'Tệp minh chứng ghi nhận 04 ngày tham gia (sinh viên kê khai 05 ngày).';
-    }
-  } else if (lowerName.includes('thanh_nien_khoe') || lowerContext.includes('thể lực') || lowerContext.includes('thanh niên khỏe')) {
-    documentType = 'Giấy chứng nhận Thanh niên khỏe / Giải thể thao';
-    issuingAuthority = 'Ban Tổ chức Hội thao / Hội Sinh viên Trường';
-  } else if (lowerName.includes('518') || lowerName.includes('smartcampus')) {
-    documentType = 'Quyết định khen thưởng NCKH / Học thuật';
-    extractedValue = 'Giải Nhất Cuộc thi BK SmartCampus (QĐ số 518-QĐ/ĐHBK-ĐTN)';
-    issuingAuthority = 'BCH Đoàn Trường ĐH Bách khoa – ĐHĐN';
-  } else if (lowerName.includes('mistalent')) {
-    documentType = 'Giấy chứng nhận Cuộc thi Học thuật';
-    extractedValue = 'Top 15 Cuộc thi Học thuật MIS Talent 2026';
-    issuingAuthority = 'Khoa HTTT Quản lý – ĐH Kinh tế Quốc dân';
-    matchWithDeclaration = 'partial';
-    discrepancyNote = 'Cần kiểm tra quy chuẩn tương đương đối với chứng nhận Top 15 ngoài đơn vị.';
-  }
-
-  if (lowerName.includes('blur') || lowerName.includes('mo_') || lowerName.includes('chua_dau')) {
-    hasRedStampOrSignature = 'unclear';
-    matchWithDeclaration = 'partial';
-    discrepancyNote = 'Ảnh chụp minh chứng chưa rõ mộc dấu xác nhận hoặc bị khuất ngày cấp.';
-  }
-
   return {
     evidenceId: params.evidenceId,
     fileName: params.fileName,
-    isReadable: true,
-    documentType,
-    extractedStudentName: params.studentName || 'Khớp họ tên trên hồ sơ',
-    extractedValue,
-    issuingAuthority,
-    issueDate: 'Năm học 2025–2026',
-    hasRedStampOrSignature,
-    matchWithDeclaration,
-    discrepancyNote,
+    isReadable: false,
+    documentType: 'Tệp minh chứng đính kèm',
+    extractedStudentName: params.studentName || undefined,
+    extractedValue: 'Đang chờ đọc dữ liệu chi tiết từ tệp minh chứng',
+    numericMetric: undefined,
+    issuingAuthority: 'Cần kiểm tra trực tiếp trên tệp minh chứng',
+    issueDate: 'Cần kiểm tra trực tiếp',
+    hasRedStampOrSignature: 'unclear',
+    matchWithDeclaration: 'partial',
+    discrepancyNote:
+      'Cần kiểm tra thêm: Tệp minh chứng đang chờ trích xuất OCR hoặc cần cán bộ kiểm tra trực tiếp trên bản gốc.',
     extractedAt: new Date().toISOString(),
     aiSource: 'rule_engine',
-    modelUsed: 'rule_engine',
+    modelUsed: 'none',
   };
 }
 
@@ -242,6 +267,8 @@ export function getCachedEvidenceOcrSync(params: {
   }
   return buildLocalFallbackOcr(params);
 }
+
+const inFlightPromises = new Map<string, Promise<OcrEvidenceExtractionResult>>();
 
 export async function triggerEvidenceOcr(
   payload: {
@@ -262,42 +289,63 @@ export async function triggerEvidenceOcr(
   forceRefresh = false
 ): Promise<OcrEvidenceExtractionResult> {
   if (!forceRefresh && ocrExtractionCache.has(payload.evidenceId)) {
-    return ocrExtractionCache.get(payload.evidenceId)!;
-  }
-
-  try {
-    const response = await fetch(`${getApiBaseUrl()}/api/v2/copilot/ocr-evidence`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        ...payload,
-        forceRefresh,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+    const existing = ocrExtractionCache.get(payload.evidenceId)!;
+    if (existing.aiSource === 'openai') {
+      return existing;
     }
-
-    const result: OcrEvidenceExtractionResult = await response.json();
-    ocrExtractionCache.set(payload.evidenceId, result);
-    notifyOcrListeners();
-    return result;
-  } catch {
-    const fallback = buildLocalFallbackOcr({
-      evidenceId: payload.evidenceId,
-      fileName: payload.fileName,
-      declaredValue: payload.declaredValue,
-      requirementTitle: payload.requirementTitle,
-      criterionId: payload.criterionId,
-      studentName: payload.studentFullName,
-    });
-    ocrExtractionCache.set(payload.evidenceId, fallback);
-    notifyOcrListeners();
-    return fallback;
   }
+
+  if (!forceRefresh && inFlightPromises.has(payload.evidenceId)) {
+    return inFlightPromises.get(payload.evidenceId)!;
+  }
+
+  inFlightOcrIds.add(payload.evidenceId);
+  notifyOcrListeners();
+
+  const task = (async (): Promise<OcrEvidenceExtractionResult> => {
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/api/v2/copilot/ocr-evidence`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...payload,
+          forceRefresh,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const result: OcrEvidenceExtractionResult = await response.json();
+      inFlightOcrIds.delete(payload.evidenceId);
+      inFlightPromises.delete(payload.evidenceId);
+      ocrExtractionCache.set(payload.evidenceId, result);
+      saveOcrCacheToStorage();
+      notifyOcrListeners();
+      return result;
+    } catch {
+      inFlightOcrIds.delete(payload.evidenceId);
+      inFlightPromises.delete(payload.evidenceId);
+      const fallback = buildLocalFallbackOcr({
+        evidenceId: payload.evidenceId,
+        fileName: payload.fileName,
+        declaredValue: payload.declaredValue,
+        requirementTitle: payload.requirementTitle,
+        criterionId: payload.criterionId,
+        studentName: payload.studentFullName,
+      });
+      ocrExtractionCache.set(payload.evidenceId, fallback);
+      saveOcrCacheToStorage();
+      notifyOcrListeners();
+      return fallback;
+    }
+  })();
+
+  inFlightPromises.set(payload.evidenceId, task);
+  return task;
 }
 
 export function evaluateDeclarationQuickInsight(params: {
@@ -336,6 +384,7 @@ export function evaluateDeclarationQuickInsight(params: {
 
   const usedOpenAi = extractions.some((e) => e.aiSource === 'openai');
   const primary = extractions[0];
+  const authorityWithDate = `${primary.issuingAuthority}${primary.issueDate ? ` · ${primary.issueDate}` : ''}`;
   const hasMismatch = extractions.some((e) => e.matchWithDeclaration === 'mismatch');
   const hasFlaggedFile = evidenceFiles.some((ev) => ev.status === 'needs_verification');
   const hasPartial =
@@ -347,33 +396,103 @@ export function evaluateDeclarationQuickInsight(params: {
         !e.isReadable
     );
 
-  // Check mandatory GPA / DRL numeric threshold in declaredValue
-  const gpaMatch = (declaredValue || '').match(/(\d+[.,]\d+)\s*\/\s*4/);
-  const gpaVal = gpaMatch ? parseFloat(gpaMatch[1].replace(',', '.')) : undefined;
-  if (criterionId === 'academic' && typeof gpaVal === 'number' && gpaVal < 3.0) {
+  // Because student forms only collect "Tên kê khai" + Evidence File, evaluate thresholds from OCR-extracted metrics & text first.
+  // Never return preliminary_not_meets ("Chưa đạt") — convert any shortfall to insufficient_evidence ("Cần kiểm tra thêm").
+  const combinedSourceText = `${primary.extractedValue || ''} ${declaredValue || ''}`;
+  const lowerContext = `${requirementTitle || ''} ${declaredValue || ''} ${primary.documentType || ''} ${primary.extractedValue || ''}`.toLowerCase();
+
+  // 1. Mandatory Academic GPA Check
+  const gpaMatch = combinedSourceText.match(/(\d+[.,]\d+)\s*\/\s*4/);
+  const gpaVal =
+    typeof primary.numericMetric === 'number' && primary.numericMetric <= 4.0
+      ? primary.numericMetric
+      : gpaMatch
+      ? parseFloat(gpaMatch[1].replace(',', '.'))
+      : undefined;
+  if (
+    criterionId === 'academic' &&
+    (lowerContext.includes('gpa') || lowerContext.includes('điểm trung bình') || lowerContext.includes('bảng điểm')) &&
+    typeof gpaVal === 'number' &&
+    gpaVal < 3.2
+  ) {
+    const reason = `Cần kiểm tra thêm: Điểm GPA đọc sơ bộ từ minh chứng (${gpaVal}/4.0) thấp hơn ngưỡng quy chuẩn (3.2/4.0 hệ Đại học, 3.0/4.0 hệ Cao đẳng) hoặc cần kiểm tra lại bản gốc.`;
     return {
-      status: 'preliminary_not_meets',
-      badgeLabel: 'Chưa đạt (Sơ bộ)',
-      declaredText: declaredValue,
+      status: 'insufficient_evidence',
+      badgeLabel: 'Cần kiểm tra thêm',
+      declaredText: declaredValue || requirementTitle,
       extractedText: `${primary.documentType}: ${primary.extractedValue}`,
-      authorityText: primary.issuingAuthority,
+      authorityText: authorityWithDate,
       stampVerified: primary.hasRedStampOrSignature === 'verified',
-      reasonText: `Điểm GPA (${gpaVal}/4.0) thấp hơn ngưỡng quy chuẩn tối thiểu (3.2/4.0 hệ Đại học).`,
+      reasonText: reason,
+      draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, qua đọc minh chứng tại mục "${declaredValue || requirementTitle}", hệ thống ghi nhận điểm GPA sơ bộ (${gpaVal}/4.0) cần kiểm tra lại so với quy chuẩn. Đề nghị bạn kiểm tra và bổ sung bảng điểm cả năm học rõ nét.`,
       aiSource: usedOpenAi ? 'openai' : 'rule_engine',
     };
+  }
+
+  // 2. Mandatory Ethics Conduct Score Check (>= 80/100)
+  const drlMatch = combinedSourceText.match(/(\d+)\s*\/\s*100/);
+  const drlVal =
+    typeof primary.numericMetric === 'number' && primary.numericMetric > 10 && primary.numericMetric <= 100
+      ? primary.numericMetric
+      : drlMatch
+      ? parseFloat(drlMatch[1])
+      : undefined;
+  if (
+    criterionId === 'ethics' &&
+    (lowerContext.includes('rèn luyện') || lowerContext.includes('đrl')) &&
+    typeof drlVal === 'number' &&
+    drlVal < 80
+  ) {
+    const reason = `Cần kiểm tra thêm: Điểm rèn luyện đọc sơ bộ từ minh chứng (${drlVal}/100) chưa đủ ngưỡng 80/100 điểm hoặc cần kiểm tra lại bản gốc.`;
+    return {
+      status: 'insufficient_evidence',
+      badgeLabel: 'Cần kiểm tra thêm',
+      declaredText: declaredValue || requirementTitle,
+      extractedText: `${primary.documentType}: ${primary.extractedValue}`,
+      authorityText: authorityWithDate,
+      stampVerified: primary.hasRedStampOrSignature === 'verified',
+      reasonText: reason,
+      draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, qua đọc minh chứng tại mục "${declaredValue || requirementTitle}", hệ thống ghi nhận điểm rèn luyện sơ bộ (${drlVal}/100) cần kiểm tra lại so với ngưỡng 80/100 điểm. Đề nghị bạn bổ sung bản xác nhận điểm rèn luyện đầy đủ.`,
+      aiSource: usedOpenAi ? 'openai' : 'rule_engine',
+    };
+  }
+
+  // 3. Volunteer Days Check (>= 5 days cumulative)
+  if (criterionId === 'volunteer' && lowerContext.includes('ngày')) {
+    const totalDays = extractions.reduce((sum, e) => {
+      if (typeof e.numericMetric === 'number' && e.numericMetric > 0 && e.numericMetric <= 365) {
+        return sum + e.numericMetric;
+      }
+      const m = (e.extractedValue || '').match(/(\d+)\s*ngày/i);
+      return sum + (m ? parseInt(m[1], 10) : 0);
+    }, 0);
+    if (totalDays > 0 && totalDays < 5) {
+      const reason = `Cần kiểm tra thêm: Minh chứng xác nhận ${totalDays} ngày tình nguyện (quy chế yêu cầu tích lũy tối thiểu 05 ngày/năm học).`;
+      return {
+        status: 'insufficient_evidence',
+        badgeLabel: 'Cần kiểm tra thêm',
+        declaredText: declaredValue || requirementTitle,
+        extractedText: `${primary.documentType}: ${primary.extractedValue}`,
+        authorityText: authorityWithDate,
+        stampVerified: primary.hasRedStampOrSignature === 'verified',
+        reasonText: reason,
+        draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, qua đọc minh chứng tại mục "${declaredValue || requirementTitle}", hệ thống ghi nhận ${totalDays} ngày tình nguyện (quy chế yêu cầu tối thiểu 05 ngày/năm). Đề nghị bạn bổ sung thêm giấy chứng nhận hoạt động tình nguyện.`,
+        aiSource: usedOpenAi ? 'openai' : 'rule_engine',
+      };
+    }
   }
 
   if (hasMismatch) {
     const mismatchItem = extractions.find((e) => e.matchWithDeclaration === 'mismatch') || primary;
     const reason =
       mismatchItem.discrepancyNote ||
-      'Số liệu đọc từ minh chứng có sự chênh lệch so với nội dung sinh viên kê khai.';
+      'Cần kiểm tra thêm: Số liệu đọc từ minh chứng có sự chênh lệch hoặc cần đối chiếu lại.';
     return {
       status: 'insufficient_evidence',
       badgeLabel: 'Cần kiểm tra thêm',
       declaredText: declaredValue || requirementTitle,
       extractedText: `${mismatchItem.documentType}: ${mismatchItem.extractedValue}`,
-      authorityText: mismatchItem.issuingAuthority,
+      authorityText: `${mismatchItem.issuingAuthority}${mismatchItem.issueDate ? ` · ${mismatchItem.issueDate}` : ''}`,
       stampVerified: mismatchItem.hasRedStampOrSignature === 'verified',
       reasonText: reason,
       draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, qua đối chiếu mục "${declaredValue || requirementTitle}", hệ thống ghi nhận: ${reason} Đề nghị bạn kiểm tra và bổ sung minh chứng xác nhận đầy đủ theo quy chế.`,
@@ -393,7 +512,7 @@ export function evaluateDeclarationQuickInsight(params: {
       badgeLabel: 'Cần kiểm tra thêm',
       declaredText: declaredValue || requirementTitle,
       extractedText: `${partialItem.documentType}: ${partialItem.extractedValue}`,
-      authorityText: partialItem.issuingAuthority,
+      authorityText: `${partialItem.issuingAuthority}${partialItem.issueDate ? ` · ${partialItem.issueDate}` : ''}`,
       stampVerified: partialItem.hasRedStampOrSignature === 'verified',
       reasonText: reason,
       draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, minh chứng tại mục "${declaredValue || requirementTitle}" cần làm rõ thêm dấu xác nhận hoặc quy chuẩn tương đương. Đề nghị bạn bổ sung tài liệu rõ nét hơn.`,
@@ -406,9 +525,9 @@ export function evaluateDeclarationQuickInsight(params: {
     badgeLabel: 'Đạt sơ bộ',
     declaredText: declaredValue || requirementTitle,
     extractedText: `${primary.documentType}: ${primary.extractedValue}`,
-    authorityText: primary.issuingAuthority,
+    authorityText: authorityWithDate,
     stampVerified: true,
-    reasonText: 'Thông tin đọc từ minh chứng khớp với nội dung kê khai và đạt ngưỡng quy chế.',
+    reasonText: 'Thông tin chi tiết bóc tách từ tệp minh chứng hợp lệ và đạt ngưỡng quy chế.',
     aiSource: usedOpenAi ? 'openai' : 'rule_engine',
   };
 }

@@ -529,124 +529,17 @@ export function savePersistedDemoSession(
 }
 
 const LEGACY_MOCK_AND_TEST_APP_IDS = new Set<string>([
-  'APP-2026-DN-102220123',
   'APP-2026-DN-102220999',
   'APP-2026-DN-201122334',
-  'APP-2026-DN-00142',
-  'APP-2026-DN-102220019',
-  'APP-2026-DN-102220055',
-  'APP-2026-DN-102220084',
-  'APP-2026-DN-102220145',
-  'APP-2026-DN-102220301',
-  'APP-2026-DN-18TDTT031',
-  'APP-2026-DN-193230153',
-  'APP-2026-DN-19YDK042',
-  'APP-2026-DN-19YDK077',
-  'APP-2026-DN-2050192',
-  'APP-2026-DN-2050311',
-  'APP-2026-DN-2050445',
-  'APP-2026-DN-2050618',
-  'APP-2026-DN-2150104',
-  'APP-2026-DN-21504119',
-  'APP-2026-DN-2150890',
-  'APP-2026-DN-21KT0115',
-  'APP-2026-DN-21KT081',
-  'APP-2026-DN-21KT105',
-  'APP-2026-DN-21VNUK018',
-  'APP-2026-DN-22010018',
-  'APP-2026-DN-221121004512',
-  'APP-2026-DN-221121008901',
-  'APP-2026-DN-22115053120109',
-  'APP-2026-DN-22BA031',
-  'APP-2026-DN-22DA05112',
-  'APP-2026-DN-22DD0145',
-  'APP-2026-DN-22FPT067',
-  'APP-2026-DN-22IT008',
-  'APP-2026-DN-22IT094',
-  'APP-2026-DN-22IT412',
-  'APP-2026-DN-22KT0241',
-  'APP-2026-DN-22KTR019',
-  'APP-2026-DN-22TDTT088',
-  'APP-2026-DN-22YD015',
-  'APP-2026-DN-22YD042',
-  'APP-2026-DN-27211204567',
-  'APP-2026-DN-27211204912',
-  'APP-2026-DN-27212408831',
-  'APP-2026-DN-282114009',
-  'APP-2026-DN-282114102',
-  'APP-2026-DN-282115088',
-  'APP-2026-DN-312021044',
-  'APP-2026-DN-312021099',
-  'APP-2026-DN-312021210',
-  'APP-2026-DN-312021502',
-  'APP-2026-DN-314220118',
-  'APP-2026-DN-411220056',
-  'APP-2026-DN-471102012',
-  'APP-2026-DN-471102064',
-  'APP-2026-DN-471102088',
-  'APP-2026-DN-471102190',
-  'APP-2026-DN-471102310',
-  'APP-2026-DN-5210094',
-  'APP-2026-DN-5210112',
-  'APP-2026-DN-DA210892',
-  'APP-2026-DN-DA220518',
-  'APP-2026-DN-DE170108',
-  'APP-2026-DN-DE170412',
-  'APP-2026-DN-DE170452',
-  'APP-2026-DN-DE180129',
-  'APP-2026-DN-TD210152',
-  'APP-2026-DN-TD220094',
-  'APP-2026-DN-TD220218',
-  'APP-2026-DN-YD210312',
-  'COL-2026-DN-22TCLC-KTPM',
-  'COL-2026-DN-LCH-CNTT',
-  'COL-2026-DN-CLB-TINHNGUYEN',
-  'COL-2026-DN-21TCLC-DT1',
-  'COL-2026-DN-MVPM6A7N',
-  'COL-2026-DN-MVPM6BWD',
-  'COL-2026-DN-MVPO9W6K',
-  'COL-2026-DN-MVT5O4PK',
-  'COL-2026-DN-MVPO9ZFC',
-  'COL-2026-DN-MVPO9XW1',
-  'COL-2026-DN-MVPM6DI5',
-  'COL-2026-DN-MVR6LAXP',
+  'APP-2026-DN-999000111',
+  'APP-2026-DN-HISTORICAL-01',
+  'col-app-2026-dut-01',
+  'col-app-2026-due-01',
+  'col-app-2026-ued-01',
+  'col-app-2026-vku-01',
 ]);
 
-const EXCLUDED_OUT_OF_CITY_IDS = new Set<string>([
-  'inst-kontum',
-  'unit-kontum',
-]);
-
-export function isNonUdnInstitutionRecord(rec?: Record<string, any> | null): boolean {
-  if (!rec || typeof rec !== 'object') return false;
-  const rawIds = [
-    rec.institution?.id,
-    rec.institutionId,
-    rec.schoolReviewUnitId,
-    rec.applicantProfileSnapshot?.institutionId,
-    rec.schoolReviewSummary?.schoolReviewUnitId,
-  ];
-  for (const id of rawIds) {
-    if (typeof id === 'string' && EXCLUDED_OUT_OF_CITY_IDS.has(id.trim().toLowerCase())) {
-      return true;
-    }
-  }
-  const rawNames = [
-    rec.institution?.officialName,
-    rec.institutionName,
-    rec.trainingInstitutionName,
-    rec.schoolReviewUnitName,
-    rec.student?.university,
-    rec.applicantProfileSnapshot?.institutionName,
-  ];
-  for (const name of rawNames) {
-    if (typeof name === 'string' && name.trim()) {
-      const lower = name.trim().toLowerCase();
-      if (lower.includes('kon tum')) {
-        return true;
-      }
-    }
-  }
+export function isNonUdnInstitutionRecord(_rec?: Record<string, any> | null): boolean {
   return false;
 }
 
@@ -764,8 +657,7 @@ export function loadPersistedStaffApplications<T>(): T | null {
       return parsed.filter(
         (item: Record<string, any>) =>
           !isLegacyMockOrTestAppId(item?.applicationId) &&
-          !isNonUdnInstitutionRecord(item) &&
-          item?.schoolPreliminaryStatus !== 'school_not_submitted'
+          !isNonUdnInstitutionRecord(item)
       ) as unknown as T;
     }
     return parsed as T;

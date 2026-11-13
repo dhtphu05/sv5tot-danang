@@ -344,7 +344,7 @@ export function registerIndividualStudentPortalRoutes(
       { skipSaveIfUnchanged: true }
     );
     syncStaffRecordFromStudentApplication(merged, {
-      createIfMissing: !isDraftStudentAppStatus(merged.status, merged.schoolPreliminaryStatus),
+      createIfMissing: true,
     });
     savePortalStateToDisk();
 
@@ -484,7 +484,7 @@ export function registerIndividualStudentPortalRoutes(
       email: created.student.email,
     });
     syncStaffRecordFromStudentApplication(created, {
-      createIfMissing: !isDraftStudentAppStatus(created.status, created.schoolPreliminaryStatus),
+      createIfMissing: true,
     });
     savePortalStateToDisk();
 
@@ -657,8 +657,13 @@ export function registerIndividualStudentPortalRoutes(
       }
     }
 
+    const mappedDeclUnit = resolveSchoolMappingForApp(app);
+    if (!app.schoolReviewUnitId) app.schoolReviewUnitId = mappedDeclUnit.unitId;
+    if (!app.schoolReviewUnitName) app.schoolReviewUnitName = mappedDeclUnit.unitName;
+    if (!app.trainingInstitutionName) app.trainingInstitutionName = mappedDeclUnit.instName;
+
     portalState.studentApplications[id] = app;
-    syncStaffRecordFromStudentApplication(app, { createIfMissing: false });
+    syncStaffRecordFromStudentApplication(app, { createIfMissing: true });
     savePortalStateToDisk();
 
     appendPortalAuditLog({

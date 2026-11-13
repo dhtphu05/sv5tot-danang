@@ -62,18 +62,6 @@ export function subscribeToCollectiveStore(listener: StoreListener): () => void 
 }
 
 const LEGACY_MOCK_COLLECTIVE_IDS = new Set<string>([
-  'COL-2026-DN-22TCLC-KTPM',
-  'COL-2026-DN-LCH-CNTT',
-  'COL-2026-DN-CLB-TINHNGUYEN',
-  'COL-2026-DN-21TCLC-DT1',
-  'COL-2026-DN-MVPM6A7N',
-  'COL-2026-DN-MVPM6BWD',
-  'COL-2026-DN-MVPO9W6K',
-  'COL-2026-DN-MVT5O4PK',
-  'COL-2026-DN-MVPO9ZFC',
-  'COL-2026-DN-MVPO9XW1',
-  'COL-2026-DN-MVPM6DI5',
-  'COL-2026-DN-MVR6LAXP',
   'col-app-2026-dut-cntt',
   'col-app-2026-due-qt',
   'col-app-2026-ued-sp',
@@ -90,16 +78,7 @@ function isLegacyMockCollectiveId(id?: string | null): boolean {
   return LEGACY_MOCK_COLLECTIVE_IDS.has(clean);
 }
 
-function isNonUdnCollectiveApp(app?: CollectiveApplication | null): boolean {
-  if (!app) return false;
-  const instId = String(app.institutionId || '').trim().toLowerCase();
-  if (instId === 'inst-kontum' || instId === 'unit-kontum') {
-    return true;
-  }
-  const instName = String(app.institutionName || '').trim().toLowerCase();
-  if (instName.includes('kon tum')) {
-    return true;
-  }
+function isNonUdnCollectiveApp(_app?: CollectiveApplication | null): boolean {
   return false;
 }
 

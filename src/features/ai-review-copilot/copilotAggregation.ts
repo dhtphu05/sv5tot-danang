@@ -15,6 +15,7 @@
 
 import { CriterionId } from '../../types/application';
 import { isBackendMode } from '../../shared/config/executionMode';
+import { evaluateDeclarationQuickInsight } from '../../shared/api/copilotApi';
 import {
   AiFinding,
   AiEvidenceInsight,
@@ -475,11 +476,26 @@ export function evaluateCriterionPreliminaryAssessment(
       : [];
     let declCount = 0;
     let evCount = 0;
+    let firstInsufficientReason = '';
+
     for (const r of reqs) {
       const decls = r.declarations || [];
       declCount += decls.length;
       for (const d of decls) {
-        evCount += (d.evidence?.length || d.evidenceFiles?.length || 0);
+        const files = d.evidenceFiles || d.evidence || [];
+        evCount += files.length;
+        const insight = evaluateDeclarationQuickInsight({
+          criterionId,
+          requirementTitle: r.title || meta.name,
+          declaredValue: d.value || r.title || meta.name,
+          evidenceFiles: files,
+        });
+        if (insight.status !== 'preliminary_meets') {
+          if (!firstInsufficientReason) firstInsufficientReason = insight.reasonText;
+          insufficientReqs.push(r.title || meta.name);
+        } else {
+          supportedReqs.push(r.title || meta.name);
+        }
       }
     }
     if (declCount === 0 || evCount === 0) {
@@ -490,11 +506,15 @@ export function evaluateCriterionPreliminaryAssessment(
           : `Tiêu chí 0${meta.number}: Chưa có tệp minh chứng đính kèm.`;
       detail = 'Cần bổ sung nội dung kê khai hoặc tài liệu minh chứng hợp lệ trước khi kết luận.';
       insufficientReqs.push(meta.name);
+    } else if (firstInsufficientReason) {
+      verdict = 'insufficient_evidence';
+      headline = firstInsufficientReason;
+      detail = 'Cần cán bộ kiểm tra thêm hoặc yêu cầu sinh viên bổ sung minh chứng.';
     } else {
       verdict = 'preliminary_meets';
-      headline = `Tiêu chí 0${meta.number}: Đã ghi nhận ${declCount} kê khai và ${evCount} tệp minh chứng đính kèm.`;
-      detail = 'Các nội dung kê khai đã có tệp minh chứng đính kèm để cán bộ đối soát.';
-      supportedReqs.push(meta.name);
+      headline = `Tiêu chí 0${meta.number}: Đã đối chiếu ${declCount} kê khai và ${evCount} tệp minh chứng khớp quy chế.`;
+      detail = 'Các nội dung kê khai đã có tệp minh chứng hợp lệ và đạt ngưỡng sơ bộ.';
+      if (supportedReqs.length === 0) supportedReqs.push(meta.name);
     }
   } else {
     // Everything consistent

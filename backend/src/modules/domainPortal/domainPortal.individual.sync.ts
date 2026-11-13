@@ -110,10 +110,22 @@ export function resolveSchoolMappingForApp(app: Record<string, any>): {
 
 export function isDraftStudentAppStatus(
   status?: string | null,
-  schoolPreliminaryStatus?: string | null
+  schoolPreliminaryStatus?: string | null,
+  submittedAt?: string | null
 ): boolean {
+  if (submittedAt && String(submittedAt).trim() !== '') {
+    return false;
+  }
   const s = String(status || '').trim();
   const sp = String(schoolPreliminaryStatus || '').trim();
+  if (
+    sp &&
+    sp !== 'school_not_submitted' &&
+    sp !== 'NOT_SUBMITTED' &&
+    sp !== 'draft'
+  ) {
+    return false;
+  }
   if (
     !s ||
     s === 'draft' ||
@@ -233,24 +245,30 @@ export function syncStaffRecordFromStudentApplication(
   app.trainingInstitutionName = app.trainingInstitutionName || mapped.instName;
 
   const nowFormatted = new Date().toLocaleDateString('vi-VN');
+  const hasSubmittedTimestamp = Boolean(app.submittedAt || app.submittedToSchoolAt);
+  const hasDeclaredContent = totalDecl > 0 || totalEv > 0;
   const isDraftApp =
     !options?.markSubmitted &&
-    isDraftStudentAppStatus(app.status, app.schoolPreliminaryStatus);
+    !hasSubmittedTimestamp &&
+    !hasDeclaredContent &&
+    isDraftStudentAppStatus(app.status, app.schoolPreliminaryStatus, app.submittedAt || app.submittedToSchoolAt);
+  const normalizedSchoolPrelim =
+    !app.schoolPreliminaryStatus || app.schoolPreliminaryStatus === 'school_not_submitted'
+      ? 'pending_intake'
+      : app.schoolPreliminaryStatus;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const staffRec: Record<string, any> = {
     ...(existing || {
       applicationId: appId,
       schoolYear: app.season || 'Năm học 2025–2026',
       levelLabel: app.level || 'Cấp Thành phố Đà Nẵng',
-      submittedAt: isDraftApp ? '' : app.submittedAt || nowFormatted,
+      submittedAt: app.submittedAt || app.submittedToSchoolAt || nowFormatted,
       submittedDateSortKey: new Date().toISOString(),
       internalDeadline: '10/11/2026',
       eligibilityStatus: 'verified',
       eligibilityLabel: 'Đủ điều kiện nộp hồ sơ',
       currentReviewStage: app.reviewStage || 'SCHOOL',
-      schoolPreliminaryStatus: isDraftApp
-        ? 'school_not_submitted'
-        : app.schoolPreliminaryStatus || 'pending_intake',
+      schoolPreliminaryStatus: normalizedSchoolPrelim,
       schoolRecommendation: app.schoolRecommendation || 'pending',
       workflowStatus: 'unassigned',
       assignment: null,
@@ -286,6 +304,10 @@ export function syncStaffRecordFromStudentApplication(
     updatedSortKey: Date.now(),
   };
 
+  if (staffRec.schoolPreliminaryStatus === 'school_not_submitted') {
+    staffRec.schoolPreliminaryStatus = 'pending_intake';
+  }
+
   if (options?.markSubmitted) {
     staffRec.currentReviewStage = 'SCHOOL';
     staffRec.schoolPreliminaryStatus = 'pending_intake';
@@ -318,11 +340,8 @@ export function ensureAllSubmittedApplicationsHaveStaffRecords(): void {
         return false;
       }
       if (r?.schoolPreliminaryStatus === 'school_not_submitted') {
-        return false;
-      }
-      const stuApp = portalState.studentApplications[r?.applicationId];
-      if (stuApp && isDraftStudentAppStatus(stuApp.status, stuApp.schoolPreliminaryStatus)) {
-        return false;
+        r.schoolPreliminaryStatus = 'pending_intake';
+        didRepair = true;
       }
       return true;
     });
@@ -348,12 +367,26 @@ export function ensureAllSubmittedApplicationsHaveStaffRecords(): void {
 
   for (const app of Object.values(portalState.studentApplications)) {
     if (!app || !app.applicationId) continue;
-    if (isDraftStudentAppStatus(app.status, app.schoolPreliminaryStatus)) continue;
+    let totalDecl = 0;
+    for (const c of app.criteria || []) {
+      totalDecl += collectCriterionDeclarations(c).length;
+    }
+    if (Array.isArray(app.otherAchievements)) {
+      totalDecl += app.otherAchievements.length;
+    }
+    const isTrulyEmptyDraft =
+      isDraftStudentAppStatus(
+        app.status,
+        app.schoolPreliminaryStatus,
+        app.submittedAt || app.submittedToSchoolAt
+      ) && totalDecl === 0;
+    if (isTrulyEmptyDraft) continue;
     const existingRec = staffByAppId.get(String(app.applicationId));
     const mapped = resolveSchoolMappingForApp(app);
     const needsUnitFix =
       existingRec &&
-      existingRec.schoolReviewUnitId !== mapped.unitId;
+      (existingRec.schoolReviewUnitId !== mapped.unitId ||
+        existingRec.schoolPreliminaryStatus === 'school_not_submitted');
     if (!existingRec || needsUnitFix) {
       const synced = syncStaffRecordFromStudentApplication(app, { createIfMissing: true });
       if (synced) {

@@ -1,185 +1,159 @@
-# HƯỚNG DẪN SỬ DỤNG HỆ THỐNG 5TOT ĐÀ NẴNG
-## Dành cho Sinh viên & Tập thể dự xét (Cấp Thành phố Đà Nẵng)
-
-**Hệ thống:** Cổng thông tin xét chọn Danh hiệu *"Sinh viên 5 tốt"*, *"Tập thể Sinh viên 5 tốt"* và *"Giải thưởng 9/1"* cấp Thành phố Đà Nẵng  
-**Cơ quan chủ trì:** Ban Thư ký Hội Sinh viên Việt Nam Thành phố Đà Nẵng (Chỉ đạo: Thành Đoàn Đà Nẵng)  
-**Đối tượng áp dụng:**
-- Sinh viên hệ chính quy đang học tập tại **31 trường Đại học, Học viện, Cao đẳng** trên địa bàn Thành phố Đà Nẵng.
-- Ban Chấp hành Liên chi hội, Chi hội, Câu lạc bộ / Đội / Nhóm trực thuộc Hội Sinh viên dự xét **Tập thể Sinh viên 5 tốt** và cá nhân / tập thể dự xét **Giải thưởng 9/1** cấp Thành phố.
+# HƯỚNG DẪN SỬ DỤNG HỆ THỐNG XÉT CHỌN SINH VIÊN 5 TỐT
+**Dành cho Sinh viên đăng ký xét chọn danh hiệu cấp Thành phố Đà Nẵng · Năm học 2025–2026**
+**Đơn vị chủ trì:** Ban Thư ký Hội Sinh viên Việt Nam Thành phố Đà Nẵng
 
 ---
 
-## MỤC LỤC NHANH
-1. [Đăng ký tài khoản, Đăng nhập & Bảo mật mật khẩu](#1-đăng-ký-tài-khoản-đăng-nhập--bảo-mật-mật-khẩu)
-2. [Cập nhật Thông tin cá nhân & Ảnh thẻ 3×4 (Bắt buộc)](#2-cập-nhật-thông-tin-cá-nhân--ảnh-thẻ-34-bắt-buộc)
-3. [Lập & Nộp Hồ sơ Cá nhân "Sinh viên 5 tốt" cấp Thành phố](#3-lập--nộp-hồ-sơ-cá-nhân-sinh-viên-5-tốt-cấp-thành-phố)
-4. [Lập & Nộp Hồ sơ "Tập thể Sinh viên 5 tốt" cấp Thành phố](#4-lập--nộp-hồ-sơ-tập-thể-sinh-viên-5-tốt-cấp-thành-phố)
-5. [Lập & Nộp Hồ sơ "Giải thưởng 9/1" cấp Thành phố](#5-lập--nộp-hồ-sơ-giải-thưởng-91-cấp-thành-phố)
-6. [Xử lý Yêu cầu bổ sung minh chứng & Tra cứu Kết quả](#6-xử-lý-yêu-cầu-bổ-sung-minh-chứng--tra-cứu-kết-quả)
+## 01. Hướng dẫn sử dụng Hệ thống xét chọn Sinh viên 5 tốt
+
+- **Đối tượng áp dụng:** Dành cho sinh viên các trường Đại học, Học viện, Cao đẳng trên địa bàn Thành phố Đà Nẵng (bao gồm khu vực Quảng Nam sau hợp nhất) đăng ký xét chọn danh hiệu **“Sinh viên 5 tốt” cấp Thành phố Đà Nẵng**.
+- **Chức năng chính:** Khởi tạo hồ sơ trực tuyến, kê khai thành tích theo 05 tiêu chí, đính kèm minh chứng điện tử, hỗ trợ trích xuất thông tin minh chứng bằng AI (OCR), theo dõi tiến độ xét duyệt 02 cấp (Đơn vị & Thành phố) và tra cứu kết quả công nhận chính thức.
+
+![Trang chủ Hệ thống xét chọn Sinh viên 5 tốt cấp Thành phố Đà Nẵng](./images/g1_01_trang_chu.png)
+*Trang chủ Hệ thống xét chọn Sinh viên 5 tốt cấp Thành phố Đà Nẵng.*
 
 ---
 
-## 1. Đăng ký tài khoản, Đăng nhập & Bảo mật mật khẩu
+## 02. Đăng ký và đăng nhập tài khoản
 
-### 1.1. Truy cập cổng thông tin & Đăng ký tài khoản mới
+1. **Truy cập địa chỉ hệ thống** xét chọn trực tuyến của Hội Sinh viên Việt Nam Thành phố Đà Nẵng.
+2. **Đăng ký tài khoản và điền thông tin sinh viên** `(1)` -> `(2)`: Nhấn **Đăng ký tài khoản mới**, nhập đầy đủ Họ và tên, Mã số sinh viên (MSSV), chọn Trường/Viện đào tạo trong danh mục các trường Đại học, Học viện, Cao đẳng tại Đà Nẵng, nhập Email và mật khẩu.
+3. **Đăng nhập để bắt đầu sử dụng** `(3)`: Sau khi hoàn tất tạo tài khoản, đăng nhập bằng Email và mật khẩu đã đăng ký để vào không gian hồ sơ cá nhân.
 
-![Hình 1.1: Trang chủ cổng thông tin xét chọn trực tuyến 5TOT Đà Nẵng](./images/01_trang_chu.png)
+| (A) Màn hình Đăng nhập hệ thống | (B) Biểu mẫu Đăng ký tài khoản sinh viên |
+| :---: | :---: |
+| ![Màn hình Đăng nhập](./images/g1_02a_dang_nhap.png) | ![Biểu mẫu Đăng ký tài khoản](./images/g1_02b_dang_ky.png) |
 
-1. Truy cập trang chủ cổng **5TOT Đà Nẵng**, bấm nút **Đăng nhập** hoặc **Bắt đầu hồ sơ** ở góc trên bên phải, sau đó chọn **Đăng ký tài khoản mới**.
-2. Điền đầy đủ thông tin trên biểu mẫu đăng ký tài khoản sinh viên:
-   - **Họ và tên:** Nhập đúng họ tên tiếng Việt có dấu theo căn cước công dân / thẻ sinh viên.
-   - **Mã số sinh viên (MSSV):** Nhập chính xác mã sinh viên tại trường đang theo học.
-   - **Trường đào tạo:** Chọn đúng **01 trong 31 trường Đại học, Học viện, Cao đẳng** trên địa bàn TP. Đà Nẵng.
-   - **Địa chỉ Email:** Ưu tiên email sinh viên do nhà trường cấp hoặc email cá nhân đang sử dụng thường xuyên (dùng để nhận mã OTP và thông báo bổ sung hồ sơ).
-   - **Mật khẩu & Xác nhận mật khẩu:** Tối thiểu **08 ký tự** (khuyến khích kết hợp chữ hoa, chữ thường và chữ số).
-3. Bấm **Tạo tài khoản** để vào thẳng không gian làm việc.
-
-![Hình 1.2: Biểu mẫu Đăng ký tài khoản sinh viên — chọn đúng 01 trong 31 trường ĐH, HV, CĐ tại TP. Đà Nẵng](./images/02_dang_ky_sinh_vien.png)
-
-> **Lưu ý quan trọng về phân tuyến đơn vị sơ tuyển tự động:**
-> - Nếu bạn thuộc **08 trường/viện thành viên Đại học Đà Nẵng** (*ĐH Bách khoa, ĐH Kinh tế, ĐH Sư phạm, ĐH Ngoại ngữ, ĐH Sư phạm Kỹ thuật, ĐH CNTT & TT Việt – Hàn VKU, Trường Y Dược, Viện Nghiên cứu & Đào tạo Việt – Anh VNUK*), hệ thống tự động chuyển hồ sơ cá nhân về đầu mối sơ tuyển **Đại học Đà Nẵng** nhưng **vẫn giữ nguyên tên trường đào tạo gốc** của bạn trên hồ sơ và Bằng khen.
-> - Nếu bạn thuộc **23 trường Đại học, Học viện, Cao đẳng độc lập** khác tại TP. Đà Nẵng (*ĐH Duy Tân, ĐH Đông Á, ĐH Kiến trúc Đà Nẵng, ĐH Kỹ thuật Y – Dược Đà Nẵng, CĐ Thương mại, CĐ Nghề Đà Nẵng...*), hồ sơ sẽ chuyển trực tiếp về Hội Sinh viên / Đoàn Thanh niên trường bạn để sơ tuyển.
-
-### 1.2. Đăng nhập, Đổi mật khẩu & Khôi phục mật khẩu khi quên
-- **Đăng nhập:** Nhập *Địa chỉ Email* và *Mật khẩu* tại màn hình Đăng nhập hệ thống.
-- **Đổi mật khẩu chủ động:** Sau khi đăng nhập, bấm nút **Đổi mật khẩu** ở góc dưới thanh menu trái (hoặc trong menu tài khoản góc phải trên cùng) -> nhập *Mật khẩu hiện tại*, *Mật khẩu mới* và bấm **Cập nhật mật khẩu**.
-- **Quên mật khẩu:** Tại màn hình **Đăng nhập**, bấm **Quên mật khẩu?** -> nhập địa chỉ Email đã đăng ký -> kiểm tra hộp thư để lấy **mã xác thực OTP gồm 6 chữ số** -> nhập mã OTP và đặt lại mật khẩu mới.
-
-![Hình 1.3: Màn hình Đăng nhập hệ thống dành cho Sinh viên, Tập thể và Cán bộ các cấp](./images/03_dang_nhap.png)
-
-![Hình 1.4: Hộp thoại Đổi mật khẩu bảo mật tài khoản ngay trong không gian làm việc](./images/06_doi_mat_khau.png)
+*Đăng ký tài khoản và đăng nhập hệ thống.*
 
 ---
 
-## 2. Cập nhật Thông tin cá nhân & Ảnh thẻ 3×4 (Bắt buộc)
+## 03. Làm quen với trang Tổng quan
 
-Sau khi đăng nhập, màn hình **Tổng quan** hiển thị trạng thái hoàn thiện hồ sơ và đơn vị tiếp nhận sơ tuyển của bạn. Trước khi gửi bất kỳ hồ sơ xét chọn nào, sinh viên **bắt buộc hoàn thiện 100% hồ sơ lý lịch trích ngang**:
+1. **Xem mùa xét và thời hạn nộp hồ sơ** `(1)`: Kiểm tra thông tin đợt xét chọn hiện hành và thời hạn tiếp nhận hồ sơ trực tuyến.
+2. **Kiểm tra điều kiện đăng ký** `(2)`: Xác nhận trạng thái đủ điều kiện tham gia xét chọn danh hiệu cấp Thành phố.
+3. **Theo dõi tiến độ hoàn thiện 5 tiêu chí** `(3)`: Quan sát thanh tiến độ tổng hợp số tiêu chí đã kê khai đầy đủ minh chứng trên tổng số 05 tiêu chí.
+4. **Chọn Hồ sơ & minh chứng để bắt đầu** `(4)`: Nhấn vào mục **Hồ sơ & minh chứng** trên thanh điều hướng bên trái để bắt đầu kê khai chi tiết.
 
-![Hình 2.1: Màn hình Tổng quan của Sinh viên hiển thị rõ tiến độ kê khai và đơn vị tiếp nhận sơ tuyển](./images/04_sv_tong_quan.png)
-
-1. Trên thanh menu dọc bên trái, chọn mục **`Thông tin cá nhân`**.
-2. Tải lên **Ảnh thẻ chân dung cỡ 3×4**:
-   - Định dạng `.jpg`, `.jpeg` hoặc `.png`, ảnh chụp rõ nét chính diện trên nền xanh hoặc trắng (sử dụng cho phôi tổng hợp trình Hội đồng và ấn phẩm tuyên dương).
-3. Kiểm tra và điền đủ **13 trường thông tin bắt buộc**:
-   - Họ và tên, Mã số sinh viên, Ngày tháng năm sinh, Giới tính, Dân tộc.
-   - Số CCCD/Định danh cá nhân, Số điện thoại di động, Email nhận thông báo, Địa chỉ liên hệ.
-   - Trường đào tạo, Khoa/Viện quản lý, Lớp sinh hoạt, Hệ đào tạo & Niên khóa.
-4. Bấm **Lưu thông tin cá nhân**.
-
-![Hình 2.2: Màn hình Thông tin cá nhân — điền đủ 13 trường bắt buộc và tải Ảnh thẻ chân dung 3×4](./images/05_sv_thong_tin_ca_nhan.png)
-
-> **Cơ chế đóng băng dữ liệu (Snapshot):** Ngay thời điểm bạn bấm nộp hồ sơ chính thức, hệ thống sẽ chụp cố định thông tin cá nhân và ảnh thẻ vào hồ sơ năm học để bảo đảm tính pháp lý trong suốt quá trình sơ tuyển và thẩm định.
+![Trang Tổng quan hiển thị tiến độ và tình trạng hồ sơ](./images/g1_03_tong_quan.png)
+*Trang Tổng quan hiển thị tiến độ và tình trạng hồ sơ.*
 
 ---
 
-## 3. Lập & Nộp Hồ sơ Cá nhân "Sinh viên 5 tốt" cấp Thành phố
+## 04. Tìm hiểu 5 tiêu chí xét chọn
 
-*(Căn cứ Hướng dẫn số **14-HD/BTK-HSVTP** của Ban Thư ký Hội Sinh viên Việt Nam Thành phố Đà Nẵng)*
+- Bộ tiêu chí xét chọn danh hiệu **Sinh viên 5 tốt cấp Thành phố Đà Nẵng** gồm 05 nhóm tiêu chí bắt buộc:
+  1. **Đạo đức tốt** — Điểm rèn luyện từ 80 điểm trở lên, chấp hành tốt pháp luật và quy chế kèm tiêu chuẩn tự chọn.
+  2. **Học tập tốt** — Điểm trung bình chung học tập (GPA) đạt ngưỡng quy định (≥ 3.2/4.0 đối với hệ Đại học; ≥ 3.0/4.0 đối với hệ Cao đẳng) kèm hoạt động nghiên cứu khoa học / thi học thuật.
+  3. **Thể lực tốt** — Đạt danh hiệu “Sinh viên khỏe” hoặc đạt giải tại các giải thể thao, kiểm tra thể lực theo quy định.
+  4. **Tình nguyện tốt** — Tham gia ít nhất 05 ngày tình nguyện/năm học hoặc được khen thưởng trong hoạt động tình nguyện.
+  5. **Hội nhập tốt** — Đạt chuẩn ngoại ngữ (B1 hoặc tương đương trở lên) và tham gia hoạt động hội nhập quốc tế / kỹ năng thực hành xã hội.
+- **Thao tác:** Chọn từng tiêu chí để mở xem yêu cầu chi tiết và kê khai minh chứng phù hợp.
 
-### 3.1. Giao diện Bảng kê khai phẳng 5 cột chuẩn Trung ương Hội
-Mở menu **`Sinh viên 5 tốt cấp TP`** ở cột trái. Màn hình gồm khung thông tin ứng viên phía trên và **Bảng kê khai phẳng 5 cột** phía dưới giúp sinh viên theo dõi toàn bộ 5 tiêu chí trên một trang duy nhất:
-
-![Hình 3.1: Phần đầu hồ sơ Sinh viên 5 tốt cấp TP — tóm tắt trích ngang ứng viên và thanh nút Lưu nháp / Kiểm tra & gửi hồ sơ](./images/07_sv_ho_so_5tot_dau_trang.png)
-
-| Cột | Tên cột trên màn hình | Ý nghĩa & Thao tác của sinh viên |
-| :--- | :--- | :--- |
-| **1** | **STT** | Số thứ tự nhóm tiêu chí từ `1` đến `5`. |
-| **2** | **Tiêu chí** | Tên tiêu chí (*Đạo đức tốt, Học tập tốt, Thể lực tốt, Tình nguyện tốt, Hội nhập tốt*) kèm nhãn trạng thái (`Đã kê khai` / `Chưa đủ`). |
-| **3** | **Tiêu chuẩn cụ thể** | Nội dung chi tiết của từng điều kiện cứng và điều kiện tự chọn theo Hướng dẫn `14-HD/BTK-HSVTP`. |
-| **4** | **Yêu cầu minh chứng** | Quy định rõ loại giấy tờ, bảng điểm, chứng chỉ, quyết định hoặc xác nhận hợp lệ cần đính kèm. |
-| **5** | **Kết quả** | Nơi sinh viên bấm nút **`+` (Thêm kê khai)** để nhập số liệu/mô tả thành tích và tải tệp minh chứng lên hệ thống. |
-
-![Hình 3.2: Bảng kê khai phẳng 5 cột — bấm nút (+) ở cột Kết quả để nhập thành tích và tải tệp minh chứng PDF/Ảnh](./images/08_sv_bang_5_cot_ke_khai.png)
-
-### 3.2. Cách kê khai và tải tệp minh chứng ở Cột 5
-1. Tại dòng tiêu chuẩn tương ứng với thành tích của bạn, bấm nút **`+`** ở cột **Kết quả**.
-2. Nhập đầy đủ thông tin kê khai theo biểu mẫu mở ra:
-   - Với chỉ số định lượng: nhập chính xác **Điểm rèn luyện** (thang 100), **Điểm trung bình học tập GPA** (thang 4.0 và/hoặc thang 10), **Số ngày tình nguyện**, hoặc **Điểm chứng chỉ ngoại ngữ**.
-   - Với giấy chứng nhận / quyết định khen thưởng: ghi rõ *Tên thành tích/hoạt động, Cấp ban hành, Số quyết định (nếu có), Ngày ban hành*.
-3. Đính kèm tệp minh chứng:
-   - Chấp nhận định dạng **`.pdf`, `.jpg`, `.jpeg`, `.png`** (dung lượng tối đa **100 MB/tệp**).
-   - Khuyến khích gộp bảng điểm 2 học kỳ hoặc bộ minh chứng của cùng 1 hoạt động thành **01 tệp `.PDF` rõ nét**, có đầy đủ chữ ký và dấu xác nhận theo quy định.
-4. Bấm **Lưu mục kê khai**. Bạn có thể sửa hoặc xóa mục kê khai bất cứ lúc nào khi hồ sơ còn ở trạng thái **Bản nháp**.
-
-### 3.3. Tóm tắt điều kiện đạt chuẩn 05 tiêu chí bắt buộc
-Để hồ sơ hợp lệ khi đối soát tự động, sinh viên cần đảm bảo đủ cả **05 tiêu chí**:
-
-1. **Tiêu chí 1 — Đạo đức tốt:**
-   - **Điều kiện cứng:** Điểm rèn luyện trung bình cả năm học đạt từ **80/100 điểm trở lên**; không vi phạm pháp luật và các quy chế, nội quy của nhà trường, địa phương.
-   - **Điều kiện tự chọn (đạt ít nhất 01 nội dung):** Tham gia cuộc thi tìm hiểu chủ nghĩa Mác – Lênin, tư tưởng Hồ Chí Minh; đạt danh hiệu *"Thanh niên tiên tiến làm theo lời Bác"*; là thành viên đội thi Olympic các môn khoa học Mác – Lênin; hoặc có hành động dũng cảm được biểu dương, khen thưởng.
-2. **Tiêu chí 2 — Học tập tốt:**
-   - **Điều kiện cứng về điểm GPA năm học:**
-     - Đối với sinh viên hệ **Đại học / Học viện**: Điểm trung bình chung học tập cả năm đạt từ **3.2/4.0** (hoặc **8.0/10**) trở lên.
-     - Đối với sinh viên hệ **Cao đẳng**: Điểm trung bình chung học tập cả năm đạt từ **3.0/4.0** (hoặc **7.5/10**) trở lên.
-   - **Điều kiện nghiên cứu khoa học / học thuật (đạt ít nhất 01 nội dung):** Có đề tài NCKH sinh viên nghiệm thu đạt từ cấp Khoa/Trường trở lên; có bài báo đăng trên tạp chí/kỷ yếu hội thảo khoa học; hoặc đạt giải thưởng trong các cuộc thi học thuật, khởi nghiệp, sáng tạo chuyên ngành.
-3. **Tiêu chí 3 — Thể lực tốt** *(đạt ít nhất 01 trong 02 điều kiện)*:
-   - Đạt danh hiệu **"Thanh niên khỏe"** từ cấp Trường trở lên trong năm học xét chọn; **HOẶC**
-   - Đạt giải tại các giải thể thao phong trào từ cấp Khoa/Trường trở lên hoặc là thành viên đội tuyển thể thao của Trường/Thành phố/Quốc gia. *(Trường hợp sinh viên khuyết tật áp dụng theo hướng dẫn riêng kèm giấy xác nhận y tế hợp lệ).*
-4. **Tiêu chí 4 — Tình nguyện tốt** *(đạt ít nhất 01 trong 02 điều kiện)*:
-   - Tham gia ít nhất **05 ngày tình nguyện/năm** (hệ thống tự động cộng dồn tổng số ngày từ các chiến dịch/hoạt động tình nguyện có xác nhận mà bạn kê khai); **HOẶC**
-   - Được nhận Giấy khen / Bằng khen về hoạt động tình nguyện (*Mùa hè xanh, Tiếp sức mùa thi, Xuân tình nguyện, Chủ nhật xanh...*) từ cấp Khoa/Trường trở lên.
-5. **Tiêu chí 5 — Hội nhập tốt:**
-   - **Ngoại ngữ:** Đạt chứng chỉ ngoại ngữ tối thiểu tương đương **Bậc 3/6 (chuẩn B1)** theo Khung năng lực ngoại ngữ 6 bậc dùng cho Việt Nam (ví dụ: IELTS $\ge 4.5$, VSTEP B1, TOEIC hoặc chứng chỉ ngoại ngữ quốc tế/đầu ra tương đương còn hiệu lực theo quy định của Hướng dẫn `14-HD/BTK-HSVTP`).
-   - **Kỹ năng thực hành xã hội / Hội nhập:** Hoàn thành khóa trang bị kỹ năng thực hành xã hội hoặc tham gia hoạt động giao lưu quốc tế, hội thảo/cuộc thi bằng ngoại ngữ, công tác Hội từ cấp Trường trở lên.
-
-*(Ngoài 5 tiêu chí chính, sinh viên có Bằng khen cấp Thành phố, Trung ương, Đảng viên trẻ tiêu biểu... nên kê khai thêm vào mục **Tiêu chuẩn ưu tiên / Thành tích tiêu biểu khác** ở cuối bảng để Hội đồng cộng điểm ưu tiên).*
-
-### 3.4. Kiểm tra điều kiện tự động & Gửi hồ sơ chính thức
-1. Trong quá trình làm hồ sơ, bấm **Lưu nháp** để lưu tạm thời.
-2. Khi cả 5 tiêu chí đều có dữ liệu kê khai và đã hoàn tất **Thông tin cá nhân**, bấm nút **`Kiểm tra & gửi hồ sơ`** (màu xanh trên thanh tác vụ).
-3. Hệ thống hiển thị bảng **Đối soát sơ bộ 5 tiêu chí**:
-   - Nếu còn mục thiếu minh chứng hoặc điểm số chưa đạt ngưỡng quy định, hệ thống sẽ cảnh báo rõ từng mục để bạn kiểm tra lại.
-   - Bấm **Xác nhận gửi hồ sơ** để chuyển hồ sơ chính thức sang trạng thái **Chờ xét sơ tuyển cấp Đơn vị**.
+![Năm tiêu chí xét chọn danh hiệu Sinh viên 5 tốt](./images/g1_04_5_tieu_chi.png)
+*Năm tiêu chí xét chọn danh hiệu Sinh viên 5 tốt.*
 
 ---
 
-## 4. Lập & Nộp Hồ sơ "Tập thể Sinh viên 5 tốt" cấp Thành phố
+## 05. Kê khai thành tích và hoạt động
 
-*(Căn cứ Quyết định số **86/QĐ-HSVTP** của Ban Thư ký Hội Sinh viên Việt Nam Thành phố Đà Nẵng)*
+1. **Chọn tiêu chí cần kê khai** trong bảng 05 tiêu chí.
+2. **Nhấn Thêm kê khai** `(1)` tại dòng yêu cầu cụ thể muốn bổ sung thành tích.
+3. **Chọn hình thức hoặc nội dung phù hợp** `(1)` trong hộp thoại kê khai.
+4. **Điền thông tin và lưu kê khai** `(2)` -> `(3)`: Nhập tên hoạt động/thành tích, kết quả đạt được, ngày cấp/thời gian tham gia, đơn vị tổ chức và nhấn **Lưu kê khai**.
 
-1. Trên menu trái, chọn **`Tập thể Sinh viên 5 tốt`** -> điền thông tin đơn vị tập thể dự xét (*Liên chi hội, Chi hội, hoặc CLB/Đội/Nhóm trực thuộc Hội Sinh viên*), trường trực thuộc, tổng số sinh viên/hội viên của tập thể và thông tin đại diện Ban Chấp hành liên hệ.
-2. Kê khai số liệu và tải tệp minh chứng `.PDF`/ảnh cho đủ **04 tiêu chuẩn bắt buộc (`TT01` – `TT04`)**:
-   - **`TT01` — Danh hiệu cấp Trường:** Đạt danh hiệu *"Tập thể Sinh viên 5 tốt"* cấp Trường/Đơn vị trong năm học xét chọn (đính kèm Quyết định công nhận hoặc Giấy khen cấp Trường).
-   - **`TT02` — Tỷ lệ đăng ký phong trào:** **100%** sinh viên thuộc tập thể đăng ký tham gia phong trào *"Sinh viên 5 tốt"* (đính kèm bảng tổng hợp đăng ký có xác nhận của Hội Sinh viên đơn vị).
-   - **`TT03` — Tỷ lệ đạt danh hiệu SV5T:** Có ít nhất **20%** tổng số sinh viên của tập thể đạt danh hiệu *"Sinh viên 5 tốt"* từ cấp Trường trở lên (nhập danh sách/số lượng và đính kèm Quyết định công nhận SV5T cấp Trường+).
-   - **`TT04` — Kỷ luật & Pháp luật:** Không có sinh viên nào trong tập thể vi phạm pháp luật hoặc bị xử lý kỷ luật từ mức **Cảnh cáo** trở lên trong năm học (đính kèm văn bản xác nhận của Khoa/Trường).
-3. Kiểm tra toàn bộ tệp minh chứng và bấm **Nộp hồ sơ Tập thể**.
+| (Trước) Chọn tiêu chí và nhấn Thêm kê khai | (Sau) Điền thông tin trong khung Thêm kê khai |
+| :---: | :---: |
+| ![Vị trí nút Thêm kê khai](./images/g1_05a_ke_khai_truoc.png) | ![Khung nhập liệu Thêm kê khai](./images/g1_05b_ke_khai_sau.png) |
 
-![Hình 4.1: Giao diện lập và nộp hồ sơ Tập thể Sinh viên 5 tốt cấp Thành phố (04 tiêu chuẩn TT01–TT04)](./images/09_tap_the_sv5t.png)
-
-> **Lưu ý luồng tiếp nhận:** Hồ sơ **Tập thể Sinh viên 5 tốt** sau khi nộp sẽ được chuyển **trực tiếp về Hội Sinh viên Thành phố Đà Nẵng** để thẩm định (không nằm trong đợt gom danh sách sơ tuyển cá nhân của đơn vị).
+*Kê khai thành tích theo từng tiêu chí.*
 
 ---
 
-## 5. Lập & Nộp Hồ sơ "Giải thưởng 9/1" cấp Thành phố
+## 06. Tải lên minh chứng
 
-*(Căn cứ Quy chế Giải thưởng 9/1 ban hành kèm Quyết định số **09/QĐ-HSVTP** của Ban Thư ký Hội Sinh viên Việt Nam TP. Đà Nẵng)*
+1. **Chọn Thêm minh chứng** cho nội dung đã kê khai.
+2. **Đặt tên minh chứng rõ ràng** `(1)` (ví dụ: *Bảng điểm học tập năm học 2025–2026*, *Giấy chứng nhận Chiến dịch Mùa hè xanh 2026*).
+3. **Tải lên giấy chứng nhận, quyết định hoặc tài liệu phù hợp** `(2)`: Chọn tệp `.PDF`, `.JPG` hoặc `.PNG` rõ nét, đầy đủ chữ ký và dấu xác nhận.
+4. **Kiểm tra tệp đã đính kèm và lưu** `(3)`: Kiểm tra danh sách tệp đã tải lên và nhấn **Lưu minh chứng**.
 
-1. Trên menu trái, chọn **`Giải thưởng 9/1`** và lựa chọn chính xác **01 trong 02 hạng mục xét trao chính thức**:
-   - **Hạng mục 1 — Cán bộ Hội, Đoàn tiêu biểu:**
-     - Dành cho cán bộ Hội Sinh viên, cán bộ Đoàn trực tiếp làm công tác sinh viên có thành tích xuất sắc.
-     - **Bắt buộc kê khai đủ 03 nhóm tiêu chuẩn:** `WB01` (Phẩm chất đạo đức, uy tín và kết quả học tập, rèn luyện), `WB02` (Thời gian giữ chức vụ cán bộ Hội/Đoàn tích lũy tối thiểu **24 tháng** và đóng góp thực tế), `WB03` (Thành tích khen thưởng tối thiểu **02 năm học liên tiếp**).
-   - **Hạng mục 2 — Mô hình, giải pháp, sáng kiến công tác Hội hiệu quả:**
-     - Dành cho cá nhân hoặc tập thể tác giả có mô hình, công trình, giải pháp sáng tạo đã áp dụng thực tế trong công tác Hội và phong trào sinh viên tại Đà Nẵng.
-     - **Yêu cầu kê khai:** `WB01` *(Bắt buộc — Thuyết minh tính mới, sáng tạo)*, `WB02` *(Bắt buộc — Minh chứng kết quả triển khai thực tế và xác nhận đơn vị)*, `WB03` *(Khuyến khích — Giấy khen, truyền thông, nhân rộng mô hình)*.
-2. Tải đầy đủ báo cáo thành tích / thuyết minh mô hình và minh chứng kèm theo, sau đó bấm **Nộp hồ sơ Giải thưởng 9/1** (hồ sơ chuyển **trực tiếp lên Hội Sinh viên Thành phố Đà Nẵng**).
-
-![Hình 5.1: Không gian kê khai hồ sơ Giải thưởng 9/1 cấp Thành phố với 02 hạng mục chính thức](./images/10_giai_thuong_9_1.png)
+![Đính kèm tài liệu minh chứng cho nội dung đã kê khai](./images/g1_06_tai_len_minh_chung.png)
+*Đính kèm tài liệu minh chứng cho nội dung đã kê khai.*
 
 ---
 
-## 6. Xử lý Yêu cầu bổ sung minh chứng & Tra cứu Kết quả
+## 07. Kiểm tra thông tin minh chứng
 
-### 6.1. Khi nhận được thông báo "Yêu cầu bổ sung"
-Trong quá trình sơ tuyển tại Đơn vị hoặc thẩm định tại Thành phố, nếu minh chứng bị mờ, thiếu dấu xác nhận hoặc kê khai chưa khớp số liệu, cán bộ xét duyệt sẽ gửi **Yêu cầu bổ sung**:
+1. **Mở minh chứng vừa tải lên** `(1)` bằng cách nhấn trực tiếp vào tên tệp minh chứng trên dòng kê khai.
+2. **Kiểm tra tên, thời gian, đơn vị tổ chức và nội dung** đối chiếu song song với bản xem trước tài liệu (hệ thống hỗ trợ nhận diện OCR tự động để gợi ý đối soát nhanh).
+3. **Chỉnh sửa thông tin nếu chưa chính xác** ngay trên khung thông tin bên cạnh tài liệu.
+4. **Xác nhận và lưu thông tin** `(2)` để hoàn tất rà soát minh chứng.
 
-1. Hệ thống gửi thông báo đồng thời qua **biểu tượng Chuông thông báo** trên góc phải cổng **5TOT Đà Nẵng** và qua **Email đăng ký** của bạn.
-2. Đăng nhập vào hệ thống -> mở hồ sơ đang có cảnh báo màu vàng **`Cần bổ sung minh chứng`**.
-3. Đọc kỹ **Nội dung hướng dẫn của cán bộ** và **Hạn chót bổ sung** hiển thị ngay trên hộp thông báo đầu trang và tại đúng tiêu chí cần chỉnh sửa -> tải lại tệp minh chứng mới -> bấm **`Gửi bổ sung hồ sơ`** trước hạn chót.
+![Kiểm tra và xác nhận thông tin minh chứng](./images/g1_07_kiem_tra_minh_chung.png)
+*Kiểm tra và xác nhận thông tin minh chứng.*
 
-![Hình 6.1: Giao diện hiển thị rõ nội dung Yêu cầu bổ sung minh chứng của cán bộ để sinh viên cập nhật và gửi lại](./images/10b_sv_yeu_cau_bo_sung.png)
+---
 
-### 6.2. Theo dõi tiến độ & Nhận kết quả công nhận
-Sinh viên theo dõi trực tiếp trạng thái xử lý hồ sơ theo thời gian thực tại màn hình **Tổng quan**:
-- `Bản nháp` -> `Chờ sơ tuyển cấp Đơn vị` -> `Đơn vị đã trình cấp Thành phố` -> `Đang thẩm định cấp Thành phố` -> `Chờ Hội đồng xét chọn` -> `Đã công bố kết quả`.
-- Sau khi Ban Thư ký Hội Sinh viên Việt Nam Thành phố Đà Nẵng ban hành Quyết định công nhận chính thức, sinh viên mở mục **`Kết quả xét chọn`** trên menu trái để xem số hiệu Quyết định và tải về chứng nhận điện tử / thông tin tuyên dương.
+## 08. Quản lý và rà soát minh chứng
+
+1. **Xem các kê khai và minh chứng đã lưu** `(1)` trên toàn bộ bảng hồ sơ.
+2. **Bổ sung thêm minh chứng khi cần** `(3)` cho các hoạt động có nhiều giấy xác nhận hoặc quyết định kèm theo.
+3. **Chỉnh sửa hoặc xóa thông tin chưa đúng** `(2)` khi hồ sơ còn ở trạng thái bản nháp cho phép chỉnh sửa.
+4. **Kiểm tra đủ cả 5 tiêu chí** đều đạt trạng thái đã kê khai và đính kèm đầy đủ minh chứng hợp lệ.
+
+![Rà soát các nội dung đã kê khai trước khi nộp](./images/g1_08_quan_ly_ra_soat.png)
+*Rà soát các nội dung đã kê khai trước khi nộp.*
+
+---
+
+## 09. Kiểm tra hồ sơ trước khi nộp
+
+1. **Nhấn Kiểm tra & Nộp hồ sơ** (`Kiểm tra & gửi hồ sơ`) `(1)` ở góc phải phía trên màn hình hồ sơ.
+2. **Xem tổng quan 5 tiêu chí và số minh chứng** `(2)` -> `(3)` trên ngăn rà soát bên phải.
+3. **Đọc các khuyến nghị rà soát**: Kiểm tra kỹ các lưu ý tự động (nếu có) về thời hạn cấp minh chứng hoặc thông tin cần xác nhận.
+4. **Quay lại chỉnh sửa nếu cần** hoặc nhấn **Gửi hồ sơ** `(4)` khi đã sẵn sàng.
+
+![Rà soát hồ sơ và các khuyến nghị trước khi gửi](./images/g1_09_kiem_tra_truoc_nop.png)
+*Rà soát hồ sơ và các khuyến nghị trước khi gửi.*
+
+---
+
+## 10. Nộp hồ sơ xét chọn
+
+1. **Kiểm tra điều kiện nộp cấp Thành phố** `(1)` trong hộp thoại xác nhận gửi hồ sơ.
+2. **Xác nhận thông tin đã kê khai** là trung thực, chính xác và đầy đủ minh chứng.
+3. **Nhấn Nộp hồ sơ** (`Xác nhận gửi hồ sơ`) `(2)`.
+4. **Kiểm tra thông báo nộp thành công** `(3)`: Hồ sơ chuyển sang trạng thái **Đã gửi hồ sơ / Đang được xét** và được chuyển tới đơn vị đào tạo để xét sơ tuyển.
+
+| (Trước) Xác nhận điều kiện và nhấn Gửi hồ sơ | (Sau) Trạng thái hồ sơ đã gửi thành công |
+| :---: | :---: |
+| ![Màn hình xác nhận nộp](./images/g1_10a_xac_nhan_nop.png) | ![Trạng thái hồ sơ đã gửi](./images/g1_10b_da_nop_thanh_cong.png) |
+
+*Xác nhận và gửi hồ sơ xét chọn cấp Thành phố.*
+
+---
+
+## 11. Theo dõi trạng thái và bổ sung hồ sơ
+
+1. **Theo dõi trạng thái tại trang Tổng quan hoặc Kết quả** `(1)`.
+2. **Kiểm tra thông báo và email** khi cán bộ xét duyệt cấp Đơn vị hoặc cấp Thành phố gửi yêu cầu làm rõ minh chứng.
+3. **Nếu được yêu cầu bổ sung, mở đúng nội dung cần sửa** `(2)` theo đường dẫn trên thông báo.
+4. **Cập nhật minh chứng và Gửi lại hồ sơ** `(3)`: Tải lên tệp minh chứng bổ sung, nhập ghi chú giải trình (nếu có) và nhấn **Gửi bổ sung / Gửi lại hồ sơ**.
+
+| (A) Thông báo và trạng thái cần bổ sung | (B) Màn hình tải minh chứng bổ sung và gửi lại |
+| :---: | :---: |
+| ![Thông báo yêu cầu bổ sung](./images/g1_11a_thong_bao_bo_sung.png) | ![Màn hình bổ sung minh chứng](./images/g1_11b_man_hinh_bo_sung.png) |
+
+*Theo dõi yêu cầu bổ sung và gửi lại hồ sơ.*
+
+---
+
+## 12. Xem kết quả xét chọn
+
+1. **Truy cập mục Kết quả** `(1)` trên thanh điều hướng bên trái.
+2. **Xem kết quả chính thức khi được công bố** `(2)` sau khi Hội đồng xét chọn cấp Thành phố ban hành Quyết định công nhận.
+3. **Theo dõi thông báo hoặc phản hồi từ đơn vị xét chọn** và tải Giấy chứng nhận điện tử (nếu được công nhận).
+4. **Thông điệp:** *Hoàn thiện hồ sơ đầy đủ – Nộp đúng thời hạn – Chủ động theo dõi kết quả.*
+
+![Tra cứu kết quả xét chọn và phản hồi liên quan](./images/g1_12_xem_ket_qua.png)
+*Tra cứu kết quả xét chọn và phản hồi liên quan.*

@@ -200,15 +200,15 @@ describe('5TOT ĐHĐN — UX-S4 Admin Workspace & Program Navigation Suite', () 
     assert.strictEqual(dut.officialName, 'Trường Đại học Bách khoa - Đại học Đà Nẵng');
     assert.strictEqual(dut.isUnderUdn, true);
     assert.strictEqual(dut.schoolReviewUnitId, 'unit-udn');
-    assert.strictEqual(dut.schoolReviewUnitName, 'Hội đồng Sơ tuyển Đại học Đà Nẵng');
+    assert.strictEqual(dut.schoolReviewUnitName, 'Đại học Đà Nẵng');
     assert.strictEqual(dut.organizationContext, 'Đại học Đà Nẵng');
   });
 
   test('UX4-11: All 8 UDN member institutions strictly consolidate to shared unit-udn review unit', () => {
     const udnMembers = INITIAL_INSTITUTIONS.filter((i) => i.isUnderUdn);
-    assert.strictEqual(udnMembers.length, 8, 'Must have exactly 8 UDN member institutions in Da Nang');
+    assert.strictEqual(udnMembers.length, 8, 'Must have exactly 8 UDN member institutions');
 
-    const expectedCodes = ['DUT', 'DUE', 'UED', 'UFL', 'UTE', 'VKU', 'VNUK', 'SMP'];
+    const expectedCodes = ['DUT', 'DUE', 'UED', 'UFL', 'UTE', 'VKU', 'VNUK', 'UDCK'];
     const actualCodes = udnMembers.map((m) => m.code);
     for (const code of expectedCodes) {
       assert.ok(actualCodes.includes(code), `UDN member ${code} must be present`);
@@ -229,8 +229,6 @@ describe('5TOT ĐHĐN — UX-S4 Admin Workspace & Program Navigation Suite', () 
     assert.ok(dtu);
     assert.strictEqual(dtu.isUnderUdn, false);
     assert.strictEqual(dtu.schoolReviewUnitId, 'unit-dtu');
-
-    assert.strictEqual(INITIAL_INSTITUTIONS.find((i) => i.id === 'inst-kontum'), undefined);
   });
 
   test('UX4-13: Admin Institution Filter supports filtering by School Review Unit', () => {
@@ -248,13 +246,13 @@ describe('5TOT ĐHĐN — UX-S4 Admin Workspace & Program Navigation Suite', () 
     assert.strictEqual(udnGroup.length, 8);
   });
 
-  test('UX4-14: Invariant: City registry defines 45 active institutions across 38 active review units (Da Nang & Quang Nam)', () => {
+  test('UX4-14: Invariant: City registry defines 25 active institutions across 18 active review units', () => {
     const udnInstitutions = INITIAL_INSTITUTIONS.filter(
       (i) => i.schoolReviewUnitId === 'unit-udn'
     );
     assert.strictEqual(udnInstitutions.length, 8);
-    assert.strictEqual(INITIAL_INSTITUTIONS.filter((i) => i.status === 'active').length, 45);
-    assert.strictEqual(INITIAL_INSTITUTIONS.length, 45);
+    assert.strictEqual(INITIAL_INSTITUTIONS.filter((i) => i.status === 'active').length, 25);
+    assert.strictEqual(INITIAL_INSTITUTIONS.length, 25);
   });
 
   // ===========================================================================

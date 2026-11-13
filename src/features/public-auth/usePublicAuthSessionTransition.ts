@@ -121,10 +121,16 @@ export function usePublicAuthSessionTransition({
       const lower = (email || '').trim().toLowerCase();
       const matchedStaffAccount =
         INITIAL_STAFF_ACCOUNTS.find(
-          (acc) => acc.email.toLowerCase() === lower
+          (acc) =>
+            acc.email.toLowerCase() === lower ||
+            (Boolean(session?.user?.id) && acc.id === session?.user?.id) ||
+            (session?.user?.role === 'SCHOOL_OFFICER' &&
+              Boolean(session?.user?.unitId) &&
+              acc.schoolReviewUnitId === session?.user?.unitId)
         ) ||
         ([
           'canbo.udn@udn.vn',
+          'canbo.dhdn@udn.vn',
           'an.nv@udn.vn',
           'canbo.dut@udn.vn',
           'canbo.due@udn.vn',
@@ -135,6 +141,7 @@ export function usePublicAuthSessionTransition({
           'canbo.vku@udn.vn',
           'canbo.smp@udn.vn',
           'canbo.vnuk@udn.vn',
+          'canbo.udck@udn.vn',
         ].includes(lower)
           ? INITIAL_STAFF_ACCOUNTS.find((acc) => acc.id === 'staff-sch-udn')
           : undefined);
@@ -144,7 +151,7 @@ export function usePublicAuthSessionTransition({
       const resolvedRole = (session?.user?.role ||
         matchedStaffAccount?.primaryRole) as StaffRole | undefined;
 
-      if (!hasActiveAuthSession()) {
+      if (session?.user || !hasActiveAuthSession()) {
         setApiActorContext({
           userId:
             session?.user?.id ||
@@ -250,7 +257,6 @@ export function usePublicAuthSessionTransition({
       if (
         resolvedRole === 'CITY_OFFICER' ||
         lower === 'nam.th@hsvdanang.vn' ||
-        lower === 'canbo.dhdn@udn.vn' ||
         lower === 'canbo.thanhpho@hsvdanang.vn'
       ) {
         const nextStaffUser = buildResolvedStaffUser('CITY_OFFICER');
