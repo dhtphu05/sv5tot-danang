@@ -5,9 +5,9 @@
 import path from 'node:path';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
-dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
-dotenv.config({ path: path.resolve(process.cwd(), 'backend/.env') });
+dotenv.config({ path: path.resolve(process.cwd(), '../.env'), override: true });
+dotenv.config({ path: path.resolve(process.cwd(), 'backend/.env'), override: true });
+dotenv.config({ path: path.resolve(process.cwd(), '.env'), override: true });
 
 import { createApp } from './createApp';
 import { getEnvironment } from '../config/environment';

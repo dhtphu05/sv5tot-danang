@@ -150,10 +150,13 @@ export const OfficerReviewAiQuietSection: React.FC<
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 text-[11.5px]">
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5 text-[11.5px]">
             {Object.entries(verdict.criteriaAssessments).map(([critId, rawAssessment]) => {
               const assessment = rawAssessment as CriterionPreliminaryAssessment;
               const isMeets = assessment.status === 'meets';
+              const checklist = assessment.conditionChecklist || [];
+              const metCount = assessment.metConditionsCount ?? (isMeets ? checklist.length : 0);
+              const totalCount = assessment.totalConditionsCount ?? checklist.length;
 
               return (
                 <button
@@ -166,33 +169,86 @@ export const OfficerReviewAiQuietSection: React.FC<
                       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                   }}
-                  className={`p-2.5 rounded-[8px] border text-left transition-all cursor-pointer space-y-1 ${
+                  className={`p-2.5 rounded-[8px] border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 ${
                     isMeets
                       ? 'bg-[#F8FEFA] hover:bg-[#EAFBF1] border-[#C6EED5]'
                       : 'bg-[#FFFBEB] hover:bg-[#FEF3C7] border-[#FDE68A]'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="font-bold text-[#0F2335] truncate">
-                      {assessment.criterionNumber}. {assessment.criterionName}
-                    </span>
-                    {isMeets ? (
-                      <CheckCircle2 size={13} className="text-[#16A34A] shrink-0" />
+                  <div className="space-y-1 w-full">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="font-bold text-[#0F2335] truncate">
+                        {assessment.criterionNumber}. {assessment.criterionName}
+                      </span>
+                      {isMeets ? (
+                        <CheckCircle2 size={13} className="text-[#16A34A] shrink-0" />
+                      ) : (
+                        <AlertTriangle size={13} className="text-[#D97706] shrink-0" />
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between gap-1 flex-wrap">
+                      <span
+                        className={`text-[11px] font-bold ${
+                          isMeets ? 'text-[#136F3A]' : 'text-[#B45309]'
+                        }`}
+                      >
+                        {isMeets ? 'Đạt sơ bộ' : 'Cần kiểm tra thêm'}
+                      </span>
+                      {totalCount > 0 && (
+                        <span
+                          className={`text-[10px] font-semibold px-1.5 py-0.2 rounded-[4px] border ${
+                            isMeets
+                              ? 'bg-[#EAFBF1] text-[#136F3A] border-[#B6E6C9]'
+                              : 'bg-[#FEF3C7] text-[#B45309] border-[#FCD34D]'
+                          }`}
+                        >
+                          Đạt {metCount}/{totalCount} điều kiện
+                        </span>
+                      )}
+                    </div>
+
+                    {checklist.length > 0 ? (
+                      <div className="pt-1 border-t border-black/5 space-y-1">
+                        {checklist.map((cond) => {
+                          const condMet = cond.status === 'met';
+                          return (
+                            <div
+                              key={cond.id}
+                              className="flex items-start gap-1 text-[10.5px] leading-tight"
+                              title={`${cond.label}\n${cond.detail}`}
+                            >
+                              {condMet ? (
+                                <CheckCircle2
+                                  size={11}
+                                  className="text-[#16A34A] shrink-0 mt-0.5"
+                                />
+                              ) : (
+                                <AlertTriangle
+                                  size={11}
+                                  className="text-[#D97706] shrink-0 mt-0.5"
+                                />
+                              )}
+                              <div className="min-w-0 flex-1">
+                                <span
+                                  className={`font-semibold ${
+                                    condMet ? 'text-[#14532D]' : 'text-[#92400E]'
+                                  }`}
+                                >
+                                  {cond.ruleBadge}:{' '}
+                                </span>
+                                <span className="text-[#334E68] line-clamp-2">
+                                  {condMet ? cond.label : cond.detail}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     ) : (
-                      <AlertTriangle size={13} className="text-[#D97706] shrink-0" />
+                      <div className="text-[10.5px] text-[#526B7C] line-clamp-2">
+                        {assessment.headline}
+                      </div>
                     )}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span
-                      className={`text-[11px] font-bold ${
-                        isMeets ? 'text-[#136F3A]' : 'text-[#B45309]'
-                      }`}
-                    >
-                      {isMeets ? 'Đạt sơ bộ' : 'Cần kiểm tra thêm'}
-                    </span>
-                  </div>
-                  <div className="text-[10.5px] text-[#526B7C] line-clamp-1">
-                    {assessment.headline}
                   </div>
                 </button>
               );

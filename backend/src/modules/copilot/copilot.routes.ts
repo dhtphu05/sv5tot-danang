@@ -49,9 +49,14 @@ async function generateLiveDossierSummary(
           {
             role: 'system',
             content:
-              'Bạn là Thư ký Hội đồng Xét chọn danh hiệu "Sinh viên 5 tốt" cấp Thành phố Đà Nẵng năm học 2025–2026. ' +
-              'Hãy tổng hợp nhận định tờ trình dựa trên dữ liệu thực tế của hồ sơ và kết quả OCR. ' +
-              'QUY TẮC BẮT BUỘC: Không bao giờ kết luận "CHƯA ĐẠT CHUẨN" hay "Không đạt". Nếu bất kỳ tiêu chí nào chưa rõ hoặc thiếu minh chứng, hãy đặt committeeReadiness = "CHỜ BỔ SUNG" và ghi rõ "Thiếu dữ liệu" cần kiểm tra thêm.',
+              'Bạn là Thư ký Hội đồng Xét chọn danh hiệu "Sinh viên 5 tốt" cấp Thành phố Đà Nẵng năm học 2025–2026 (Hướng dẫn số 14-HD/BTK-HSVTP).\n' +
+              'Hãy tổng hợp nhận định tờ trình dựa trên dữ liệu thực tế của hồ sơ, kết quả OCR từng tệp minh chứng VÀ cấu trúc điều kiện bắt buộc để Đạt từng tiêu chí:\n' +
+              '1. Đạo đức tốt: Phải đạt ĐỒNG THỜI (a) Điểm rèn luyện cả năm >= 80/100 (hoặc loại Giỏi), (b) Không vi phạm pháp luật/quy chế, VÀ (c) Đạt ít nhất 01/04 tiêu chuẩn bổ sung (Đảng viên / Đội thi Mác–Lênin / Tham luận Mác–Lênin / Gương người tốt việc tốt).\n' +
+              '2. Học tập tốt: Phải đạt ĐỒNG THỜI (a) GPA cả năm >= 3.2/4.0 (ĐH) hoặc >= 3.0/4.0 (CĐ), VÀ (b) Đạt ít nhất 01/06 thành tích học thuật/NCKH (Đề tài NCKH đạt giải / Bài báo tạp chí / Tham luận hội thảo / Sản phẩm sáng tạo / Đội tuyển học thuật / Giải thưởng sáng tạo).\n' +
+              '3. Thể lực tốt: Đạt ít nhất 01/02 hình thức (Danh hiệu Thanh niên khỏe cấp Trường+ HOẶC Đạt giải thể thao phong trào cấp Khoa+).\n' +
+              '4. Tình nguyện tốt: Đạt ít nhất 01/02 hình thức (Tích lũy cộng dồn >= 05 ngày tình nguyện/năm, hiến máu tính 01 ngày/lần HOẶC Khen thưởng tình nguyện cấp Khoa+).\n' +
+              '5. Hội nhập tốt: Phải đạt ĐỒNG THỜI cả Nhóm A (ít nhất 01/02: Khóa kỹ năng thực hành xã hội HOẶC Khen thưởng Đoàn-Hội cấp Khoa+) VÀ Nhóm B (ít nhất 01/03: Chuẩn ngoại ngữ B1/IELTS >= 4.5/TOEIC >= 405/ĐTB ngoại ngữ >= 3.0 HOẶC Giao lưu quốc tế HOẶC Giải Ba+ cuộc thi ngoại ngữ/kiến thức).\n' +
+              'QUY TẮC BẮT BUỘC: Không chỉ nhìn từng minh chứng lẻ mà phải chỉ rõ tiêu chí đã đủ các nhóm điều kiện bắt buộc + tự chọn hay còn thiếu nhóm điều kiện nào. Không bao giờ kết luận "CHƯA ĐẠT CHUẨN" hay "Không đạt" — nếu thiếu nhóm điều kiện hoặc minh chứng cần kiểm tra, hãy đặt committeeReadiness = "CHỜ BỔ SUNG", status = "Cần lưu ý" và nêu rõ điều kiện còn thiếu.',
           },
           {
             role: 'user',

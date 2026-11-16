@@ -15,6 +15,8 @@ import {
   Clock,
   Sparkles,
   Info,
+  CheckCircle2,
+  AlertTriangle,
 } from 'lucide-react';
 import { CriterionDefinition } from '../../../../tokens';
 import { ReviewStage } from '../../../schoolReviewTypes';
@@ -23,12 +25,14 @@ import {
   CriterionConclusionOutcome,
 } from '../../../reviewTypes';
 import { CriterionEvaluationResult } from '../../../reviewSelectors';
+import { CriterionPreliminaryAssessment } from '../../../../features/ai-review-copilot';
 
 export interface ManualCriterionConclusionBarProps {
   criterionId: CriterionDefinition['id'];
   criterionName: string;
   criterionNumber: number;
   assessment: CriterionEvaluationResult;
+  aiPreliminaryAssessment?: CriterionPreliminaryAssessment;
   workspaceState: ApplicationReviewWorkspaceState;
   canMutate: boolean;
   stage: ReviewStage;
@@ -54,6 +58,7 @@ export const ManualCriterionConclusionBar: React.FC<
   criterionName,
   criterionNumber,
   assessment,
+  aiPreliminaryAssessment,
   workspaceState,
   canMutate,
   stage,
@@ -101,13 +106,18 @@ export const ManualCriterionConclusionBar: React.FC<
     setIsReasonOpen(false);
   };
 
+  const checklist = aiPreliminaryAssessment?.conditionChecklist || [];
+  const aiIsMeets = aiPreliminaryAssessment?.verdict === 'preliminary_meets';
+  const metCondCount = aiPreliminaryAssessment?.metConditionsCount ?? (aiIsMeets ? checklist.length : 0);
+  const totalCondCount = aiPreliminaryAssessment?.totalConditionsCount ?? checklist.length;
+
   return (
     <div
       className={`border-t border-[#DCE7EE] bg-[#F8FAFC] px-4 py-3.5 sm:px-6 sm:py-4 transition-all ${className}`}
     >
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5">
         {/* Left Side: Criterion Identity, Human Verdict & Advisory Hint */}
-        <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+        <div className="flex flex-col gap-2 min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[11.5px] font-extrabold uppercase tracking-wider text-[#475569]">
               Kết luận thẩm định tiêu chí 0{criterionNumber} · {stageLabel}
@@ -133,25 +143,23 @@ export const ManualCriterionConclusionBar: React.FC<
               </span>
             )}
 
-            {/* Advisory Readiness Hint (Calculated purely from declarations - Non-authoritative) */}
+            {/* Advisory Readiness Hint */}
             <span
-              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[5px] text-[11px] font-medium border ${
-                assessment.derivedReadiness === 'pass'
-                  ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]'
-                  : assessment.derivedReadiness === 'fail'
-                  ? 'bg-[#FFFBEB] text-[#B45309] border-[#FDE68A]'
-                  : 'bg-[#F8FAFC] text-[#64748B] border-[#E2E8F0]'
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[5px] text-[11px] font-bold border ${
+                aiIsMeets
+                  ? 'bg-[#EAFBF1] text-[#136F3A] border-[#B6E6C9]'
+                  : 'bg-[#FEF3C7] text-[#B45309] border-[#FCD34D]'
               }`}
-              title="Gợi ý tự động từ kê khai sinh viên (chỉ mang tính chất tham khảo, không tự động duyệt tiêu chí)"
+              title="Tổng hợp điều kiện cần để đạt tiêu chí theo Quy chế Sinh viên 5 tốt (chỉ mang tính chất tham khảo)"
             >
-              <Info size={11} />
+              {aiIsMeets ? <CheckCircle2 size={11.5} /> : <AlertTriangle size={11.5} />}
               <span>
-                Gợi ý kê khai:{' '}
-                {assessment.derivedReadiness === 'pass'
-                  ? 'Đủ điều kiện sơ bộ'
-                  : assessment.derivedReadiness === 'fail'
-                  ? 'Có nội dung chưa đạt'
-                  : `Đang rà soát (${assessment.reviewedItemCount}/${assessment.totalItemCount})`}
+                AI Tổng quan tiêu chí:{' '}
+                {aiIsMeets
+                  ? `Đạt sơ bộ (${metCondCount}/${totalCondCount} điều kiện)`
+                  : totalCondCount > 0
+                  ? `Cần kiểm tra thêm (Mới đạt ${metCondCount}/${totalCondCount} điều kiện)`
+                  : `Cần kiểm tra thêm`}
               </span>
             </span>
 
@@ -171,6 +179,48 @@ export const ManualCriterionConclusionBar: React.FC<
               </span>
             )}
           </div>
+
+          {/* Holistic Criterion Conditions Checklist */}
+          {checklist.length > 0 && (
+            <div className="rounded-[7px] bg-white border border-[#E2E8F0] px-3 py-2 space-y-1">
+              <div className="text-[11px] font-bold text-[#334155]">
+                Điều kiện cần để Đạt Tiêu chí 0{criterionNumber} ({criterionName}):
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1">
+                {checklist.map((cond) => {
+                  const condMet = cond.status === 'met';
+                  return (
+                    <div
+                      key={cond.id}
+                      className="flex items-start gap-1.5 text-[11.5px] leading-snug"
+                    >
+                      {condMet ? (
+                        <CheckCircle2
+                          size={13}
+                          className="text-[#16A34A] shrink-0 mt-0.5"
+                        />
+                      ) : (
+                        <AlertTriangle
+                          size={13}
+                          className="text-[#D97706] shrink-0 mt-0.5"
+                        />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <span
+                          className={`font-bold ${
+                            condMet ? 'text-[#14532D]' : 'text-[#B45309]'
+                          }`}
+                        >
+                          [{cond.ruleBadge}] {cond.label}:{' '}
+                        </span>
+                        <span className="text-[#475569]">{cond.detail}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Audit Trail Note */}
           {hasConclusion && humanConclusion && (

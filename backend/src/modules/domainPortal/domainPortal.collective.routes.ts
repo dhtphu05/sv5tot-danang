@@ -937,7 +937,7 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
     let record = portalState.evidenceIndex.get(targetId);
     if (!record) {
       for (const item of portalState.evidenceIndex.values()) {
-        if (item.name === targetId) {
+        if (item.name === targetId || item.remoteEvidenceId === targetId) {
           record = item;
           break;
         }
@@ -949,6 +949,45 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
         record = hydrated;
       }
     }
+    // Fallback to authoritative EvidenceObject table in Neon PostgreSQL (for direct 3-step R2 uploads & portrait photos)
+    if ((!record || !record.r2ObjectKey) && isNeonDbSyncEnabled()) {
+      try {
+        const { dbManager } = await import('../../shared/database/prismaClient');
+        const prisma = await dbManager.getClient();
+        const evObj = await prisma.evidenceObject.findFirst({
+          where: {
+            deletedAt: null,
+            OR: [
+              { id: targetId },
+              { objectKey: targetId },
+              { originalFileName: targetId },
+            ],
+          },
+          orderBy: { uploadedAt: 'desc' },
+        });
+        if (evObj) {
+          const sizeKb = Math.max(1, Math.round(Number(evObj.sizeBytes) / 1024));
+          record = {
+            id: record?.id || evObj.id,
+            ownerTrack: evObj.track,
+            applicationId: evObj.individualAppId || evObj.collectiveAppId || '',
+            requirementOrCriterionId: record?.requirementOrCriterionId || 'general',
+            name: evObj.originalFileName,
+            fileType: evObj.extension,
+            size: sizeKb >= 1024 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`,
+            uploadedAt: evObj.uploadedAt.toLocaleDateString('vi-VN'),
+            status: 'achieved',
+            url: `/api/v2/portal/evidence/${encodeURIComponent(evObj.id)}`,
+            r2ObjectKey: evObj.objectKey,
+            r2Bucket: evObj.bucketName,
+            remoteEvidenceId: evObj.id,
+          };
+          portalState.evidenceIndex.set(record.id, record);
+        }
+      } catch {
+        // Ignore DB lookup fallback errors
+      }
+    }
     if (!record) {
       res.status(404).json({
         success: false,
@@ -958,6 +997,15 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
       return;
     }
 
+    const fetchDest = String(req.headers['sec-fetch-dest'] || '').toLowerCase();
+    const isDirectMediaNavigation =
+      req.query.raw === '1' ||
+      fetchDest === 'iframe' ||
+      fetchDest === 'image' ||
+      fetchDest === 'document' ||
+      fetchDest === 'embed' ||
+      fetchDest === 'object';
+
     if (record.r2ObjectKey && r2StorageClient.isConfigured() && isNeonDbSyncEnabled()) {
       try {
         const presignedGet = await r2StorageClient.createPresignedGetUrl({
@@ -965,6 +1013,10 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
           fileName: record.name,
           mimeType: EXT_TO_MIME[record.fileType] || 'application/pdf',
         });
+        if (isDirectMediaNavigation) {
+          res.redirect(302, presignedGet.viewUrl);
+          return;
+        }
         res.status(200).json({
           success: true,
           data: {
@@ -977,6 +1029,17 @@ export function registerCollectiveAndEvidencePortalRoutes(router: Router): void 
       } catch {
         // Fall through to returning record
       }
+    }
+
+    if (isDirectMediaNavigation && record.base64Content) {
+      const cleanBase64 = record.base64Content.includes(',')
+        ? record.base64Content.slice(record.base64Content.indexOf(',') + 1)
+        : record.base64Content;
+      const buf = Buffer.from(cleanBase64, 'base64');
+      res.setHeader('Content-Type', EXT_TO_MIME[record.fileType] || 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename="${record.name.replace(/["\\]/g, '_')}"`);
+      res.status(200).send(buf);
+      return;
     }
 
     res.status(200).json({ success: true, data: record });

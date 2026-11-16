@@ -296,4 +296,64 @@ describe('Criteria Preliminary Evaluation Service', () => {
     assert.equal(appEval.overallVerdict, 'preliminary_meets');
     assert.equal(appEval.passedCriteriaCount, 5);
   });
+
+  it('requires all mandatory + at-least-N group conditions per criterion (e.g., GPA alone without 1/6 academic achievement is insufficient_evidence)', async () => {
+    const mockFetch = async () =>
+      ({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  isReadable: true,
+                  documentType: 'Bảng điểm học tập',
+                  extractedStudentName: 'Nguyễn Văn An',
+                  extractedStudentCode: '102220123',
+                  extractedValue: 'GPA: 3.65/4.0',
+                  numericMetric: 3.65,
+                  issuingAuthority: 'Trường Đại học Bách khoa - ĐHĐN',
+                  issueDate: '10/06/2026',
+                  hasRedStampOrSignature: 'verified',
+                  matchWithDeclaration: 'matched',
+                  discrepancyNote: null,
+                }),
+              },
+            },
+          ],
+        }),
+      }) as any;
+
+    const appEval = await evaluateFullApplicationWithOcr(
+      {
+        applicationId: 'APP-2026-INCOMPLETE-CRIT',
+        studentInfo: {
+          fullName: 'Nguyễn Văn An',
+          studentCode: '102220123',
+          schoolName: 'Trường Đại học Bách khoa - ĐHĐN',
+        },
+        criteria: [
+          {
+            criterionId: 'academic',
+            criterionName: 'Học tập tốt',
+            criterionNumber: 2,
+            declarations: [
+              {
+                declarationId: 'd-acad-only-gpa',
+                requirementId: 'academic-gpa',
+                requirementTitle: 'Điểm trung bình học tập cả năm học (GPA)',
+                declaredValue: 'Bảng điểm năm học',
+                evidenceList: [{ id: 'ev-acad-only-gpa', name: 'Bang_diem_365.pdf' }],
+              },
+            ],
+          },
+        ],
+      },
+      { apiKey: 'sk-test-key', fetchImpl: mockFetch }
+    );
+
+    assert.equal(appEval.criteriaResults['academic'].status, 'insufficient_evidence');
+    assert.equal(appEval.criteriaResults['academic'].badgeLabel, 'Cần kiểm tra thêm');
+    assert.ok(appEval.criteriaResults['academic'].headline.includes('01/06'));
+  });
 });

@@ -146,7 +146,7 @@ export class PrismaIndividualApplicationRepository implements IIndividualApplica
 
   public async findById(id: string): Promise<IndividualApplicationDto | null> {
     const prisma = await this.getPrisma();
-    const app = (await prisma.individualApplication.findUnique({
+    let app = (await prisma.individualApplication.findUnique({
       where: { id },
       include: {
         criterionSubmissions: true,
@@ -161,6 +161,23 @@ export class PrismaIndividualApplicationRepository implements IIndividualApplica
         },
       },
     })) as RawApplicationRecord | null;
+    if (!app) {
+      app = (await prisma.individualApplication.findUnique({
+        where: { applicationCode: id },
+        include: {
+          criterionSubmissions: true,
+          declarations: {
+            include: {
+              evidenceLinks: {
+                include: {
+                  evidenceObject: true,
+                },
+              },
+            },
+          },
+        },
+      })) as RawApplicationRecord | null;
+    }
     if (!app) return null;
     return this.mapToDto(app);
   }

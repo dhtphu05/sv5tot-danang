@@ -513,22 +513,36 @@ async function main() {
   console.log(`✅ Seeded ${criterionGroups.length} CriterionGroupDefinitions.`);
 
   // 5. Seed Staff Accounts (Admin, City Manager, City Officer, City Committee, School Officers)
-  await prisma.user.createMany({
-    data: STAFF_SEED_ACCOUNTS.map((staff) => {
-      const validInstId = INSTITUTIONS_SEED.some((i) => i.id === staff.institutionId)
-        ? staff.institutionId
-        : 'inst-hsv-dn';
-      return {
-        id: staff.id,
-        email: staff.email.toLowerCase(),
+  for (const staff of STAFF_SEED_ACCOUNTS) {
+    const validInstId = INSTITUTIONS_SEED.some((i) => i.id === staff.institutionId)
+      ? staff.institutionId
+      : 'inst-hsv-dn';
+    const canonicalEmail = staff.email.toLowerCase();
+    await prisma.user.upsert({
+      where: { id: staff.id },
+      update: {
+        email: canonicalEmail,
         fullName: staff.fullName,
         passwordHash: defaultHash,
         status: 'ACTIVE',
         institutionId: validInstId,
-      };
-    }),
-    skipDuplicates: true,
-  });
+      },
+      create: {
+        id: staff.id,
+        email: canonicalEmail,
+        fullName: staff.fullName,
+        passwordHash: defaultHash,
+        status: 'ACTIVE',
+        institutionId: validInstId,
+      },
+    });
+  }
+
+  await prisma.userRoleAssignment
+    .deleteMany({
+      where: { userId: { in: STAFF_SEED_ACCOUNTS.map((s) => s.id) } },
+    })
+    .catch(() => {});
 
   await prisma.userRoleAssignment.createMany({
     data: STAFF_SEED_ACCOUNTS.map((staff) => {

@@ -351,6 +351,7 @@ export const demoServicesAdapter: DomainServicesBundle = {
             (normalized === 'lan.pn@hsvdanang.vn' ||
               normalized === 'khoa.nd@hsvdanang.vn' ||
               normalized === 'admin@hsvdanang.vn' ||
+              normalized === 'quantri.thanhpho@hsvdanang.vn' ||
               normalized === 'admin@udn.vn'))
       );
 

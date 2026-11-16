@@ -4,15 +4,20 @@
  * (e.g. Quyết định số 182/QĐ-ĐHĐN của Đại học Đà Nẵng).
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, FileText, Download, Building2, CheckCircle2 } from 'lucide-react';
 import { Button } from '../../components/buttons/Button';
+import {
+  getEvidenceBlobUrlByIdOrName,
+  isLiveSessionBlobUrl,
+} from '../../staff/demoEvidenceStorage';
 
 export interface CommitteeSchoolDecisionPreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   decisionNumber?: string;
   unitName?: string;
+  fileId?: string;
   fileUrl?: string;
   fileName?: string;
 }
@@ -24,10 +29,35 @@ export const CommitteeSchoolDecisionPreviewModal: React.FC<
   onClose,
   decisionNumber = 'Văn bản đề nghị (.PDF)',
   unitName = 'Đơn vị xét sơ tuyển',
+  fileId,
   fileUrl,
   fileName,
 }) => {
+  const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    setResolvedUrl(null);
+    getEvidenceBlobUrlByIdOrName(fileId, fileName)
+      .then((url) => {
+        if (!cancelled && url) {
+          setResolvedUrl(url);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, fileId, fileName, fileUrl]);
+
   if (!isOpen) return null;
+
+  const usableFileUrl =
+    fileUrl && (!fileUrl.startsWith('blob:') || isLiveSessionBlobUrl(fileUrl))
+      ? fileUrl
+      : undefined;
+  const effectiveUrl = resolvedUrl || usableFileUrl;
 
   return (
     <div
@@ -69,9 +99,9 @@ export const CommitteeSchoolDecisionPreviewModal: React.FC<
 
         {/* Document Body */}
         <div className="p-6 overflow-y-auto flex-1 bg-[#F1F5F9]">
-          {fileUrl ? (
+          {effectiveUrl ? (
             <iframe
-              src={fileUrl}
+              src={effectiveUrl}
               title={fileName || decisionNumber}
               className="w-full h-[65vh] rounded-[8px] border border-[#CBD5E1] bg-white"
             />
@@ -105,9 +135,9 @@ export const CommitteeSchoolDecisionPreviewModal: React.FC<
           </div>
 
           <div className="flex items-center gap-2">
-            {fileUrl && (
+            {effectiveUrl && (
               <a
-                href={fileUrl}
+                href={effectiveUrl}
                 download={fileName || 'van_ban_de_nghi.pdf'}
                 target="_blank"
                 rel="noreferrer"

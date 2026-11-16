@@ -111,9 +111,11 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
 
       const insight = evaluateDeclarationQuickInsight({
         criterionId,
+        requirementId: requirement.id,
         requirementTitle: requirement.title,
         declaredValue: d.value || requirement.title,
         evidenceFiles: d.evidenceFiles || [],
+        allRequirementDeclarations: requirement.declarations,
       });
       if (!firstExtracted && insight.extractedText) {
         firstExtracted = insight.extractedText;
@@ -131,7 +133,6 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
 
     const allReviewed = unreviewedCount === 0;
     const isAiAllPass = aiPassCount === declarationCount;
-    const isAiFail = aiFailCount > 0 && aiPassCount === 0;
 
     return (
       <div className="flex flex-col items-end gap-1.5 select-none w-full">
@@ -140,8 +141,6 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
           className={`w-full max-w-[340px] rounded-[8px] px-2.5 py-1.5 border text-left space-y-1 ${
             isAiAllPass
               ? 'bg-[#F8FEFA] border-[#C6EED5]'
-              : isAiFail
-              ? 'bg-[#FEF2F2] border-[#FECACA]'
               : 'bg-[#FFFBEB] border-[#FDE68A]'
           }`}
         >
@@ -150,23 +149,17 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
               className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] text-[10.5px] font-bold border ${
                 isAiAllPass
                   ? 'bg-[#EAFBF1] text-[#136F3A] border-[#B6E6C9]'
-                  : isAiFail
-                  ? 'bg-[#FEE2E2] text-[#B91C1C] border-[#FCA5A5]'
                   : 'bg-[#FEF3C7] text-[#B45309] border-[#FCD34D]'
               }`}
             >
               {isAiAllPass ? (
                 <CheckCircle2 size={11} className="shrink-0" />
-              ) : isAiFail ? (
-                <XCircle size={11} className="shrink-0" />
               ) : (
                 <AlertTriangle size={11} className="shrink-0" />
               )}
               <span>
                 {isAiAllPass
                   ? `AI: Đạt sơ bộ (${aiPassCount}/${declarationCount} mục)`
-                  : isAiFail
-                  ? `AI: Chưa đạt sơ bộ`
                   : `AI: Cần kiểm tra thêm (${aiPassCount}/${declarationCount} Đạt)`}
               </span>
             </span>
@@ -253,9 +246,9 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
 
     return (
       <div className="flex flex-col items-end gap-1.5 select-none">
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[5px] text-[10.5px] font-bold bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA]">
-          <XCircle size={11} className="shrink-0" />
-          <span>AI: Chưa đạt sơ bộ (Thiếu kê khai)</span>
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[5px] text-[10.5px] font-bold bg-[#FEF3C7] text-[#B45309] border border-[#FCD34D]">
+          <AlertTriangle size={11} className="shrink-0" />
+          <span>AI: Cần kiểm tra thêm (Thiếu kê khai bắt buộc)</span>
         </span>
         <div className="flex items-center gap-2">
           <span className="text-[11.5px] font-medium text-[#64748B] bg-[#F1F5F9] border border-[#E2E8F0] px-2 py-0.5 rounded-[5px]">
@@ -312,9 +305,11 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
 
   const quickInsight = evaluateDeclarationQuickInsight({
     criterionId,
+    requirementId: requirement.id,
     requirementTitle: requirement.title,
     declaredValue: decl?.value || requirement.title,
     evidenceFiles: decl?.evidenceFiles || [],
+    allRequirementDeclarations: requirement.declarations,
   });
 
   const isPass = currentStatus === 'suitable' || currentStatus === 'review_completed';

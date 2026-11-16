@@ -307,6 +307,7 @@ export const STAFF_SEED_ACCOUNTS: Array<{
   {
     id: 'staff-sch-upes3',
     email: 'canbo.upes3@upes3.edu.vn',
+    aliases: ['canbo.tdtt@upes3.edu.vn'],
     fullName: 'Cán bộ sơ tuyển Trường Đại học Thể dục Thể thao Đà Nẵng',
     role: 'SCHOOL_OFFICER',
     roleLabel: 'Cán bộ sơ tuyển cấp Trường',
@@ -372,7 +373,7 @@ export const STAFF_SEED_ACCOUNTS: Array<{
   {
     id: 'staff-sch-cd-gtvt-tw5',
     email: 'canbo.c5@c5.edu.vn',
-    aliases: ['canbo.gtvt5@cdgtvttw5.edu.vn'],
+    aliases: ['canbo.gtvt5@cdgtvttw5.edu.vn', 'canbo.gtvttw5@gtvttw5.edu.vn'],
     fullName: 'Cán bộ sơ tuyển Trường Cao đẳng Giao thông Vận tải Trung ương V',
     role: 'SCHOOL_OFFICER',
     roleLabel: 'Cán bộ sơ tuyển cấp Trường',
@@ -394,7 +395,7 @@ export const STAFF_SEED_ACCOUNTS: Array<{
   {
     id: 'staff-sch-cd-luongthuc',
     email: 'canbo.cfit@cfit.edu.vn',
-    aliases: ['canbo.lttp@cfi.edu.vn'],
+    aliases: ['canbo.lttp@cfi.edu.vn', 'canbo.cfi@cfi.edu.vn'],
     fullName: 'Cán bộ sơ tuyển Trường Cao đẳng Lương thực Thực phẩm',
     role: 'SCHOOL_OFFICER',
     roleLabel: 'Cán bộ sơ tuyển cấp Trường',
@@ -405,7 +406,7 @@ export const STAFF_SEED_ACCOUNTS: Array<{
   {
     id: 'staff-sch-cd-congnghe',
     email: 'canbo.ydvn@ydvn.edu.vn',
-    aliases: ['canbo.cnyd@caodangyduocvietnam.edu.vn'],
+    aliases: ['canbo.cnyd@caodangyduocvietnam.edu.vn', 'canbo.ydvn@duocdanang.edu.vn'],
     fullName: 'Cán bộ sơ tuyển Trường Cao đẳng Công nghệ Y – Dược Việt Nam',
     role: 'SCHOOL_OFFICER',
     roleLabel: 'Cán bộ sơ tuyển cấp Trường',
@@ -504,7 +505,12 @@ export const STAFF_SEED_ACCOUNTS: Array<{
   {
     id: 'staff-adm-lan',
     email: 'admin@hsvdanang.vn',
-    aliases: ['admin@udn.vn', 'lan.pn@hsvdanang.vn', 'khoa.nd@hsvdanang.vn'],
+    aliases: [
+      'quantri.thanhpho@hsvdanang.vn',
+      'admin@udn.vn',
+      'lan.pn@hsvdanang.vn',
+      'khoa.nd@hsvdanang.vn',
+    ],
     fullName: 'Quản trị hệ thống 5TOT Đà Nẵng',
     role: 'ADMIN',
     roleLabel: 'Quản trị hệ thống',

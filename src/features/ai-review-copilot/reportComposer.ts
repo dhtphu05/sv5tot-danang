@@ -259,20 +259,27 @@ function composeApplicationScopeBlocks(
     });
 
     for (const item of critStats) {
-      const isComplete = item.declCount > 0 && item.evCount > 0;
+      const critAssessment = preliminaryVerdictState.criteriaAssessments?.[item.cid];
+      const critVerdict = critAssessment?.verdict || (item.declCount > 0 && item.evCount > 0 ? 'preliminary_meets' : 'insufficient_evidence');
+      const checklistSummary = critAssessment?.conditionChecklist?.length
+        ? critAssessment.conditionChecklist
+            .map((c) => `${c.status === 'met' ? '[Đạt]' : '[Cần KT]'} ${c.ruleBadge}: ${c.detail}`)
+            .join(' | ')
+        : critAssessment?.detail || '';
+
       blocks.push({
         type: 'criterion_card',
         id: `card-crit-real-${item.cid}`,
         criterionId: item.cid,
         criterionNumber: item.cToken.number,
         criterionName: item.cToken.name,
-        verdict: isComplete ? 'preliminary_meets' : 'insufficient_evidence',
-        summary: isComplete
-          ? `Đã kê khai ${item.declCount} mục · Đính kèm ${item.evCount} tệp minh chứng.`
+        verdict: critVerdict,
+        summary: critAssessment
+          ? `${critAssessment.headline}${checklistSummary ? ` — ${checklistSummary}` : ''}`
           : item.declCount === 0
           ? 'Chưa có nội dung kê khai cho tiêu chí này.'
-          : `Đã kê khai ${item.declCount} mục nhưng chưa có tệp minh chứng đính kèm.`,
-        findingCount: isComplete ? 0 : 1,
+          : `Đã kê khai ${item.declCount} mục · Đính kèm ${item.evCount} tệp minh chứng.`,
+        findingCount: critVerdict === 'preliminary_meets' ? 0 : Math.max(1, critAssessment?.unresolvedIssuesCount || 1),
         primaryActionLabel: 'Xem tiêu chí',
       });
     }
@@ -283,8 +290,8 @@ function composeApplicationScopeBlocks(
       title: 'Khuyến nghị cán bộ',
       description:
         verdict === 'preliminary_meets'
-          ? 'Tất cả 05 tiêu chí đều có nội dung kê khai và minh chứng đính kèm. Cán bộ vui lòng đối chiếu từng tệp văn bản gốc và ghi nhận kết luận thẩm định.'
-          : 'Một số tiêu chí chưa đủ nội dung kê khai hoặc tệp minh chứng. Cán bộ vui lòng kiểm tra chi tiết và gửi yêu cầu bổ sung nếu cần thiết.',
+          ? 'Tất cả 05 tiêu chí đều đáp ứng đủ các nhóm điều kiện bắt buộc và tự chọn theo Quy chế. Cán bộ vui lòng đối chiếu văn bản gốc và ghi nhận kết luận thẩm định.'
+          : 'Một số tiêu chí chưa đáp ứng đủ các nhóm điều kiện bắt buộc/tự chọn hoặc có minh chứng cần xác minh thêm. Cán bộ vui lòng kiểm tra chi tiết từng điều kiện của tiêu chí và gửi yêu cầu bổ sung nếu cần thiết.',
       actionType: 'select_criterion',
       targetCriterionId: preliminaryVerdictState.recommendedStartingCriterionId || 'ethics',
       actionLabel: 'Bắt đầu thẩm định',

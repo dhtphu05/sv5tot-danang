@@ -399,12 +399,53 @@ export class EvidenceService {
     cache?: Map<string, Promise<IndividualApplicationDto | null>>
   ): Promise<IndividualApplicationDto | null> {
     if (!this.applicationRepo) return null;
+    const resolveApp = async (): Promise<IndividualApplicationDto | null> => {
+      const dbApp = await this.applicationRepo!.findById(appId);
+      if (dbApp) return dbApp;
+      // Fallback to portalState.individualStaffRecords only when using production Prisma repository
+      if (this.applicationRepo!.constructor.name === 'PrismaIndividualApplicationRepository') {
+        const { portalState } = await import('../domainPortal/domainPortal.state');
+        const portalRec = (portalState?.individualStaffRecords || []).find(
+          (r: any) => r.applicationId === appId || r.id === appId
+        );
+        if (portalRec) {
+          return {
+            id: portalRec.applicationId,
+            applicationCode: portalRec.applicationId,
+            seasonId: portalRec.seasonId || 'season-2025-2026',
+            applicantUserId: portalRec.student?.id || 'student',
+            institutionId: portalRec.institution?.id || portalRec.institutionId || 'inst-dut',
+            schoolReviewUnitId: portalRec.schoolReviewUnitId || 'unit-udn',
+            facultyName: portalRec.faculty || '',
+            className: portalRec.student?.className || '',
+            academicYear: '2025-2026',
+            studentCodeSnapshot: portalRec.student?.studentCode || '',
+            fullNameSnapshot: portalRec.student?.fullName || '',
+            currentReviewStage:
+              portalRec.currentReviewStage === 'CITY' ||
+              portalRec.schoolPreliminaryStatus === 'forwarded_to_city'
+                ? 'CITY_REVIEW'
+                : 'SCHOOL_PRELIMINARY',
+            schoolPreliminaryStatus:
+              portalRec.schoolPreliminaryStatus === 'forwarded_to_city'
+                ? 'FORWARDED_TO_CITY'
+                : 'PENDING_SCHOOL_REVIEW',
+            cityWorkflowStatus: 'CITY_UNASSIGNED',
+            openSupplementCount: 0,
+            version: 1,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          } as IndividualApplicationDto;
+        }
+      }
+      return null;
+    };
     if (!cache) {
-      return this.applicationRepo.findById(appId);
+      return resolveApp();
     }
     let pending = cache.get(appId);
     if (!pending) {
-      pending = this.applicationRepo.findById(appId);
+      pending = resolveApp();
       cache.set(appId, pending);
     }
     return pending;
@@ -444,7 +485,27 @@ export class EvidenceService {
         if (!app) {
           throw ApiError.forbidden('Không tìm thấy hồ sơ liên kết của minh chứng này.', 'APPLICATION_NOT_FOUND');
         }
-        if (!actor.schoolReviewUnitId || app.schoolReviewUnitId !== actor.schoolReviewUnitId) {
+        const udnMemberUnits = new Set([
+          'unit-udn',
+          'unit-dut',
+          'unit-due',
+          'unit-ued',
+          'unit-ufl',
+          'unit-ufls',
+          'unit-ute',
+          'unit-vku',
+          'unit-vnuk',
+          'unit-udck',
+          'unit-smp',
+        ]);
+        const actorUnit = actor.schoolReviewUnitId || '';
+        const appUnit = app.schoolReviewUnitId || '';
+        const isSameUnit =
+          Boolean(actorUnit) &&
+          (actorUnit === appUnit ||
+            (actorUnit === 'unit-udn' && udnMemberUnits.has(appUnit)) ||
+            (actorUnit === 'unit-cddn' && appUnit === 'unit-cd-nghe-dn'));
+        if (!isSameUnit) {
           throw ApiError.forbidden(
             'Bạn không có thẩm quyền truy cập minh chứng của hồ sơ thuộc đơn vị trường khác (vi phạm phân quyền School Review Unit).',
             'CROSS_UNIT_IDOR_PREVENTED'

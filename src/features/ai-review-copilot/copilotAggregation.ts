@@ -15,7 +15,7 @@
 
 import { CriterionId } from '../../types/application';
 import { isBackendMode } from '../../shared/config/executionMode';
-import { evaluateDeclarationQuickInsight } from '../../shared/api/copilotApi';
+import { evaluateCriterionHolisticConditions } from '../../shared/api/copilotApi';
 import {
   AiFinding,
   AiEvidenceInsight,
@@ -414,6 +414,10 @@ export function evaluateCriterionPreliminaryAssessment(
     actionType: 'start_guided_review',
   };
 
+  const holisticEval = studentApp?.criteria
+    ? evaluateCriterionHolisticConditions(criterionId, studentApp)
+    : undefined;
+
   if (!isPolicyValid) {
     verdict = 'insufficient_evidence';
     headline = 'Chưa xác minh được quy định áp dụng cho tiêu chí này.';
@@ -467,54 +471,17 @@ export function evaluateCriterionPreliminaryAssessment(
       actionType: 'inspect_evidence',
       targetId: unclearFindings[0].evidenceId,
     };
-  } else if (isBackendMode() && studentApp?.criteria) {
-    const critNode = studentApp.criteria.find((c: any) => c.id === criterionId);
-    const reqs = critNode
-      ? Array.isArray(critNode.groups) && critNode.groups.length > 0
-        ? critNode.groups.flatMap((g: any) => g.requirements || [])
-        : critNode.requirements || []
-      : [];
-    let declCount = 0;
-    let evCount = 0;
-    let firstInsufficientReason = '';
-
-    for (const r of reqs) {
-      const decls = r.declarations || [];
-      declCount += decls.length;
-      for (const d of decls) {
-        const files = d.evidenceFiles || d.evidence || [];
-        evCount += files.length;
-        const insight = evaluateDeclarationQuickInsight({
-          criterionId,
-          requirementTitle: r.title || meta.name,
-          declaredValue: d.value || r.title || meta.name,
-          evidenceFiles: files,
-        });
-        if (insight.status !== 'preliminary_meets') {
-          if (!firstInsufficientReason) firstInsufficientReason = insight.reasonText;
-          insufficientReqs.push(r.title || meta.name);
-        } else {
-          supportedReqs.push(r.title || meta.name);
-        }
-      }
-    }
-    if (declCount === 0 || evCount === 0) {
-      verdict = 'insufficient_evidence';
-      headline =
-        declCount === 0
-          ? `Tiêu chí 0${meta.number}: Chưa có nội dung kê khai.`
-          : `Tiêu chí 0${meta.number}: Chưa có tệp minh chứng đính kèm.`;
-      detail = 'Cần bổ sung nội dung kê khai hoặc tài liệu minh chứng hợp lệ trước khi kết luận.';
-      insufficientReqs.push(meta.name);
-    } else if (firstInsufficientReason) {
-      verdict = 'insufficient_evidence';
-      headline = firstInsufficientReason;
-      detail = 'Cần cán bộ kiểm tra thêm hoặc yêu cầu sinh viên bổ sung minh chứng.';
-    } else {
-      verdict = 'preliminary_meets';
-      headline = `Tiêu chí 0${meta.number}: Đã đối chiếu ${declCount} kê khai và ${evCount} tệp minh chứng khớp quy chế.`;
-      detail = 'Các nội dung kê khai đã có tệp minh chứng hợp lệ và đạt ngưỡng sơ bộ.';
-      if (supportedReqs.length === 0) supportedReqs.push(meta.name);
+  } else if (isBackendMode() && holisticEval) {
+    verdict = holisticEval.verdict;
+    headline = holisticEval.headline;
+    detail = holisticEval.detail;
+    supportedReqs.push(...holisticEval.supportedRequirements);
+    insufficientReqs.push(...holisticEval.insufficientRequirements);
+    if (verdict !== 'preliminary_meets') {
+      nextAction = {
+        label: 'Kiểm tra điều kiện tiêu chí còn thiếu',
+        actionType: 'start_guided_review',
+      };
     }
   } else {
     // Everything consistent
@@ -536,7 +503,9 @@ export function evaluateCriterionPreliminaryAssessment(
     activeDiscrepancies.length +
     missingEvFindings.length +
     unclearFindings.length +
-    (isBackendMode() && verdict === 'insufficient_evidence' && findings.length === 0 ? 1 : 0);
+    (isBackendMode() && holisticEval
+      ? Math.max(0, holisticEval.totalConditionsCount - holisticEval.metConditionsCount)
+      : 0);
 
   return {
     criterionId,
@@ -546,6 +515,9 @@ export function evaluateCriterionPreliminaryAssessment(
     verdictLabel: vMeta.badgeLabel,
     headline,
     detail,
+    metConditionsCount: holisticEval?.metConditionsCount,
+    totalConditionsCount: holisticEval?.totalConditionsCount,
+    conditionChecklist: holisticEval?.conditionChecklist,
     supportedRequirements: supportedReqs,
     unsupportedRequirements: unsupportedReqs,
     insufficientRequirements: insufficientReqs,

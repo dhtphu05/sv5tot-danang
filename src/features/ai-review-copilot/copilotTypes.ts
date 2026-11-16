@@ -135,6 +135,18 @@ export interface ReviewerAiFeedback {
   officerName?: string;
 }
 
+export interface CriterionConditionChecklistEntry {
+  id: string;
+  groupTitle: string;
+  label: string;
+  ruleBadge: string;
+  status: 'met' | 'verify_needed' | 'missing';
+  detail: string;
+  declaredCount: number;
+  passedCount: number;
+  requiredCount: number;
+}
+
 export interface CriterionPreliminaryAssessment {
   criterionId: CriterionId;
   criterionNumber: number;
@@ -144,6 +156,9 @@ export interface CriterionPreliminaryAssessment {
   status?: 'meets' | 'not_meets' | 'insufficient_evidence';
   headline: string;
   detail: string;
+  metConditionsCount?: number;
+  totalConditionsCount?: number;
+  conditionChecklist?: CriterionConditionChecklistEntry[];
   supportedRequirements: string[];
   unsupportedRequirements: string[];
   insufficientRequirements: string[];

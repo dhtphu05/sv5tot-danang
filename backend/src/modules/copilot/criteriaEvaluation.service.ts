@@ -457,12 +457,67 @@ export async function evaluateFullApplicationWithOcr(
 
     let critStatus: PreliminaryStatusCode = 'preliminary_meets';
     let critBadgeLabel: 'Đạt sơ bộ' | 'Thiếu dữ liệu' | 'Cần kiểm tra thêm' | 'Chưa đạt' = 'Đạt sơ bộ';
-    let critHeadline = `Tiêu chí 0${crit.criterionNumber} (${crit.criterionName}): Các mục kê khai và minh chứng khớp quy chế.`;
+    let critHeadline = `Tiêu chí 0${crit.criterionNumber} (${crit.criterionName}): Đạt đủ các điều kiện và minh chứng khớp quy chế.`;
+
+    const reqIds = new Set(crit.declarations.map((d) => d.requirementId));
+    const usesCanonicalReqIds = Array.from(reqIds).some((id) =>
+      /^(ethics-|academic-|physical-|volunteer-|integration-)/.test(id)
+    );
+
+    let missingConditionReason = '';
+    if (usesCanonicalReqIds) {
+      if (crit.criterionId === 'ethics') {
+        const hasScore = reqIds.has('ethics-score');
+        const hasLaw = reqIds.has('ethics-law');
+        const hasSupp =
+          reqIds.has('ethics-party') ||
+          reqIds.has('ethics-politics-team') ||
+          reqIds.has('ethics-politics-paper') ||
+          reqIds.has('ethics-commendation');
+        const missingParts: string[] = [];
+        if (!hasScore) missingParts.push('Điểm rèn luyện (>= 80/100)');
+        if (!hasLaw) missingParts.push('Xác nhận không vi phạm pháp luật, quy chế');
+        if (!hasSupp) missingParts.push('Ít nhất 01/04 tiêu chuẩn bổ sung');
+        if (missingParts.length > 0) {
+          missingConditionReason = `Cần kiểm tra thêm — Thiếu điều kiện bắt buộc của tiêu chí Đạo đức tốt: ${missingParts.join(', ')}.`;
+        }
+      } else if (crit.criterionId === 'academic') {
+        const hasGpa = reqIds.has('academic-gpa');
+        const hasAch =
+          reqIds.has('academic-nckh') ||
+          reqIds.has('academic-paper') ||
+          reqIds.has('academic-presentation') ||
+          reqIds.has('academic-product') ||
+          reqIds.has('academic-team') ||
+          reqIds.has('academic-innovation');
+        if (!hasGpa || !hasAch) {
+          missingConditionReason = !hasGpa
+            ? 'Cần kiểm tra thêm — Thiếu điều kiện bắt buộc: Điểm TB học tập cả năm học (GPA).'
+            : 'Cần kiểm tra thêm — Mới có GPA năm học, còn thiếu ít nhất 01/06 hình thức thành tích học thuật / NCKH.';
+        }
+      } else if (crit.criterionId === 'integration') {
+        const hasGroupA = reqIds.has('integration-skills') || reqIds.has('integration-union-award');
+        const hasGroupB =
+          reqIds.has('integration-lang') ||
+          reqIds.has('integration-intl') ||
+          reqIds.has('integration-contest');
+        if (!hasGroupA || !hasGroupB) {
+          missingConditionReason = !hasGroupA
+            ? 'Cần kiểm tra thêm — Mới có Nhóm B, còn thiếu Nhóm A (Khóa kỹ năng thực hành xã hội hoặc Khen thưởng Đoàn - Hội).'
+            : 'Cần kiểm tra thêm — Mới có Nhóm A, còn thiếu Nhóm B (Chuẩn ngoại ngữ, Giao lưu quốc tế hoặc Cuộc thi ngoại ngữ).';
+        }
+      }
+    }
 
     if (declResults.length === 0) {
       critStatus = 'insufficient_evidence';
       critBadgeLabel = 'Cần kiểm tra thêm';
       critHeadline = `Tiêu chí 0${crit.criterionNumber} (${crit.criterionName}): Chưa có mục kê khai hoặc minh chứng.`;
+      verifyNeededCriteriaCount++;
+    } else if (missingConditionReason) {
+      critStatus = 'insufficient_evidence';
+      critBadgeLabel = 'Cần kiểm tra thêm';
+      critHeadline = missingConditionReason;
       verifyNeededCriteriaCount++;
     } else if (declResults.some((d) => d.preliminaryStatus !== 'preliminary_meets')) {
       critStatus = 'insufficient_evidence';

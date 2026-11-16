@@ -1053,6 +1053,11 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
                 criterionName={critDef?.name || critId}
                 criterionNumber={critDef?.number || 1}
                 assessment={assessment}
+                aiPreliminaryAssessment={
+                  applicationAiVerdict.criteriaAssessments[
+                    critId as CriterionDefinition['id']
+                  ]
+                }
                 workspaceState={workspaceState}
                 canMutate={effectiveCanMutate}
                 stage={effectiveStage}
@@ -1266,6 +1271,7 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
           applicationRecord.schoolReviewSummary?.schoolReviewUnitName ||
           applicationRecord.institution.officialName
         }
+        fileId={applicationRecord.schoolReviewSummary?.decisionDocumentMetadata?.fileId}
         fileUrl={applicationRecord.schoolReviewSummary?.decisionDocumentMetadata?.fileUrl}
         fileName={applicationRecord.schoolReviewSummary?.decisionDocumentMetadata?.fileName}
       />

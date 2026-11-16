@@ -316,8 +316,9 @@ export const SchoolRecommendationForwardingPage: React.FC<
 
     setUploadError(null);
     const objectUrl = URL.createObjectURL(file);
+    const docFileId = `doc-${Date.now()}`;
     const baseDoc: DecisionDocumentMetadata = {
-      fileId: `doc-${Date.now()}`,
+      fileId: docFileId,
       fileName: file.name,
       fileSize: file.size,
       fileUrl: objectUrl,
@@ -329,6 +330,14 @@ export const SchoolRecommendationForwardingPage: React.FC<
       signedByTitle: decisionDoc?.signedByTitle,
     };
     setDecisionDoc(baseDoc);
+    void import('../../staff/demoEvidenceStorage')
+      .then(({ saveEvidenceFile }) =>
+        saveEvidenceFile(docFileId, file, file.name, 'pdf', {
+          applicationId: `BATCH-${userUnitId}-${seasonId}`,
+          reqId: 'school-forwarding-decision',
+        })
+      )
+      .catch(() => {});
     if (file.size <= 20 * 1024 * 1024) {
       const reader = new FileReader();
       reader.onload = () => {

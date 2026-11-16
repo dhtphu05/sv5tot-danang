@@ -348,14 +348,140 @@ export async function triggerEvidenceOcr(
   return task;
 }
 
+export interface CriterionConditionCheckItem {
+  id: string;
+  groupTitle: string;
+  label: string;
+  ruleBadge: string;
+  status: 'met' | 'verify_needed' | 'missing';
+  detail: string;
+  declaredCount: number;
+  passedCount: number;
+  requiredCount: number;
+}
+
+export interface CriterionHolisticEvaluation {
+  criterionId: string;
+  criterionNumber: number;
+  criterionName: string;
+  verdict: 'preliminary_meets' | 'insufficient_evidence';
+  badgeLabel: 'Đạt sơ bộ' | 'Cần kiểm tra thêm';
+  headline: string;
+  detail: string;
+  metConditionsCount: number;
+  totalConditionsCount: number;
+  conditionChecklist: CriterionConditionCheckItem[];
+  supportedRequirements: string[];
+  insufficientRequirements: string[];
+}
+
+export function extractVolunteerDaysFromDeclaration(
+  decl: { value?: string; detail?: string; metadata?: Record<string, any>; evidenceFiles?: Array<{ id: string; name: string; url?: string; status?: string }>; evidence?: Array<{ id: string; name: string; url?: string; status?: string }> },
+  studentName?: string
+): { days: number; isEvidenceValid: boolean } {
+  const files = decl.evidenceFiles || decl.evidence || [];
+  if (files.length === 0) {
+    const text = `${decl.value || ''} ${decl.detail || ''}`.toLowerCase();
+    const m = text.match(/(\d+)\s*ngày/i);
+    const days = m ? parseInt(m[1], 10) : text.includes('hiến máu') || text.includes('hien mau') ? 1 : 0;
+    return { days, isEvidenceValid: false };
+  }
+
+  const extractions = files.map((ev) =>
+    getCachedEvidenceOcrSync({
+      evidenceId: ev.id,
+      fileName: ev.name,
+      declaredValue: decl.value || '',
+      requirementTitle: 'Hoạt động tình nguyện tích lũy',
+      criterionId: 'volunteer',
+      studentName,
+    })
+  );
+
+  let ocrDays = 0;
+  for (const e of extractions) {
+    if (typeof e.numericMetric === 'number' && e.numericMetric > 0 && e.numericMetric <= 365) {
+      ocrDays += e.numericMetric;
+    } else {
+      const m = (e.extractedValue || '').match(/(\d+)\s*ngày/i);
+      if (m) {
+        ocrDays += parseInt(m[1], 10);
+      } else if ((e.extractedValue || '').toLowerCase().includes('hiến máu')) {
+        ocrDays += 1;
+      }
+    }
+  }
+
+  if (ocrDays === 0) {
+    const metaDays = decl.metadata?.days || decl.metadata?.volDaysCount;
+    if (metaDays) {
+      const parsed = parseInt(String(metaDays), 10);
+      if (!isNaN(parsed) && parsed > 0) ocrDays = parsed;
+    }
+  }
+
+  if (ocrDays === 0) {
+    const text = `${decl.value || ''} ${decl.detail || ''}`.toLowerCase();
+    const m = text.match(/(\d+)\s*ngày/i);
+    if (m) {
+      ocrDays = parseInt(m[1], 10);
+    } else if (
+      decl.metadata?.volActivityType === 'blood_donation' ||
+      text.includes('hiến máu') ||
+      text.includes('hien mau')
+    ) {
+      ocrDays = 1;
+    } else {
+      ocrDays = 1;
+    }
+  }
+
+  const hasMismatch = extractions.some((e) => e.matchWithDeclaration === 'mismatch');
+  const hasFlaggedFile = files.some((ev) => ev.status === 'needs_verification');
+  const hasPartial =
+    hasFlaggedFile ||
+    extractions.some(
+      (e) =>
+        e.matchWithDeclaration === 'partial' ||
+        e.hasRedStampOrSignature !== 'verified' ||
+        !e.isReadable
+    );
+
+  return {
+    days: ocrDays,
+    isEvidenceValid: !hasMismatch && !hasPartial,
+  };
+}
+
 export function evaluateDeclarationQuickInsight(params: {
   criterionId: string;
+  requirementId?: string;
   requirementTitle: string;
   declaredValue: string;
   evidenceFiles: Array<{ id: string; name: string; url?: string; status?: string }>;
   studentName?: string;
+  allRequirementDeclarations?: Array<{
+    id?: string;
+    value?: string;
+    detail?: string;
+    metadata?: Record<string, any>;
+    evidenceFiles?: Array<{ id: string; name: string; url?: string; status?: string }>;
+    evidence?: Array<{ id: string; name: string; url?: string; status?: string }>;
+  }>;
+  cumulativeVolunteerDays?: number;
+  hasValidVolunteerAward?: boolean;
 }): DeclarationQuickOcrInsight {
-  const { criterionId, requirementTitle, declaredValue, evidenceFiles, studentName } = params;
+  const {
+    criterionId,
+    requirementId,
+    requirementTitle,
+    declaredValue,
+    evidenceFiles,
+    studentName,
+    allRequirementDeclarations,
+    cumulativeVolunteerDays,
+    hasValidVolunteerAward,
+  } = params;
 
   if (!evidenceFiles || evidenceFiles.length === 0) {
     return {
@@ -457,26 +583,45 @@ export function evaluateDeclarationQuickInsight(params: {
     };
   }
 
-  // 3. Volunteer Days Check (>= 5 days cumulative)
-  if (criterionId === 'volunteer' && lowerContext.includes('ngày')) {
-    const totalDays = extractions.reduce((sum, e) => {
-      if (typeof e.numericMetric === 'number' && e.numericMetric > 0 && e.numericMetric <= 365) {
-        return sum + e.numericMetric;
-      }
-      const m = (e.extractedValue || '').match(/(\d+)\s*ngày/i);
-      return sum + (m ? parseInt(m[1], 10) : 0);
-    }, 0);
-    if (totalDays > 0 && totalDays < 5) {
-      const reason = `Cần kiểm tra thêm: Minh chứng xác nhận ${totalDays} ngày tình nguyện (quy chế yêu cầu tích lũy tối thiểu 05 ngày/năm học).`;
+  // 3. Volunteer Days Check (>= 5 days cumulative across all activities in TC4.1, OR valid TC4.2 award)
+  const isVolunteerDaysReq =
+    criterionId === 'volunteer' &&
+    (requirementId === 'volunteer-activities' ||
+      lowerContext.includes('05 ngày') ||
+      lowerContext.includes('5 ngày') ||
+      lowerContext.includes('tích lũy'));
+  if (isVolunteerDaysReq) {
+    const itemDaysInfo = extractVolunteerDaysFromDeclaration(
+      { value: declaredValue, evidenceFiles },
+      studentName
+    );
+    const itemDays = itemDaysInfo.days;
+
+    let totalDays = cumulativeVolunteerDays;
+    if (totalDays === undefined && Array.isArray(allRequirementDeclarations) && allRequirementDeclarations.length > 0) {
+      totalDays = allRequirementDeclarations.reduce(
+        (sum, d) => sum + extractVolunteerDaysFromDeclaration(d, studentName).days,
+        0
+      );
+    }
+    if (totalDays === undefined) {
+      totalDays = itemDays;
+    }
+
+    if (totalDays > 0 && totalDays < 5 && !hasValidVolunteerAward) {
+      const reason =
+        Array.isArray(allRequirementDeclarations) && allRequirementDeclarations.length > 1
+          ? `Hoạt động này đóng góp ${itemDays} ngày, nhưng tổng cộng dồn toàn mục hiện mới đạt ${totalDays}/05 ngày tình nguyện (còn thiếu ${5 - totalDays} ngày hoặc cần 01 giấy khen tình nguyện cấp Khoa trở lên).`
+          : `Cần kiểm tra thêm: Minh chứng này xác nhận ${itemDays} ngày tình nguyện (để đạt tiêu chí cần tích lũy cộng dồn đủ 05 ngày/năm học hoặc có giấy khen tình nguyện cấp Khoa trở lên).`;
       return {
         status: 'insufficient_evidence',
         badgeLabel: 'Cần kiểm tra thêm',
         declaredText: declaredValue || requirementTitle,
-        extractedText: `${primary.documentType}: ${primary.extractedValue}`,
+        extractedText: `${primary.documentType}: ${primary.extractedValue} (Góp ${itemDays} ngày · Tổng tích lũy: ${totalDays}/05 ngày)`,
         authorityText: authorityWithDate,
         stampVerified: primary.hasRedStampOrSignature === 'verified',
         reasonText: reason,
-        draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, qua đọc minh chứng tại mục "${declaredValue || requirementTitle}", hệ thống ghi nhận ${totalDays} ngày tình nguyện (quy chế yêu cầu tối thiểu 05 ngày/năm). Đề nghị bạn bổ sung thêm giấy chứng nhận hoạt động tình nguyện.`,
+        draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, hiện tổng số ngày tình nguyện tích lũy đọc từ minh chứng mới đạt ${totalDays}/05 ngày (quy chế yêu cầu tích lũy tối thiểu 05 ngày/năm học hoặc có giấy khen tình nguyện từ cấp Khoa trở lên). Đề nghị bạn bổ sung thêm minh chứng hoạt động tình nguyện.`,
         aiSource: usedOpenAi ? 'openai' : 'rule_engine',
       };
     }
@@ -529,6 +674,434 @@ export function evaluateDeclarationQuickInsight(params: {
     stampVerified: true,
     reasonText: 'Thông tin chi tiết bóc tách từ tệp minh chứng hợp lệ và đạt ngưỡng quy chế.',
     aiSource: usedOpenAi ? 'openai' : 'rule_engine',
+  };
+}
+
+function getDeclarationsFromAppCriterion(studentApp: any, criterionId: string, requirementId: string): any[] {
+  const crit = studentApp?.criteria?.find((c: any) => c.id === criterionId);
+  if (!crit) return [];
+  const byId = new Map<string, any>();
+  const reqFromList = crit.requirements?.find((r: any) => r.id === requirementId);
+  for (const d of reqFromList?.declarations || []) {
+    if (d?.id) byId.set(d.id, d);
+  }
+  if (Array.isArray(crit.groups)) {
+    for (const g of crit.groups) {
+      const reqFromGrp = g.requirements?.find((r: any) => r.id === requirementId);
+      for (const d of reqFromGrp?.declarations || []) {
+        if (d?.id) byId.set(d.id, d);
+      }
+    }
+  }
+  return Array.from(byId.values());
+}
+
+/**
+ * Holistic Criterion-Level Structural Evaluation (Macro + Micro)
+ * Checks both individual evidence OCR AND the mandatory/optional group rules required to pass each criterion
+ * under Hướng dẫn số 14-HD/BTK-HSVTP (Sinh viên 5 tốt cấp Thành phố Đà Nẵng 2025–2026).
+ */
+export function evaluateCriterionHolisticConditions(
+  criterionId: string,
+  studentApp: any
+): CriterionHolisticEvaluation {
+  const metaMap: Record<string, { number: number; name: string }> = {
+    ethics: { number: 1, name: 'Đạo đức tốt' },
+    academic: { number: 2, name: 'Học tập tốt' },
+    physical: { number: 3, name: 'Thể lực tốt' },
+    volunteer: { number: 4, name: 'Tình nguyện tốt' },
+    integration: { number: 5, name: 'Hội nhập tốt' },
+  };
+  const meta = metaMap[criterionId] || { number: 1, name: criterionId };
+  const conditionChecklist: CriterionConditionCheckItem[] = [];
+  const supportedRequirements: string[] = [];
+  const insufficientRequirements: string[] = [];
+
+  const checkSingleMandatoryRequirement = (
+    reqId: string,
+    groupTitle: string,
+    label: string,
+    ruleBadge: string
+  ): CriterionConditionCheckItem => {
+    const decls = getDeclarationsFromAppCriterion(studentApp, criterionId, reqId);
+    if (decls.length === 0) {
+      insufficientRequirements.push(label);
+      return {
+        id: reqId,
+        groupTitle,
+        label,
+        ruleBadge,
+        status: 'missing',
+        detail: `Chưa kê khai điều kiện bắt buộc: ${label}`,
+        declaredCount: 0,
+        passedCount: 0,
+        requiredCount: 1,
+      };
+    }
+
+    let passedCount = 0;
+    let firstPassText = '';
+    let firstIssueText = '';
+
+    for (const d of decls) {
+      const files = d.evidenceFiles || d.evidence || [];
+      const insight = evaluateDeclarationQuickInsight({
+        criterionId,
+        requirementId: reqId,
+        requirementTitle: label,
+        declaredValue: d.value || label,
+        evidenceFiles: files,
+        allRequirementDeclarations: decls,
+      });
+      if (insight.status === 'preliminary_meets') {
+        passedCount++;
+        if (!firstPassText) firstPassText = insight.extractedText;
+      } else {
+        if (!firstIssueText) firstIssueText = insight.reasonText;
+      }
+    }
+
+    if (passedCount > 0) {
+      supportedRequirements.push(label);
+      return {
+        id: reqId,
+        groupTitle,
+        label,
+        ruleBadge,
+        status: 'met',
+        detail: `Đạt sơ bộ: ${firstPassText}`,
+        declaredCount: decls.length,
+        passedCount,
+        requiredCount: 1,
+      };
+    }
+
+    insufficientRequirements.push(label);
+    return {
+      id: reqId,
+      groupTitle,
+      label,
+      ruleBadge,
+      status: 'verify_needed',
+      detail: firstIssueText || 'Cần kiểm tra thêm tệp minh chứng của mục bắt buộc này.',
+      declaredCount: decls.length,
+      passedCount: 0,
+      requiredCount: 1,
+    };
+  };
+
+  const checkAtLeastOneInGroup = (
+    groupId: string,
+    groupTitle: string,
+    label: string,
+    ruleBadge: string,
+    reqOptions: Array<{ id: string; title: string }>
+  ): CriterionConditionCheckItem => {
+    let declaredOptionCount = 0;
+    let passedOptionCount = 0;
+    let firstPassedSummary = '';
+    let firstVerifySummary = '';
+
+    for (const opt of reqOptions) {
+      const decls = getDeclarationsFromAppCriterion(studentApp, criterionId, opt.id);
+      if (decls.length === 0) continue;
+      declaredOptionCount++;
+
+      let optPassed = false;
+      for (const d of decls) {
+        const files = d.evidenceFiles || d.evidence || [];
+        const insight = evaluateDeclarationQuickInsight({
+          criterionId,
+          requirementId: opt.id,
+          requirementTitle: opt.title,
+          declaredValue: d.value || opt.title,
+          evidenceFiles: files,
+          allRequirementDeclarations: decls,
+        });
+        if (insight.status === 'preliminary_meets') {
+          optPassed = true;
+          if (!firstPassedSummary) {
+            firstPassedSummary = `${opt.title} (${insight.extractedText})`;
+          }
+        } else if (!firstVerifySummary) {
+          firstVerifySummary = `${opt.title}: ${insight.reasonText}`;
+        }
+      }
+      if (optPassed) {
+        passedOptionCount++;
+        supportedRequirements.push(opt.title);
+      } else {
+        insufficientRequirements.push(opt.title);
+      }
+    }
+
+    if (declaredOptionCount === 0) {
+      insufficientRequirements.push(label);
+      return {
+        id: groupId,
+        groupTitle,
+        label,
+        ruleBadge,
+        status: 'missing',
+        detail: `Chưa kê khai: Bắt buộc đạt ít nhất 01/${String(reqOptions.length).padStart(2, '0')} hình thức thuộc nhóm này`,
+        declaredCount: 0,
+        passedCount: 0,
+        requiredCount: 1,
+      };
+    }
+
+    if (passedOptionCount >= 1) {
+      return {
+        id: groupId,
+        groupTitle,
+        label,
+        ruleBadge,
+        status: 'met',
+        detail: `Đạt sơ bộ (${passedOptionCount}/${reqOptions.length} hình thức): ${firstPassedSummary}`,
+        declaredCount: declaredOptionCount,
+        passedCount: passedOptionCount,
+        requiredCount: 1,
+      };
+    }
+
+    return {
+      id: groupId,
+      groupTitle,
+      label,
+      ruleBadge,
+      status: 'verify_needed',
+      detail: firstVerifySummary || 'Đã kê khai nhưng cần kiểm tra thêm tệp minh chứng.',
+      declaredCount: declaredOptionCount,
+      passedCount: 0,
+      requiredCount: 1,
+    };
+  };
+
+  if (criterionId === 'ethics') {
+    conditionChecklist.push(
+      checkSingleMandatoryRequirement(
+        'ethics-score',
+        'Điều kiện bắt buộc (1/2)',
+        'Điểm rèn luyện cả năm >= 80/100 (hoặc loại Giỏi)',
+        'Bắt buộc'
+      ),
+      checkSingleMandatoryRequirement(
+        'ethics-law',
+        'Điều kiện bắt buộc (2/2)',
+        'Không vi phạm pháp luật, quy chế, nội quy',
+        'Bắt buộc'
+      ),
+      checkAtLeastOneInGroup(
+        'ethics-supplement',
+        'Tiêu chuẩn bổ sung (Đạt ít nhất 01/04 hình thức)',
+        'Đạt ít nhất 01/04 hình thức: Đảng viên / Đội thi Mác–Lênin / Tham luận / Gương người tốt việc tốt',
+        'Tối thiểu 01/04',
+        [
+          { id: 'ethics-party', title: 'Là Đảng viên Đảng Cộng sản Việt Nam' },
+          { id: 'ethics-politics-team', title: 'Thành viên đội thi tìm hiểu Mác–Lênin, tư tưởng HCM' },
+          { id: 'ethics-politics-paper', title: 'Tham luận / bài viết về Mác–Lênin, tư tưởng HCM' },
+          { id: 'ethics-commendation', title: 'Thanh niên tiêu biểu, gương người tốt việc tốt' },
+        ]
+      )
+    );
+  } else if (criterionId === 'academic') {
+    conditionChecklist.push(
+      checkSingleMandatoryRequirement(
+        'academic-gpa',
+        'Điều kiện bắt buộc',
+        'Điểm TB học tập cả năm học (GPA >= 3.2/4.0 ĐH hoặc >= 3.0/4.0 CĐ)',
+        'Bắt buộc'
+      ),
+      checkAtLeastOneInGroup(
+        'academic-achievements',
+        'Thành tích học thuật & NCKH (Đạt ít nhất 01/06 hình thức)',
+        'Đạt ít nhất 01/06 hình thức: Đề tài NCKH / Bài báo / Hội thảo / Sáng tạo / Đội tuyển học thuật',
+        'Tối thiểu 01/06',
+        [
+          { id: 'academic-nckh', title: 'Đề tài NCKH sinh viên đạt giải cấp Khoa trở lên' },
+          { id: 'academic-paper', title: 'Bài viết đăng trên tạp chí chuyên ngành' },
+          { id: 'academic-presentation', title: 'Bài tham luận tham gia hội thảo khoa học cấp Khoa trở lên' },
+          { id: 'academic-product', title: 'Sản phẩm sáng tạo có bằng sáng chế / giải thưởng cấp Trường' },
+          { id: 'academic-team', title: 'Thành viên đội tuyển thi học thuật cấp Trường trở lên' },
+          { id: 'academic-innovation', title: 'Giải thưởng cuộc thi ý tưởng sáng tạo cấp Trường trở lên' },
+        ]
+      )
+    );
+  } else if (criterionId === 'physical') {
+    conditionChecklist.push(
+      checkAtLeastOneInGroup(
+        'physical-forms',
+        'Hình thức xác nhận thể lực (Đạt ít nhất 01/02 hình thức)',
+        'Đạt ít nhất 01/02 hình thức: Danh hiệu «Thanh niên khỏe» cấp Trường+ HOẶC Đạt giải thể thao cấp Khoa+',
+        'Tối thiểu 01/02',
+        [
+          { id: 'physical-khoe', title: 'Danh hiệu Thanh niên khỏe từ cấp Trường trở lên' },
+          { id: 'physical-sport', title: 'Tham gia và đạt giải hoạt động thể thao phong trào cấp Khoa trở lên' },
+        ]
+      )
+    );
+  } else if (criterionId === 'volunteer') {
+    const actDecls = getDeclarationsFromAppCriterion(studentApp, 'volunteer', 'volunteer-activities');
+    const awardDecls = getDeclarationsFromAppCriterion(studentApp, 'volunteer', 'volunteer-award');
+
+    let totalDeclaredDays = 0;
+    let verifiedDays = 0;
+    for (const d of actDecls) {
+      const info = extractVolunteerDaysFromDeclaration(d);
+      totalDeclaredDays += info.days;
+      if (info.isEvidenceValid) {
+        verifiedDays += info.days;
+      }
+    }
+
+    let hasValidAward = false;
+    let awardVerifyReason = '';
+    for (const d of awardDecls) {
+      const files = d.evidenceFiles || d.evidence || [];
+      const insight = evaluateDeclarationQuickInsight({
+        criterionId: 'volunteer',
+        requirementId: 'volunteer-award',
+        requirementTitle: 'Khen thưởng hoạt động tình nguyện từ cấp Khoa trở lên',
+        declaredValue: d.value || 'Khen thưởng tình nguyện',
+        evidenceFiles: files,
+      });
+      if (insight.status === 'preliminary_meets') {
+        hasValidAward = true;
+      } else if (!awardVerifyReason) {
+        awardVerifyReason = insight.reasonText;
+      }
+    }
+
+    const totalDecls = actDecls.length + awardDecls.length;
+    if (totalDecls === 0) {
+      insufficientRequirements.push('Tích lũy >= 05 ngày tình nguyện hoặc Khen thưởng tình nguyện cấp Khoa+');
+      conditionChecklist.push({
+        id: 'volunteer-activities-group',
+        groupTitle: 'Phương án tình nguyện (Đạt ít nhất 01/02 hình thức)',
+        label: 'Tích lũy >= 05 ngày tình nguyện/năm (hiến máu = 01 ngày/lần) HOẶC Khen thưởng tình nguyện cấp Khoa+',
+        ruleBadge: 'Tối thiểu 01/02',
+        status: 'missing',
+        detail: 'Chưa kê khai hoạt động tình nguyện tích lũy (>= 05 ngày) hoặc khen thưởng tình nguyện cấp Khoa trở lên',
+        declaredCount: 0,
+        passedCount: 0,
+        requiredCount: 1,
+      });
+    } else if (verifiedDays >= 5 || hasValidAward) {
+      supportedRequirements.push(
+        verifiedDays >= 5
+          ? `Tích lũy ${verifiedDays}/05 ngày tình nguyện (${actDecls.length} hoạt động)`
+          : 'Khen thưởng hoạt động tình nguyện cấp Khoa trở lên'
+      );
+      conditionChecklist.push({
+        id: 'volunteer-activities-group',
+        groupTitle: 'Phương án tình nguyện (Đạt ít nhất 01/02 hình thức)',
+        label: 'Tích lũy >= 05 ngày tình nguyện/năm (hiến máu = 01 ngày/lần) HOẶC Khen thưởng tình nguyện cấp Khoa+',
+        ruleBadge: 'Tối thiểu 01/02',
+        status: 'met',
+        detail:
+          verifiedDays >= 5
+            ? `Đạt sơ bộ: Đã tích lũy đủ ${verifiedDays}/05 ngày tình nguyện qua ${actDecls.length} hoạt động có minh chứng hợp lệ`
+            : 'Đạt sơ bộ: Có giấy khen hoạt động tình nguyện từ cấp Khoa trở lên hợp lệ',
+        declaredCount: totalDecls,
+        passedCount: 1,
+        requiredCount: 1,
+      });
+    } else {
+      insufficientRequirements.push('Hoạt động tình nguyện tích lũy (Tối thiểu 05 ngày/năm)');
+      const detailText =
+        totalDeclaredDays > 0 && totalDeclaredDays < 5
+          ? `Mới tích lũy ${totalDeclaredDays}/05 ngày tình nguyện qua ${actDecls.length} hoạt động (còn thiếu ${5 - totalDeclaredDays} ngày) và chưa có giấy khen tình nguyện cấp Khoa trở lên`
+          : awardVerifyReason ||
+            `Đã kê khai ${totalDeclaredDays}/05 ngày tình nguyện (đã xác thực sơ bộ ${verifiedDays} ngày) — cần kiểm tra thêm tệp minh chứng`;
+      conditionChecklist.push({
+        id: 'volunteer-activities-group',
+        groupTitle: 'Phương án tình nguyện (Đạt ít nhất 01/02 hình thức)',
+        label: 'Tích lũy >= 05 ngày tình nguyện/năm (hiến máu = 01 ngày/lần) HOẶC Khen thưởng tình nguyện cấp Khoa+',
+        ruleBadge: 'Tối thiểu 01/02',
+        status: 'verify_needed',
+        detail: detailText,
+        declaredCount: totalDecls,
+        passedCount: 0,
+        requiredCount: 1,
+      });
+    }
+  } else if (criterionId === 'integration') {
+    conditionChecklist.push(
+      checkAtLeastOneInGroup(
+        'integration-skills-award',
+        'Nhóm A bắt buộc (Đạt ít nhất 01/02 hình thức)',
+        'Nhóm A: Khóa kỹ năng thực hành xã hội HOẶC Khen thưởng công tác Đoàn - Hội cấp Khoa+',
+        'Nhóm A (01/02)',
+        [
+          { id: 'integration-skills', title: 'Hoàn thành khóa trang bị kỹ năng thực hành xã hội' },
+          { id: 'integration-union-award', title: 'Khen thưởng công tác Đoàn - Hội từ cấp Khoa trở lên' },
+        ]
+      ),
+      checkAtLeastOneInGroup(
+        'integration-languages-intl',
+        'Nhóm B bắt buộc (Đạt ít nhất 01/03 hình thức)',
+        'Nhóm B: Chuẩn ngoại ngữ (B1 / IELTS >= 4.5 / TOEIC >= 405 / ĐTB >= 3.0) HOẶC Giao lưu quốc tế HOẶC Giải Ba+ cuộc thi ngoại ngữ',
+        'Nhóm B (01/03)',
+        [
+          { id: 'integration-lang', title: 'Tiêu chuẩn năng lực ngoại ngữ' },
+          { id: 'integration-intl', title: 'Tham gia hoạt động giao lưu, hợp tác quốc tế cấp Khoa trở lên' },
+          { id: 'integration-contest', title: 'Đạt từ Giải Ba trở lên cuộc thi kiến thức / ngoại ngữ cấp Khoa trở lên' },
+        ]
+      )
+    );
+  }
+
+  const metConditionsCount = conditionChecklist.filter((c) => c.status === 'met').length;
+  const totalConditionsCount = conditionChecklist.length;
+  const missingItems = conditionChecklist.filter((c) => c.status === 'missing');
+  const verifyItems = conditionChecklist.filter((c) => c.status === 'verify_needed');
+
+  const isAllMet = totalConditionsCount > 0 && metConditionsCount === totalConditionsCount;
+  const verdict: 'preliminary_meets' | 'insufficient_evidence' = isAllMet
+    ? 'preliminary_meets'
+    : 'insufficient_evidence';
+  const badgeLabel = isAllMet ? 'Đạt sơ bộ' : 'Cần kiểm tra thêm';
+
+  let headline = '';
+  let detail = '';
+
+  if (isAllMet) {
+    headline = `Tiêu chí 0${meta.number} (${meta.name}): Đạt đủ ${metConditionsCount}/${totalConditionsCount} nhóm điều kiện quy chế.`;
+    detail = conditionChecklist.map((c) => `✓ ${c.label}: ${c.detail}`).join(' · ');
+  } else if (missingItems.length === totalConditionsCount) {
+    headline = `Tiêu chí 0${meta.number} (${meta.name}): Chưa kê khai (${0}/${totalConditionsCount} điều kiện bắt buộc).`;
+    detail = `Để đạt tiêu chí này, sinh viên cần đáp ứng đủ ${totalConditionsCount} điều kiện: ${conditionChecklist
+      .map((c) => c.label)
+      .join('; ')}.`;
+  } else if (missingItems.length > 0) {
+    headline = `Mới đạt ${metConditionsCount}/${totalConditionsCount} điều kiện tiêu chí · Còn thiếu: ${missingItems
+      .map((m) => m.groupTitle || m.label)
+      .join(', ')}.`;
+    detail = conditionChecklist
+      .map((c) => `${c.status === 'met' ? '✓' : '!'} ${c.detail}`)
+      .join(' · ');
+  } else {
+    headline = `Đạt ${metConditionsCount}/${totalConditionsCount} điều kiện tiêu chí · Cần kiểm tra: ${
+      verifyItems[0]?.detail || 'Cần đối chiếu thêm tệp minh chứng.'
+    }`;
+    detail = conditionChecklist
+      .map((c) => `${c.status === 'met' ? '✓' : '!'} ${c.detail}`)
+      .join(' · ');
+  }
+
+  return {
+    criterionId,
+    criterionNumber: meta.number,
+    criterionName: meta.name,
+    verdict,
+    badgeLabel,
+    headline,
+    detail,
+    metConditionsCount,
+    totalConditionsCount,
+    conditionChecklist,
+    supportedRequirements,
+    insufficientRequirements,
   };
 }
 

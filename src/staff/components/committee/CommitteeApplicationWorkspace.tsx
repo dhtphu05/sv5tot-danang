@@ -473,6 +473,7 @@ export const CommitteeApplicationWorkspace: React.FC<
           application.schoolReviewSummary?.schoolReviewUnitName ||
           application.institution.officialName
         }
+        fileId={application.schoolReviewSummary?.decisionDocumentMetadata?.fileId}
         fileUrl={application.schoolReviewSummary?.decisionDocumentMetadata?.fileUrl}
         fileName={application.schoolReviewSummary?.decisionDocumentMetadata?.fileName}
       />

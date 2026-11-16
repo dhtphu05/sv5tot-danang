@@ -47,13 +47,30 @@ export const RequirementGroupHeader: React.FC<RequirementGroupHeaderProps> = ({
     (r) => r.declarations && r.declarations.length > 0
   );
   const declaredCount = declaredRequirements.length;
+  const totalCount = group.requirements?.length || 0;
+  const minSel = group.minSelections || 1;
 
-  const progressText =
-    group.groupType === 'REPEATABLE_COLLECTION' || (group.groupType as string) === 'REPEATABLE'
-      ? `${group.requirements.reduce((sum, r) => sum + (r.declarations?.length || 0), 0)} hoạt động`
-      : declaredCount > 0
-      ? `Đã khai ${declaredCount} mục`
-      : '';
+  const isGroupSatisfiedByDeclaration =
+    group.groupType === 'ALL_REQUIRED'
+      ? totalCount > 0 && declaredCount >= totalCount
+      : group.groupType === 'AT_LEAST_N'
+      ? declaredCount >= minSel
+      : true;
+
+  let progressText = '';
+  if (group.groupType === 'REPEATABLE_COLLECTION' || (group.groupType as string) === 'REPEATABLE') {
+    progressText = `${group.requirements.reduce((sum, r) => sum + (r.declarations?.length || 0), 0)} hoạt động`;
+  } else if (group.groupType === 'ALL_REQUIRED') {
+    progressText = isGroupSatisfiedByDeclaration
+      ? `Đã khai đủ ${declaredCount}/${totalCount} điều kiện bắt buộc`
+      : `Thiếu điều kiện bắt buộc: Đã khai ${declaredCount}/${totalCount} mục`;
+  } else if (group.groupType === 'AT_LEAST_N') {
+    progressText = isGroupSatisfiedByDeclaration
+      ? `Đã khai ${declaredCount}/${totalCount} hình thức (Yêu cầu >= 0${minSel})`
+      : `Chưa đủ điều kiện nhóm: Cần ít nhất 0${minSel}/${String(totalCount).padStart(2, '0')} hình thức (Hiện ${declaredCount} mục)`;
+  } else if (declaredCount > 0) {
+    progressText = `Đã khai ${declaredCount} mục`;
+  }
 
   return (
     <div
@@ -75,7 +92,13 @@ export const RequirementGroupHeader: React.FC<RequirementGroupHeaderProps> = ({
       </div>
 
       {progressText && (
-        <span className="text-[11px] font-semibold text-[#047857] bg-[#ECFDF5] border border-[#A7F3D0] px-2 py-0.2 rounded-[3px] shrink-0">
+        <span
+          className={`text-[11px] font-semibold px-2 py-0.5 rounded-[4px] shrink-0 border ${
+            isGroupSatisfiedByDeclaration
+              ? 'text-[#047857] bg-[#ECFDF5] border-[#A7F3D0]'
+              : 'text-[#B45309] bg-[#FEF3C7] border-[#FCD34D]'
+          }`}
+        >
           {progressText}
         </span>
       )}

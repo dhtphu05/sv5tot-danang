@@ -324,7 +324,8 @@ export function usePublicAuthSessionTransition({
         lower === 'lan.pn@hsvdanang.vn' ||
         lower === 'khoa.nd@hsvdanang.vn' ||
         lower === 'admin@udn.vn' ||
-        lower === 'admin@hsvdanang.vn'
+        lower === 'admin@hsvdanang.vn' ||
+        lower === 'quantri.thanhpho@hsvdanang.vn'
       ) {
         const nextStaffUser = buildResolvedStaffUser('ADMIN');
         setStaffUser(nextStaffUser);

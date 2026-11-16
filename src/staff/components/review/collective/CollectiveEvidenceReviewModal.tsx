@@ -87,11 +87,16 @@ export const CollectiveEvidenceReviewModal: React.FC<CollectiveEvidenceReviewMod
         <div className="flex-1 flex overflow-hidden">
           {/* Document Preview */}
           <div className="flex-1 bg-[#EEF4F8] overflow-hidden flex flex-col">
-            {activeEvidenceModalFile.fileType === 'pdf' ||
-            activeEvidenceModalFile.name.toLowerCase().endsWith('.pdf') ? (
+            {!(
+              activeEvidenceModalFile.fileType === 'xlsx' ||
+              activeEvidenceModalFile.fileType === 'xls' ||
+              activeEvidenceModalFile.fileType === 'csv' ||
+              /\.(xlsx|xls|csv)$/i.test(activeEvidenceModalFile.name)
+            ) ? (
               <DocumentViewer
+                fileId={activeEvidenceModalFile.id}
                 fileName={activeEvidenceModalFile.name}
-                fileType="pdf"
+                fileType={activeEvidenceModalFile.fileType || 'pdf'}
                 fileUrl={
                   activeEvidenceModalFile.url ||
                   (activeEvidenceModalFile as any).fileUrl
