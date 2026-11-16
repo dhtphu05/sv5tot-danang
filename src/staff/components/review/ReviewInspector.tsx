@@ -306,18 +306,20 @@ export const ReviewInspector: React.FC<ReviewInspectorProps> = ({
               <BookOpen size={12} className="shrink-0" />
               <span className="truncate">Quy định</span>
             </button>
-            <button
-              type="button"
-              onClick={() => onChangeInspectorMode('copilot')}
-              className={`flex-1 py-1.5 px-1.5 rounded-[8px] text-[11.5px] font-bold inline-flex items-center justify-center gap-1 transition-all cursor-pointer border-0 truncate ${
-                inspectorMode === 'copilot'
-                  ? 'bg-white text-[#1680DE] shadow-2xs'
-                  : 'text-[#607483] hover:text-[#1680DE]'
-              }`}
-            >
-              <Sparkles size={12} className="shrink-0 text-[#1680DE]" />
-              <span className="truncate">Trợ lý AI</span>
-            </button>
+            {!isSchoolStage && (
+              <button
+                type="button"
+                onClick={() => onChangeInspectorMode('copilot')}
+                className={`flex-1 py-1.5 px-1.5 rounded-[8px] text-[11.5px] font-bold inline-flex items-center justify-center gap-1 transition-all cursor-pointer border-0 truncate ${
+                  inspectorMode === 'copilot'
+                    ? 'bg-white text-[#1680DE] shadow-2xs'
+                    : 'text-[#607483] hover:text-[#1680DE]'
+                }`}
+              >
+                <Sparkles size={12} className="shrink-0 text-[#1680DE]" />
+                <span className="truncate">Trợ lý AI</span>
+              </button>
+            )}
           </div>
 
           {onCloseMobileOverlay && (
@@ -391,7 +393,7 @@ export const ReviewInspector: React.FC<ReviewInspectorProps> = ({
       {/* =================================================================== */}
       {/* MODE SELECTION: COPILOT vs REGULATION vs MANUAL REVIEW              */}
       {/* =================================================================== */}
-      {inspectorMode === 'copilot' ? (
+      {!isSchoolStage && inspectorMode === 'copilot' ? (
         <ReviewCopilotPanel
           currentUser={currentUser}
           applicationRecord={applicationRecord}

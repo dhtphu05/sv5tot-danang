@@ -928,162 +928,164 @@ export const EvidenceReviewViewer: React.FC<EvidenceReviewViewerProps> = ({
                 )}
               </div>
 
-              {/* 2. Level 4: Contextual AI Evidence Insights (Section 7) */}
-              <section className="space-y-2">
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <div className="flex items-center gap-1.5">
-                    <FileCheck2 size={14} className="text-[#0D78AE]" />
-                    <h4 className="text-[12.5px] font-bold text-[#172A3A]">
-                      Thông tin đọc từ minh chứng (OCR)
-                    </h4>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    {ocrResult && (
-                      <span
-                        className={`inline-flex items-center gap-1 text-[10.5px] font-bold px-2 py-0.5 rounded-full border ${
-                          ocrResult.matchWithDeclaration === 'matched' &&
-                          ocrResult.hasRedStampOrSignature === 'verified'
-                            ? 'bg-[#EAFBF1] text-[#136F3A] border-[#C3EDD2]'
-                            : 'bg-[#FEF6EB] text-[#B45309] border-[#FDE68A]'
-                        }`}
-                      >
-                        {ocrResult.matchWithDeclaration === 'matched' &&
-                        ocrResult.hasRedStampOrSignature === 'verified' ? (
-                          <CheckCircle2 size={11} className="shrink-0" />
-                        ) : (
-                          <AlertTriangle size={11} className="shrink-0" />
-                        )}
-                        <span>
-                          {ocrResult.matchWithDeclaration === 'matched' &&
-                          ocrResult.hasRedStampOrSignature === 'verified'
-                            ? 'Đạt sơ bộ · Khớp kê khai'
-                            : 'Cần kiểm tra thêm'}
-                        </span>
-                      </span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={handleRescanOcr}
-                      disabled={isScanningOcr}
-                      title="Quét lại tệp minh chứng này bằng OpenAI"
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[6px] text-[11px] font-semibold bg-white hover:bg-[#F1F5F9] text-[#334E68] border border-[#CBD5E1] transition-colors cursor-pointer disabled:opacity-50"
-                    >
-                      <RefreshCw size={11} className={isScanningOcr ? 'animate-spin text-[#0D78AE]' : ''} />
-                      <span>{isScanningOcr ? 'Đang quét...' : 'Quét lại tệp'}</span>
-                    </button>
-                  </div>
-                </div>
-
-                {aiInsight && (
-                  <p className="text-[12px] text-[#526B7C] leading-relaxed">
-                    {aiInsight.summaryText}
-                  </p>
-                )}
-
-                <div className="p-2.5 rounded-[10px] bg-[#F4FAFF] text-[11px] text-[#0B64A0] flex items-start gap-2 border border-[#DBEAFE]">
-                  <Info size={13} className="shrink-0 mt-0.5 text-[#1680DE]" />
-                  <span className="leading-relaxed">
-                    Dữ liệu trích xuất hỗ trợ cán bộ đối chiếu nhanh với văn bản gốc. Kết quả thẩm định chính thức hoàn toàn do cán bộ quyết định.
-                  </span>
-                </div>
-
-                {/* Candidate Facts List */}
-                <div className="rounded-[12px] bg-[#F5F8FB] border border-[#E2E8F0] overflow-hidden divide-y divide-[#EEF3F8]">
-                  {aiInsight && aiInsight.candidateFacts.length > 0
-                    ? aiInsight.candidateFacts.map((item, idx) => (
-                        <div
-                          key={idx}
-                          onMouseEnter={() =>
-                            setActiveHighlightRegion(
-                              item.label.toLowerCase().includes('thời gian') ||
-                              item.label.toLowerCase().includes('ngày')
-                                ? 'date-range'
-                                : 'award-name'
-                            )
-                          }
-                          onMouseLeave={() => setActiveHighlightRegion(null)}
-                          className={`p-2.5 transition-colors space-y-0.5 ${
-                            item.isDiscrepancy
-                              ? 'bg-[#FEF6EB] border-l-3 border-[#F59E0B]'
-                              : 'hover:bg-[#EEF4F9]'
+              {/* 2. Level 4: Contextual AI Evidence Insights (City-Level Only) */}
+              {!isSchoolStage && (
+                <section className="space-y-2">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-1.5">
+                      <FileCheck2 size={14} className="text-[#0D78AE]" />
+                      <h4 className="text-[12.5px] font-bold text-[#172A3A]">
+                        Thông tin đọc từ minh chứng (OCR)
+                      </h4>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      {ocrResult && (
+                        <span
+                          className={`inline-flex items-center gap-1 text-[10.5px] font-bold px-2 py-0.5 rounded-full border ${
+                            ocrResult.matchWithDeclaration === 'matched' &&
+                            ocrResult.hasRedStampOrSignature === 'verified'
+                              ? 'bg-[#EAFBF1] text-[#136F3A] border-[#C3EDD2]'
+                              : 'bg-[#FEF6EB] text-[#B45309] border-[#FDE68A]'
                           }`}
                         >
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="font-semibold text-[#607483]">
-                              {item.label}
-                            </span>
-                            {item.isDiscrepancy && (
-                              <span className="text-[10px] font-bold text-[#B45309] bg-white px-1.5 py-0.2 rounded border border-[#FDE68A]">
-                                Cần kiểm tra
+                          {ocrResult.matchWithDeclaration === 'matched' &&
+                          ocrResult.hasRedStampOrSignature === 'verified' ? (
+                            <CheckCircle2 size={11} className="shrink-0" />
+                          ) : (
+                            <AlertTriangle size={11} className="shrink-0" />
+                          )}
+                          <span>
+                            {ocrResult.matchWithDeclaration === 'matched' &&
+                            ocrResult.hasRedStampOrSignature === 'verified'
+                              ? 'Đạt sơ bộ · Khớp kê khai'
+                              : 'Cần kiểm tra thêm'}
+                          </span>
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleRescanOcr}
+                        disabled={isScanningOcr}
+                        title="Quét lại tệp minh chứng này bằng OpenAI"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[6px] text-[11px] font-semibold bg-white hover:bg-[#F1F5F9] text-[#334E68] border border-[#CBD5E1] transition-colors cursor-pointer disabled:opacity-50"
+                      >
+                        <RefreshCw size={11} className={isScanningOcr ? 'animate-spin text-[#0D78AE]' : ''} />
+                        <span>{isScanningOcr ? 'Đang quét...' : 'Quét lại tệp'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {aiInsight && (
+                    <p className="text-[12px] text-[#526B7C] leading-relaxed">
+                      {aiInsight.summaryText}
+                    </p>
+                  )}
+
+                  <div className="p-2.5 rounded-[10px] bg-[#F4FAFF] text-[11px] text-[#0B64A0] flex items-start gap-2 border border-[#DBEAFE]">
+                    <Info size={13} className="shrink-0 mt-0.5 text-[#1680DE]" />
+                    <span className="leading-relaxed">
+                      Dữ liệu trích xuất hỗ trợ cán bộ đối chiếu nhanh với văn bản gốc. Kết quả thẩm định chính thức hoàn toàn do cán bộ quyết định.
+                    </span>
+                  </div>
+
+                  {/* Candidate Facts List */}
+                  <div className="rounded-[12px] bg-[#F5F8FB] border border-[#E2E8F0] overflow-hidden divide-y divide-[#EEF3F8]">
+                    {aiInsight && aiInsight.candidateFacts.length > 0
+                      ? aiInsight.candidateFacts.map((item, idx) => (
+                          <div
+                            key={idx}
+                            onMouseEnter={() =>
+                              setActiveHighlightRegion(
+                                item.label.toLowerCase().includes('thời gian') ||
+                                item.label.toLowerCase().includes('ngày')
+                                  ? 'date-range'
+                                  : 'award-name'
+                              )
+                            }
+                            onMouseLeave={() => setActiveHighlightRegion(null)}
+                            className={`p-2.5 transition-colors space-y-0.5 ${
+                              item.isDiscrepancy
+                                ? 'bg-[#FEF6EB] border-l-3 border-[#F59E0B]'
+                                : 'hover:bg-[#EEF4F9]'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between text-[11px]">
+                              <span className="font-semibold text-[#607483]">
+                                {item.label}
                               </span>
+                              {item.isDiscrepancy && (
+                                <span className="text-[10px] font-bold text-[#B45309] bg-white px-1.5 py-0.2 rounded border border-[#FDE68A]">
+                                  Cần kiểm tra
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[12.5px] font-bold text-[#172A3A]">
+                              {item.value}
+                            </div>
+                          </div>
+                        ))
+                      : recognizedFields.map((item, idx) => (
+                          <div
+                            key={idx}
+                            onMouseEnter={() =>
+                              setActiveHighlightRegion(item.highlightRegionId || null)
+                            }
+                            onMouseLeave={() => setActiveHighlightRegion(null)}
+                            className="p-2.5 hover:bg-[#EEF4F9] transition-colors space-y-0.5"
+                          >
+                            <div className="text-[11px] font-semibold text-[#607483]">
+                              {item.label}
+                            </div>
+                            <div className="text-[12.5px] font-bold text-[#172A3A]">
+                              {item.value}
+                            </div>
+                            {item.advisoryNote && (
+                              <div className="mt-1 p-2 rounded-[6px] bg-[#FEF6EB] text-[11px] text-[#B45309] flex items-start gap-1.5 border border-[#FDE68A]">
+                                <AlertTriangle size={12} className="shrink-0 mt-0.5" />
+                                <span>{item.advisoryNote}</span>
+                              </div>
                             )}
                           </div>
-                          <div className="text-[12.5px] font-bold text-[#172A3A]">
-                            {item.value}
-                          </div>
-                        </div>
-                      ))
-                    : recognizedFields.map((item, idx) => (
-                        <div
-                          key={idx}
-                          onMouseEnter={() =>
-                            setActiveHighlightRegion(item.highlightRegionId || null)
-                          }
-                          onMouseLeave={() => setActiveHighlightRegion(null)}
-                          className="p-2.5 hover:bg-[#EEF4F9] transition-colors space-y-0.5"
-                        >
-                          <div className="text-[11px] font-semibold text-[#607483]">
-                            {item.label}
-                          </div>
-                          <div className="text-[12.5px] font-bold text-[#172A3A]">
-                            {item.value}
-                          </div>
-                          {item.advisoryNote && (
-                            <div className="mt-1 p-2 rounded-[6px] bg-[#FEF6EB] text-[11px] text-[#B45309] flex items-start gap-1.5 border border-[#FDE68A]">
-                              <AlertTriangle size={12} className="shrink-0 mt-0.5" />
-                              <span>{item.advisoryNote}</span>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                </div>
+                        ))}
+                  </div>
 
-                {/* AI Action Shortcuts */}
-                {aiInsight && (
-                  <div className="pt-1 flex items-center gap-2 flex-wrap">
-                    {aiInsight.draftSupplementMessage && canMutate && (
+                  {/* AI Action Shortcuts */}
+                  {aiInsight && (
+                    <div className="pt-1 flex items-center gap-2 flex-wrap">
+                      {aiInsight.draftSupplementMessage && canMutate && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onTransitionToSupplementRequest(
+                              scope,
+                              aiInsight.draftSupplementMessage
+                            )
+                          }
+                          className="h-[30px] px-2.5 rounded-[7px] bg-[#FFFBEB] hover:bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A] text-[11px] font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                        >
+                          <MessageSquare size={12} />
+                          <span>Soạn nháp bổ sung</span>
+                        </button>
+                      )}
+
                       <button
                         type="button"
                         onClick={() =>
-                          onTransitionToSupplementRequest(
-                            scope,
-                            aiInsight.draftSupplementMessage
+                          handleNoteChange(
+                            localNote
+                              ? `${localNote}\n${aiInsight.summaryText}`
+                              : aiInsight.summaryText
                           )
                         }
-                        className="h-[30px] px-2.5 rounded-[7px] bg-[#FFFBEB] hover:bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A] text-[11px] font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                        className="h-[30px] px-2.5 rounded-[7px] bg-white hover:bg-[#F4F7FA] text-[#0D78AE] border border-[#CFE3F0] text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
                       >
-                        <MessageSquare size={12} />
-                        <span>Soạn nháp bổ sung</span>
+                        <Copy size={12} />
+                        <span>Thêm vào ghi chú</span>
                       </button>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleNoteChange(
-                          localNote
-                            ? `${localNote}\n${aiInsight.summaryText}`
-                            : aiInsight.summaryText
-                        )
-                      }
-                      className="h-[30px] px-2.5 rounded-[7px] bg-white hover:bg-[#F4F7FA] text-[#0D78AE] border border-[#CFE3F0] text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
-                    >
-                      <Copy size={12} />
-                      <span>Thêm vào ghi chú</span>
-                    </button>
-                  </div>
-                )}
-              </section>
+                    </div>
+                  )}
+                </section>
+              )}
 
               {/* 3. Ghi chú xét duyệt minh chứng (Internal Staff Note) */}
               <section className="space-y-1.5 pt-2 border-t border-[#F0F4F8]">

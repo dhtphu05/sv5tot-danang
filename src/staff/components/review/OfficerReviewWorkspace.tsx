@@ -585,8 +585,8 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
         onOpenHistory={() => setIsHistoryDrawerOpen(true)}
         onOpenCompleteDialog={() => setIsCompleteDialogOpen(true)}
         historyCount={workspaceState.historyEvents.length}
-        onOpenAiSummary={() => setIsAiSummaryOpen(true)}
-        onOpenAgentActivity={() => setIsAgentRailOpen(true)}
+        onOpenAiSummary={isSchoolStage ? undefined : () => setIsAiSummaryOpen(true)}
+        onOpenAgentActivity={isSchoolStage ? undefined : () => setIsAgentRailOpen(true)}
         isRightInspectorOpenOnCompact={isCompactInspectorOpen}
         onToggleRightInspectorOnCompact={() =>
           setIsCompactInspectorOpen((prev) => !prev)
@@ -672,20 +672,22 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
           })}
         </div>
 
-        {/* Quick Actions: Quiet AI & Complete Review */}
+        {/* Quick Actions: Quiet AI (City Stage Only) & Complete Review */}
         <div className="flex items-center gap-2 ml-auto shrink-0">
-          <button
-            type="button"
-            onClick={() => {
-              setVirtualAiReportScope({ scope: 'application' });
-              setIsVirtualAiReportOpen(true);
-            }}
-            title="Mở báo cáo AI đối soát hồ sơ (theo yêu cầu)"
-            className="h-[32px] px-2.5 rounded-[5px] bg-[#EFF6FF] hover:bg-[#DBEAFE] text-[#0066CC] font-semibold text-[12px] inline-flex items-center gap-1.5 transition-colors border border-[#BFDBFE] cursor-pointer"
-          >
-            <Sparkles size={13} className="text-[#007EE5]" />
-            <span>AI hỗ trợ</span>
-          </button>
+          {!isSchoolStage && (
+            <button
+              type="button"
+              onClick={() => {
+                setVirtualAiReportScope({ scope: 'application' });
+                setIsVirtualAiReportOpen(true);
+              }}
+              title="Mở báo cáo AI đối soát hồ sơ (theo yêu cầu)"
+              className="h-[32px] px-2.5 rounded-[5px] bg-[#EFF6FF] hover:bg-[#DBEAFE] text-[#0066CC] font-semibold text-[12px] inline-flex items-center gap-1.5 transition-colors border border-[#BFDBFE] cursor-pointer"
+            >
+              <Sparkles size={13} className="text-[#007EE5]" />
+              <span>AI hỗ trợ</span>
+            </button>
+          )}
 
           {isApplicationCompleted ? (
             <div className="flex items-center gap-2">
@@ -838,47 +840,19 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
         </div>
       </div>
 
-      {/* PRELIMINARY OCR & CRITERIA EVALUATION BAR (Non-Tech Friendly) */}
-      <OfficerReviewAiQuietSection
-        verdict={applicationAiVerdict}
-        completedCriteriaCount={dossierReview.concludedCriteriaCount}
-        onOpenDetailedSummary={() => {
-          setVirtualAiReportScope({ scope: 'application' });
-          setIsVirtualAiReportOpen(true);
-        }}
-        onSelectCriterion={(critId) => handleSelectCriterion(critId as any)}
-        validUnreviewedDeclarationsCount={
-          effectiveCanMutate
-            ? (effectiveStudentApp?.criteria || []).reduce((acc, crit) => {
-                for (const req of crit.requirements || []) {
-                  for (const decl of req.declarations || []) {
-                    const st = getDeclarationReviewState(
-                      workspaceState,
-                      req.id,
-                      decl.id
-                    );
-                    if (st === 'not_reviewed') {
-                      const insight = evaluateDeclarationQuickInsight({
-                        criterionId: crit.id,
-                        requirementTitle: req.title,
-                        declaredValue: decl.value || req.title,
-                        evidenceFiles: decl.evidenceFiles || [],
-                      });
-                      if (insight.status === 'preliminary_meets') {
-                        acc++;
-                      }
-                    }
-                  }
-                }
-                return acc;
-              }, 0)
-            : 0
-        }
-        onBatchAcceptValidDeclarations={
-          effectiveCanMutate
-            ? () => {
-                let count = 0;
-                for (const crit of effectiveStudentApp?.criteria || []) {
+      {/* PRELIMINARY OCR & CRITERIA EVALUATION BAR (City-Level Officers Only) */}
+      {!isSchoolStage && (
+        <OfficerReviewAiQuietSection
+          verdict={applicationAiVerdict}
+          completedCriteriaCount={dossierReview.concludedCriteriaCount}
+          onOpenDetailedSummary={() => {
+            setVirtualAiReportScope({ scope: 'application' });
+            setIsVirtualAiReportOpen(true);
+          }}
+          onSelectCriterion={(critId) => handleSelectCriterion(critId as any)}
+          validUnreviewedDeclarationsCount={
+            effectiveCanMutate
+              ? (effectiveStudentApp?.criteria || []).reduce((acc, crit) => {
                   for (const req of crit.requirements || []) {
                     for (const decl of req.declarations || []) {
                       const st = getDeclarationReviewState(
@@ -889,79 +863,113 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
                       if (st === 'not_reviewed') {
                         const insight = evaluateDeclarationQuickInsight({
                           criterionId: crit.id,
+                          requirementId: req.id,
                           requirementTitle: req.title,
                           declaredValue: decl.value || req.title,
                           evidenceFiles: decl.evidenceFiles || [],
+                          allRequirementDeclarations: req.declarations,
                         });
                         if (insight.status === 'preliminary_meets') {
-                          handleUpdateScopeStatus(
-                            {
-                              criterionId: crit.id as any,
-                              requirementId: req.id,
-                              declarationId: decl.id,
-                            },
-                            'suitable'
-                          );
-                          count++;
+                          acc++;
                         }
                       }
                     }
                   }
-                }
-                if (count > 0) {
-                  showToast(
-                    `Đã áp dụng kết quả Đạt cho ${count} mục kê khai có minh chứng hợp lệ.`
-                  );
-                }
-              }
-            : undefined
-        }
-        isReanalyzing={isReanalyzing}
-        onReanalyzeAllEvidence={async () => {
-          if (isReanalyzing) return;
-          setIsReanalyzing(true);
-          showToast('Đang quét và đối chiếu lại toàn bộ minh chứng...');
-          try {
-            const tasks: Promise<any>[] = [];
-            for (const crit of effectiveStudentApp?.criteria || []) {
-              for (const req of crit.requirements || []) {
-                for (const decl of req.declarations || []) {
-                  for (const ev of decl.evidenceFiles || []) {
-                    tasks.push(
-                      triggerEvidenceOcr(
-                        {
-                          evidenceId: ev.id,
-                          fileName: ev.name,
-                          mimeType: ev.fileType,
-                          fileUrl: ev.url,
-                          studentFullName: applicationRecord?.student?.fullName,
-                          studentCode: applicationRecord?.student?.studentCode,
-                          schoolName: applicationRecord?.institution?.officialName,
-                          criterionId: crit.id,
-                          requirementTitle: req.title,
-                          declaredValue: decl.value,
-                        },
-                        true
-                      )
+                  return acc;
+                }, 0)
+              : 0
+          }
+          onBatchAcceptValidDeclarations={
+            effectiveCanMutate
+              ? () => {
+                  let count = 0;
+                  for (const crit of effectiveStudentApp?.criteria || []) {
+                    for (const req of crit.requirements || []) {
+                      for (const decl of req.declarations || []) {
+                        const st = getDeclarationReviewState(
+                          workspaceState,
+                          req.id,
+                          decl.id
+                        );
+                        if (st === 'not_reviewed') {
+                          const insight = evaluateDeclarationQuickInsight({
+                            criterionId: crit.id,
+                            requirementId: req.id,
+                            requirementTitle: req.title,
+                            declaredValue: decl.value || req.title,
+                            evidenceFiles: decl.evidenceFiles || [],
+                            allRequirementDeclarations: req.declarations,
+                          });
+                          if (insight.status === 'preliminary_meets') {
+                            handleUpdateScopeStatus(
+                              {
+                                criterionId: crit.id as any,
+                                requirementId: req.id,
+                                declarationId: decl.id,
+                              },
+                              'suitable'
+                            );
+                            count++;
+                          }
+                        }
+                      }
+                    }
+                  }
+                  if (count > 0) {
+                    showToast(
+                      `Đã áp dụng kết quả Đạt cho ${count} mục kê khai có minh chứng hợp lệ.`
                     );
                   }
                 }
-              }
-            }
-            const results = await Promise.allSettled(tasks);
-            const usedOpenAi = results.some(
-              (r) => r.status === 'fulfilled' && r.value?.aiSource === 'openai'
-            );
-            showToast(
-              usedOpenAi
-                ? 'Đã cập nhật kết quả đọc minh chứng trực tiếp từ OpenAI.'
-                : 'Đã cập nhật kết quả đối chiếu minh chứng (Chế độ Rule Engine — chưa điền OPENAI_API_KEY).'
-            );
-          } finally {
-            setIsReanalyzing(false);
+              : undefined
           }
-        }}
-      />
+          isReanalyzing={isReanalyzing}
+          onReanalyzeAllEvidence={async () => {
+            if (isReanalyzing) return;
+            setIsReanalyzing(true);
+            showToast('Đang quét và đối chiếu lại toàn bộ minh chứng...');
+            try {
+              const tasks: Promise<any>[] = [];
+              for (const crit of effectiveStudentApp?.criteria || []) {
+                for (const req of crit.requirements || []) {
+                  for (const decl of req.declarations || []) {
+                    for (const ev of decl.evidenceFiles || []) {
+                      tasks.push(
+                        triggerEvidenceOcr(
+                          {
+                            evidenceId: ev.id,
+                            fileName: ev.name,
+                            mimeType: ev.fileType,
+                            fileUrl: ev.url,
+                            studentFullName: applicationRecord?.student?.fullName,
+                            studentCode: applicationRecord?.student?.studentCode,
+                            schoolName: applicationRecord?.institution?.officialName,
+                            criterionId: crit.id,
+                            requirementTitle: req.title,
+                            declaredValue: decl.value,
+                          },
+                          true
+                        )
+                      );
+                    }
+                  }
+                }
+              }
+              const results = await Promise.allSettled(tasks);
+              const usedOpenAi = results.some(
+                (r) => r.status === 'fulfilled' && r.value?.aiSource === 'openai'
+              );
+              showToast(
+                usedOpenAi
+                  ? 'Đã cập nhật kết quả đọc minh chứng trực tiếp từ OpenAI.'
+                  : 'Đã cập nhật kết quả đối chiếu minh chứng (Chế độ Rule Engine — chưa điền OPENAI_API_KEY).'
+              );
+            } finally {
+              setIsReanalyzing(false);
+            }
+          }}
+        />
+      )}
 
       {/* FULL WIDTH CANONICAL DOSSIER (UX-S5.2) */}
       <div className="w-full relative">
@@ -1054,9 +1062,11 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
                 criterionNumber={critDef?.number || 1}
                 assessment={assessment}
                 aiPreliminaryAssessment={
-                  applicationAiVerdict.criteriaAssessments[
-                    critId as CriterionDefinition['id']
-                  ]
+                  isSchoolStage
+                    ? undefined
+                    : applicationAiVerdict.criteriaAssessments[
+                        critId as CriterionDefinition['id']
+                      ]
                 }
                 workspaceState={workspaceState}
                 canMutate={effectiveCanMutate}
@@ -1228,9 +1238,9 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
         onCloseHistoryDrawer={() => setIsHistoryDrawerOpen(false)}
         isCompleteDialogOpen={isCompleteDialogOpen}
         onCloseCompleteDialog={() => setIsCompleteDialogOpen(false)}
-        isAiSummaryOpen={isAiSummaryOpen}
+        isAiSummaryOpen={!isSchoolStage && isAiSummaryOpen}
         onCloseAiSummary={() => setIsAiSummaryOpen(false)}
-        isAgentRailOpen={isAgentRailOpen}
+        isAgentRailOpen={!isSchoolStage && isAgentRailOpen}
         onCloseAgentRail={() => setIsAgentRailOpen(false)}
         isDemoTourOpen={false}
         onCloseDemoTour={() => {}}
@@ -1243,21 +1253,23 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
         onSelectCriterionFromAiSummary={handleSelectCriterion}
       />
 
-      <VirtualAiReviewReport
-        isOpen={isVirtualAiReportOpen}
-        onClose={() => setIsVirtualAiReportOpen(false)}
-        options={{
-          applicationId: applicationRecord.applicationId,
-          studentName: applicationRecord.student.fullName,
-          studentCode: applicationRecord.student.studentCode,
-          scope: virtualAiReportScope.scope,
-          scopeTargetId: virtualAiReportScope.targetId,
-          mode: 'detailed',
-          preliminaryVerdictState: applicationAiVerdict,
-          studentApp,
-        }}
-        onNavigateToCriterion={(critId) => handleSelectCriterion(critId as any)}
-      />
+      {!isSchoolStage && (
+        <VirtualAiReviewReport
+          isOpen={isVirtualAiReportOpen}
+          onClose={() => setIsVirtualAiReportOpen(false)}
+          options={{
+            applicationId: applicationRecord.applicationId,
+            studentName: applicationRecord.student.fullName,
+            studentCode: applicationRecord.student.studentCode,
+            scope: virtualAiReportScope.scope,
+            scopeTargetId: virtualAiReportScope.targetId,
+            mode: 'detailed',
+            preliminaryVerdictState: applicationAiVerdict,
+            studentApp,
+          }}
+          onNavigateToCriterion={(critId) => handleSelectCriterion(critId as any)}
+        />
+      )}
 
       <CommitteeSchoolDecisionPreviewModal
         isOpen={isSchoolHistoryOpen}

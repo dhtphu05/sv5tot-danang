@@ -780,8 +780,6 @@ export const AddEditDeclarationModal: React.FC<AddEditDeclarationModalProps> = (
                 </div>
                 <div className="divide-y divide-[#E8F0F5] bg-[#F8FBFD] rounded-[9px] border border-[#DCE7EE] overflow-hidden">
                   {attachedFiles.map((file) => {
-                    const ocrLoading = isEvidenceOcrInFlight(file.id);
-                    const exactOcr = getExactEvidenceOcrResult(file.id);
                     return (
                       <div
                         key={file.id}
@@ -799,35 +797,6 @@ export const AddEditDeclarationModal: React.FC<AddEditDeclarationModalProps> = (
                             <span className="text-[10.5px] text-[#607483]">
                               {file.size} · Đã gắn vào kê khai
                             </span>
-                            {ocrLoading && (
-                              <span className="inline-flex items-center gap-1 text-[10.5px] font-medium text-[#0D78AE] mt-0.5">
-                                <RefreshCw size={10} className="animate-spin shrink-0" />
-                                <span>Đang đọc minh chứng ngầm...</span>
-                              </span>
-                            )}
-                            {!ocrLoading && exactOcr && (
-                              <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-                                <span className="inline-flex items-center gap-1 text-[10.5px] font-medium text-[#0F766E] truncate">
-                                  <FileCheck2 size={11} className="shrink-0" />
-                                  <span className="truncate">
-                                    Đã đọc: {exactOcr.documentType} — {exactOcr.extractedValue}
-                                  </span>
-                                </span>
-                                {!content.trim() && exactOcr.extractedValue && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setContent(exactOcr.extractedValue);
-                                      setIsDirty(true);
-                                      setValidationError(null);
-                                    }}
-                                    className="text-[10px] font-semibold text-[#0D78AE] hover:underline cursor-pointer shrink-0"
-                                  >
-                                    Điền vào tên kê khai
-                                  </button>
-                                )}
-                              </div>
-                            )}
                           </div>
                         </div>
 

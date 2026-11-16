@@ -143,25 +143,37 @@ export const ManualCriterionConclusionBar: React.FC<
               </span>
             )}
 
-            {/* Advisory Readiness Hint */}
-            <span
-              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[5px] text-[11px] font-bold border ${
-                aiIsMeets
-                  ? 'bg-[#EAFBF1] text-[#136F3A] border-[#B6E6C9]'
-                  : 'bg-[#FEF3C7] text-[#B45309] border-[#FCD34D]'
-              }`}
-              title="Tổng hợp điều kiện cần để đạt tiêu chí theo Quy chế Sinh viên 5 tốt (chỉ mang tính chất tham khảo)"
-            >
-              {aiIsMeets ? <CheckCircle2 size={11.5} /> : <AlertTriangle size={11.5} />}
-              <span>
-                AI Tổng quan tiêu chí:{' '}
-                {aiIsMeets
-                  ? `Đạt sơ bộ (${metCondCount}/${totalCondCount} điều kiện)`
-                  : totalCondCount > 0
-                  ? `Cần kiểm tra thêm (Mới đạt ${metCondCount}/${totalCondCount} điều kiện)`
-                  : `Cần kiểm tra thêm`}
+            {/* Advisory Readiness Hint (AI for City Stage, Progress count for School Stage) */}
+            {!isSchoolStage && aiPreliminaryAssessment ? (
+              <span
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[5px] text-[11px] font-bold border ${
+                  aiIsMeets
+                    ? 'bg-[#EAFBF1] text-[#136F3A] border-[#B6E6C9]'
+                    : 'bg-[#FEF3C7] text-[#B45309] border-[#FCD34D]'
+                }`}
+                title="Tổng hợp điều kiện cần để đạt tiêu chí theo Quy chế Sinh viên 5 tốt (chỉ mang tính chất tham khảo)"
+              >
+                {aiIsMeets ? <CheckCircle2 size={11.5} /> : <AlertTriangle size={11.5} />}
+                <span>
+                  AI Tổng quan tiêu chí:{' '}
+                  {aiIsMeets
+                    ? `Đạt sơ bộ (${metCondCount}/${totalCondCount} điều kiện)`
+                    : totalCondCount > 0
+                    ? `Cần kiểm tra thêm (Mới đạt ${metCondCount}/${totalCondCount} điều kiện)`
+                    : `Cần kiểm tra thêm`}
+                </span>
               </span>
-            </span>
+            ) : (
+              <span
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[5px] text-[11px] font-medium border bg-[#F8FAFC] text-[#64748B] border-[#E2E8F0]"
+                title="Tiến độ rà soát các mục kê khai trong tiêu chí"
+              >
+                <Info size={11} />
+                <span>
+                  Tiến độ rà soát: {assessment.reviewedItemCount}/{assessment.totalItemCount} nội dung
+                </span>
+              </span>
+            )}
 
             {/* In City stage, show School preliminary conclusion if available */}
             {!isSchoolStage && schoolReviewSummary && (
@@ -180,8 +192,8 @@ export const ManualCriterionConclusionBar: React.FC<
             )}
           </div>
 
-          {/* Holistic Criterion Conditions Checklist */}
-          {checklist.length > 0 && (
+          {/* Holistic Criterion Conditions Checklist (City-Level Only) */}
+          {!isSchoolStage && checklist.length > 0 && (
             <div className="rounded-[7px] bg-white border border-[#E2E8F0] px-3 py-2 space-y-1">
               <div className="text-[11px] font-bold text-[#334155]">
                 Điều kiện cần để Đạt Tiêu chí 0{criterionNumber} ({criterionName}):
