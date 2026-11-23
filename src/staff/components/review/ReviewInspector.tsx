@@ -273,6 +273,14 @@ export const ReviewInspector: React.FC<ReviewInspectorProps> = ({
     3
   );
 
+  const isPledge = selectedScope.requirementId === 'ethics-law' || selectedScope.requirementId === 'TC1.2';
+  const selectedEvidenceFiles = selectedDeclaration
+    ? (selectedDeclaration.evidence || selectedDeclaration.evidenceFiles || []).filter(
+        (f) => f && typeof f.name === 'string' && f.name.trim().length > 0
+      )
+    : [];
+  const scopeHasNoEvidence = Boolean(selectedDeclaration && !isPledge && selectedEvidenceFiles.length === 0);
+
   return (
     <aside
       aria-label="Khung thông tin và thao tác xét duyệt"
@@ -805,6 +813,7 @@ export const ReviewInspector: React.FC<ReviewInspectorProps> = ({
         hasStartedReview={hasStartedReview}
         onStartReview={onStartReview}
         disabledReason={disabledReason}
+        hasNoEvidence={scopeHasNoEvidence}
       />
     </aside>
   );

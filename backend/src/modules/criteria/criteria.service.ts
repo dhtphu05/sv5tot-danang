@@ -271,9 +271,22 @@ export class CriteriaService {
       const code = decl.criterionCode;
       if (results[code]) {
         results[code].declaredCount += 1;
-        results[code].evidenceCount += decl.evidenceCount ?? 0;
-        results[code].satisfiedRequirements.push(decl.requirementCode);
-        allDeclaredReqs.add(decl.requirementCode);
+        const evCount = decl.evidenceCount ?? 0;
+        results[code].evidenceCount += evCount;
+
+        // Under Hướng dẫn số 14-HD/BTK-HSVTP, declarations must have attached evidence (except pledge TC1.2)
+        const isPledgeReq = decl.requirementCode === 'TC1.2' || decl.requirementCode === 'ethics-law';
+        if (evCount > 0 || isPledgeReq) {
+          results[code].satisfiedRequirements.push(decl.requirementCode);
+          allDeclaredReqs.add(decl.requirementCode);
+        } else {
+          results[code].warnings.push(
+            `Theo Hướng dẫn số 14-HD/BTK-HSVTP: Mục "${decl.requirementCode}" đã kê khai nhưng chưa có tệp minh chứng đính kèm để đối chiếu.`
+          );
+          advisoryWarnings.push(
+            `Theo Hướng dẫn số 14-HD/BTK-HSVTP: Mục "${decl.requirementCode}" thiếu tệp minh chứng đính kèm.`
+          );
+        }
       }
     }
 

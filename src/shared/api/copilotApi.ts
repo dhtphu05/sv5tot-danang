@@ -483,21 +483,27 @@ export function evaluateDeclarationQuickInsight(params: {
     hasValidVolunteerAward,
   } = params;
 
-  if (!evidenceFiles || evidenceFiles.length === 0) {
+  const validFiles = (evidenceFiles || []).filter(
+    (ev) => ev && typeof ev.name === 'string' && ev.name.trim().length > 0
+  );
+
+  const regCitation = 'Theo Hướng dẫn số 14-HD/BTK-HSVTP (Hội Sinh viên TP. Đà Nẵng)';
+
+  if (validFiles.length === 0) {
     return {
       status: 'insufficient_evidence',
       badgeLabel: 'Cần kiểm tra thêm',
       declaredText: declaredValue || requirementTitle,
       extractedText: 'Chưa có tệp minh chứng đính kèm',
-      authorityText: 'Cần sinh viên bổ sung tệp xác nhận',
+      authorityText: 'Bắt buộc đính kèm tệp xác nhận theo quy chế',
       stampVerified: false,
-      reasonText: 'Mục kê khai này chưa có tệp minh chứng đính kèm để đối chiếu.',
-      draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, nội dung kê khai "${declaredValue || requirementTitle}" hiện chưa có tệp minh chứng đính kèm. Đề nghị bạn bổ sung bản chụp/scan văn bản xác nhận có dấu hợp lệ.`,
+      reasonText: `${regCitation}: Mọi nội dung kê khai bắt buộc phải có văn bản minh chứng đối chiếu (bản scan/ảnh chụp văn bản, giấy chứng nhận hoặc quyết định có dấu mộc và chữ ký xác nhận). Kê khai này hiện chưa tải lên tệp minh chứng.`,
+      draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, căn cứ Hướng dẫn số 14-HD/BTK-HSVTP của Ban Thư ký Hội Sinh viên Việt Nam TP. Đà Nẵng, nội dung kê khai "${declaredValue || requirementTitle}" hiện chưa có tệp minh chứng đính kèm. Đề nghị bạn bổ sung bản chụp/scan văn bản xác nhận có con dấu và chữ ký hợp lệ để hội đồng xét chọn có căn cứ thẩm định.`,
       aiSource: 'rule_engine',
     };
   }
 
-  const extractions = evidenceFiles.map((ev) =>
+  const extractions = validFiles.map((ev) =>
     getCachedEvidenceOcrSync({
       evidenceId: ev.id,
       fileName: ev.name,
@@ -512,7 +518,7 @@ export function evaluateDeclarationQuickInsight(params: {
   const primary = extractions[0];
   const authorityWithDate = `${primary.issuingAuthority}${primary.issueDate ? ` · ${primary.issueDate}` : ''}`;
   const hasMismatch = extractions.some((e) => e.matchWithDeclaration === 'mismatch');
-  const hasFlaggedFile = evidenceFiles.some((ev) => ev.status === 'needs_verification');
+  const hasFlaggedFile = validFiles.some((ev) => ev.status === 'needs_verification');
   const hasPartial =
     hasFlaggedFile ||
     extractions.some(
@@ -527,7 +533,7 @@ export function evaluateDeclarationQuickInsight(params: {
   const combinedSourceText = `${primary.extractedValue || ''} ${declaredValue || ''}`;
   const lowerContext = `${requirementTitle || ''} ${declaredValue || ''} ${primary.documentType || ''} ${primary.extractedValue || ''}`.toLowerCase();
 
-  // 1. Mandatory Academic GPA Check
+  // 1. Mandatory Academic GPA Check (TC2.1)
   const gpaMatch = combinedSourceText.match(/(\d+[.,]\d+)\s*\/\s*4/);
   const gpaVal =
     typeof primary.numericMetric === 'number' && primary.numericMetric <= 4.0
@@ -541,7 +547,7 @@ export function evaluateDeclarationQuickInsight(params: {
     typeof gpaVal === 'number' &&
     gpaVal < 3.2
   ) {
-    const reason = `Cần kiểm tra thêm: Điểm GPA đọc sơ bộ từ minh chứng (${gpaVal}/4.0) thấp hơn ngưỡng quy chuẩn (3.2/4.0 hệ Đại học, 3.0/4.0 hệ Cao đẳng) hoặc cần kiểm tra lại bản gốc.`;
+    const reason = `${regCitation} - TC2.1 (Điểm TB học tập cả năm): Yêu cầu tối thiểu đạt GPA >= 3.2/4.0 (8.0/10) đối với bậc Đại học/Học viện hoặc >= 3.0/4.0 (7.5/10) đối với bậc Cao đẳng. Điểm đọc sơ bộ (${gpaVal}/4.0) chưa đạt ngưỡng quy chuẩn hoặc cần đối chiếu lại bảng điểm gốc có xác nhận của trường.`;
     return {
       status: 'insufficient_evidence',
       badgeLabel: 'Cần kiểm tra thêm',
@@ -550,12 +556,12 @@ export function evaluateDeclarationQuickInsight(params: {
       authorityText: authorityWithDate,
       stampVerified: primary.hasRedStampOrSignature === 'verified',
       reasonText: reason,
-      draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, qua đọc minh chứng tại mục "${declaredValue || requirementTitle}", hệ thống ghi nhận điểm GPA sơ bộ (${gpaVal}/4.0) cần kiểm tra lại so với quy chuẩn. Đề nghị bạn kiểm tra và bổ sung bảng điểm cả năm học rõ nét.`,
+      draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, căn cứ Hướng dẫn số 14-HD/BTK-HSVTP, tiêu chuẩn TC2.1 yêu cầu điểm TB học tập cả năm đạt từ 3.2/4.0 (Đại học) hoặc 3.0/4.0 (Cao đẳng). Dữ liệu đọc từ minh chứng (${gpaVal}/4.0) chưa đạt hoặc chưa rõ cả năm học. Đề nghị bạn kiểm tra và bổ sung bảng điểm năm học hoàn chỉnh có xác nhận.`,
       aiSource: usedOpenAi ? 'openai' : 'rule_engine',
     };
   }
 
-  // 2. Mandatory Ethics Conduct Score Check (>= 80/100)
+  // 2. Mandatory Ethics Conduct Score Check (TC1.1: >= 80/100)
   const drlMatch = combinedSourceText.match(/(\d+)\s*\/\s*100/);
   const drlVal =
     typeof primary.numericMetric === 'number' && primary.numericMetric > 10 && primary.numericMetric <= 100
@@ -569,7 +575,7 @@ export function evaluateDeclarationQuickInsight(params: {
     typeof drlVal === 'number' &&
     drlVal < 80
   ) {
-    const reason = `Cần kiểm tra thêm: Điểm rèn luyện đọc sơ bộ từ minh chứng (${drlVal}/100) chưa đủ ngưỡng 80/100 điểm hoặc cần kiểm tra lại bản gốc.`;
+    const reason = `${regCitation} - TC1.1 (Điểm rèn luyện): Yêu cầu điểm rèn luyện cả năm học đạt từ 80/100 điểm trở lên (hoặc xếp loại Giỏi). Điểm đọc sơ bộ (${drlVal}/100) chưa đạt ngưỡng hoặc cần kiểm tra lại bản gốc có dấu đỏ.`;
     return {
       status: 'insufficient_evidence',
       badgeLabel: 'Cần kiểm tra thêm',
@@ -578,12 +584,12 @@ export function evaluateDeclarationQuickInsight(params: {
       authorityText: authorityWithDate,
       stampVerified: primary.hasRedStampOrSignature === 'verified',
       reasonText: reason,
-      draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, qua đọc minh chứng tại mục "${declaredValue || requirementTitle}", hệ thống ghi nhận điểm rèn luyện sơ bộ (${drlVal}/100) cần kiểm tra lại so với ngưỡng 80/100 điểm. Đề nghị bạn bổ sung bản xác nhận điểm rèn luyện đầy đủ.`,
+      draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, căn cứ Hướng dẫn số 14-HD/BTK-HSVTP, tiêu chuẩn TC1.1 yêu cầu điểm rèn luyện cả năm đạt từ 80/100 điểm trở lên. Dữ liệu đọc sơ bộ (${drlVal}/100) chưa đạt ngưỡng. Đề nghị bạn bổ sung văn bản xác nhận điểm rèn luyện năm học có dấu xác nhận.`,
       aiSource: usedOpenAi ? 'openai' : 'rule_engine',
     };
   }
 
-  // 3. Volunteer Days Check (>= 5 days cumulative across all activities in TC4.1, OR valid TC4.2 award)
+  // 3. Volunteer Days Check (TC4.1: >= 5 days cumulative across activities, OR TC4.2 award)
   const isVolunteerDaysReq =
     criterionId === 'volunteer' &&
     (requirementId === 'volunteer-activities' ||
@@ -592,7 +598,7 @@ export function evaluateDeclarationQuickInsight(params: {
       lowerContext.includes('tích lũy'));
   if (isVolunteerDaysReq) {
     const itemDaysInfo = extractVolunteerDaysFromDeclaration(
-      { value: declaredValue, evidenceFiles },
+      { value: declaredValue, evidenceFiles: validFiles },
       studentName
     );
     const itemDays = itemDaysInfo.days;
@@ -611,8 +617,8 @@ export function evaluateDeclarationQuickInsight(params: {
     if (totalDays > 0 && totalDays < 5 && !hasValidVolunteerAward) {
       const reason =
         Array.isArray(allRequirementDeclarations) && allRequirementDeclarations.length > 1
-          ? `Hoạt động này đóng góp ${itemDays} ngày, nhưng tổng cộng dồn toàn mục hiện mới đạt ${totalDays}/05 ngày tình nguyện (còn thiếu ${5 - totalDays} ngày hoặc cần 01 giấy khen tình nguyện cấp Khoa trở lên).`
-          : `Cần kiểm tra thêm: Minh chứng này xác nhận ${itemDays} ngày tình nguyện (để đạt tiêu chí cần tích lũy cộng dồn đủ 05 ngày/năm học hoặc có giấy khen tình nguyện cấp Khoa trở lên).`;
+          ? `${regCitation} - TC4.1: Yêu cầu tích lũy tối thiểu 05 ngày tình nguyện/năm học (hiến máu = 01 ngày/lần) HOẶC giấy khen cấp Khoa trở lên (TC4.2). Hoạt động này góp ${itemDays} ngày, tổng tích lũy hiện mới đạt ${totalDays}/05 ngày (còn thiếu ${5 - totalDays} ngày).`
+          : `${regCitation} - TC4.1: Hoạt động xác nhận ${itemDays} ngày tình nguyện. Quy chế yêu cầu tích lũy cộng dồn tối thiểu 05 ngày/năm học hoặc có giấy khen tình nguyện từ cấp Khoa trở lên (TC4.2).`;
       return {
         status: 'insufficient_evidence',
         badgeLabel: 'Cần kiểm tra thêm',
@@ -621,7 +627,7 @@ export function evaluateDeclarationQuickInsight(params: {
         authorityText: authorityWithDate,
         stampVerified: primary.hasRedStampOrSignature === 'verified',
         reasonText: reason,
-        draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, hiện tổng số ngày tình nguyện tích lũy đọc từ minh chứng mới đạt ${totalDays}/05 ngày (quy chế yêu cầu tích lũy tối thiểu 05 ngày/năm học hoặc có giấy khen tình nguyện từ cấp Khoa trở lên). Đề nghị bạn bổ sung thêm minh chứng hoạt động tình nguyện.`,
+        draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, căn cứ Hướng dẫn số 14-HD/BTK-HSVTP, tiêu chuẩn TC4.1 yêu cầu tích lũy tối thiểu 05 ngày tình nguyện/năm học (hoặc có giấy khen cấp Khoa trở lên theo TC4.2). Hiện tổng số ngày tích lũy mới đạt ${totalDays}/05 ngày. Đề nghị bạn bổ sung thêm minh chứng hoạt động tình nguyện.`,
         aiSource: usedOpenAi ? 'openai' : 'rule_engine',
       };
     }
@@ -631,7 +637,7 @@ export function evaluateDeclarationQuickInsight(params: {
     const mismatchItem = extractions.find((e) => e.matchWithDeclaration === 'mismatch') || primary;
     const reason =
       mismatchItem.discrepancyNote ||
-      'Cần kiểm tra thêm: Số liệu đọc từ minh chứng có sự chênh lệch hoặc cần đối chiếu lại.';
+      `${regCitation}: Số liệu đọc từ tệp minh chứng có sự chênh lệch so với nội dung kê khai hoặc cần đối chiếu lại bản gốc.`;
     return {
       status: 'insufficient_evidence',
       badgeLabel: 'Cần kiểm tra thêm',
@@ -640,7 +646,7 @@ export function evaluateDeclarationQuickInsight(params: {
       authorityText: `${mismatchItem.issuingAuthority}${mismatchItem.issueDate ? ` · ${mismatchItem.issueDate}` : ''}`,
       stampVerified: mismatchItem.hasRedStampOrSignature === 'verified',
       reasonText: reason,
-      draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, qua đối chiếu mục "${declaredValue || requirementTitle}", hệ thống ghi nhận: ${reason} Đề nghị bạn kiểm tra và bổ sung minh chứng xác nhận đầy đủ theo quy chế.`,
+      draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, qua đối chiếu theo Hướng dẫn số 14-HD/BTK-HSVTP tại mục "${declaredValue || requirementTitle}", hệ thống ghi nhận: ${reason} Đề nghị bạn kiểm tra và bổ sung minh chứng xác nhận đầy đủ theo quy chế.`,
       aiSource: usedOpenAi ? 'openai' : 'rule_engine',
     };
   }
@@ -651,7 +657,7 @@ export function evaluateDeclarationQuickInsight(params: {
       primary;
     const reason =
       partialItem.discrepancyNote ||
-      'Cần cán bộ kiểm tra trực tiếp dấu xác nhận hoặc tính tương đương của minh chứng.';
+      `${regCitation}: Cần cán bộ kiểm tra trực tiếp con dấu mộc đỏ, chữ ký của đơn vị ban hành hoặc tính tương đương của văn bản minh chứng.`;
     return {
       status: 'insufficient_evidence',
       badgeLabel: 'Cần kiểm tra thêm',
@@ -660,7 +666,7 @@ export function evaluateDeclarationQuickInsight(params: {
       authorityText: `${partialItem.issuingAuthority}${partialItem.issueDate ? ` · ${partialItem.issueDate}` : ''}`,
       stampVerified: partialItem.hasRedStampOrSignature === 'verified',
       reasonText: reason,
-      draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, minh chứng tại mục "${declaredValue || requirementTitle}" cần làm rõ thêm dấu xác nhận hoặc quy chuẩn tương đương. Đề nghị bạn bổ sung tài liệu rõ nét hơn.`,
+      draftSupplementMessage: `Kính gửi sinh viên ${studentName || ''}, minh chứng tại mục "${declaredValue || requirementTitle}" cần làm rõ thêm con dấu xác nhận hoặc tính tương đương theo Hướng dẫn số 14-HD/BTK-HSVTP. Đề nghị bạn bổ sung tài liệu rõ nét hơn.`,
       aiSource: usedOpenAi ? 'openai' : 'rule_engine',
     };
   }
@@ -672,7 +678,7 @@ export function evaluateDeclarationQuickInsight(params: {
     extractedText: `${primary.documentType}: ${primary.extractedValue}`,
     authorityText: authorityWithDate,
     stampVerified: true,
-    reasonText: 'Thông tin chi tiết bóc tách từ tệp minh chứng hợp lệ và đạt ngưỡng quy chế.',
+    reasonText: `${regCitation}: Thông tin chi tiết trích xuất từ tệp minh chứng hợp lệ, có dấu xác nhận và đáp ứng ngưỡng tiêu chuẩn quy chế.`,
     aiSource: usedOpenAi ? 'openai' : 'rule_engine',
   };
 }

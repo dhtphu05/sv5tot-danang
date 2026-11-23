@@ -8,6 +8,7 @@ import {
   Info,
   PlayCircle,
   Lock,
+  AlertTriangle,
 } from 'lucide-react';
 import { SelectedReviewScope, StaffItemReviewStatus } from '../../../reviewTypes';
 
@@ -41,6 +42,7 @@ interface InspectorJudgmentSectionProps {
   hasStartedReview: boolean;
   onStartReview?: () => void;
   disabledReason?: string;
+  hasNoEvidence?: boolean;
 }
 
 export const InspectorJudgmentSection: React.FC<InspectorJudgmentSectionProps> = ({
@@ -69,6 +71,7 @@ export const InspectorJudgmentSection: React.FC<InspectorJudgmentSectionProps> =
   hasStartedReview,
   onStartReview,
   disabledReason,
+  hasNoEvidence = false,
 }) => {
   if (!canMutate) {
     return (
@@ -255,14 +258,29 @@ export const InspectorJudgmentSection: React.FC<InspectorJudgmentSectionProps> =
       {/* CLEAN ACTION HIERARCHY (Prompt 22.3 Section 4) */}
       {!isUnsuitableFormOpen && !isConsiderationFormOpen && (
         <div className="space-y-2">
+          {hasNoEvidence && (
+            <div className="p-2.5 rounded-[10px] bg-[#FEF6EB] border border-[#FADDB6] text-[11.5px] text-[#B45309] flex items-start gap-2 select-none">
+              <AlertTriangle size={14} className="shrink-0 text-[#D97706] mt-0.5" />
+              <span>Theo Hướng dẫn số 14-HD/BTK-HSVTP: Mục kê khai này chưa có tệp minh chứng đối chiếu. Vui lòng bấm <strong>Yêu cầu bổ sung</strong> để sinh viên tải lên tệp xác nhận.</span>
+            </div>
+          )}
+
           {/* Primary: Xác nhận phù hợp */}
           <button
             type="button"
+            disabled={hasNoEvidence && currentScopeStatus !== 'suitable'}
             onClick={() => onUpdateStatus(selectedScope, 'suitable')}
-            className={`w-full h-[40px] px-4 rounded-[12px] font-bold text-[13px] inline-flex items-center justify-center gap-2 transition-all cursor-pointer border-0 shadow-2xs ${
-              currentScopeStatus === 'suitable'
-                ? 'bg-[#EAFBF1] text-[#136F3A] ring-2 ring-[#B6E6C9]'
-                : 'bg-[#1680DE] hover:bg-[#1371C4] text-white'
+            title={
+              hasNoEvidence && currentScopeStatus !== 'suitable'
+                ? 'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Không thể xác nhận phù hợp khi chưa có tệp minh chứng đính kèm'
+                : undefined
+            }
+            className={`w-full h-[40px] px-4 rounded-[12px] font-bold text-[13px] inline-flex items-center justify-center gap-2 transition-all border-0 shadow-2xs ${
+              hasNoEvidence && currentScopeStatus !== 'suitable'
+                ? 'bg-[#F1F5F9] text-[#94A3B8] border border-[#CBD5E1] cursor-not-allowed opacity-60'
+                : currentScopeStatus === 'suitable'
+                ? 'bg-[#EAFBF1] text-[#136F3A] ring-2 ring-[#B6E6C9] cursor-pointer'
+                : 'bg-[#1680DE] hover:bg-[#1371C4] text-white cursor-pointer'
             }`}
           >
             <CheckCircle2 size={16} />

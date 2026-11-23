@@ -328,11 +328,20 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
       (r.declarationId === declId || (!r.declarationId && r.requirementId === requirement.id))
   );
 
+  const isPledge = requirement.id === 'ethics-law' || requirement.id === 'TC1.2';
+  const declEvidenceFiles = (decl?.evidenceFiles || (decl as any)?.evidence || []).filter(
+    (f: any) => f && typeof f.name === 'string' && f.name.trim().length > 0
+  );
+  const hasNoEvidence = !isPledge && declEvidenceFiles.length === 0;
+
   const suppDiff = scopeRecord?.supplementDiff;
 
   const handleTogglePass = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!canMutate) return;
+    if (hasNoEvidence && !isPass) {
+      return;
+    }
     const next = isPass ? 'not_reviewed' : 'suitable';
     onUpdateScopeStatus(
       {
@@ -556,20 +565,39 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
         </div>
       )}
 
+      {/* Warning banner when declaration has no evidence files */}
+      {hasNoEvidence && (
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-[#FEF6EB] border border-[#FADDB6] text-[11px] text-[#B45309] font-medium select-none">
+          <AlertTriangle size={12} className="shrink-0 text-[#D97706]" />
+          <span>Theo Hướng dẫn số 14-HD/BTK-HSVTP: Chưa có tệp minh chứng đối chiếu (bấm Yêu cầu bổ sung)</span>
+        </div>
+      )}
+
       {/* Primary Pass / Fail Segmented Actions — Direct Reassessment ready for returned supplements */}
       <div className="inline-flex items-center gap-1.5 bg-[#F1F5F9] p-1 rounded-[9px] border border-[#E2E8F0] shadow-2xs select-none">
         {/* Pass Button */}
         <button
           type="button"
           onClick={handleTogglePass}
+          disabled={hasNoEvidence && !isPass}
           aria-pressed={isPass}
-          title={isPass ? 'Nhấn để hủy kết quả Đạt' : isSupplementReturned ? 'Xác nhận nội dung bổ sung Đạt' : 'Xác nhận nội dung này Đạt'}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[38px] rounded-[7px] text-[12.5px] font-bold transition-all cursor-pointer ${
-            isPass
-              ? 'bg-[#16A34A] text-white shadow-xs scale-[1.02]'
+          title={
+            hasNoEvidence && !isPass
+              ? 'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Không thể đánh giá Đạt cho mục chưa có tệp minh chứng đính kèm'
+              : isPass
+              ? 'Nhấn để hủy kết quả Đạt'
               : isSupplementReturned
-              ? 'bg-white text-[#15803D] hover:bg-[#F0FDF4] border border-[#86EFAC] font-extrabold'
-              : 'bg-white text-[#334155] hover:text-[#16A34A] hover:bg-[#F0FDF4] border border-[#E2E8F0]'
+              ? 'Xác nhận nội dung bổ sung Đạt'
+              : 'Xác nhận nội dung này Đạt'
+          }
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[38px] rounded-[7px] text-[12.5px] font-bold transition-all ${
+            hasNoEvidence && !isPass
+              ? 'bg-[#F1F5F9] text-[#94A3B8] border border-[#CBD5E1] cursor-not-allowed opacity-60'
+              : isPass
+              ? 'bg-[#16A34A] text-white shadow-xs scale-[1.02] cursor-pointer'
+              : isSupplementReturned
+              ? 'bg-white text-[#15803D] hover:bg-[#F0FDF4] border border-[#86EFAC] font-extrabold cursor-pointer'
+              : 'bg-white text-[#334155] hover:text-[#16A34A] hover:bg-[#F0FDF4] border border-[#E2E8F0] cursor-pointer'
           }`}
         >
           <Check size={14} strokeWidth={isPass ? 2.8 : 2.2} />

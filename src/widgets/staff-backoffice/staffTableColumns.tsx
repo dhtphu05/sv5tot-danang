@@ -123,8 +123,8 @@ export function deriveRowAiPreliminarySummary(
       return {
         shortCode,
         name,
-        aiStatus: 'failed',
-        reason: `AI: Chưa đạt sơ bộ (${name} thiếu tệp minh chứng)`,
+        aiStatus: 'needs_check',
+        reason: `AI: Cần kiểm tra thêm (${name} chưa có tệp minh chứng theo Hướng dẫn 14-HD/BTK-HSVTP)`,
       };
     }
 
@@ -139,7 +139,7 @@ export function deriveRowAiPreliminarySummary(
         name,
         aiStatus: 'needs_check',
         reason: `AI: Cần kiểm tra thêm (${
-          found.noteSummary || 'Cần xác minh mộc dấu / nội dung OCR'
+          found.noteSummary || 'Cần xác minh mộc dấu / nội dung OCR theo Hướng dẫn 14-HD/BTK-HSVTP'
         })`,
       };
     }
@@ -161,34 +161,22 @@ export function deriveRowAiPreliminarySummary(
     chips[3] = {
       ...chips[3],
       aiStatus: 'needs_check',
-      reason: 'AI: Cần kiểm tra thêm minh chứng bổ sung tiêu chí Tình nguyện',
+      reason: 'AI: Cần kiểm tra thêm minh chứng bổ sung tiêu chí Tình nguyện theo Hướng dẫn 14-HD/BTK-HSVTP',
     };
   }
 
   const passedCount = chips.filter((c) => c.aiStatus === 'passed').length;
-  const failedChips = chips.filter((c) => c.aiStatus === 'failed');
-  const checkChips = chips.filter((c) => c.aiStatus === 'needs_check');
+  const checkChips = chips.filter((c) => c.aiStatus !== 'passed');
 
-  if (failedChips.length > 0 || app.totalEvidence === 0) {
-    const missingNames = failedChips.map((c) => c.shortCode).join(', ');
-    return {
-      overallStatus: 'failed',
-      passedCount,
-      badgeLabel: `AI: Chưa đạt sơ bộ (${passedCount}/5 Đạt)`,
-      ocrNote: missingNames
-        ? `OCR: Thiếu minh chứng hợp lệ tại ${missingNames}`
-        : 'OCR: Hồ sơ thiếu tệp minh chứng bắt buộc',
-      criteriaChips: chips,
-    };
-  }
-
-  if (checkChips.length > 0) {
+  if (checkChips.length > 0 || app.totalEvidence === 0) {
     const checkNames = checkChips.map((c) => c.shortCode).join(', ');
     return {
       overallStatus: 'needs_check',
       passedCount,
       badgeLabel: `AI: Cần kiểm tra (${passedCount}/5 Đạt)`,
-      ocrNote: `OCR: Cần đối chiếu thêm minh chứng ${checkNames}`,
+      ocrNote: checkNames
+        ? `OCR: Cần đối chiếu thêm minh chứng ${checkNames} (theo Hướng dẫn 14-HD/BTK-HSVTP)`
+        : 'OCR: Hồ sơ thiếu tệp minh chứng bắt buộc theo quy chế',
       criteriaChips: chips,
     };
   }
@@ -215,14 +203,9 @@ export function renderRowAiPreliminaryCell(
             <CheckCircle2 size={11.5} className="shrink-0 text-[#16A34A]" />
             <span>{ai.badgeLabel}</span>
           </span>
-        ) : ai.overallStatus === 'needs_check' ? (
+        ) : (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[5px] text-[11px] font-bold bg-[#FEF6EB] text-[#B45309] border border-[#FADDB6]">
             <AlertTriangle size={11.5} className="shrink-0 text-[#D97706]" />
-            <span>{ai.badgeLabel}</span>
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[5px] text-[11px] font-bold bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA]">
-            <XCircle size={11.5} className="shrink-0 text-[#DC2626]" />
             <span>{ai.badgeLabel}</span>
           </span>
         )}
@@ -231,7 +214,6 @@ export function renderRowAiPreliminaryCell(
       <div className="flex items-center gap-1">
         {ai.criteriaChips.map((chip) => {
           const isPass = chip.aiStatus === 'passed';
-          const isCheck = chip.aiStatus === 'needs_check';
           return (
             <span
               key={chip.shortCode}
@@ -239,13 +221,11 @@ export function renderRowAiPreliminaryCell(
               className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-bold rounded-[4px] border ${
                 isPass
                   ? 'bg-[#EAFBF1] text-[#15803D] border-[#BBF7D0]'
-                  : isCheck
-                  ? 'bg-[#FEF6EB] text-[#B45309] border-[#FADDB6]'
-                  : 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]'
+                  : 'bg-[#FEF6EB] text-[#B45309] border-[#FADDB6]'
               }`}
             >
               <span>{chip.shortCode}</span>
-              <span>{isPass ? '✓' : isCheck ? '!' : '✕'}</span>
+              <span>{isPass ? '✓' : '!'}</span>
             </span>
           );
         })}

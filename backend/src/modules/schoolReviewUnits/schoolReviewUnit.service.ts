@@ -30,8 +30,7 @@ export const AUTHORITATIVE_UDN_MEMBER_INSTITUTION_IDS = [
   'inst-ute',
   'inst-vku',
   'inst-vnuk',
-  'inst-udck',
-  'inst-smp', // legacy alias
+  'inst-smp',
 ] as const;
 
 export const CANONICAL_INSTITUTION_TO_REVIEW_UNIT: Record<string, string> = {

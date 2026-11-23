@@ -440,7 +440,7 @@ export function evaluateCriterionPreliminaryAssessment(
         targetId: activeDiscrepancies[0].evidenceId,
       };
     } else {
-      // Hard discrepancy on mandatory standard -> preliminary_not_meets
+      // Discrepancy on mandatory standard
       verdict = 'preliminary_not_meets';
       headline = activeDiscrepancies[0].headline;
       detail = activeDiscrepancies[0].observationDetail;
@@ -484,17 +484,72 @@ export function evaluateCriterionPreliminaryAssessment(
       };
     }
   } else {
-    // Everything consistent
-    if (criterionId === 'academic') {
-      supportedReqs.push('Điểm trung bình học tập cả năm học', 'Nghiên cứu khoa học');
-    } else if (criterionId === 'volunteer') {
-      supportedReqs.push('Tham gia các hoạt động tình nguyện', 'Hiến máu tình nguyện');
-    } else if (criterionId === 'physical') {
-      supportedReqs.push('Đạt danh hiệu Thanh niên khỏe');
-    } else if (criterionId === 'ethics') {
-      supportedReqs.push('Điểm rèn luyện từ 80/100', 'Không vi phạm kỷ luật', 'Đảng viên/Cảm tình Đảng');
-    } else if (criterionId === 'integration') {
-      supportedReqs.push('Kỹ năng hội nhập', 'Ngoại ngữ chuẩn');
+    // Check if the student application has declarations and valid evidence files attached!
+    const critObj = studentApp?.criteria?.find((c: any) => c.id === criterionId);
+    const requirements = critObj?.requirements || [];
+    const declCount = requirements.reduce(
+      (sum: number, r: any) => sum + (r.declarations?.length || 0),
+      0
+    );
+
+    const hasAnyDeclWithoutEvidence = requirements.some((r: any) => {
+      const isPledge = r.id === 'ethics-law' || r.code === 'TC1.2';
+      if (isPledge) return false;
+      return (r.declarations || []).some((d: any) => {
+        const files = (d.evidenceFiles || d.evidence || []).filter((f: any) => {
+          if (!f) return false;
+          if (typeof f === 'string') return f.trim().length > 0;
+          const name = f.name || f.fileName || f.url || f.id;
+          return typeof name === 'string' && name.trim().length > 0;
+        });
+        return files.length === 0;
+      });
+    });
+
+    const evCount = requirements.reduce(
+      (sum: number, r: any) => {
+        const isPledge = r.id === 'ethics-law' || r.code === 'TC1.2';
+        return (
+          sum +
+          (r.declarations || []).reduce((dSum: number, d: any) => {
+            const files = (d.evidenceFiles || d.evidence || []).filter((f: any) => {
+              if (!f) return false;
+              if (typeof f === 'string') return f.trim().length > 0;
+              const name = f.name || f.fileName || f.url || f.id;
+              return typeof name === 'string' && name.trim().length > 0;
+            });
+            return dSum + (files.length > 0 || isPledge ? Math.max(files.length, 1) : 0);
+          }, 0)
+        );
+      },
+      0
+    );
+
+    // If studentApp exists and either has 0 declarations, 0 evidence files, or declarations without evidence:
+    // It must NEVER default to preliminary_meets!
+    if (studentApp && (declCount === 0 || evCount === 0 || hasAnyDeclWithoutEvidence)) {
+      verdict = 'insufficient_evidence';
+      headline = `Tiêu chí 0${meta.number} (${meta.name}): Chưa có đủ tệp minh chứng đính kèm theo quy định Hướng dẫn số 14-HD/BTK-HSVTP.`;
+      detail =
+        'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Mọi nội dung kê khai bắt buộc phải có văn bản minh chứng đối chiếu hợp lệ (bản scan/ảnh chụp có dấu mộc hoặc chữ ký xác nhận của đơn vị có thẩm quyền). Kê khai chưa có minh chứng không đủ điều kiện xét duyệt.';
+      insufficientReqs.push(meta.name);
+      nextAction = {
+        label: 'Kiểm tra tệp minh chứng',
+        actionType: 'start_guided_review',
+      };
+    } else {
+      // Everything declared with evidence and consistent
+      if (criterionId === 'academic') {
+        supportedReqs.push('Điểm trung bình học tập cả năm học', 'Nghiên cứu khoa học');
+      } else if (criterionId === 'volunteer') {
+        supportedReqs.push('Tham gia các hoạt động tình nguyện', 'Hiến máu tình nguyện');
+      } else if (criterionId === 'physical') {
+        supportedReqs.push('Đạt danh hiệu Thanh niên khỏe');
+      } else if (criterionId === 'ethics') {
+        supportedReqs.push('Điểm rèn luyện từ 80/100', 'Không vi phạm kỷ luật', 'Đảng viên/Cảm tình Đảng');
+      } else if (criterionId === 'integration') {
+        supportedReqs.push('Kỹ năng hội nhập', 'Ngoại ngữ chuẩn');
+      }
     }
   }
 
@@ -505,6 +560,11 @@ export function evaluateCriterionPreliminaryAssessment(
     unclearFindings.length +
     (isBackendMode() && holisticEval
       ? Math.max(0, holisticEval.totalConditionsCount - holisticEval.metConditionsCount)
+      : verdict === 'insufficient_evidence' &&
+        activeDiscrepancies.length === 0 &&
+        missingEvFindings.length === 0 &&
+        unclearFindings.length === 0
+      ? 1
       : 0);
 
   return {
@@ -584,7 +644,7 @@ export function evaluateApplicationPreliminaryVerdict(
     } else if (assessment.verdict === 'preliminary_not_meets') {
       unmetCount++;
       unresolvedCount++;
-    } else if (assessment.verdict === 'insufficient_evidence') {
+    } else {
       insufficientCount++;
       unresolvedCount++;
     }
@@ -605,6 +665,8 @@ export function evaluateApplicationPreliminaryVerdict(
     overallVerdict = 'insufficient_evidence';
   } else if (unmetCount > 0) {
     overallVerdict = 'preliminary_not_meets';
+  } else if (insufficientCount > 0) {
+    overallVerdict = 'insufficient_evidence';
   } else if (consistentCount === 5) {
     overallVerdict = 'preliminary_meets';
   } else {
@@ -612,6 +674,12 @@ export function evaluateApplicationPreliminaryVerdict(
   }
 
   const vMeta = PRELIMINARY_VERDICT_META[overallVerdict];
+  const overallStatus: 'meets' | 'not_meets' | 'insufficient_evidence' =
+    overallVerdict === 'preliminary_meets'
+      ? 'meets'
+      : overallVerdict === 'preliminary_not_meets'
+      ? 'not_meets'
+      : 'insufficient_evidence';
 
   let headline = `AI đã rà soát thông tin của 5 tiêu chí. Có ${unresolvedCount} vấn đề cần kiểm chứng trước khi đưa ra nhận định sơ bộ đầy đủ.`;
   let detail = 'Nhận định sơ bộ dựa trên đối chiếu kê khai và tệp minh chứng. Cán bộ thẩm định quyết định chính thức.';
@@ -643,13 +711,6 @@ export function evaluateApplicationPreliminaryVerdict(
       }
     }
   }
-
-  const overallStatus: 'meets' | 'not_meets' | 'insufficient_evidence' =
-    overallVerdict === 'preliminary_meets'
-      ? 'meets'
-      : overallVerdict === 'preliminary_not_meets'
-      ? 'not_meets'
-      : 'insufficient_evidence';
 
   return {
     applicationId,

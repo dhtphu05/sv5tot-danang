@@ -43,6 +43,7 @@ import {
   savePersistedStudentProfile,
 } from '../../components/profile/StudentProfileView';
 import {
+  getApiActorContext,
   hasActiveAuthSession,
   setApiActorContext,
 } from '../../shared/api/httpClient';
@@ -152,6 +153,7 @@ export function usePublicAuthSessionTransition({
         matchedStaffAccount?.primaryRole) as StaffRole | undefined;
 
       if (session?.user || !hasActiveAuthSession()) {
+        const existingToken = getApiActorContext()?.token;
         setApiActorContext({
           userId:
             session?.user?.id ||
@@ -170,7 +172,7 @@ export function usePublicAuthSessionTransition({
             (matchedCollectiveAccount ? 'COLLECTIVE_PREPARER' : 'STUDENT'),
           unitId:
             session?.user?.unitId || matchedStaffAccount?.schoolReviewUnitId,
-          token: session?.token || `session-${Date.now()}`,
+          token: session?.token || existingToken || `session-${Date.now()}`,
         });
       }
 

@@ -184,7 +184,11 @@ export function parseEnvironment(env: Record<string, string | undefined> = proce
     RATE_LIMIT_WINDOW_MS: Number(env.RATE_LIMIT_WINDOW_MS) || 60000,
     RATE_LIMIT_MAX_REQUESTS: Number(env.RATE_LIMIT_MAX_REQUESTS) || 3000,
     JWT_ACCESS_SECRET: jwtAccessSecret,
-    JWT_ACCESS_TTL_SECONDS: Number(env.JWT_ACCESS_TTL_SECONDS) || 900, // 15m
+    JWT_ACCESS_TTL_SECONDS:
+      !Number(env.JWT_ACCESS_TTL_SECONDS) ||
+      (Number(env.JWT_ACCESS_TTL_SECONDS) === 900 && nodeEnv !== 'test')
+        ? 604800 // 7d (prevents premature 15m logout during dossier review/submission)
+        : Number(env.JWT_ACCESS_TTL_SECONDS),
     REFRESH_TOKEN_TTL_SECONDS: Number(env.REFRESH_TOKEN_TTL_SECONDS) || 604800, // 7d
     REFRESH_TOKEN_PEPPER: refreshPepper,
     R2_ACCOUNT_ID: r2AccountId,

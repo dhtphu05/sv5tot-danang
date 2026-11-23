@@ -273,6 +273,9 @@ export function useStaffWorkflowCoordination({
     const unitMismatch = isSchoolRole
       ? current?.unitId !== expectedUnitId
       : Boolean(current?.unitId && current.unitId !== 'unit-city');
+    const hasRealJwtToken = Boolean(
+      current?.token && !current.token.startsWith('staff-token-')
+    );
     if (
       !current ||
       current.userId !== staffUser.id ||
@@ -287,8 +290,8 @@ export function useStaffWorkflowCoordination({
         role: staffUser.primaryRole || 'CITY_OFFICER',
         unitId: isSchoolRole ? expectedUnitId : current?.unitId,
         token:
-          current?.userId === staffUser.id && current?.token
-            ? current.token
+          hasRealJwtToken || (current?.userId === staffUser.id && current?.token)
+            ? current!.token
             : `staff-token-${staffUser.id || (isSchoolRole ? 'staff-sch-udn' : 'staff-off-nam')}`,
       });
     }
@@ -1209,11 +1212,13 @@ export function useStaffWorkflowCoordination({
       });
 
       if (isBackendMode()) {
+        const currentActor = getApiActorContext();
         const targetStaffToken =
           (staffUser as any).token ||
-          `staff-token-${staffUser.id || (staffUser.primaryRole === 'SCHOOL_OFFICER' ? 'staff-sch-dut' : 'staff-off-nam')}`;
+          currentActor?.token ||
+          `staff-token-${staffUser.id || (staffUser.primaryRole === 'SCHOOL_OFFICER' ? 'staff-sch-udn' : 'staff-off-nam')}`;
         const staffActor = {
-          userId: staffUser.id || (staffUser.primaryRole === 'SCHOOL_OFFICER' ? 'staff-sch-dut' : 'staff-off-nam'),
+          userId: staffUser.id || (staffUser.primaryRole === 'SCHOOL_OFFICER' ? 'staff-sch-udn' : 'staff-off-nam'),
           userName: staffUser.fullName,
           userEmail: staffUser.email,
           role: staffUser.primaryRole,

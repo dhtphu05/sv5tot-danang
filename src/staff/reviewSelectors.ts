@@ -529,10 +529,18 @@ export function evaluateRequirementAssessment(
     requirementDef.allowMultipleDeclarations ||
     requirementDef.declarationMode === 'repeatable';
 
+  const isPledge = requirementDef.id === 'ethics-law' || (requirementDef as any).code === 'TC1.2';
+
   if (isMultiple) {
-    const hasPassing = statuses.some(
-      (s) => s === 'suitable' || s === 'review_completed'
-    );
+    const hasPassing = declarations.some((d, idx) => {
+      const s = statuses[idx];
+      if (s !== 'suitable' && s !== 'review_completed') return false;
+      if (isPledge) return true;
+      const files = (d.evidenceFiles || (d as any).evidence || []).filter(
+        (f: any) => f && (typeof f === 'string' ? f.trim().length > 0 : !!(f.name || f.fileName || f.url))
+      );
+      return files.length > 0;
+    });
     const allDone = statuses.every((s) => isItemReviewDone(s));
 
     if (hasPassing) {
@@ -568,7 +576,13 @@ export function evaluateRequirementAssessment(
 
   // Single declaration requirement
   const st = statuses[0];
-  if (st === 'suitable' || st === 'review_completed') {
+  const d0 = declarations[0];
+  const files0 = (d0?.evidenceFiles || (d0 as any)?.evidence || []).filter(
+    (f: any) => f && (typeof f === 'string' ? f.trim().length > 0 : !!(f.name || f.fileName || f.url))
+  );
+  const hasEvidence0 = isPledge || files0.length > 0;
+
+  if ((st === 'suitable' || st === 'review_completed') && hasEvidence0) {
     return {
       requirementId: requirementDef.id,
       outcome: 'pass',

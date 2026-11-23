@@ -854,7 +854,14 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
             effectiveCanMutate
               ? (effectiveStudentApp?.criteria || []).reduce((acc, crit) => {
                   for (const req of crit.requirements || []) {
+                    const isPledge = req.id === 'ethics-law' || (req as any).code === 'TC1.2';
                     for (const decl of req.declarations || []) {
+                      const validFiles = (decl.evidenceFiles || (decl as any).evidence || []).filter(
+                        (f: any) => f && typeof f.name === 'string' && f.name.trim().length > 0
+                      );
+                      if (!isPledge && validFiles.length === 0) {
+                        continue;
+                      }
                       const st = getDeclarationReviewState(
                         workspaceState,
                         req.id,
@@ -866,7 +873,7 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
                           requirementId: req.id,
                           requirementTitle: req.title,
                           declaredValue: decl.value || req.title,
-                          evidenceFiles: decl.evidenceFiles || [],
+                          evidenceFiles: validFiles,
                           allRequirementDeclarations: req.declarations,
                         });
                         if (insight.status === 'preliminary_meets') {
@@ -885,7 +892,14 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
                   let count = 0;
                   for (const crit of effectiveStudentApp?.criteria || []) {
                     for (const req of crit.requirements || []) {
+                      const isPledge = req.id === 'ethics-law' || (req as any).code === 'TC1.2';
                       for (const decl of req.declarations || []) {
+                        const validFiles = (decl.evidenceFiles || (decl as any).evidence || []).filter(
+                          (f: any) => f && typeof f.name === 'string' && f.name.trim().length > 0
+                        );
+                        if (!isPledge && validFiles.length === 0) {
+                          continue;
+                        }
                         const st = getDeclarationReviewState(
                           workspaceState,
                           req.id,
@@ -897,7 +911,7 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
                             requirementId: req.id,
                             requirementTitle: req.title,
                             declaredValue: decl.value || req.title,
-                            evidenceFiles: decl.evidenceFiles || [],
+                            evidenceFiles: validFiles,
                             allRequirementDeclarations: req.declarations,
                           });
                           if (insight.status === 'preliminary_meets') {
@@ -917,7 +931,7 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
                   }
                   if (count > 0) {
                     showToast(
-                      `Đã áp dụng kết quả Đạt cho ${count} mục kê khai có minh chứng hợp lệ.`
+                      `Đã áp dụng kết quả Đạt cho ${count} mục kê khai có minh chứng hợp lệ theo Hướng dẫn số 14-HD/BTK-HSVTP.`
                     );
                   }
                 }

@@ -54,9 +54,20 @@ export function setApiActorContext(actor: ApiActorContext | null): void {
   if (typeof window !== 'undefined') {
     try {
       if (actor) {
-        window.sessionStorage.setItem(ACTOR_STORAGE_KEY, JSON.stringify(actor));
+        const serialized = JSON.stringify(actor);
+        window.sessionStorage.setItem(ACTOR_STORAGE_KEY, serialized);
+        try {
+          window.localStorage.setItem(ACTOR_STORAGE_KEY, serialized);
+        } catch {
+          // Ignore localStorage quota errors
+        }
       } else {
         window.sessionStorage.removeItem(ACTOR_STORAGE_KEY);
+        try {
+          window.localStorage.removeItem(ACTOR_STORAGE_KEY);
+        } catch {
+          // Ignore localStorage errors
+        }
       }
     } catch {
       // Ignore storage errors in restricted environments
@@ -67,7 +78,17 @@ export function setApiActorContext(actor: ApiActorContext | null): void {
 export function getApiActorContext(): ApiActorContext | null {
   if (typeof window !== 'undefined') {
     try {
-      const raw = window.sessionStorage.getItem(ACTOR_STORAGE_KEY);
+      let raw = window.sessionStorage.getItem(ACTOR_STORAGE_KEY);
+      if (!raw) {
+        try {
+          raw = window.localStorage.getItem(ACTOR_STORAGE_KEY);
+          if (raw) {
+            window.sessionStorage.setItem(ACTOR_STORAGE_KEY, raw);
+          }
+        } catch {
+          // Ignore localStorage errors
+        }
+      }
       if (!raw) {
         activeActorContext = null;
         return null;
@@ -91,6 +112,7 @@ export function notifySessionExpired(): void {
   if (typeof window !== 'undefined') {
     try {
       window.sessionStorage.removeItem(ACTOR_STORAGE_KEY);
+      window.localStorage.removeItem(ACTOR_STORAGE_KEY);
     } catch {
       // Ignore storage errors
     }
@@ -115,7 +137,17 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
 
   const currentActor = getApiActorContext();
   const actor = options.actor || currentActor;
-  const effectiveToken = options.actor?.token || currentActor?.token;
+  const actorToken = options.actor?.token;
+  const currentToken = currentActor?.token;
+  const effectiveToken =
+    actorToken &&
+    !(
+      actorToken.startsWith('staff-token-') &&
+      currentToken &&
+      !currentToken.startsWith('staff-token-')
+    )
+      ? actorToken
+      : currentToken || actorToken;
 
   if (method === 'GET' && options.body === undefined) {
     const dedupeKey = `${effectiveToken || actor?.userId || 'anon'}:${url}`;
@@ -219,9 +251,14 @@ async function executeApiRequest<T>(
       payload?.message ||
       `Yêu cầu Backend thất bại với mã trạng thái HTTP ${response.status}`;
     const errCode = payload?.errorCode || payload?.code || `HTTP_${response.status}`;
-    const isAuthLoginEndpoint =
-      normalizedPath.includes('/auth/login') || normalizedPath.includes('/auth/register');
-    if (response.status === 401 && !isAuthLoginEndpoint) {
+    const isAuthCredentialEndpoint =
+      normalizedPath.includes('/auth/login') ||
+      normalizedPath.includes('/auth/register') ||
+      normalizedPath.includes('/auth/forgot-password') ||
+      normalizedPath.includes('/auth/reset-password') ||
+      (normalizedPath.includes('/auth/change-password') &&
+        errCode === 'INVALID_CURRENT_PASSWORD');
+    if (response.status === 401 && !isAuthCredentialEndpoint) {
       notifySessionExpired();
     }
     throw new BackendApiError(errMsg, response.status, errCode, payload);

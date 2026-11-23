@@ -334,16 +334,29 @@ export function loadPersistedDemoSession(): PersistedDemoSession {
   }
 
   try {
-    const rawScenario = window.sessionStorage.getItem(STORAGE_KEYS.SCENARIO_ID);
+    const readKey = (key: string): string | null => {
+      const fromSess = window.sessionStorage.getItem(key);
+      if (fromSess !== null) return fromSess;
+      try {
+        const fromLocal = window.localStorage.getItem(key);
+        if (fromLocal !== null) {
+          window.sessionStorage.setItem(key, fromLocal);
+        }
+        return fromLocal;
+      } catch {
+        return null;
+      }
+    };
+
+    const rawScenario = readKey(STORAGE_KEYS.SCENARIO_ID);
     const validScenario =
       rawScenario && rawScenario in PROTOTYPE_SCENARIO_MAP
         ? (rawScenario as PrototypeScenarioId)
         : defaultScenario;
 
-    const isDemoActive =
-      window.sessionStorage.getItem(STORAGE_KEYS.DEMO_ACTIVE) === '1';
+    const isDemoActive = readKey(STORAGE_KEYS.DEMO_ACTIVE) === '1';
 
-    const rawViewMode = window.sessionStorage.getItem(STORAGE_KEYS.VIEW_MODE);
+    const rawViewMode = readKey(STORAGE_KEYS.VIEW_MODE);
     const viewMode: PersistedDemoSession['viewMode'] =
       rawViewMode === 'demo_launcher' ||
       rawViewMode === 'student_app' ||
@@ -354,20 +367,16 @@ export function loadPersistedDemoSession(): PersistedDemoSession {
         ? rawViewMode
         : 'public';
 
-    const navId =
-      window.sessionStorage.getItem(STORAGE_KEYS.NAV_ID) || 'overview';
-    const staffRole =
-      window.sessionStorage.getItem(STORAGE_KEYS.STAFF_ROLE) || undefined;
-    const staffRouteId =
-      window.sessionStorage.getItem(STORAGE_KEYS.STAFF_ROUTE_ID) || undefined;
-    const rawStaffUser = window.sessionStorage.getItem(STORAGE_KEYS.STAFF_USER);
+    const navId = readKey(STORAGE_KEYS.NAV_ID) || 'overview';
+    const staffRole = readKey(STORAGE_KEYS.STAFF_ROLE) || undefined;
+    const staffRouteId = readKey(STORAGE_KEYS.STAFF_ROUTE_ID) || undefined;
+    const rawStaffUser = readKey(STORAGE_KEYS.STAFF_USER);
     const staffUserOverride = rawStaffUser
       ? (JSON.parse(rawStaffUser) as StaffUser)
       : null;
     const collectiveUserEmail =
-      window.sessionStorage.getItem(STORAGE_KEYS.COLLECTIVE_EMAIL) || undefined;
-    const isToolbarHidden =
-      window.sessionStorage.getItem(STORAGE_KEYS.TOOLBAR_HIDDEN) === '1';
+      readKey(STORAGE_KEYS.COLLECTIVE_EMAIL) || undefined;
+    const isToolbarHidden = readKey(STORAGE_KEYS.TOOLBAR_HIDDEN) === '1';
 
     const rawApp =
       window.sessionStorage.getItem(STORAGE_KEYS.MUTATED_APP) ||
@@ -404,9 +413,7 @@ export function loadPersistedDemoSession(): PersistedDemoSession {
         ? null
         : parsedApp;
 
-    const rawNotifs = window.sessionStorage.getItem(
-      STORAGE_KEYS.MUTATED_NOTIFS
-    );
+    const rawNotifs = readKey(STORAGE_KEYS.MUTATED_NOTIFS);
     const mutatedNotifications = rawNotifs
       ? (JSON.parse(rawNotifs) as StudentNotificationItem[])
       : null;
@@ -433,95 +440,77 @@ export function savePersistedDemoSession(
   partial: Partial<PersistedDemoSession>
 ): void {
   if (typeof window === 'undefined') return;
+  const writeKey = (key: string, val: string | null) => {
+    if (val === null) {
+      window.sessionStorage.removeItem(key);
+      try {
+        window.localStorage.removeItem(key);
+      } catch {
+        // Ignore localStorage errors
+      }
+    } else {
+      window.sessionStorage.setItem(key, val);
+      try {
+        window.localStorage.setItem(key, val);
+      } catch {
+        // Ignore localStorage quota errors
+      }
+    }
+  };
   try {
     if (partial.scenarioId !== undefined) {
-      window.sessionStorage.setItem(
-        STORAGE_KEYS.SCENARIO_ID,
-        partial.scenarioId
-      );
+      writeKey(STORAGE_KEYS.SCENARIO_ID, partial.scenarioId);
     }
     if (partial.isDemoActive !== undefined) {
-      window.sessionStorage.setItem(
-        STORAGE_KEYS.DEMO_ACTIVE,
-        partial.isDemoActive ? '1' : '0'
-      );
+      writeKey(STORAGE_KEYS.DEMO_ACTIVE, partial.isDemoActive ? '1' : '0');
     }
     if (partial.viewMode !== undefined) {
-      window.sessionStorage.setItem(STORAGE_KEYS.VIEW_MODE, partial.viewMode);
+      writeKey(STORAGE_KEYS.VIEW_MODE, partial.viewMode);
     }
     if (partial.navId !== undefined) {
-      window.sessionStorage.setItem(STORAGE_KEYS.NAV_ID, partial.navId);
+      writeKey(STORAGE_KEYS.NAV_ID, partial.navId);
     }
     if (partial.staffRole !== undefined) {
-      if (partial.staffRole) {
-        window.sessionStorage.setItem(STORAGE_KEYS.STAFF_ROLE, partial.staffRole);
-      } else {
-        window.sessionStorage.removeItem(STORAGE_KEYS.STAFF_ROLE);
-      }
+      writeKey(STORAGE_KEYS.STAFF_ROLE, partial.staffRole || null);
     }
     if (partial.staffRouteId !== undefined) {
-      if (partial.staffRouteId) {
-        window.sessionStorage.setItem(
-          STORAGE_KEYS.STAFF_ROUTE_ID,
-          partial.staffRouteId
-        );
-      } else {
-        window.sessionStorage.removeItem(STORAGE_KEYS.STAFF_ROUTE_ID);
-      }
+      writeKey(STORAGE_KEYS.STAFF_ROUTE_ID, partial.staffRouteId || null);
     }
     if (partial.staffUserOverride !== undefined) {
-      if (partial.staffUserOverride) {
-        window.sessionStorage.setItem(
-          STORAGE_KEYS.STAFF_USER,
-          JSON.stringify(partial.staffUserOverride)
-        );
-      } else {
-        window.sessionStorage.removeItem(STORAGE_KEYS.STAFF_USER);
-      }
+      writeKey(
+        STORAGE_KEYS.STAFF_USER,
+        partial.staffUserOverride
+          ? JSON.stringify(partial.staffUserOverride)
+          : null
+      );
     }
     if (partial.collectiveUserEmail !== undefined) {
-      if (partial.collectiveUserEmail) {
-        window.sessionStorage.setItem(
-          STORAGE_KEYS.COLLECTIVE_EMAIL,
-          partial.collectiveUserEmail
-        );
-      } else {
-        window.sessionStorage.removeItem(STORAGE_KEYS.COLLECTIVE_EMAIL);
-      }
+      writeKey(
+        STORAGE_KEYS.COLLECTIVE_EMAIL,
+        partial.collectiveUserEmail || null
+      );
     }
     if (partial.isToolbarHidden !== undefined) {
-      window.sessionStorage.setItem(
+      writeKey(
         STORAGE_KEYS.TOOLBAR_HIDDEN,
         partial.isToolbarHidden ? '1' : '0'
       );
     }
     if (partial.mutatedApplication !== undefined) {
-      if (partial.mutatedApplication === null) {
-        window.sessionStorage.removeItem(STORAGE_KEYS.MUTATED_APP);
-        try {
-          window.localStorage.removeItem(STORAGE_KEYS.MUTATED_APP);
-        } catch {
-          // Ignore localStorage errors
-        }
-      } else {
-        const serializedApp = JSON.stringify(partial.mutatedApplication);
-        window.sessionStorage.setItem(STORAGE_KEYS.MUTATED_APP, serializedApp);
-        try {
-          window.localStorage.setItem(STORAGE_KEYS.MUTATED_APP, serializedApp);
-        } catch {
-          // Ignore localStorage quota errors
-        }
-      }
+      writeKey(
+        STORAGE_KEYS.MUTATED_APP,
+        partial.mutatedApplication === null
+          ? null
+          : JSON.stringify(partial.mutatedApplication)
+      );
     }
     if (partial.mutatedNotifications !== undefined) {
-      if (partial.mutatedNotifications === null) {
-        window.sessionStorage.removeItem(STORAGE_KEYS.MUTATED_NOTIFS);
-      } else {
-        window.sessionStorage.setItem(
-          STORAGE_KEYS.MUTATED_NOTIFS,
-          JSON.stringify(partial.mutatedNotifications)
-        );
-      }
+      writeKey(
+        STORAGE_KEYS.MUTATED_NOTIFS,
+        partial.mutatedNotifications === null
+          ? null
+          : JSON.stringify(partial.mutatedNotifications)
+      );
     }
   } catch {
     // Ignore storage quota errors in restricted environments

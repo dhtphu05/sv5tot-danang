@@ -1,6 +1,6 @@
 import { isMatchingDeclarationId, isMatchingRequirementId } from '../../../components/supplement/supplementHelpers';
 import { parseFlexibleDateTime } from '../../../utils/dateUtils';
-import { apiRequest } from '../../../shared/api/httpClient';
+import { apiRequest, getApiActorContext } from '../../../shared/api/httpClient';
 /**
  * 5TOT Đà Nẵng — Officer Review Mutations Hook
  * Extracted mutation handlers for OfficerReviewWorkspace:
@@ -101,6 +101,7 @@ export function useOfficerReviewMutations({
       const targetAppId = applicationRecord?.applicationId || studentApp.applicationId;
       const targetStaffToken =
         (currentUser as any).token ||
+        getApiActorContext()?.token ||
         `staff-token-${currentUser.id || (isSchoolStage ? 'staff-sch-udn' : 'staff-off-nam')}`;
       const staffActor = {
         userId: currentUser.id || (isSchoolStage ? 'staff-sch-udn' : 'staff-off-nam'),
@@ -290,6 +291,7 @@ export function useOfficerReviewMutations({
       const targetAppId = applicationRecord?.applicationId || studentApp.applicationId;
       const targetStaffToken =
         (currentUser as any).token ||
+        getApiActorContext()?.token ||
         `staff-token-${currentUser.id || (isSchoolStage ? 'staff-sch-udn' : 'staff-off-nam')}`;
       const staffActor = {
         userId: currentUser.id || (isSchoolStage ? 'staff-sch-udn' : 'staff-off-nam'),
