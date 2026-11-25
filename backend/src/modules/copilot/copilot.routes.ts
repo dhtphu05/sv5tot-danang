@@ -11,7 +11,8 @@
  * 5. POST /api/v2/copilot/dossier-summary
  */
 
-import { Router, type Request, type Response } from 'express';
+import { Router, type Request, type Response, type NextFunction } from 'express';
+import { resolveSessionActor } from '../domainPortal/domainPortal.state';
 import {
   extractEvidenceWithOpenAI,
   getAllCachedOcrExtractions,
@@ -171,6 +172,21 @@ async function generateLiveDossierSummary(
 
 export function createCopilotRouter(): Router {
   const router = Router();
+
+  // Enforce City-level role isolation: Unit-level officers (SCHOOL_OFFICER) are strictly blocked from AI features
+  router.use((req: Request, res: Response, next: NextFunction): void => {
+    const actor = resolveSessionActor(req);
+    if (actor.role === 'SCHOOL_OFFICER') {
+      res.status(403).json({
+        success: false,
+        errorCode: 'FORBIDDEN_ROLE',
+        code: 'FORBIDDEN_ROLE',
+        error: 'Tính năng AI chỉ hỗ trợ cho cán bộ cấp Thành phố. Cán bộ cấp đơn vị không có quyền sử dụng.',
+      });
+      return;
+    }
+    next();
+  });
 
   router.get('/ocr-cache', (_req: Request, res: Response): void => {
     res.status(200).json({

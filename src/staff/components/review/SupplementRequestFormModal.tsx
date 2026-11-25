@@ -67,6 +67,7 @@ export interface SupplementRequestFormModalProps {
   } | null;
   simulateSendError?: boolean;
   initialDraftMessage?: string;
+  isSchoolStage?: boolean;
   onClose: () => void;
   onConfirmSend: (payload: SupplementRequestFormPayload) => boolean | Promise<boolean>;
   onRevokeSupplement?: () => void;
@@ -85,6 +86,7 @@ export const SupplementRequestFormModal: React.FC<
   existingActiveRequest,
   simulateSendError = false,
   initialDraftMessage,
+  isSchoolStage = false,
   onClose,
   onConfirmSend,
   onRevokeSupplement,
@@ -118,7 +120,7 @@ export const SupplementRequestFormModal: React.FC<
       setAllowedActions(['addEvidence']);
       setRequestedDueDate(computePresetDueDate(72));
 
-      if (initialDraftMessage) {
+      if (initialDraftMessage && !isSchoolStage) {
         setMessage(initialDraftMessage);
         setAiDraftNotice('AI đã chuẩn bị bản nháp. Vui lòng kiểm tra trước khi gửi.');
       } else if (scope.declarationId === 'decl-vol-mhx' && !message) {
@@ -419,15 +421,17 @@ export const SupplementRequestFormModal: React.FC<
                   >
                     Nội dung cần bổ sung
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => handleApplyAiDraft(false)}
-                    className="px-2 py-0.5 rounded-[5px] bg-[#F0F8FD] hover:bg-[#E1F0FD] border border-[#CFE3F0] text-[#0D78AE] text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
-                    title="Gợi ý nội dung soạn thảo từ Trợ lý AI"
-                  >
-                    <Sparkles size={11} />
-                    <span>Gợi ý nội dung</span>
-                  </button>
+                  {!isSchoolStage && (
+                    <button
+                      type="button"
+                      onClick={() => handleApplyAiDraft(false)}
+                      className="px-2 py-0.5 rounded-[5px] bg-[#F0F8FD] hover:bg-[#E1F0FD] border border-[#CFE3F0] text-[#0D78AE] text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                      title="Gợi ý nội dung soạn thảo từ Trợ lý AI"
+                    >
+                      <Sparkles size={11} />
+                      <span>Gợi ý nội dung</span>
+                    </button>
+                  )}
                 </div>
                 <span className="text-[11px] font-semibold text-[#B45309] bg-[#FEF6EB] px-2 py-0.5 rounded border border-[#FADDB6]">
                   Hiển thị trực tiếp cho sinh viên
@@ -435,7 +439,7 @@ export const SupplementRequestFormModal: React.FC<
               </div>
 
               {/* Overwrite Confirmation Alert */}
-              {showAiOverwriteConfirm && (
+              {showAiOverwriteConfirm && !isSchoolStage && (
                 <div className="p-3 rounded-[8px] bg-[#FEF6EB] border border-[#FADDB6] text-[12px] text-[#8C3A19] space-y-2">
                   <p className="font-semibold">
                     Bản nháp gợi ý từ AI sẽ thay thế nội dung bạn đang soạn. Bạn có muốn tiếp tục?
@@ -460,7 +464,7 @@ export const SupplementRequestFormModal: React.FC<
               )}
 
               {/* Active AI Draft Notice */}
-              {aiDraftNotice && (
+              {aiDraftNotice && !isSchoolStage && (
                 <div className="p-2.5 rounded-[8px] bg-[#F0F8FD] border border-[#CFE3F0] text-[11.5px] text-[#0D78AE] flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 font-medium">
                     <Sparkles size={13} className="shrink-0" />

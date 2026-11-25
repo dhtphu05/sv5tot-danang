@@ -50,6 +50,7 @@ export interface CriterionRequirementRowProps {
   ) => void;
   onOpenFeedback?: (finding: AiFinding) => void;
   onOpenExplainability?: (finding: AiFinding) => void;
+  isSchoolStage?: boolean;
 }
 
 export const CriterionRequirementRow: React.FC<CriterionRequirementRowProps> = ({
@@ -64,6 +65,7 @@ export const CriterionRequirementRow: React.FC<CriterionRequirementRowProps> = (
   canMutate,
   findingsMap = {},
   guidedFocusDeclarationId,
+  isSchoolStage = false,
   onOpenFindingPopover,
   onToggleCollapse,
   onExpandEvidence,
@@ -218,6 +220,7 @@ export const CriterionRequirementRow: React.FC<CriterionRequirementRowProps> = (
                 canMutate={canMutate}
                 aiFinding={declFinding}
                 isGuidedFocus={isGuidedFocus}
+                isSchoolStage={isSchoolStage}
                 onOpenFindingPopover={onOpenFindingPopover}
                 onExpandEvidence={() => onExpandEvidence(decl.id)}
                 onSelectScope={onSelectScope}

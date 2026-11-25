@@ -86,6 +86,7 @@ interface CriterionReviewPanelProps {
   onOpenExplainability?: (finding: AiFinding) => void;
   preliminaryAssessment?: import('../../../features/ai-review-copilot').CriterionPreliminaryAssessment;
   policySeason?: string;
+  isSchoolStage?: boolean;
 }
 
 export const CriterionReviewPanel: React.FC<CriterionReviewPanelProps> = ({
@@ -112,6 +113,7 @@ export const CriterionReviewPanel: React.FC<CriterionReviewPanelProps> = ({
   onOpenExplainability,
   preliminaryAssessment,
   policySeason = '2025–2026',
+  isSchoolStage = false,
 }) => {
   const criterionDef = getCriterionDefinition(criterionId);
   const criterionToken =
@@ -384,6 +386,7 @@ export const CriterionReviewPanel: React.FC<CriterionReviewPanelProps> = ({
                       canMutate={canMutate}
                       findingsMap={findingsMap}
                       guidedFocusDeclarationId={guidedFocusDeclarationId || undefined}
+                      isSchoolStage={isSchoolStage}
                       onOpenFindingPopover={(finding, e) => {
                         openFindingPopover(finding, e.currentTarget.getBoundingClientRect());
                       }}
@@ -514,40 +517,44 @@ export const CriterionReviewPanel: React.FC<CriterionReviewPanelProps> = ({
       </footer>
 
       {/* Feature A: Anchored Finding Popover (Level 2: Contextual Explanation) */}
-      <AiFindingPopover
-        finding={activeFindingPopover?.finding || null}
-        anchorRect={activeFindingPopover?.anchorRect}
-        onClose={closeFindingPopover}
-        onInspectEvidence={(f) => {
-          handleOpenCopilotInspector(f);
-        }}
-        onViewRegulation={(f) => {
-          onOpenRegulation(f.criterionId, f.requirementId);
-        }}
-        onDismissFinding={dismissFinding}
-      />
+      {!isSchoolStage && (
+        <AiFindingPopover
+          finding={activeFindingPopover?.finding || null}
+          anchorRect={activeFindingPopover?.anchorRect}
+          onClose={closeFindingPopover}
+          onInspectEvidence={(f) => {
+            handleOpenCopilotInspector(f);
+          }}
+          onViewRegulation={(f) => {
+            onOpenRegulation(f.criterionId, f.requirementId);
+          }}
+          onDismissFinding={dismissFinding}
+        />
+      )}
 
       {/* Feature B: AI Evidence Inspector Modal (Level 3: Guided Evidence Inspection) */}
-      <AiEvidenceInspectorModal
-        state={copilotInspectorState}
-        onClose={handleCloseCopilotInspector}
-        onNavigateToDeclaration={(reqId, declId) => {
-          onSelectScope({ criterionId, requirementId: reqId, declarationId: declId });
-          if (onOpenDeclarationReview) {
-            onOpenDeclarationReview({ criterionId, requirementId: reqId, declarationId: declId });
-          }
-        }}
-        onOpenSupplementWithDraft={(draftMsg, finding) => {
-          onOpenRequestSupplement(
-            {
-              criterionId,
-              requirementId: finding.requirementId,
-              declarationId: finding.declarationId,
-            },
-            draftMsg
-          );
-        }}
-      />
+      {!isSchoolStage && (
+        <AiEvidenceInspectorModal
+          state={copilotInspectorState}
+          onClose={handleCloseCopilotInspector}
+          onNavigateToDeclaration={(reqId, declId) => {
+            onSelectScope({ criterionId, requirementId: reqId, declarationId: declId });
+            if (onOpenDeclarationReview) {
+              onOpenDeclarationReview({ criterionId, requirementId: reqId, declarationId: declId });
+            }
+          }}
+          onOpenSupplementWithDraft={(draftMsg, finding) => {
+            onOpenRequestSupplement(
+              {
+                criterionId,
+                requirementId: finding.requirementId,
+                declarationId: finding.declarationId,
+              },
+              draftMsg
+            );
+          }}
+        />
+      )}
 
       {/* Feature D: AI Agent Task Activity Rail (Level 4: Agent Activity) */}
       <AiAgentActivityRail

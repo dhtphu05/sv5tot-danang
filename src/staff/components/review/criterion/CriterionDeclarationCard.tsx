@@ -64,6 +64,7 @@ export interface CriterionDeclarationCardProps {
   ) => void;
   onOpenFeedback?: (finding: AiFinding) => void;
   onOpenExplainability?: (finding: AiFinding) => void;
+  isSchoolStage?: boolean;
 }
 
 export const CriterionDeclarationCard: React.FC<CriterionDeclarationCardProps> = ({
@@ -78,6 +79,7 @@ export const CriterionDeclarationCard: React.FC<CriterionDeclarationCardProps> =
   canMutate,
   aiFinding,
   isGuidedFocus = false,
+  isSchoolStage = false,
   onOpenFindingPopover,
   onExpandEvidence,
   onSelectScope,
@@ -165,7 +167,7 @@ export const CriterionDeclarationCard: React.FC<CriterionDeclarationCardProps> =
                   </span>
 
                   {/* AI Attention Spotlight Marker */}
-                  {aiFinding && onOpenFindingPopover && (
+                  {!isSchoolStage && aiFinding && onOpenFindingPopover && (
                     <AiAttentionMarker
                       finding={aiFinding}
                       onClick={onOpenFindingPopover}
@@ -244,7 +246,7 @@ export const CriterionDeclarationCard: React.FC<CriterionDeclarationCardProps> =
               </div>
 
               {/* Level 3: Declaration Card Contextual AI Insight */}
-              {declInsight && (
+              {!isSchoolStage && declInsight && (
                 <AiDeclarationInsightRow
                   insight={declInsight}
                   onInspectEvidence={(evId) => {

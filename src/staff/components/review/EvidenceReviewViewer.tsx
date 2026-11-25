@@ -57,6 +57,7 @@ import {
   StaffEvidenceReviewRecord,
   StaffEvidenceReviewStatus,
 } from '../../reviewTypes';
+import { StaffUser } from '../../types';
 import { ReviewStage } from '../../schoolReviewTypes';
 import { getEvidenceAiInsight } from '../../../features/ai-review-copilot/demoCopilotFixtures';
 import { isBackendMode } from '../../../shared/config/executionMode';
@@ -92,6 +93,7 @@ export interface EvidenceReviewViewerProps {
     initialDraft?: string
   ) => void;
   reviewStage?: ReviewStage;
+  currentUser?: StaffUser;
 }
 
 interface SystemRecognizedInfoRow {
@@ -451,8 +453,18 @@ export const EvidenceReviewViewer: React.FC<EvidenceReviewViewerProps> = ({
   onUpdateEvidenceStatus,
   onTransitionToSupplementRequest,
   reviewStage = 'CITY',
+  currentUser,
 }) => {
-  const isSchoolStage = reviewStage === 'SCHOOL';
+  const isSchoolUser =
+    currentUser?.primaryRole === 'SCHOOL_OFFICER' ||
+    (Array.isArray(currentUser?.roles) && currentUser.roles.includes('SCHOOL_OFFICER')) ||
+    Boolean(
+      currentUser?.schoolReviewUnitId &&
+        !['CITY_OFFICER', 'CITY_MANAGER', 'CITY_COMMITTEE', 'ADMIN'].includes(
+          currentUser.primaryRole
+        )
+    );
+  const isSchoolStage = reviewStage === 'SCHOOL' || isSchoolUser;
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
   const [localNote, setLocalNote] = useState<string>('');
   const [noteSavedFeedback, setNoteSavedFeedback] = useState<boolean>(false);
@@ -482,31 +494,35 @@ export const EvidenceReviewViewer: React.FC<EvidenceReviewViewerProps> = ({
       setUnsuitableReasonError(null);
       setConsiderationReasonError(null);
 
-      const syncOcr = getCachedEvidenceOcrSync({
-        evidenceId: evidence.id,
-        fileName: evidence.name,
-        declaredValue: declaration?.value || requirementTitle,
-        requirementTitle,
-        criterionId: scope.criterionId,
-      });
-      setOcrResult(syncOcr);
+      if (!isSchoolStage) {
+        const syncOcr = getCachedEvidenceOcrSync({
+          evidenceId: evidence.id,
+          fileName: evidence.name,
+          declaredValue: declaration?.value || requirementTitle,
+          requirementTitle,
+          criterionId: scope.criterionId,
+        });
+        setOcrResult(syncOcr);
 
-      triggerEvidenceOcr({
-        evidenceId: evidence.id,
-        fileName: evidence.name,
-        mimeType: evidence.fileType,
-        fileUrl: evidence.url,
-        criterionId: scope.criterionId,
-        requirementTitle,
-        declaredValue: declaration?.value || requirementTitle,
-      })
-        .then((res) => setOcrResult(res))
-        .catch(() => {});
+        triggerEvidenceOcr({
+          evidenceId: evidence.id,
+          fileName: evidence.name,
+          mimeType: evidence.fileType,
+          fileUrl: evidence.url,
+          criterionId: scope.criterionId,
+          requirementTitle,
+          declaredValue: declaration?.value || requirementTitle,
+        })
+          .then((res) => setOcrResult(res))
+          .catch(() => {});
+      } else {
+        setOcrResult(null);
+      }
     }
-  }, [evidence?.id, evidenceRecord]);
+  }, [evidence?.id, evidenceRecord, isSchoolStage]);
 
   const handleRescanOcr = async () => {
-    if (!evidence || isScanningOcr) return;
+    if (isSchoolStage || !evidence || isScanningOcr) return;
     setIsScanningOcr(true);
     try {
       const res = await triggerEvidenceOcr(

@@ -135,10 +135,18 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
   schoolReviewUnitName,
   onMutateWorkspaceState,
 }) => {
+  const isSchoolUser =
+    currentUser.primaryRole === 'SCHOOL_OFFICER' ||
+    (Array.isArray(currentUser.roles) && currentUser.roles.includes('SCHOOL_OFFICER')) ||
+    Boolean(
+      currentUser.schoolReviewUnitId &&
+        !['CITY_OFFICER', 'CITY_MANAGER', 'CITY_COMMITTEE', 'ADMIN'].includes(
+          currentUser.primaryRole
+        )
+    );
   const effectiveStage: ReviewStage =
-    reviewStage ||
-    (currentUser.primaryRole === 'SCHOOL_OFFICER' ? 'SCHOOL' : 'CITY');
-  const isSchoolStage = effectiveStage === 'SCHOOL';
+    reviewStage || (isSchoolUser ? 'SCHOOL' : 'CITY');
+  const isSchoolStage = effectiveStage === 'SCHOOL' || isSchoolUser;
 
   const effectiveStudentApp = useMemo(() => {
     if (!studentApp) return studentApp;
@@ -1182,6 +1190,7 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
           onUpdateEvidenceStatus={handleUpdateEvidenceStatus}
           onSaveEvidenceNote={handleSaveEvidenceNote}
           reviewStage={effectiveStage}
+          currentUser={currentUser}
         />
       )}
 
@@ -1212,6 +1221,7 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
         return (
           <SupplementRequestFormModal
             isOpen={supplementModalState.isOpen}
+            isSchoolStage={isSchoolStage}
             studentName={
               applicationRecord?.applicantProfileSnapshot?.fullName ||
               applicationRecord?.student?.fullName ||

@@ -131,7 +131,16 @@ export const ReviewInspector: React.FC<ReviewInspectorProps> = ({
   disabledReason,
   reviewStage = 'CITY',
 }) => {
-  const isSchoolStage = reviewStage === 'SCHOOL';
+  const isSchoolUser =
+    currentUser?.primaryRole === 'SCHOOL_OFFICER' ||
+    (Array.isArray(currentUser?.roles) && currentUser.roles.includes('SCHOOL_OFFICER')) ||
+    Boolean(
+      currentUser?.schoolReviewUnitId &&
+        !['CITY_OFFICER', 'CITY_MANAGER', 'CITY_COMMITTEE', 'ADMIN'].includes(
+          currentUser.primaryRole
+        )
+    );
+  const isSchoolStage = reviewStage === 'SCHOOL' || isSchoolUser;
   const criterionToken = CRITERIA[selectedScope.criterionId];
   const criterionRegulation = REGULATION_DATA[selectedScope.criterionId];
   const scopeRecord = getScopeReviewRecord(
