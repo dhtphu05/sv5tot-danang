@@ -103,8 +103,13 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
     let firstExtracted = '';
 
     for (const d of requirement.declarations) {
+      const isDeclPledge = requirement.id === 'ethics-law' || requirement.id === 'TC1.2';
+      const dFiles = (d.evidenceFiles || (d as any).evidence || []).filter(
+        (f: any) => f && typeof f.name === 'string' && f.name.trim().length > 0
+      );
+      const dHasNoEvidence = !isDeclPledge && dFiles.length === 0;
       const st = getDeclarationReviewState(workspaceState, requirement.id, d.id);
-      if (st === 'suitable' || st === 'review_completed') passCount++;
+      if (!dHasNoEvidence && (st === 'suitable' || st === 'review_completed')) passCount++;
       else if (st === 'unsuitable') failCount++;
       else if (st === 'needs_supplement') supplementCount++;
       else unreviewedCount++;
@@ -161,7 +166,7 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
                 <span>
                   {isAiAllPass
                     ? `AI: Đạt sơ bộ (${aiPassCount}/${declarationCount} mục)`
-                    : `AI: Cần kiểm tra thêm (${aiPassCount}/${declarationCount} Đạt)`}
+                    : `AI: Cần kiểm tra thêm (${aiPassCount}/${declarationCount} hợp lệ)`}
                 </span>
               </span>
               <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#526B7C]">
@@ -199,17 +204,17 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
               passCount === declarationCount ? (
                 <>
                   <Check size={13} className="text-[#1A934E] stroke-[2.5]" />
-                  <span>{declarationCount}/{declarationCount} Đạt</span>
+                  <span>{declarationCount}/{declarationCount} hợp lệ</span>
                 </>
               ) : (
                 <>
                   <X size={13} className="text-[#DC2626] stroke-[2.5]" />
-                  <span>{passCount}/{declarationCount} Đạt</span>
+                  <span>{passCount}/{declarationCount} hợp lệ</span>
                 </>
               )
             ) : (
               <span>
-                {passCount > 0 ? `${passCount}/${declarationCount} Đạt` : `${declarationCount} mục kê khai`}
+                {passCount > 0 ? `${passCount}/${declarationCount} hợp lệ` : `${declarationCount} mục kê khai`}
               </span>
             )}
           </div>
@@ -316,7 +321,14 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
     allRequirementDeclarations: requirement.declarations,
   });
 
-  const isPass = currentStatus === 'suitable' || currentStatus === 'review_completed';
+  const isPledge = requirement.id === 'ethics-law' || requirement.id === 'TC1.2';
+  const declEvidenceFiles = (decl?.evidenceFiles || (decl as any)?.evidence || []).filter(
+    (f: any) => f && typeof f.name === 'string' && f.name.trim().length > 0
+  );
+  const hasNoEvidence = !isPledge && declEvidenceFiles.length === 0;
+
+  // Under Hướng dẫn số 14-HD/BTK-HSVTP: A declaration without evidence files can NEVER be evaluated as Pass (suitable)
+  const isPass = !hasNoEvidence && (currentStatus === 'suitable' || currentStatus === 'review_completed');
   const isFail = currentStatus === 'unsuitable';
   const isNeedsSupplement = currentStatus === 'needs_supplement';
   const isSupplementReturned = currentStatus === 'supplement_returned';
@@ -327,12 +339,6 @@ export const InlineRowReviewControls: React.FC<InlineRowReviewControlsProps> = (
       r.status === 'active' &&
       (r.declarationId === declId || (!r.declarationId && r.requirementId === requirement.id))
   );
-
-  const isPledge = requirement.id === 'ethics-law' || requirement.id === 'TC1.2';
-  const declEvidenceFiles = (decl?.evidenceFiles || (decl as any)?.evidence || []).filter(
-    (f: any) => f && typeof f.name === 'string' && f.name.trim().length > 0
-  );
-  const hasNoEvidence = !isPledge && declEvidenceFiles.length === 0;
 
   const suppDiff = scopeRecord?.supplementDiff;
 

@@ -104,6 +104,10 @@ export function buildCriteriaFromDefinitions(
                 evidenceFiles: normalizedEvidence,
               };
             });
+          const isPledge = reqDef.id === 'ethics-law' || reqDef.code === 'TC1.2';
+          const hasAnyEvidence =
+            isPledge ||
+            normalizedDeclarations.some((d) => (d.evidenceFiles || []).length > 0);
           return {
             ...found,
             declarations: normalizedDeclarations,
@@ -112,7 +116,9 @@ export function buildCriteriaFromDefinitions(
               found.status !== 'undeclared' &&
               (found.status as string) !== 'completed'
                 ? found.status
-                : 'ready',
+                : hasAnyEvidence
+                ? 'ready'
+                : 'declared',
             groupId: groupDef.id,
             title: reqDef.title,
             ruleBadge: reqDef.ruleBadge,

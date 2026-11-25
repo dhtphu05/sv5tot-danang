@@ -266,30 +266,35 @@ export const InspectorJudgmentSection: React.FC<InspectorJudgmentSectionProps> =
           )}
 
           {/* Primary: Xác nhận phù hợp */}
-          <button
-            type="button"
-            disabled={hasNoEvidence && currentScopeStatus !== 'suitable'}
-            onClick={() => onUpdateStatus(selectedScope, 'suitable')}
-            title={
-              hasNoEvidence && currentScopeStatus !== 'suitable'
-                ? 'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Không thể xác nhận phù hợp khi chưa có tệp minh chứng đính kèm'
-                : undefined
-            }
-            className={`w-full h-[40px] px-4 rounded-[12px] font-bold text-[13px] inline-flex items-center justify-center gap-2 transition-all border-0 shadow-2xs ${
-              hasNoEvidence && currentScopeStatus !== 'suitable'
-                ? 'bg-[#F1F5F9] text-[#94A3B8] border border-[#CBD5E1] cursor-not-allowed opacity-60'
-                : currentScopeStatus === 'suitable'
-                ? 'bg-[#EAFBF1] text-[#136F3A] ring-2 ring-[#B6E6C9] cursor-pointer'
-                : 'bg-[#1680DE] hover:bg-[#1371C4] text-white cursor-pointer'
-            }`}
-          >
-            <CheckCircle2 size={16} />
-            <span>
-              {currentScopeStatus === 'suitable'
-                ? 'Đã xác nhận phù hợp'
-                : 'Xác nhận phù hợp'}
-            </span>
-          </button>
+          {(() => {
+            const isEffectiveSuitable = !hasNoEvidence && currentScopeStatus === 'suitable';
+            return (
+              <button
+                type="button"
+                disabled={hasNoEvidence}
+                onClick={() => onUpdateStatus(selectedScope, isEffectiveSuitable ? 'not_reviewed' : 'suitable')}
+                title={
+                  hasNoEvidence
+                    ? 'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Không thể xác nhận phù hợp khi chưa có tệp minh chứng đính kèm'
+                    : undefined
+                }
+                className={`w-full h-[40px] px-4 rounded-[12px] font-bold text-[13px] inline-flex items-center justify-center gap-2 transition-all border-0 shadow-2xs ${
+                  hasNoEvidence
+                    ? 'bg-[#F1F5F9] text-[#94A3B8] border border-[#CBD5E1] cursor-not-allowed opacity-60'
+                    : isEffectiveSuitable
+                    ? 'bg-[#EAFBF1] text-[#136F3A] ring-2 ring-[#B6E6C9] cursor-pointer'
+                    : 'bg-[#1680DE] hover:bg-[#1371C4] text-white cursor-pointer'
+                }`}
+              >
+                <CheckCircle2 size={16} />
+                <span>
+                  {isEffectiveSuitable
+                    ? 'Đã xác nhận phù hợp'
+                    : 'Xác nhận phù hợp'}
+                </span>
+              </button>
+            );
+          })()}
 
           {/* Secondary: Yêu cầu bổ sung */}
           <button

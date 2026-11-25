@@ -47,14 +47,27 @@ export const RequirementGroupHeader: React.FC<RequirementGroupHeaderProps> = ({
     (r) => r.declarations && r.declarations.length > 0
   );
   const declaredCount = declaredRequirements.length;
+
+  const validDeclaredRequirements = group.requirements.filter((r) => {
+    if (!r.declarations || r.declarations.length === 0) return false;
+    const isPledge = r.id === 'ethics-law' || r.code === 'TC1.2';
+    if (isPledge) return true;
+    return r.declarations.some((d) => {
+      const files = (d.evidenceFiles || (d as any).evidence || []).filter(
+        (f: any) => f && typeof f.name === 'string' && f.name.trim().length > 0
+      );
+      return files.length > 0;
+    });
+  });
+  const validDeclaredCount = validDeclaredRequirements.length;
   const totalCount = group.requirements?.length || 0;
   const minSel = group.minSelections || 1;
 
   const isGroupSatisfiedByDeclaration =
     group.groupType === 'ALL_REQUIRED'
-      ? totalCount > 0 && declaredCount >= totalCount
+      ? totalCount > 0 && validDeclaredCount >= totalCount
       : group.groupType === 'AT_LEAST_N'
-      ? declaredCount >= minSel
+      ? validDeclaredCount >= minSel
       : true;
 
   let progressText = '';
@@ -62,14 +75,20 @@ export const RequirementGroupHeader: React.FC<RequirementGroupHeaderProps> = ({
     progressText = `${group.requirements.reduce((sum, r) => sum + (r.declarations?.length || 0), 0)} hoạt động`;
   } else if (group.groupType === 'ALL_REQUIRED') {
     progressText = isGroupSatisfiedByDeclaration
-      ? `Đã khai đủ ${declaredCount}/${totalCount} điều kiện bắt buộc`
+      ? `Đã hoàn thiện ${validDeclaredCount}/${totalCount} điều kiện bắt buộc`
+      : validDeclaredCount < declaredCount
+      ? `Chưa đủ minh chứng: ${validDeclaredCount}/${totalCount} mục hợp lệ (Đã kê khai ${declaredCount}/${totalCount})`
       : `Thiếu điều kiện bắt buộc: Đã khai ${declaredCount}/${totalCount} mục`;
   } else if (group.groupType === 'AT_LEAST_N') {
     progressText = isGroupSatisfiedByDeclaration
-      ? `Đã khai ${declaredCount}/${totalCount} hình thức (Yêu cầu >= 0${minSel})`
-      : `Chưa đủ điều kiện nhóm: Cần ít nhất 0${minSel}/${String(totalCount).padStart(2, '0')} hình thức (Hiện ${declaredCount} mục)`;
+      ? `Đã hoàn thiện ${validDeclaredCount}/${totalCount} hình thức (Yêu cầu >= 0${minSel})`
+      : validDeclaredCount < declaredCount
+      ? `Chưa đủ minh chứng: ${validDeclaredCount}/${minSel} hình thức hợp lệ (Đã kê khai ${declaredCount} mục)`
+      : `Chưa đủ điều kiện nhóm: Cần ít nhất 0${minSel}/${String(totalCount).padStart(2, '0')} hình thức (Hiện ${validDeclaredCount} mục có minh chứng)`;
+  } else if (validDeclaredCount > 0) {
+    progressText = `Đã hoàn thiện ${validDeclaredCount} mục có minh chứng`;
   } else if (declaredCount > 0) {
-    progressText = `Đã khai ${declaredCount} mục`;
+    progressText = `Đã kê khai ${declaredCount} mục (Chưa có minh chứng)`;
   }
 
   return (

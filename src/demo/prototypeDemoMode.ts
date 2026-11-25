@@ -285,20 +285,20 @@ export function clonePristineStoreForScenario(
 // SESSION STORAGE PERSISTENCE (Section 15)
 // ============================================================================
 const STORAGE_KEYS = {
-  SCENARIO_ID: '5tot_demo_scenario_v3',
-  DEMO_ACTIVE: '5tot_demo_active_v3',
-  VIEW_MODE: '5tot_demo_view_mode_v3',
-  NAV_ID: '5tot_demo_nav_id_v3',
-  STAFF_ROLE: '5tot_staff_role_v3',
-  STAFF_ROUTE_ID: '5tot_staff_route_id_v3',
-  STAFF_USER: '5tot_staff_user_v3',
-  COLLECTIVE_EMAIL: '5tot_collective_email_v3',
-  TOOLBAR_HIDDEN: '5tot_demo_toolbar_hidden_v3',
-  MUTATED_APP: '5tot_demo_mutated_app_v3',
-  MUTATED_NOTIFS: '5tot_demo_mutated_notifs_v3',
-  OFFICER_WORKSPACES: '5tot_demo_officer_workspaces_v3',
-  OFFICER_STUDENT_APPS: '5tot_demo_officer_apps_v3',
-  STAFF_APPLICATIONS: '5tot_demo_staff_apps_v3',
+  SCENARIO_ID: '5tot_demo_scenario_v4',
+  DEMO_ACTIVE: '5tot_demo_active_v4',
+  VIEW_MODE: '5tot_demo_view_mode_v4',
+  NAV_ID: '5tot_demo_nav_id_v4',
+  STAFF_ROLE: '5tot_staff_role_v4',
+  STAFF_ROUTE_ID: '5tot_staff_route_id_v4',
+  STAFF_USER: '5tot_staff_user_v4',
+  COLLECTIVE_EMAIL: '5tot_collective_email_v4',
+  TOOLBAR_HIDDEN: '5tot_demo_toolbar_hidden_v4',
+  MUTATED_APP: '5tot_demo_mutated_app_v4',
+  MUTATED_NOTIFS: '5tot_demo_mutated_notifs_v4',
+  OFFICER_WORKSPACES: '5tot_demo_officer_workspaces_v4',
+  OFFICER_STUDENT_APPS: '5tot_demo_officer_apps_v4',
+  STAFF_APPLICATIONS: '5tot_demo_staff_apps_v4',
 };
 
 export interface PersistedDemoSession {
@@ -331,6 +331,23 @@ export function loadPersistedDemoSession(): PersistedDemoSession {
 
   if (typeof window === 'undefined') {
     return fallback;
+  }
+
+  // Purge legacy persisted states from previous test runs so stale pass statuses never leak
+  try {
+    ['sessionStorage', 'localStorage'].forEach((storeType) => {
+      const store = (window as any)[storeType];
+      if (store) {
+        for (let i = store.length - 1; i >= 0; i--) {
+          const k = store.key(i);
+          if (k && (k.includes('_v1') || k.includes('_v2') || k.includes('_v3'))) {
+            store.removeItem(k);
+          }
+        }
+      }
+    });
+  } catch {
+    // ignore storage purge errors
   }
 
   try {

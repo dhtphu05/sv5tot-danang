@@ -180,24 +180,33 @@ export function applySaveDeclarationMutation(
     };
   }
 
+  const isPledge = reqId === 'ethics-law' || reqId === 'TC1.2';
+  const hasEvidence = isPledge || evidenceFiles.length > 0;
+
   if (existingDeclId) {
     return {
       ...prev,
-      criteria: syncCriteriaWithUpdate(prev.criteria, reqId, (req) => ({
-        ...req,
-        status: (isSupplementActive ? 'supplement' : 'ready') as RequirementStatus,
-        declarations: req.declarations.map((d) => {
-          if (d.id !== existingDeclId) return d;
-          return {
-            ...d,
-            value: declData.value,
-            detail: declData.detail,
-            date: declData.date || d.date,
-            metadata: declData.metadata,
-            evidenceFiles,
-          };
-        }),
-      })),
+      criteria: syncCriteriaWithUpdate(prev.criteria, reqId, (req) => {
+        const otherDeclsHaveEv = req.declarations
+          .filter((d) => d.id !== existingDeclId)
+          .some((d) => (d.evidenceFiles || []).length > 0);
+        const reqHasEv = isPledge || hasEvidence || otherDeclsHaveEv;
+        return {
+          ...req,
+          status: (isSupplementActive ? 'supplement' : reqHasEv ? 'ready' : 'declared') as RequirementStatus,
+          declarations: req.declarations.map((d) => {
+            if (d.id !== existingDeclId) return d;
+            return {
+              ...d,
+              value: declData.value,
+              detail: declData.detail,
+              date: declData.date || d.date,
+              metadata: declData.metadata,
+              evidenceFiles,
+            };
+          }),
+        };
+      }),
     };
   }
 
@@ -225,10 +234,14 @@ export function applySaveDeclarationMutation(
       const updatedDeclarations = isMulti
         ? [...req.declarations, newDecl]
         : [newDecl];
+      const anyDeclHasEv =
+        isPledge ||
+        hasEvidence ||
+        req.declarations.some((d) => (d.evidenceFiles || []).length > 0);
 
       return {
         ...req,
-        status: (isSupplementActive ? 'supplement' : 'ready') as RequirementStatus,
+        status: (isSupplementActive ? 'supplement' : anyDeclHasEv ? 'ready' : 'declared') as RequirementStatus,
         isOptionalEmpty: false,
         declarations: updatedDeclarations,
       };
@@ -502,6 +515,13 @@ export function calculateStudentApplicationSummaryStats(
   };
 }
 
+export function getAllCriterionRequirements(c: ApplicationCriterion): ApplicationRequirement[] {
+  if (Array.isArray(c.requirements) && c.requirements.length > 0) {
+    return c.requirements;
+  }
+  return (c.groups || []).flatMap((g) => g.requirements || []);
+}
+
 export function computeDynamicPreSubmitAdvisories(
   criteria: ApplicationCriterion[],
   manualAdvisories: PreSubmitAdvisoryItem[] = [],
@@ -510,7 +530,7 @@ export function computeDynamicPreSubmitAdvisories(
   const result: PreSubmitAdvisoryItem[] = [];
 
   for (const c of criteria) {
-    const allReqs = c.requirements || [];
+    const allReqs = getAllCriterionRequirements(c);
     const declaredCount = allReqs.reduce(
       (sum, r) => sum + (r.declarations?.length || 0),
       0
@@ -931,7 +951,7 @@ export function computeCriteriaAdvisoryStatuses(
   advisories: PreSubmitAdvisoryItem[]
 ) {
   return criteria.map((c) => {
-    const allReqs = c.requirements || [];
+    const allReqs = getAllCriterionRequirements(c);
     const declaredCount = allReqs.reduce(
       (sum, r) => sum + (r.declarations?.length || 0),
       0
@@ -944,7 +964,14 @@ export function computeCriteriaAdvisoryStatuses(
     const hasThresholdIssue = criterionAdvisories.some(
       (a) => a.id === 'adv-volunteer-days-insufficient' || a.id === 'adv-gpa-below-threshold'
     );
-    const hasMissingEvidence = criterionAdvisories.some((a) => a.id.startsWith('adv-no-ev-'));
+    const hasDeclaredWithoutEvidence = allReqs.some((r) => {
+      const isPledge = r.id === 'ethics-law' || r.code === 'TC1.2';
+      if (isPledge) return false;
+      return (r.declarations || []).some(
+        (d) => !d.evidenceFiles || d.evidenceFiles.length === 0
+      );
+    });
+    const hasMissingEvidence = criterionAdvisories.some((a) => a.id.startsWith('adv-no-ev-')) || hasDeclaredWithoutEvidence;
     const hasOtherAdvisory = criterionAdvisories.some(
       (a) =>
         !a.id.startsWith('adv-missing-') &&

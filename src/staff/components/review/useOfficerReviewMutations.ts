@@ -98,6 +98,37 @@ export function useOfficerReviewMutations({
     (scope: SelectedReviewScope, nextStatus: StaffItemReviewStatus) => {
       if (!effectiveCanMutate) return;
 
+      if (nextStatus === 'suitable') {
+        const isPledge = scope.requirementId === 'ethics-law' || scope.requirementId === 'TC1.2';
+        if (!isPledge) {
+          let foundDecl: any = null;
+          for (const c of studentApp.criteria || []) {
+            const allReqs = [
+              ...(c.groups ? c.groups.flatMap((g: any) => g.requirements || []) : []),
+              ...(c.requirements || []),
+            ];
+            const r = allReqs.find((req: any) => req.id === scope.requirementId);
+            if (r) {
+              if (scope.declarationId) {
+                foundDecl = r.declarations?.find((d: any) => d.id === scope.declarationId);
+              } else if (r.declarations?.length === 1) {
+                foundDecl = r.declarations[0];
+              }
+              break;
+            }
+          }
+          const files = (foundDecl?.evidenceFiles || foundDecl?.evidence || []).filter(
+            (f: any) => f && typeof f.name === 'string' && f.name.trim().length > 0
+          );
+          if (!foundDecl || files.length === 0) {
+            showToast(
+              'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Không thể xác nhận Đạt cho mục kê khai chưa có tệp minh chứng đính kèm.'
+            );
+            return;
+          }
+        }
+      }
+
       const targetAppId = applicationRecord?.applicationId || studentApp.applicationId;
       const targetStaffToken =
         (currentUser as any).token ||
