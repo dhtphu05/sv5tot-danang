@@ -568,6 +568,8 @@ export function registerIndividualStudentPortalRoutes(
       uploadedAt: ev.uploadedAt || '10/10/2026',
       status: ev.status || 'completed',
     }));
+    const isPledge = requirementId === 'ethics-law' || requirementId === 'TC1.2';
+    const hasEv = isPledge || normalizedEvFiles.length > 0;
     const normalizedDecl = {
       ...declaration,
       id: declaration.id || `decl-${requirementId}-${Date.now()}`,
@@ -577,7 +579,7 @@ export function registerIndividualStudentPortalRoutes(
       detail: declaration.detail || declaration.description || '',
       date: declaration.date || '10/10/2026',
       authority: declaration.authority || '',
-      status: 'completed',
+      status: hasEv ? 'ready' : 'declared',
       evidenceFiles: normalizedEvFiles,
       metadata: declaration.metadata ? { ...declaration.metadata } : undefined,
     };
@@ -611,7 +613,7 @@ export function registerIndividualStudentPortalRoutes(
             reqObj = {
               id: requirementId,
               criterionId,
-              status: 'completed',
+              status: hasEv ? 'ready' : 'declared',
               declarations: [],
             };
             reqList.push(reqObj);
@@ -629,7 +631,14 @@ export function registerIndividualStudentPortalRoutes(
             } else {
               reqObj.declarations.push(normalizedDecl);
             }
-            reqObj.status = 'completed';
+            const anyDeclHasEv =
+              isPledge ||
+              reqObj.declarations.some(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (d: Record<string, any>) =>
+                  Array.isArray(d.evidenceFiles) && d.evidenceFiles.length > 0
+              );
+            reqObj.status = anyDeclHasEv ? 'ready' : 'declared';
             reqObj.isOptionalEmpty = false;
           }
         };

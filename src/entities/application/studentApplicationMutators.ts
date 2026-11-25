@@ -196,12 +196,14 @@ export function applySaveDeclarationMutation(
           status: (isSupplementActive ? 'supplement' : reqHasEv ? 'ready' : 'declared') as RequirementStatus,
           declarations: req.declarations.map((d) => {
             if (d.id !== existingDeclId) return d;
+            const declHasEv = isPledge || evidenceFiles.length > 0;
             return {
               ...d,
               value: declData.value,
               detail: declData.detail,
               date: declData.date || d.date,
               metadata: declData.metadata,
+              status: (declHasEv ? 'ready' : 'declared') as RequirementStatus,
               evidenceFiles,
             };
           }),
@@ -216,6 +218,7 @@ export function applySaveDeclarationMutation(
     detail: declData.detail,
     date: declData.date || new Date().toLocaleDateString('vi-VN'),
     metadata: declData.metadata,
+    status: (hasEvidence ? 'ready' : 'declared') as RequirementStatus,
     evidenceFiles: evidenceFiles.map((f) => ({
       ...f,
       isNewlyAddedSupplement: isSupplementActive

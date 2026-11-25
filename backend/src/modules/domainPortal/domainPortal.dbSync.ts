@@ -1354,13 +1354,14 @@ export async function ensurePortalStateHydratedFromNeonDb(forceRefresh = false):
               dItem.criterionCode === 'OTHER_ACHIEVEMENTS' ||
               dItem.requirementCode === 'other-achievements-general'
             ) {
+              const hasOtherEv = Array.isArray(attrs.evidenceFiles) && attrs.evidenceFiles.length > 0;
               hydratedOtherAchievements.push({
                 id: attrs.originalDeclarationId || dItem.id,
                 value: attrs.value || dItem.title,
                 title: dItem.title,
                 detail: attrs.detail || dItem.applicantNote || '',
                 date: attrs.date || dItem.activityDateOrPeriod || '10/10/2026',
-                status: 'completed',
+                status: hasOtherEv ? 'ready' : 'declared',
                 evidenceFiles: Array.isArray(attrs.evidenceFiles)
                   ? attrs.evidenceFiles
                   : [],
@@ -1376,6 +1377,8 @@ export async function ensurePortalStateHydratedFromNeonDb(forceRefresh = false):
             const critObj = defaultCrit.find((c) => c.id === cId);
             if (!critObj) continue;
             const reqId = String(dItem.requirementCode || 'ethics-score');
+            const isPledgeReq = reqId === 'ethics-law' || reqId === 'TC1.2';
+            const declHasEv = isPledgeReq || (Array.isArray(attrs.evidenceFiles) && attrs.evidenceFiles.length > 0);
             let reqObj = (critObj.requirements as Record<string, any>[]).find(
               (r) => r.id === reqId
             );
@@ -1383,7 +1386,7 @@ export async function ensurePortalStateHydratedFromNeonDb(forceRefresh = false):
               reqObj = {
                 id: reqId,
                 criterionId: cId,
-                status: 'completed',
+                status: declHasEv ? 'ready' : 'declared',
                 declarations: [],
               };
               (critObj.requirements as Record<string, any>[]).push(reqObj);
@@ -1394,7 +1397,7 @@ export async function ensurePortalStateHydratedFromNeonDb(forceRefresh = false):
               title: dItem.title,
               detail: attrs.detail || dItem.applicantNote || '',
               date: attrs.date || dItem.activityDateOrPeriod || '10/10/2026',
-              status: 'completed',
+              status: declHasEv ? 'ready' : 'declared',
               evidenceFiles: Array.isArray(attrs.evidenceFiles)
                 ? attrs.evidenceFiles
                 : [],
@@ -1404,6 +1407,10 @@ export async function ensurePortalStateHydratedFromNeonDb(forceRefresh = false):
               },
               reviewState: attrs.reviewState || undefined,
             });
+            const anyReqHasEv = isPledgeReq || reqObj.declarations.some(
+              (d: any) => Array.isArray(d.evidenceFiles) && d.evidenceFiles.length > 0
+            );
+            reqObj.status = anyReqHasEv ? 'ready' : 'declared';
           }
 
           const mapped =

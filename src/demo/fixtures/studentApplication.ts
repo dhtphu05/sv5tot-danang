@@ -88,6 +88,8 @@ export function buildCriteriaFromDefinitions(
                   };
                 }
               );
+              const isPledgeDecl = reqDef.id === 'ethics-law' || reqDef.code === 'TC1.2';
+              const declHasEv = isPledgeDecl || normalizedEvidence.length > 0;
               return {
                 ...d,
                 value:
@@ -97,10 +99,11 @@ export function buildCriteriaFromDefinitions(
                   'Đã kê khai minh chứng',
                 detail: d.detail || rawDecl.description || rawDecl.authority || '',
                 date: d.date || rawDecl.date || '10/10/2026',
-                status:
-                  d.status && (d.status as string) !== 'completed'
+                status: declHasEv
+                  ? d.status && (d.status as string) !== 'completed'
                     ? d.status
-                    : 'ready',
+                    : 'ready'
+                  : 'declared',
                 evidenceFiles: normalizedEvidence,
               };
             });
@@ -115,7 +118,9 @@ export function buildCriteriaFromDefinitions(
               found.status &&
               found.status !== 'undeclared' &&
               (found.status as string) !== 'completed'
-                ? found.status
+                ? hasAnyEvidence || found.status === 'requires_supplement'
+                  ? found.status
+                  : 'declared'
                 : hasAnyEvidence
                 ? 'ready'
                 : 'declared',
