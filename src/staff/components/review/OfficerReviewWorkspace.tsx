@@ -1271,6 +1271,7 @@ export const OfficerReviewWorkspace: React.FC<OfficerReviewWorkspaceProps> = ({
         onStartGuidedReviewFromDemoTour={() => {}}
         simulateCompleteError={false}
         effectiveStage={effectiveStage}
+        isSchoolStage={isSchoolStage}
         applicationRecord={applicationRecord}
         workspaceState={workspaceState}
         onConfirmCompleteApplicationReview={handleConfirmCompleteApplicationReview}

@@ -62,13 +62,13 @@ export const StudentSupplementCoachCard: React.FC<StudentSupplementCoachCardProp
     >
       <div className="flex items-start gap-3">
         <div className="w-7 h-7 rounded-[7px] bg-[#0D78AE] text-white flex items-center justify-center shrink-0 mt-0.5">
-          <Sparkles size={14} />
+          <Info size={15} />
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[12.5px] font-extrabold text-[#0D78AE]">
-              Trợ lý hướng dẫn bổ sung hồ sơ
+              Hướng dẫn hoàn thiện hồ sơ bổ sung
             </span>
             <span className="text-[11px] text-[#607483]">
               · Tiêu chí: <strong>{request.criterionName}</strong>

@@ -501,8 +501,8 @@ export const CriterionDeclarationCard: React.FC<CriterionDeclarationCardProps> =
                             );
                           })()}
 
-                          {/* Level 4: Individual Evidence Item AI Insight Badge */}
-                          {(() => {
+                          {/* Level 4: Individual Evidence Item AI Insight Badge (City-Level Officers Only) */}
+                          {!isSchoolStage && (() => {
                             const evInsight = getEvidenceAiInsight(ev.id);
                             if (!evInsight) return null;
                             return (

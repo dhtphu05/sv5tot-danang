@@ -30,6 +30,7 @@ export interface OfficerReviewAuxiliaryModalsProps {
   applicationRecord: StaffApplicationRecord;
   workspaceState: ApplicationReviewWorkspaceState;
   effectiveStage: ReviewStage;
+  isSchoolStage?: boolean;
   // Complete Dialog
   isCompleteDialogOpen: boolean;
   simulateCompleteError: boolean;
@@ -58,6 +59,7 @@ export const OfficerReviewAuxiliaryModals: React.FC<OfficerReviewAuxiliaryModals
   applicationRecord,
   workspaceState,
   effectiveStage,
+  isSchoolStage = false,
   isCompleteDialogOpen,
   simulateCompleteError,
   onCloseCompleteDialog,
@@ -103,32 +105,36 @@ export const OfficerReviewAuxiliaryModals: React.FC<OfficerReviewAuxiliaryModals
         onClose={onCloseAppInfoModal}
       />
 
-      <DossierAiSummaryModal
-        isOpen={isAiSummaryOpen}
-        onClose={onCloseAiSummary}
-        applicationRecord={applicationRecord}
-        workspaceState={workspaceState}
-        onSelectCriterion={(critId) => {
-          onSelectCriterionFromAiSummary(critId);
-          onCloseAiSummary();
-        }}
-        onOpenExplainability={() => {
-          onCloseAiSummary();
-          onSelectCriterionFromAiSummary('volunteer');
-        }}
-      />
+      {!isSchoolStage && (
+        <>
+          <DossierAiSummaryModal
+            isOpen={isAiSummaryOpen}
+            onClose={onCloseAiSummary}
+            applicationRecord={applicationRecord}
+            workspaceState={workspaceState}
+            onSelectCriterion={(critId) => {
+              onSelectCriterionFromAiSummary(critId);
+              onCloseAiSummary();
+            }}
+            onOpenExplainability={() => {
+              onCloseAiSummary();
+              onSelectCriterionFromAiSummary('volunteer');
+            }}
+          />
 
-      <AiAgentActivityRail
-        isOpen={isAgentRailOpen}
-        onClose={onCloseAgentRail}
-        tasks={DEMO_AI_AGENT_TASKS}
-      />
+          <AiAgentActivityRail
+            isOpen={isAgentRailOpen}
+            onClose={onCloseAgentRail}
+            tasks={DEMO_AI_AGENT_TASKS}
+          />
 
-      <AiDemoTourModal
-        isOpen={isDemoTourOpen}
-        onClose={onCloseDemoTour}
-        onStartGuidedReview={onStartGuidedReviewFromDemoTour}
-      />
+          <AiDemoTourModal
+            isOpen={isDemoTourOpen}
+            onClose={onCloseDemoTour}
+            onStartGuidedReview={onStartGuidedReviewFromDemoTour}
+          />
+        </>
+      )}
     </>
   );
 };

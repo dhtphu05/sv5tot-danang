@@ -275,24 +275,26 @@ export const CriterionReviewPanel: React.FC<CriterionReviewPanelProps> = ({
           onReopenCriterion={onReopenCriterion}
         />
 
-        {/* Level 2: Criterion-Level AI Preliminary Assessment (Section 5, 7) */}
-        <AiCriterionAssessmentCard
-          criterionId={criterionId}
-          criterionName={criterionToken.name}
-          criterionNumber={criterionToken.number}
-          summary={copilotSummary}
-          studentApp={studentApp}
-          preliminaryAssessment={preliminaryAssessment}
-          policySeason={policySeason}
-          onStartGuidedReview={
-            onStartGuidedReview
-              ? () => onStartGuidedReview(criterionId)
-              : startGuidedReview
-          }
-          onOpenRegulation={() => onOpenRegulation(criterionId)}
-          onInspectPrimaryFinding={handleOpenCopilotInspector}
-          onOpenExplainability={onOpenExplainability}
-        />
+        {/* Level 2: Criterion-Level AI Preliminary Assessment (City-Level Officers Only) */}
+        {!isSchoolStage && (
+          <AiCriterionAssessmentCard
+            criterionId={criterionId}
+            criterionName={criterionToken.name}
+            criterionNumber={criterionToken.number}
+            summary={copilotSummary}
+            studentApp={studentApp}
+            preliminaryAssessment={preliminaryAssessment}
+            policySeason={policySeason}
+            onStartGuidedReview={
+              onStartGuidedReview
+                ? () => onStartGuidedReview(criterionId)
+                : startGuidedReview
+            }
+            onOpenRegulation={() => onOpenRegulation(criterionId)}
+            onInspectPrimaryFinding={handleOpenCopilotInspector}
+            onOpenExplainability={onOpenExplainability}
+          />
+        )}
 
         {criterionDef.groups.map((group: RequirementGroupDefinition) => {
           const groupDeclarationsCount = group.requirements.reduce(
@@ -384,7 +386,7 @@ export const CriterionReviewPanel: React.FC<CriterionReviewPanelProps> = ({
                       defaultCollapsed={defaultCollapsed}
                       expandedEvidenceDeclMap={expandedEvidenceDeclMap}
                       canMutate={canMutate}
-                      findingsMap={findingsMap}
+                      findingsMap={isSchoolStage ? {} : findingsMap}
                       guidedFocusDeclarationId={guidedFocusDeclarationId || undefined}
                       isSchoolStage={isSchoolStage}
                       onOpenFindingPopover={(finding, e) => {
@@ -556,29 +558,33 @@ export const CriterionReviewPanel: React.FC<CriterionReviewPanelProps> = ({
         />
       )}
 
-      {/* Feature D: AI Agent Task Activity Rail (Level 4: Agent Activity) */}
-      <AiAgentActivityRail
-        isOpen={isAgentRailOpen}
-        onClose={() => setIsAgentRailOpen(false)}
-        tasks={agentTasks}
-        onOpenFindings={() => {
-          setIsAgentRailOpen(false);
-          const firstFinding = copilotSummary.findings[0];
-          if (firstFinding) {
-            handleOpenCopilotInspector(firstFinding);
-          }
-        }}
-      />
+      {/* Feature D: AI Agent Task Activity Rail (City-Level Officers Only) */}
+      {!isSchoolStage && (
+        <AiAgentActivityRail
+          isOpen={isAgentRailOpen}
+          onClose={() => setIsAgentRailOpen(false)}
+          tasks={agentTasks}
+          onOpenFindings={() => {
+            setIsAgentRailOpen(false);
+            const firstFinding = copilotSummary.findings[0];
+            if (firstFinding) {
+              handleOpenCopilotInspector(firstFinding);
+            }
+          }}
+        />
+      )}
 
-      {/* Feature 20: Product & Demo Tour Modal */}
-      <AiDemoTourModal
-        isOpen={isDemoTourOpen}
-        onClose={() => setIsDemoTourOpen(false)}
-        onStartGuidedReview={() => {
-          setIsDemoTourOpen(false);
-          startGuidedReview();
-        }}
-      />
+      {/* Feature 20: Product & Demo Tour Modal (City-Level Officers Only) */}
+      {!isSchoolStage && (
+        <AiDemoTourModal
+          isOpen={isDemoTourOpen}
+          onClose={() => setIsDemoTourOpen(false)}
+          onStartGuidedReview={() => {
+            setIsDemoTourOpen(false);
+            startGuidedReview();
+          }}
+        />
+      )}
     </main>
   );
 };
