@@ -683,20 +683,69 @@ export function evaluateDeclarationQuickInsight(params: {
   };
 }
 
+const REQ_ALIAS_MAP: Record<string, string[]> = {
+  'ethics-score': ['tc1.1', 'ethics-score', 'drl'],
+  'ethics-law': ['tc1.2', 'ethics-law'],
+  'ethics-party': ['tc1.3', 'ethics-party'],
+  'ethics-politics-team': ['tc1.4', 'ethics-politics-team'],
+  'ethics-politics-paper': ['tc1.5', 'ethics-politics-paper'],
+  'ethics-commendation': ['tc1.6', 'ethics-commendation'],
+  'academic-gpa': ['tc2.1', 'academic-gpa', 'gpa'],
+  'academic-nckh': ['tc2.2', 'academic-nckh'],
+  'academic-paper': ['tc2.3', 'academic-paper'],
+  'academic-presentation': ['tc2.4', 'academic-presentation'],
+  'academic-product': ['tc2.5', 'academic-product'],
+  'academic-team': ['tc2.6', 'academic-team'],
+  'academic-innovation': ['tc2.7', 'academic-innovation'],
+  'physical-fitness': ['tc3.1', 'physical-fitness'],
+  'physical-sports': ['tc3.2', 'physical-sports'],
+  'volunteer-days': ['tc4.1', 'volunteer-days'],
+  'volunteer-blood': ['tc4.2', 'volunteer-blood'],
+  'volunteer-award': ['tc4.3', 'volunteer-award'],
+  'integration-skills': ['tc5.1', 'integration-skills'],
+  'integration-union-award': ['tc5.2', 'integration-union-award'],
+  'integration-lang': ['tc5.3', 'integration-lang'],
+  'integration-intl': ['tc5.4', 'integration-intl'],
+  'integration-contest': ['tc5.5', 'integration-contest'],
+};
+
+function matchesRequirement(req: any, targetId: string): boolean {
+  if (!req) return false;
+  const targetNorm = targetId.toLowerCase().trim();
+  const rId = (req.id || '').toLowerCase().trim();
+  const rCode = (req.code || '').toLowerCase().trim();
+  if (rId === targetNorm || rCode === targetNorm) return true;
+  for (const [canonical, aliases] of Object.entries(REQ_ALIAS_MAP)) {
+    const isTarget = canonical === targetNorm || aliases.includes(targetNorm);
+    if (isTarget) {
+      if (
+        canonical === rId ||
+        aliases.includes(rId) ||
+        canonical === rCode ||
+        aliases.includes(rCode)
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 function getDeclarationsFromAppCriterion(studentApp: any, criterionId: string, requirementId: string): any[] {
   const crit = studentApp?.criteria?.find((c: any) => c.id === criterionId);
   if (!crit) return [];
+  const reqListFromGroups =
+    Array.isArray(crit.groups) && crit.groups.length > 0
+      ? crit.groups.flatMap((g: any) => g.requirements || [])
+      : [];
+  const reqListFromDirect = Array.isArray(crit.requirements) ? crit.requirements : [];
+  const reqList = reqListFromGroups.length > 0 ? reqListFromGroups : reqListFromDirect;
+
+  const matchingReqs = reqList.filter((r: any) => matchesRequirement(r, requirementId));
   const byId = new Map<string, any>();
-  const reqFromList = crit.requirements?.find((r: any) => r.id === requirementId);
-  for (const d of reqFromList?.declarations || []) {
-    if (d?.id) byId.set(d.id, d);
-  }
-  if (Array.isArray(crit.groups)) {
-    for (const g of crit.groups) {
-      const reqFromGrp = g.requirements?.find((r: any) => r.id === requirementId);
-      for (const d of reqFromGrp?.declarations || []) {
-        if (d?.id) byId.set(d.id, d);
-      }
+  for (const req of matchingReqs) {
+    for (const d of req.declarations || []) {
+      if (d?.id) byId.set(d.id, d);
     }
   }
   return Array.from(byId.values());
@@ -750,13 +799,27 @@ export function evaluateCriterionHolisticConditions(
     let firstIssueText = '';
 
     for (const d of decls) {
-      const files = d.evidenceFiles || d.evidence || [];
+      const rawFiles = d.evidenceFiles || d.evidence || [];
+      const validFiles = rawFiles.filter(
+        (f: any) =>
+          f &&
+          typeof (f.name || f.fileName || f.url || f.id) === 'string' &&
+          (f.name || f.fileName || f.url || f.id).trim().length > 0
+      );
+      const isPledge = reqId === 'ethics-law' || reqId === 'tc1.2';
+      if (!isPledge && validFiles.length === 0) {
+        if (!firstIssueText) {
+          firstIssueText = 'Chưa tải lên tệp minh chứng đối chiếu theo Hướng dẫn số 14-HD/BTK-HSVTP.';
+        }
+        continue;
+      }
+
       const insight = evaluateDeclarationQuickInsight({
         criterionId,
         requirementId: reqId,
         requirementTitle: label,
         declaredValue: d.value || label,
-        evidenceFiles: files,
+        evidenceFiles: validFiles,
         allRequirementDeclarations: decls,
       });
       if (insight.status === 'preliminary_meets') {
@@ -789,7 +852,9 @@ export function evaluateCriterionHolisticConditions(
       label,
       ruleBadge,
       status: 'verify_needed',
-      detail: firstIssueText || 'Cần kiểm tra thêm tệp minh chứng của mục bắt buộc này.',
+      detail:
+        firstIssueText ||
+        'Cần kiểm tra thêm tệp minh chứng của mục bắt buộc này theo Hướng dẫn số 14-HD/BTK-HSVTP.',
       declaredCount: decls.length,
       passedCount: 0,
       requiredCount: 1,
@@ -815,13 +880,26 @@ export function evaluateCriterionHolisticConditions(
 
       let optPassed = false;
       for (const d of decls) {
-        const files = d.evidenceFiles || d.evidence || [];
+        const rawFiles = d.evidenceFiles || d.evidence || [];
+        const validFiles = rawFiles.filter(
+          (f: any) =>
+            f &&
+            typeof (f.name || f.fileName || f.url || f.id) === 'string' &&
+            (f.name || f.fileName || f.url || f.id).trim().length > 0
+        );
+        if (validFiles.length === 0) {
+          if (!firstVerifySummary) {
+            firstVerifySummary = `${opt.title}: Chưa tải lên tệp minh chứng đối chiếu theo Hướng dẫn số 14-HD/BTK-HSVTP`;
+          }
+          continue;
+        }
+
         const insight = evaluateDeclarationQuickInsight({
           criterionId,
           requirementId: opt.id,
           requirementTitle: opt.title,
           declaredValue: d.value || opt.title,
-          evidenceFiles: files,
+          evidenceFiles: validFiles,
           allRequirementDeclarations: decls,
         });
         if (insight.status === 'preliminary_meets') {
@@ -849,7 +927,10 @@ export function evaluateCriterionHolisticConditions(
         label,
         ruleBadge,
         status: 'missing',
-        detail: `Chưa kê khai: Bắt buộc đạt ít nhất 01/${String(reqOptions.length).padStart(2, '0')} hình thức thuộc nhóm này`,
+        detail: `Chưa kê khai: Bắt buộc đạt ít nhất 01/${String(reqOptions.length).padStart(
+          2,
+          '0'
+        )} hình thức thuộc nhóm này và phải đính kèm tệp minh chứng theo Hướng dẫn số 14-HD/BTK-HSVTP`,
         declaredCount: 0,
         passedCount: 0,
         requiredCount: 1,
@@ -863,7 +944,7 @@ export function evaluateCriterionHolisticConditions(
         label,
         ruleBadge,
         status: 'met',
-        detail: `Đạt sơ bộ (${passedOptionCount}/${reqOptions.length} hình thức): ${firstPassedSummary}`,
+        detail: `Đạt sơ bộ (${passedOptionCount}/${reqOptions.length} hình thức có minh chứng hợp lệ): ${firstPassedSummary}`,
         declaredCount: declaredOptionCount,
         passedCount: passedOptionCount,
         requiredCount: 1,
@@ -876,7 +957,9 @@ export function evaluateCriterionHolisticConditions(
       label,
       ruleBadge,
       status: 'verify_needed',
-      detail: firstVerifySummary || 'Đã kê khai nhưng cần kiểm tra thêm tệp minh chứng.',
+      detail:
+        firstVerifySummary ||
+        'Đã kê khai nhưng thiếu tệp minh chứng hợp lệ hoặc cần kiểm tra thêm theo Hướng dẫn số 14-HD/BTK-HSVTP.',
       declaredCount: declaredOptionCount,
       passedCount: 0,
       requiredCount: 1,
@@ -1072,7 +1155,7 @@ export function evaluateCriterionHolisticConditions(
   let detail = '';
 
   if (isAllMet) {
-    headline = `Tiêu chí 0${meta.number} (${meta.name}): Đạt đủ ${metConditionsCount}/${totalConditionsCount} nhóm điều kiện quy chế.`;
+    headline = `Tiêu chí 0${meta.number} (${meta.name}): Toàn bộ thông tin kê khai đối chiếu khớp với minh chứng và đạt đủ ${metConditionsCount}/${totalConditionsCount} nhóm điều kiện quy chế.`;
     detail = conditionChecklist.map((c) => `✓ ${c.label}: ${c.detail}`).join(' · ');
   } else if (missingItems.length === totalConditionsCount) {
     headline = `Tiêu chí 0${meta.number} (${meta.name}): Chưa kê khai (${0}/${totalConditionsCount} điều kiện bắt buộc).`;

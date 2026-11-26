@@ -486,7 +486,12 @@ export function evaluateCriterionPreliminaryAssessment(
   } else {
     // Check if the student application has declarations and valid evidence files attached!
     const critObj = studentApp?.criteria?.find((c: any) => c.id === criterionId);
-    const requirements = critObj?.requirements || [];
+    const reqListFromGroups =
+      Array.isArray(critObj?.groups) && critObj.groups.length > 0
+        ? critObj.groups.flatMap((g: any) => g.requirements || [])
+        : [];
+    const reqListFromDirect = Array.isArray(critObj?.requirements) ? critObj.requirements : [];
+    const requirements = reqListFromGroups.length > 0 ? reqListFromGroups : reqListFromDirect;
     const declCount = requirements.reduce(
       (sum: number, r: any) => sum + (r.declarations?.length || 0),
       0
@@ -525,13 +530,51 @@ export function evaluateCriterionPreliminaryAssessment(
       0
     );
 
-    // If studentApp exists and either has 0 declarations, 0 evidence files, or declarations without evidence:
-    // It must NEVER default to preliminary_meets!
-    if (studentApp && (declCount === 0 || evCount === 0 || hasAnyDeclWithoutEvidence)) {
+    const hasValidSupplementForEthics = () => {
+      if (criterionId !== 'ethics') return true;
+      const suppReqs = requirements.filter((r: any) => {
+        const id = (r.id || '').toLowerCase();
+        const code = (r.code || '').toLowerCase();
+        return (
+          id === 'ethics-party' ||
+          code === 'tc1.3' ||
+          id === 'ethics-politics-team' ||
+          code === 'tc1.4' ||
+          id === 'ethics-politics-paper' ||
+          code === 'tc1.5' ||
+          id === 'ethics-commendation' ||
+          code === 'tc1.6'
+        );
+      });
+      return suppReqs.some((r: any) =>
+        (r.declarations || []).some((d: any) => {
+          const files = (d.evidenceFiles || d.evidence || []).filter((f: any) => {
+            if (!f) return false;
+            if (typeof f === 'string') return f.trim().length > 0;
+            const name = f.name || f.fileName || f.url || f.id;
+            return typeof name === 'string' && name.trim().length > 0;
+          });
+          return files.length > 0;
+        })
+      );
+    };
+
+    // If studentApp exists and either has 0 declarations, 0 evidence files, declarations without evidence,
+    // or missing ethics supplement evidence: It must NEVER default to preliminary_meets!
+    if (
+      studentApp &&
+      (declCount === 0 || evCount === 0 || hasAnyDeclWithoutEvidence || !hasValidSupplementForEthics())
+    ) {
       verdict = 'insufficient_evidence';
-      headline = `Tiêu chí 0${meta.number} (${meta.name}): Chưa có đủ tệp minh chứng đính kèm theo quy định Hướng dẫn số 14-HD/BTK-HSVTP.`;
-      detail =
-        'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Mọi nội dung kê khai bắt buộc phải có văn bản minh chứng đối chiếu hợp lệ (bản scan/ảnh chụp có dấu mộc hoặc chữ ký xác nhận của đơn vị có thẩm quyền). Kê khai chưa có minh chứng không đủ điều kiện xét duyệt.';
+      if (!hasValidSupplementForEthics()) {
+        headline = `Tiêu chí 01 (Đạo đức tốt): Cần kiểm tra thêm — Thiếu minh chứng cho tiêu chuẩn bổ sung (bắt buộc đạt ít nhất 01/04 hình thức TC1.3–TC1.6 theo Hướng dẫn số 14-HD/BTK-HSVTP).`;
+        detail =
+          'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Tiêu chí Đạo đức tốt bắt buộc phải đạt điểm rèn luyện (>= 80/100), cam kết không vi phạm VÀ có minh chứng xác nhận cho ít nhất 01/04 hình thức tiêu chuẩn bổ sung (Đảng viên, Đội thi Mác–Lênin, Tham luận Mác–Lênin, hoặc Gương người tốt việc tốt). Không thể đánh giá Đạt sơ bộ khi thiếu minh chứng tiêu chuẩn bổ sung.';
+      } else {
+        headline = `Tiêu chí 0${meta.number} (${meta.name}): Chưa có đủ tệp minh chứng đính kèm theo quy định Hướng dẫn số 14-HD/BTK-HSVTP.`;
+        detail =
+          'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Mọi nội dung kê khai bắt buộc phải có văn bản minh chứng đối chiếu hợp lệ (bản scan/ảnh chụp có dấu mộc hoặc chữ ký xác nhận của đơn vị có thẩm quyền). Kê khai chưa có minh chứng không đủ điều kiện xét duyệt.';
+      }
       insufficientReqs.push(meta.name);
       nextAction = {
         label: 'Kiểm tra tệp minh chứng',
@@ -546,7 +589,7 @@ export function evaluateCriterionPreliminaryAssessment(
       } else if (criterionId === 'physical') {
         supportedReqs.push('Đạt danh hiệu Thanh niên khỏe');
       } else if (criterionId === 'ethics') {
-        supportedReqs.push('Điểm rèn luyện từ 80/100', 'Không vi phạm kỷ luật', 'Đảng viên/Cảm tình Đảng');
+        supportedReqs.push('Điểm rèn luyện từ 80/100', 'Không vi phạm kỷ luật', 'Tiêu chuẩn bổ sung có minh chứng');
       } else if (criterionId === 'integration') {
         supportedReqs.push('Kỹ năng hội nhập', 'Ngoại ngữ chuẩn');
       }

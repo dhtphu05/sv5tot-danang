@@ -459,53 +459,181 @@ export async function evaluateFullApplicationWithOcr(
     let critBadgeLabel: 'Đạt sơ bộ' | 'Thiếu dữ liệu' | 'Cần kiểm tra thêm' | 'Chưa đạt' = 'Đạt sơ bộ';
     let critHeadline = `Tiêu chí 0${crit.criterionNumber} (${crit.criterionName}): Đạt đủ các điều kiện và minh chứng khớp quy chế.`;
 
-    const reqIds = new Set(crit.declarations.map((d) => d.requirementId));
-    const usesCanonicalReqIds = Array.from(reqIds).some((id) =>
-      /^(ethics-|academic-|physical-|volunteer-|integration-)/.test(id)
-    );
+    const hasValidEv = (d: { evidenceList?: Array<{ name?: string }> }) =>
+      Array.isArray(d.evidenceList) &&
+      d.evidenceList.length > 0 &&
+      d.evidenceList.some((e) => e && typeof e.name === 'string' && e.name.trim().length > 0);
+
+    const isMatch = (
+      d: { requirementId?: string; requirementTitle?: string; declaredValue?: string },
+      target: string
+    ) => {
+      const id = (d.requirementId || '').toLowerCase().trim();
+      const title = (d.requirementTitle || '').toLowerCase().trim();
+      const val = (d.declaredValue || '').toLowerCase().trim();
+      switch (target) {
+        case 'ethics-score':
+          return id === 'ethics-score' || id === 'tc1.1' || title.includes('rèn luyện') || title.includes('đrl');
+        case 'ethics-law':
+          return id === 'ethics-law' || id === 'tc1.2' || title.includes('pháp luật') || title.includes('quy chế') || title.includes('kỷ luật') || title.includes('nội quy');
+        case 'ethics-supplement':
+          return (
+            id === 'ethics-party' ||
+            id === 'tc1.3' ||
+            id === 'ethics-politics-team' ||
+            id === 'tc1.4' ||
+            id === 'ethics-politics-paper' ||
+            id === 'tc1.5' ||
+            id === 'ethics-commendation' ||
+            id === 'tc1.6' ||
+            title.includes('đảng viên') ||
+            title.includes('đảng cộng sản') ||
+            title.includes('mác') ||
+            title.includes('lênin') ||
+            title.includes('thanh niên tiên tiến') ||
+            title.includes('người tốt việc tốt') ||
+            title.includes('tiêu biểu') ||
+            val.includes('đảng viên') ||
+            val.includes('thanh niên tiên tiến')
+          );
+        case 'academic-gpa':
+          return id === 'academic-gpa' || id === 'tc2.1' || title.includes('gpa') || title.includes('học tập') || title.includes('bảng điểm');
+        case 'academic-achievements':
+          return (
+            id === 'academic-nckh' ||
+            id === 'tc2.2' ||
+            id === 'academic-paper' ||
+            id === 'tc2.3' ||
+            id === 'academic-presentation' ||
+            id === 'tc2.4' ||
+            id === 'academic-product' ||
+            id === 'tc2.5' ||
+            id === 'academic-team' ||
+            id === 'tc2.6' ||
+            id === 'academic-innovation' ||
+            id === 'tc2.7' ||
+            title.includes('nckh') ||
+            title.includes('nghiên cứu') ||
+            title.includes('bài báo') ||
+            title.includes('hội thảo') ||
+            title.includes('sáng tạo') ||
+            title.includes('đội tuyển')
+          );
+        case 'integration-group-a':
+          return (
+            id === 'integration-skills' ||
+            id === 'tc5.1' ||
+            id === 'integration-union-award' ||
+            id === 'tc5.2' ||
+            title.includes('kỹ năng') ||
+            title.includes('đoàn') ||
+            title.includes('hội')
+          );
+        case 'integration-group-b':
+          return (
+            id === 'integration-lang' ||
+            id === 'tc5.3' ||
+            id === 'integration-intl' ||
+            id === 'tc5.4' ||
+            id === 'integration-contest' ||
+            id === 'tc5.5' ||
+            title.includes('ngoại ngữ') ||
+            title.includes('tiếng anh') ||
+            title.includes('ielts') ||
+            title.includes('toeic') ||
+            title.includes('quốc tế')
+          );
+        default:
+          return id === target;
+      }
+    };
 
     let missingConditionReason = '';
-    if (usesCanonicalReqIds) {
-      if (crit.criterionId === 'ethics') {
-        const hasScore = reqIds.has('ethics-score');
-        const hasLaw = reqIds.has('ethics-law');
-        const hasSupp =
-          reqIds.has('ethics-party') ||
-          reqIds.has('ethics-politics-team') ||
-          reqIds.has('ethics-politics-paper') ||
-          reqIds.has('ethics-commendation');
-        const missingParts: string[] = [];
-        if (!hasScore) missingParts.push('Điểm rèn luyện (>= 80/100)');
-        if (!hasLaw) missingParts.push('Xác nhận không vi phạm pháp luật, quy chế');
-        if (!hasSupp) missingParts.push('Ít nhất 01/04 tiêu chuẩn bổ sung');
-        if (missingParts.length > 0) {
-          missingConditionReason = `Cần kiểm tra thêm — Thiếu điều kiện bắt buộc của tiêu chí Đạo đức tốt: ${missingParts.join(', ')}.`;
-        }
-      } else if (crit.criterionId === 'academic') {
-        const hasGpa = reqIds.has('academic-gpa');
-        const hasAch =
-          reqIds.has('academic-nckh') ||
-          reqIds.has('academic-paper') ||
-          reqIds.has('academic-presentation') ||
-          reqIds.has('academic-product') ||
-          reqIds.has('academic-team') ||
-          reqIds.has('academic-innovation');
-        if (!hasGpa || !hasAch) {
-          missingConditionReason = !hasGpa
-            ? 'Cần kiểm tra thêm — Thiếu điều kiện bắt buộc: Điểm TB học tập cả năm học (GPA).'
-            : 'Cần kiểm tra thêm — Mới có GPA năm học, còn thiếu ít nhất 01/06 hình thức thành tích học thuật / NCKH.';
-        }
-      } else if (crit.criterionId === 'integration') {
-        const hasGroupA = reqIds.has('integration-skills') || reqIds.has('integration-union-award');
-        const hasGroupB =
-          reqIds.has('integration-lang') ||
-          reqIds.has('integration-intl') ||
-          reqIds.has('integration-contest');
-        if (!hasGroupA || !hasGroupB) {
-          missingConditionReason = !hasGroupA
-            ? 'Cần kiểm tra thêm — Mới có Nhóm B, còn thiếu Nhóm A (Khóa kỹ năng thực hành xã hội hoặc Khen thưởng Đoàn - Hội).'
-            : 'Cần kiểm tra thêm — Mới có Nhóm A, còn thiếu Nhóm B (Chuẩn ngoại ngữ, Giao lưu quốc tế hoặc Cuộc thi ngoại ngữ).';
-        }
+    if (crit.criterionId === 'ethics') {
+      const scoreDecls = crit.declarations.filter((d) => isMatch(d, 'ethics-score'));
+      const lawDecls = crit.declarations.filter((d) => isMatch(d, 'ethics-law'));
+      const suppDecls = crit.declarations.filter((d) => isMatch(d, 'ethics-supplement'));
+
+      const hasScore =
+        scoreDecls.length > 0 &&
+        scoreDecls.some(
+          (d) =>
+            hasValidEv(d) &&
+            declarationsMap[d.declarationId]?.preliminaryStatus === 'preliminary_meets'
+        );
+      const hasLaw = lawDecls.length > 0;
+      const hasSupp =
+        suppDecls.length > 0 &&
+        suppDecls.some(
+          (d) =>
+            hasValidEv(d) &&
+            declarationsMap[d.declarationId]?.preliminaryStatus === 'preliminary_meets'
+        );
+
+      const missingParts: string[] = [];
+      if (!hasScore) {
+        missingParts.push('Điểm rèn luyện cả năm >= 80/100 (kèm tệp minh chứng hợp lệ)');
+      }
+      if (!hasLaw) {
+        missingParts.push('Cam kết không vi phạm pháp luật, quy chế');
+      }
+      if (!hasSupp) {
+        missingParts.push(
+          'Ít nhất 01/04 tiêu chuẩn bổ sung (Đảng viên, Đội thi Mác–Lênin, Tham luận Mác–Lênin, hoặc Gương người tốt việc tốt — BẮT BUỘC ĐÍNH KÈM TỆP MINH CHỨNG theo Hướng dẫn số 14-HD/BTK-HSVTP)'
+        );
+      }
+      if (missingParts.length > 0) {
+        missingConditionReason = `Cần kiểm tra thêm — Thiếu điều kiện/minh chứng bắt buộc của tiêu chí Đạo đức tốt: ${missingParts.join(
+          '; '
+        )}.`;
+      }
+    } else if (crit.criterionId === 'academic') {
+      const gpaDecls = crit.declarations.filter((d) => isMatch(d, 'academic-gpa'));
+      const achDecls = crit.declarations.filter((d) => isMatch(d, 'academic-achievements'));
+
+      const hasGpa =
+        gpaDecls.length > 0 &&
+        gpaDecls.some(
+          (d) =>
+            hasValidEv(d) &&
+            declarationsMap[d.declarationId]?.preliminaryStatus === 'preliminary_meets'
+        );
+      const hasAch =
+        achDecls.length > 0 &&
+        achDecls.some(
+          (d) =>
+            hasValidEv(d) &&
+            declarationsMap[d.declarationId]?.preliminaryStatus === 'preliminary_meets'
+        );
+
+      if (!hasGpa || !hasAch) {
+        missingConditionReason = !hasGpa
+          ? 'Cần kiểm tra thêm — Thiếu điều kiện bắt buộc: Điểm TB học tập cả năm học (GPA kèm minh chứng hợp lệ).'
+          : 'Cần kiểm tra thêm — Mới có GPA năm học, còn thiếu ít nhất 01/06 hình thức thành tích học thuật / NCKH có tệp minh chứng đối chiếu.';
+      }
+    } else if (crit.criterionId === 'integration') {
+      const groupADecls = crit.declarations.filter((d) => isMatch(d, 'integration-group-a'));
+      const groupBDecls = crit.declarations.filter((d) => isMatch(d, 'integration-group-b'));
+
+      const hasGroupA =
+        groupADecls.length > 0 &&
+        groupADecls.some(
+          (d) =>
+            hasValidEv(d) &&
+            declarationsMap[d.declarationId]?.preliminaryStatus === 'preliminary_meets'
+        );
+      const hasGroupB =
+        groupBDecls.length > 0 &&
+        groupBDecls.some(
+          (d) =>
+            hasValidEv(d) &&
+            declarationsMap[d.declarationId]?.preliminaryStatus === 'preliminary_meets'
+        );
+
+      if (!hasGroupA || !hasGroupB) {
+        missingConditionReason = !hasGroupA
+          ? 'Cần kiểm tra thêm — Mới có Nhóm B, còn thiếu Nhóm A (Khóa kỹ năng thực hành xã hội hoặc Khen thưởng Đoàn - Hội có tệp minh chứng).'
+          : 'Cần kiểm tra thêm — Mới có Nhóm A, còn thiếu Nhóm B (Chuẩn ngoại ngữ, Giao lưu quốc tế hoặc Cuộc thi ngoại ngữ có tệp minh chứng).';
       }
     }
 

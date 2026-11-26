@@ -35,6 +35,7 @@ import {
 import { Button } from '../../components/buttons/Button';
 import { deriveApplicationCriteriaReviewProgress } from '../../staff/criteriaProgress';
 import { getApplicationCriteriaSummary } from '../../staff/schoolSelectors';
+import { evaluateCriterionHolisticConditions } from '../../shared/api/copilotApi';
 
 export interface RowAiCriterionChip {
   shortCode: 'ĐĐ' | 'HT' | 'TL' | 'TN' | 'HN';
@@ -119,12 +120,56 @@ export function deriveRowAiPreliminarySummary(
     const found = app.criteriaReview?.find((c) => c.criterionId === id);
     const shortCode = SHORT_CODES[id];
 
+    // 1. If detailed criteria tree exists on app, evaluate strict holistic conditions
+    if ((app as any).criteria) {
+      const holistic = evaluateCriterionHolisticConditions(id, app);
+      if (holistic.verdict !== 'preliminary_meets') {
+        return {
+          shortCode,
+          name,
+          aiStatus: 'needs_check',
+          reason: `AI: Cần kiểm tra thêm (${holistic.headline})`,
+        };
+      }
+    }
+
     if (!found || found.evidenceCount === 0 || found.declaredCount === 0) {
       return {
         shortCode,
         name,
         aiStatus: 'needs_check',
         reason: `AI: Cần kiểm tra thêm (${name} chưa có tệp minh chứng theo Hướng dẫn 14-HD/BTK-HSVTP)`,
+      };
+    }
+
+    // 2. Strict compliance checks for criteria requiring multiple evidenced parts (Hướng dẫn 14-HD/BTK-HSVTP)
+    if (id === 'ethics' && found.evidenceCount < 2) {
+      return {
+        shortCode,
+        name,
+        aiStatus: 'needs_check',
+        reason:
+          'AI: Cần kiểm tra thêm (Tiêu chí Đạo đức tốt thiếu minh chứng cho tiêu chuẩn bổ sung theo Hướng dẫn 14-HD/BTK-HSVTP)',
+      };
+    }
+
+    if (id === 'academic' && found.evidenceCount < 2) {
+      return {
+        shortCode,
+        name,
+        aiStatus: 'needs_check',
+        reason:
+          'AI: Cần kiểm tra thêm (Tiêu chí Học tập tốt thiếu minh chứng thành tích NCKH/học thuật theo Hướng dẫn 14-HD/BTK-HSVTP)',
+      };
+    }
+
+    if (id === 'integration' && found.evidenceCount < 2) {
+      return {
+        shortCode,
+        name,
+        aiStatus: 'needs_check',
+        reason:
+          'AI: Cần kiểm tra thêm (Tiêu chí Hội nhập tốt thiếu minh chứng Nhóm A hoặc Nhóm B theo Hướng dẫn 14-HD/BTK-HSVTP)',
       };
     }
 

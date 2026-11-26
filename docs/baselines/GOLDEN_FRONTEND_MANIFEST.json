@@ -1,7 +1,7 @@
 {
   "baselineName": "5TOT_DANANG_GOLDEN_FRONTEND_S487A_R3",
   "version": "2.0.0",
-  "createdAt": "2026-11-26T09:37:28.505Z",
+  "createdAt": "2026-11-26T10:38:51.461Z",
   "totalProtectedFiles": 536,
   "files": [
     {
@@ -1456,8 +1456,8 @@
     },
     {
       "path": "src/features/ai-review-copilot/copilotAggregation.ts",
-      "sizeBytes": 29440,
-      "sha256": "1c5c57634c493b1ea23c3d4d341b5d62e59e9735d5d216e00e741f05ed2cb81b"
+      "sizeBytes": 31708,
+      "sha256": "7f0148483ce0c106daa0ede5be44f79ef50775226e652be16e9b8834e1b84eff"
     },
     {
       "path": "src/features/ai-review-copilot/copilotTypes.ts",
@@ -1661,8 +1661,8 @@
     },
     {
       "path": "src/shared/api/copilotApi.ts",
-      "sizeBytes": 46438,
-      "sha256": "7f658f88fd40d3b82b91fbae7596892783c31bf934e13c883040afb4eeacb948"
+      "sizeBytes": 49935,
+      "sha256": "83921d5259469ceaa115112799446b05f768b326e5fb1406a8c19fb8007fba6d"
     },
     {
       "path": "src/shared/api/httpClient.ts",
@@ -2361,8 +2361,8 @@
     },
     {
       "path": "src/test/aiReviewCopilotUx4.test.ts",
-      "sizeBytes": 21540,
-      "sha256": "cbb7e996a8764e903d23c8a1b762ffc8b73429a81c5bfa8b63e03e3dd8ac921a"
+      "sizeBytes": 23791,
+      "sha256": "7d4f71fbd1dd528ccb710a3ac88f721206ede0624f7cbf88efe79b5b89df76bd"
     },
     {
       "path": "src/test/collectiveCommitteeIntegration.test.ts",
@@ -2641,8 +2641,8 @@
     },
     {
       "path": "src/widgets/staff-backoffice/staffTableColumns.tsx",
-      "sizeBytes": 24206,
-      "sha256": "9d7453dc2c290c581be23d577ae0a6acccdd28694beb1e4493e02f59ba1c153c"
+      "sizeBytes": 25812,
+      "sha256": "eecd62273665ebb6873b2ab9f13b6eec2b24ddc1c64373c2285d87201d56cf7f"
     },
     {
       "path": "src/widgets/student-application/StudentApplicationBodySection.tsx",

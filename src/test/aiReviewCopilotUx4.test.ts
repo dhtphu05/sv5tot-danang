@@ -539,4 +539,65 @@ describe('5TOT ĐHĐN — AI-UX4 Preliminary Review Intelligence Suite', () => {
     assert.ok(followUpBlock && followUpBlock.type === 'follow_up_suggestions');
     assert.ok(followUpBlock.suggestions.length >= 1);
   });
+
+  // Test 19: Strict check for Ethics sub-criteria (Hướng dẫn số 14-HD/BTK-HSVTP)
+  it('19. Deliberately omitting sub-criteria evidence in ethics strictly evaluates to insufficient_evidence, never preliminary_meets', () => {
+    // Clone app and strip all sub-criteria declarations
+    const appWithoutSupp = JSON.parse(JSON.stringify(INITIAL_STUDENT_APPLICATION));
+    const ethicsCrit = appWithoutSupp.criteria.find((c: any) => c.id === 'ethics');
+    if (ethicsCrit?.groups) {
+      const suppGroup = ethicsCrit.groups.find((g: any) => g.id === 'ethics-supplement');
+      if (suppGroup) {
+        suppGroup.requirements.forEach((r: any) => {
+          r.declarations = [];
+        });
+      }
+    }
+
+    const assessment = evaluateCriterionPreliminaryAssessment(
+      'ethics',
+      appWithoutSupp,
+      [],
+      '2025–2026',
+      {}
+    );
+
+    assert.equal(assessment.verdict, 'insufficient_evidence');
+    assert.match(assessment.headline, /tiêu chuẩn bổ sung/);
+    assert.match(assessment.headline, /01\/04/);
+  });
+
+  // Test 20: Declaring an ethics sub-criterion with 0 evidence files strictly evaluates to insufficient_evidence
+  it('20. Declaring an ethics sub-criterion with 0 evidence files strictly evaluates to insufficient_evidence', () => {
+    const appWithEmptySuppEvidence = JSON.parse(JSON.stringify(INITIAL_STUDENT_APPLICATION));
+    const ethicsCrit = appWithEmptySuppEvidence.criteria.find((c: any) => c.id === 'ethics');
+    if (ethicsCrit?.groups) {
+      const suppGroup = ethicsCrit.groups.find((g: any) => g.id === 'ethics-supplement');
+      if (suppGroup) {
+        suppGroup.requirements.forEach((r: any) => {
+          if (r.id === 'ethics-party') {
+            r.declarations = [
+              {
+                id: 'decl-party-no-ev',
+                value: 'Đảng viên dự bị',
+                evidenceFiles: [], // deliberately empty!
+              },
+            ];
+          } else {
+            r.declarations = [];
+          }
+        });
+      }
+    }
+
+    const assessment = evaluateCriterionPreliminaryAssessment(
+      'ethics',
+      appWithEmptySuppEvidence,
+      [],
+      '2025–2026',
+      {}
+    );
+
+    assert.equal(assessment.verdict, 'insufficient_evidence');
+  });
 });

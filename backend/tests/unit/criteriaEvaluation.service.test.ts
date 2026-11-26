@@ -212,6 +212,7 @@ describe('Criteria Preliminary Evaluation Service', () => {
     const appEval = await evaluateFullApplicationWithOcr(
       {
         applicationId: 'APP-2026-001',
+        forceRefresh: true,
         studentInfo: {
           fullName: 'Nguyễn Văn An',
           studentCode: '102220123',
@@ -224,11 +225,25 @@ describe('Criteria Preliminary Evaluation Service', () => {
             criterionNumber: 1,
             declarations: [
               {
-                declarationId: 'd-eth',
-                requirementId: 'eth-1',
+                declarationId: 'd-eth-1',
+                requirementId: 'ethics-score',
                 requirementTitle: 'Điểm rèn luyện >= 80',
                 declaredValue: 'Điểm rèn luyện 88/100',
-                evidenceList: [{ id: 'ev-eth', name: 'Bang_DRL_88.pdf' }],
+                evidenceList: [{ id: 'ev-eth-1', name: 'Bang_DRL_88.pdf' }],
+              },
+              {
+                declarationId: 'd-eth-2',
+                requirementId: 'ethics-law',
+                requirementTitle: 'Không vi phạm pháp luật và quy chế',
+                declaredValue: 'Cam kết không vi phạm',
+                evidenceList: [{ id: 'ev-eth-2', name: 'Giay_xac_nhan_khong_vi_pham.pdf' }],
+              },
+              {
+                declarationId: 'd-eth-3',
+                requirementId: 'ethics-commendation',
+                requirementTitle: 'Gương người tốt việc tốt, thanh niên tiêu biểu',
+                declaredValue: 'Thanh niên tiên tiến làm theo lời Bác',
+                evidenceList: [{ id: 'ev-eth-3', name: 'Giay_khen_TNTT.pdf' }],
               },
             ],
           },
@@ -238,11 +253,18 @@ describe('Criteria Preliminary Evaluation Service', () => {
             criterionNumber: 2,
             declarations: [
               {
-                declarationId: 'd-acad',
-                requirementId: 'acad-1',
+                declarationId: 'd-acad-1',
+                requirementId: 'academic-gpa',
                 requirementTitle: 'GPA >= 3.2/4.0',
                 declaredValue: 'GPA: 3.55/4.0',
-                evidenceList: [{ id: 'ev-acad', name: 'Bang_diem_355.pdf' }],
+                evidenceList: [{ id: 'ev-acad-1', name: 'Bang_diem_355.pdf' }],
+              },
+              {
+                declarationId: 'd-acad-2',
+                requirementId: 'academic-nckh',
+                requirementTitle: 'Đề tài NCKH đạt giải cấp Khoa trở lên',
+                declaredValue: 'Giải Nhất NCKH cấp Trường',
+                evidenceList: [{ id: 'ev-acad-2', name: 'GCN_NCKH.pdf' }],
               },
             ],
           },
@@ -253,7 +275,7 @@ describe('Criteria Preliminary Evaluation Service', () => {
             declarations: [
               {
                 declarationId: 'd-phys',
-                requirementId: 'phys-1',
+                requirementId: 'physical-fitness',
                 requirementTitle: 'Danh hiệu Thanh niên khỏe',
                 declaredValue: 'Đạt danh hiệu Thanh niên khỏe cấp Trường',
                 evidenceList: [{ id: 'ev-phys', name: 'GCN_Thanh_nien_khoe.pdf' }],
@@ -267,7 +289,7 @@ describe('Criteria Preliminary Evaluation Service', () => {
             declarations: [
               {
                 declarationId: 'd-vol',
-                requirementId: 'vol-1',
+                requirementId: 'volunteer-days',
                 requirementTitle: 'Tham gia >= 05 ngày tình nguyện',
                 declaredValue: '06 ngày tình nguyện Mùa hè xanh',
                 evidenceList: [{ id: 'ev-vol', name: 'GCN_MuaHeXanh_6ngay.pdf' }],
@@ -280,11 +302,18 @@ describe('Criteria Preliminary Evaluation Service', () => {
             criterionNumber: 5,
             declarations: [
               {
-                declarationId: 'd-int',
-                requirementId: 'int-1',
+                declarationId: 'd-int-1',
+                requirementId: 'integration-skills',
+                requirementTitle: 'Khóa kỹ năng thực hành xã hội',
+                declaredValue: 'Chứng nhận kỹ năng mềm',
+                evidenceList: [{ id: 'ev-int-1', name: 'GCN_KyNang.pdf' }],
+              },
+              {
+                declarationId: 'd-int-2',
+                requirementId: 'integration-lang',
                 requirementTitle: 'Chứng chỉ ngoại ngữ B1 / IELTS >= 4.5',
                 declaredValue: 'IELTS 6.5',
-                evidenceList: [{ id: 'ev-int', name: 'IELTS_65.pdf' }],
+                evidenceList: [{ id: 'ev-int-2', name: 'IELTS_65.pdf' }],
               },
             ],
           },
@@ -355,5 +384,146 @@ describe('Criteria Preliminary Evaluation Service', () => {
     assert.equal(appEval.criteriaResults['academic'].status, 'insufficient_evidence');
     assert.equal(appEval.criteriaResults['academic'].badgeLabel, 'Cần kiểm tra thêm');
     assert.ok(appEval.criteriaResults['academic'].headline.includes('01/06'));
+  });
+
+  it('strictly requires at least 01/04 sub-criteria with valid evidence for Tiêu chí Đạo đức tốt (ethics) — missing sub-criteria returns insufficient_evidence', async () => {
+    const mockFetch = async () =>
+      ({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  isReadable: true,
+                  documentType: 'Bảng điểm rèn luyện',
+                  extractedStudentName: 'Nguyễn Văn An',
+                  extractedStudentCode: '102220123',
+                  extractedValue: 'Điểm rèn luyện: 93/100',
+                  numericMetric: 93,
+                  issuingAuthority: 'Trường Đại học Bách khoa - ĐHĐN',
+                  issueDate: '10/06/2026',
+                  hasRedStampOrSignature: 'verified',
+                  matchWithDeclaration: 'matched',
+                  discrepancyNote: null,
+                }),
+              },
+            },
+          ],
+        }),
+      }) as any;
+
+    const appEval = await evaluateFullApplicationWithOcr(
+      {
+        applicationId: 'APP-2026-ETHICS-NO-SUPP',
+        studentInfo: {
+          fullName: 'Nguyễn Văn An',
+          studentCode: '102220123',
+          schoolName: 'Trường Đại học Bách khoa - ĐHĐN',
+        },
+        criteria: [
+          {
+            criterionId: 'ethics',
+            criterionName: 'Đạo đức tốt',
+            criterionNumber: 1,
+            declarations: [
+              {
+                declarationId: 'd-eth-score-only',
+                requirementId: 'ethics-score',
+                requirementTitle: 'Điểm rèn luyện cả năm học',
+                declaredValue: 'Điểm rèn luyện 93/100',
+                evidenceList: [{ id: 'ev-eth-score', name: 'Bang_DRL_93.pdf' }],
+              },
+              {
+                declarationId: 'd-eth-law-only',
+                requirementId: 'ethics-law',
+                requirementTitle: 'Không vi phạm pháp luật',
+                declaredValue: 'Cam kết không vi phạm',
+                evidenceList: [],
+              },
+            ],
+          },
+        ],
+      },
+      { apiKey: 'sk-test-key', fetchImpl: mockFetch }
+    );
+
+    assert.equal(appEval.criteriaResults['ethics'].status, 'insufficient_evidence');
+    assert.equal(appEval.criteriaResults['ethics'].badgeLabel, 'Cần kiểm tra thêm');
+    assert.ok(appEval.criteriaResults['ethics'].headline.includes('tiêu chuẩn bổ sung'));
+    assert.ok(appEval.criteriaResults['ethics'].headline.includes('01/04'));
+  });
+
+  it('strictly marks ethics as insufficient_evidence when sub-criterion is declared but has empty evidence list', async () => {
+    const mockFetch = async () =>
+      ({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  isReadable: true,
+                  documentType: 'Bảng điểm rèn luyện',
+                  extractedStudentName: 'Nguyễn Văn An',
+                  extractedStudentCode: '102220123',
+                  extractedValue: 'Điểm rèn luyện: 93/100',
+                  numericMetric: 93,
+                  issuingAuthority: 'Trường Đại học Bách khoa - ĐHĐN',
+                  issueDate: '10/06/2026',
+                  hasRedStampOrSignature: 'verified',
+                  matchWithDeclaration: 'matched',
+                  discrepancyNote: null,
+                }),
+              },
+            },
+          ],
+        }),
+      }) as any;
+
+    const appEval = await evaluateFullApplicationWithOcr(
+      {
+        applicationId: 'APP-2026-ETHICS-EMPTY-SUPP-EV',
+        studentInfo: {
+          fullName: 'Nguyễn Văn An',
+          studentCode: '102220123',
+          schoolName: 'Trường Đại học Bách khoa - ĐHĐN',
+        },
+        criteria: [
+          {
+            criterionId: 'ethics',
+            criterionName: 'Đạo đức tốt',
+            criterionNumber: 1,
+            declarations: [
+              {
+                declarationId: 'd-eth-score',
+                requirementId: 'ethics-score',
+                requirementTitle: 'Điểm rèn luyện cả năm học',
+                declaredValue: 'Điểm rèn luyện 93/100',
+                evidenceList: [{ id: 'ev-eth-score', name: 'Bang_DRL_93.pdf' }],
+              },
+              {
+                declarationId: 'd-eth-law',
+                requirementId: 'ethics-law',
+                requirementTitle: 'Không vi phạm pháp luật',
+                declaredValue: 'Cam kết không vi phạm',
+                evidenceList: [],
+              },
+              {
+                declarationId: 'd-eth-party-no-ev',
+                requirementId: 'ethics-party',
+                requirementTitle: 'Là Đảng viên Đảng Cộng sản Việt Nam',
+                declaredValue: 'Đảng viên chính thức',
+                evidenceList: [], // deliberately empty!
+              },
+            ],
+          },
+        ],
+      },
+      { apiKey: 'sk-test-key', fetchImpl: mockFetch }
+    );
+
+    assert.equal(appEval.criteriaResults['ethics'].status, 'insufficient_evidence');
+    assert.equal(appEval.criteriaResults['ethics'].badgeLabel, 'Cần kiểm tra thêm');
   });
 });
