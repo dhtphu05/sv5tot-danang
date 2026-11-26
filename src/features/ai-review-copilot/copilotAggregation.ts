@@ -530,23 +530,13 @@ export function evaluateCriterionPreliminaryAssessment(
       0
     );
 
-    const hasValidSupplementForEthics = () => {
-      if (criterionId !== 'ethics') return true;
-      const suppReqs = requirements.filter((r: any) => {
+    const hasValidEvForReqs = (idsOrCodes: string[]) => {
+      const targetReqs = requirements.filter((r: any) => {
         const id = (r.id || '').toLowerCase();
         const code = (r.code || '').toLowerCase();
-        return (
-          id === 'ethics-party' ||
-          code === 'tc1.3' ||
-          id === 'ethics-politics-team' ||
-          code === 'tc1.4' ||
-          id === 'ethics-politics-paper' ||
-          code === 'tc1.5' ||
-          id === 'ethics-commendation' ||
-          code === 'tc1.6'
-        );
+        return idsOrCodes.some((target) => target.toLowerCase() === id || target.toLowerCase() === code);
       });
-      return suppReqs.some((r: any) =>
+      return targetReqs.some((r: any) =>
         (r.declarations || []).some((d: any) => {
           const files = (d.evidenceFiles || d.evidence || []).filter((f: any) => {
             if (!f) return false;
@@ -559,17 +549,156 @@ export function evaluateCriterionPreliminaryAssessment(
       );
     };
 
+    let missingConditionHeadline = '';
+    let missingConditionDetail = '';
+
+    if (criterionId === 'ethics') {
+      const hasScore = hasValidEvForReqs(['ethics-score', 'tc1.1']);
+      const hasLaw = requirements.some(
+        (r: any) =>
+          ((r.id || '').toLowerCase() === 'ethics-law' || (r.code || '').toLowerCase() === 'tc1.2') &&
+          (r.declarations?.length || 0) > 0
+      );
+      const hasSupp = hasValidEvForReqs([
+        'ethics-party',
+        'tc1.3',
+        'ethics-politics-team',
+        'tc1.4',
+        'ethics-politics-paper',
+        'tc1.5',
+        'ethics-commendation',
+        'tc1.6',
+      ]);
+
+      if (!hasScore || !hasLaw || !hasSupp) {
+        if (!hasSupp) {
+          missingConditionHeadline = `Tiêu chí 01 (Đạo đức tốt): Cần kiểm tra thêm — Thiếu minh chứng cho tiêu chuẩn bổ sung (bắt buộc đạt ít nhất 01/04 hình thức TC1.3–TC1.6 theo Hướng dẫn số 14-HD/BTK-HSVTP).`;
+          missingConditionDetail =
+            'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Tiêu chí Đạo đức tốt bắt buộc phải đạt điểm rèn luyện (>= 80/100), cam kết không vi phạm VÀ có minh chứng xác nhận cho ít nhất 01/04 hình thức tiêu chuẩn bổ sung (Đảng viên, Đội thi Mác–Lênin, Tham luận Mác–Lênin, hoặc Gương người tốt việc tốt). Không thể đánh giá Đạt sơ bộ khi thiếu minh chứng tiêu chuẩn bổ sung.';
+        } else if (!hasScore) {
+          missingConditionHeadline = `Tiêu chí 01 (Đạo đức tốt): Cần kiểm tra thêm — Thiếu minh chứng bảng điểm rèn luyện cả năm học (TC1.1 >= 80/100 theo Hướng dẫn số 14-HD/BTK-HSVTP).`;
+          missingConditionDetail =
+            'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Tiêu chí Đạo đức tốt bắt buộc phải có văn bản minh chứng bảng điểm rèn luyện đạt từ 80/100 điểm trở lên.';
+        } else {
+          missingConditionHeadline = `Tiêu chí 01 (Đạo đức tốt): Cần kiểm tra thêm — Chưa hoàn thành nội dung cam kết chấp hành pháp luật và quy chế (TC1.2).`;
+          missingConditionDetail =
+            'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Bắt buộc cam kết không vi phạm pháp luật, nội quy nhà trường.';
+        }
+      }
+    } else if (criterionId === 'academic') {
+      const hasGpa = hasValidEvForReqs(['academic-gpa', 'tc2.1']);
+      const hasAch = hasValidEvForReqs([
+        'academic-nckh',
+        'tc2.2',
+        'academic-paper',
+        'tc2.3',
+        'academic-presentation',
+        'tc2.4',
+        'academic-product',
+        'tc2.5',
+        'academic-team',
+        'tc2.6',
+        'academic-innovation',
+        'tc2.7',
+      ]);
+
+      if (!hasGpa || !hasAch) {
+        if (!hasAch) {
+          missingConditionHeadline = `Tiêu chí 02 (Học tập tốt): Cần kiểm tra thêm — Thiếu minh chứng thành tích học thuật / NCKH (bắt buộc đạt ít nhất 01/06 hình thức TC2.2–TC2.7 theo Hướng dẫn số 14-HD/BTK-HSVTP).`;
+          missingConditionDetail =
+            'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Tiêu chí Học tập tốt bắt buộc phải đạt GPA chuẩn VÀ có minh chứng xác nhận cho ít nhất 01/06 hình thức thành tích học thuật / NCKH (đề tài NCKH có giải, bài báo tạp chí, tham luận hội thảo, sản phẩm sáng tạo, đội tuyển học thuật, hoặc giải thưởng ý tưởng sáng tạo). Không thể đánh giá Đạt sơ bộ khi chỉ có GPA mà thiếu thành tích học thuật có minh chứng.';
+        } else {
+          missingConditionHeadline = `Tiêu chí 02 (Học tập tốt): Cần kiểm tra thêm — Thiếu minh chứng bảng điểm học tập GPA cả năm học (TC2.1 theo Hướng dẫn số 14-HD/BTK-HSVTP).`;
+          missingConditionDetail =
+            'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Tiêu chí Học tập tốt bắt buộc phải có minh chứng bảng điểm năm học đối chiếu GPA (>= 3.2/4.0 hoặc >= 8.0/10 hệ Đại học; >= 3.0/4.0 hoặc >= 7.5/10 hệ Cao đẳng).';
+        }
+      }
+    } else if (criterionId === 'physical') {
+      const hasPhysical = hasValidEvForReqs([
+        'physical-khoe',
+        'tc3.1',
+        'physical-sport',
+        'tc3.2',
+        'physical-fitness',
+        'physical-sports',
+      ]);
+      if (!hasPhysical) {
+        missingConditionHeadline = `Tiêu chí 03 (Thể lực tốt): Cần kiểm tra thêm — Thiếu minh chứng đạt danh hiệu Thanh niên khỏe hoặc giải thưởng thể thao phong trào cấp Khoa trở lên (TC3.1–TC3.2 theo Hướng dẫn số 14-HD/BTK-HSVTP).`;
+        missingConditionDetail =
+          'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Tiêu chí Thể lực tốt bắt buộc phải có văn bản minh chứng đạt danh hiệu Thanh niên khỏe (Sinh viên khỏe) cấp Trường trở lên HOẶC đạt giải tại các hoạt động thể thao phong trào từ cấp Khoa trở lên.';
+      }
+    } else if (criterionId === 'volunteer') {
+      const actReqs = requirements.filter((r: any) => {
+        const id = (r.id || '').toLowerCase();
+        const code = (r.code || '').toLowerCase();
+        return id === 'volunteer-activities' || code === 'tc4.1' || id === 'volunteer-days' || id === 'volunteer-blood';
+      });
+      let totalDays = 0;
+      for (const r of actReqs) {
+        for (const d of r.declarations || []) {
+          const files = (d.evidenceFiles || d.evidence || []).filter((f: any) => {
+            if (!f) return false;
+            if (typeof f === 'string') return f.trim().length > 0;
+            const name = f.name || f.fileName || f.url || f.id;
+            return typeof name === 'string' && name.trim().length > 0;
+          });
+          if (files.length > 0) {
+            const text = `${d.value || ''} ${d.detail || ''}`.toLowerCase();
+            const m = text.match(/(\d+)\s*ngày/i);
+            if (m) {
+              totalDays += parseInt(m[1], 10);
+            } else if (text.includes('hiến máu') || text.includes('hien mau')) {
+              totalDays += 1;
+            } else {
+              totalDays += 1;
+            }
+          }
+        }
+      }
+      const hasAward = hasValidEvForReqs(['volunteer-award', 'tc4.2', 'tc4.3']);
+
+      if (totalDays < 5 && !hasAward) {
+        missingConditionHeadline =
+          totalDays > 0
+            ? `Tiêu chí 04 (Tình nguyện tốt): Cần kiểm tra thêm — Mới tích lũy ${totalDays}/05 ngày tình nguyện có minh chứng (còn thiếu ${5 - totalDays} ngày) và chưa có giấy khen tình nguyện cấp Khoa trở lên theo Hướng dẫn số 14-HD/BTK-HSVTP.`
+            : `Tiêu chí 04 (Tình nguyện tốt): Cần kiểm tra thêm — Chưa đủ điều kiện: Cần tích lũy tối thiểu 05 ngày tình nguyện/năm học (hiến máu = 01 ngày/lần) HOẶC có giấy khen tình nguyện cấp Khoa trở lên có tệp minh chứng đối chiếu theo Hướng dẫn số 14-HD/BTK-HSVTP.`;
+        missingConditionDetail =
+          'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Tiêu chí Tình nguyện tốt bắt buộc phải tích lũy tối thiểu 05 ngày tình nguyện trong năm học HOẶC được khen thưởng về hoạt động tình nguyện từ cấp Khoa trở lên (kèm tệp minh chứng đối chiếu hợp lệ).';
+      }
+    } else if (criterionId === 'integration') {
+      const hasGroupA = hasValidEvForReqs(['integration-skills', 'tc5.1', 'integration-union-award', 'tc5.2']);
+      const hasGroupB = hasValidEvForReqs([
+        'integration-lang',
+        'tc5.3',
+        'integration-intl',
+        'tc5.4',
+        'integration-contest',
+        'tc5.5',
+      ]);
+
+      if (!hasGroupA || !hasGroupB) {
+        if (!hasGroupA) {
+          missingConditionHeadline = `Tiêu chí 05 (Hội nhập tốt): Cần kiểm tra thêm — Mới có Nhóm B, còn thiếu minh chứng Nhóm A (Khóa kỹ năng thực hành xã hội TC5.1 hoặc Khen thưởng Đoàn - Hội TC5.2 theo Hướng dẫn số 14-HD/BTK-HSVTP).`;
+          missingConditionDetail =
+            'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Tiêu chí Hội nhập tốt bắt buộc phải đạt cả Nhóm A (Kỹ năng hoặc Khen thưởng Đoàn - Hội) VÀ Nhóm B (Ngoại ngữ, Giao lưu quốc tế hoặc Cuộc thi kiến thức/ngoại ngữ). Kê khai thiếu một trong hai nhóm không đủ điều kiện xét duyệt.';
+        } else {
+          missingConditionHeadline = `Tiêu chí 05 (Hội nhập tốt): Cần kiểm tra thêm — Mới có Nhóm A, còn thiếu minh chứng Nhóm B (Chuẩn ngoại ngữ TC5.3, Giao lưu quốc tế TC5.4 hoặc Cuộc thi ngoại ngữ TC5.5 theo Hướng dẫn số 14-HD/BTK-HSVTP).`;
+          missingConditionDetail =
+            'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Tiêu chí Hội nhập tốt bắt buộc phải đạt cả Nhóm A và Nhóm B. Hiện hồ sơ đang thiếu minh chứng cho Nhóm B.';
+        }
+      }
+    }
+
     // If studentApp exists and either has 0 declarations, 0 evidence files, declarations without evidence,
-    // or missing ethics supplement evidence: It must NEVER default to preliminary_meets!
+    // or missing mandatory conditions / sub-criteria: It must NEVER default to preliminary_meets!
     if (
       studentApp &&
-      (declCount === 0 || evCount === 0 || hasAnyDeclWithoutEvidence || !hasValidSupplementForEthics())
+      (declCount === 0 || evCount === 0 || hasAnyDeclWithoutEvidence || Boolean(missingConditionHeadline))
     ) {
       verdict = 'insufficient_evidence';
-      if (!hasValidSupplementForEthics()) {
-        headline = `Tiêu chí 01 (Đạo đức tốt): Cần kiểm tra thêm — Thiếu minh chứng cho tiêu chuẩn bổ sung (bắt buộc đạt ít nhất 01/04 hình thức TC1.3–TC1.6 theo Hướng dẫn số 14-HD/BTK-HSVTP).`;
-        detail =
-          'Theo Hướng dẫn số 14-HD/BTK-HSVTP: Tiêu chí Đạo đức tốt bắt buộc phải đạt điểm rèn luyện (>= 80/100), cam kết không vi phạm VÀ có minh chứng xác nhận cho ít nhất 01/04 hình thức tiêu chuẩn bổ sung (Đảng viên, Đội thi Mác–Lênin, Tham luận Mác–Lênin, hoặc Gương người tốt việc tốt). Không thể đánh giá Đạt sơ bộ khi thiếu minh chứng tiêu chuẩn bổ sung.';
+      if (missingConditionHeadline) {
+        headline = missingConditionHeadline;
+        detail = missingConditionDetail;
       } else {
         headline = `Tiêu chí 0${meta.number} (${meta.name}): Chưa có đủ tệp minh chứng đính kèm theo quy định Hướng dẫn số 14-HD/BTK-HSVTP.`;
         detail =

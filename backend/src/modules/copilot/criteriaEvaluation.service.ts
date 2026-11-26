@@ -543,6 +543,43 @@ export async function evaluateFullApplicationWithOcr(
             title.includes('toeic') ||
             title.includes('quốc tế')
           );
+        case 'physical-forms':
+          return (
+            id === 'physical-khoe' ||
+            id === 'tc3.1' ||
+            id === 'physical-sport' ||
+            id === 'tc3.2' ||
+            id === 'physical-fitness' ||
+            id === 'physical-sports' ||
+            id === 'phys-1' ||
+            title.includes('thanh niên khỏe') ||
+            title.includes('sinh viên khỏe') ||
+            title.includes('thể thao') ||
+            title.includes('hội thao') ||
+            title.includes('giải đấu') ||
+            title.includes('thể lực')
+          );
+        case 'volunteer-activities':
+          return (
+            id === 'volunteer-activities' ||
+            id === 'tc4.1' ||
+            id === 'volunteer-days' ||
+            id === 'volunteer-blood' ||
+            id === 'vol-1' ||
+            title.includes('tình nguyện') ||
+            title.includes('mùa hè xanh') ||
+            title.includes('chủ nhật xanh') ||
+            title.includes('tiếp sức') ||
+            title.includes('hiến máu')
+          );
+        case 'volunteer-award':
+          return (
+            id === 'volunteer-award' ||
+            id === 'tc4.2' ||
+            id === 'tc4.3' ||
+            title.includes('khen thưởng tình nguyện') ||
+            title.includes('giấy khen tình nguyện')
+          );
         default:
           return id === target;
       }
@@ -610,6 +647,62 @@ export async function evaluateFullApplicationWithOcr(
         missingConditionReason = !hasGpa
           ? 'Cần kiểm tra thêm — Thiếu điều kiện bắt buộc: Điểm TB học tập cả năm học (GPA kèm minh chứng hợp lệ).'
           : 'Cần kiểm tra thêm — Mới có GPA năm học, còn thiếu ít nhất 01/06 hình thức thành tích học thuật / NCKH có tệp minh chứng đối chiếu.';
+      }
+    } else if (crit.criterionId === 'physical') {
+      const physDecls = crit.declarations.filter((d) => isMatch(d, 'physical-forms'));
+      const hasPhys =
+        physDecls.length > 0 &&
+        physDecls.some(
+          (d) =>
+            hasValidEv(d) &&
+            declarationsMap[d.declarationId]?.preliminaryStatus === 'preliminary_meets'
+        );
+      if (!hasPhys) {
+        missingConditionReason =
+          'Cần kiểm tra thêm — Thiếu minh chứng đạt danh hiệu Thanh niên khỏe hoặc giải thưởng thể thao phong trào cấp Khoa trở lên theo Hướng dẫn số 14-HD/BTK-HSVTP.';
+      }
+    } else if (crit.criterionId === 'volunteer') {
+      const actDecls = crit.declarations.filter((d) => isMatch(d, 'volunteer-activities'));
+      const awardDecls = crit.declarations.filter((d) => isMatch(d, 'volunteer-award'));
+
+      const hasAward =
+        awardDecls.length > 0 &&
+        awardDecls.some(
+          (d) =>
+            hasValidEv(d) &&
+            declarationsMap[d.declarationId]?.preliminaryStatus === 'preliminary_meets'
+        );
+
+      let totalDays = 0;
+      for (const d of actDecls) {
+        if (hasValidEv(d)) {
+          const res = declarationsMap[d.declarationId];
+          const primaryMetric = res?.ocrExtractions?.find(
+            (e: any) => typeof e.numericMetric === 'number'
+          )?.numericMetric;
+          if (typeof primaryMetric === 'number' && primaryMetric > 0) {
+            totalDays += primaryMetric;
+          } else {
+            const m = `${d.declaredValue || ''} ${d.requirementTitle || ''}`.match(/(\d+)\s*ngày/i);
+            if (m) {
+              totalDays += parseInt(m[1], 10);
+            } else if (
+              (d.declaredValue || '').toLowerCase().includes('hiến máu') ||
+              (d.requirementTitle || '').toLowerCase().includes('hiến máu')
+            ) {
+              totalDays += 1;
+            } else {
+              totalDays += 1;
+            }
+          }
+        }
+      }
+
+      if (totalDays < 5 && !hasAward) {
+        missingConditionReason =
+          totalDays > 0
+            ? `Cần kiểm tra thêm — Mới tích lũy ${totalDays}/05 ngày tình nguyện (còn thiếu ${5 - totalDays} ngày) và chưa có giấy khen tình nguyện cấp Khoa trở lên theo Hướng dẫn số 14-HD/BTK-HSVTP.`
+            : 'Cần kiểm tra thêm — Chưa đủ điều kiện: Cần tích lũy tối thiểu 05 ngày tình nguyện/năm học (hiến máu = 01 ngày/lần) HOẶC có giấy khen tình nguyện cấp Khoa trở lên có tệp minh chứng đối chiếu theo Hướng dẫn số 14-HD/BTK-HSVTP.';
       }
     } else if (crit.criterionId === 'integration') {
       const groupADecls = crit.declarations.filter((d) => isMatch(d, 'integration-group-a'));

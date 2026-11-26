@@ -600,4 +600,118 @@ describe('5TOT ĐHĐN — AI-UX4 Preliminary Review Intelligence Suite', () => {
 
     assert.equal(assessment.verdict, 'insufficient_evidence');
   });
+
+  // Test 21: Academic criterion strictly requires at least 01/06 achievements/NCKH forms (Hướng dẫn 14-HD/BTK-HSVTP)
+  it('21. Deliberately omitting academic achievements / NCKH sub-criteria strictly evaluates to insufficient_evidence, never preliminary_meets', () => {
+    const appWithoutAch = JSON.parse(JSON.stringify(INITIAL_STUDENT_APPLICATION));
+    const acadCrit = appWithoutAch.criteria.find((c: any) => c.id === 'academic');
+    if (acadCrit?.groups) {
+      const achGroup = acadCrit.groups.find((g: any) => g.id === 'academic-achievements');
+      if (achGroup) {
+        achGroup.requirements.forEach((r: any) => {
+          r.declarations = [];
+        });
+      }
+    }
+
+    const assessment = evaluateCriterionPreliminaryAssessment(
+      'academic',
+      appWithoutAch,
+      [],
+      '2025–2026',
+      {}
+    );
+
+    assert.equal(assessment.verdict, 'insufficient_evidence');
+    assert.match(assessment.headline, /thành tích học thuật|01\/06/i);
+  });
+
+  // Test 22: Integration criterion strictly requires both Group A and Group B
+  it('22. Omitting Group A (Skills/Union Award) in integration strictly evaluates to insufficient_evidence, never preliminary_meets', () => {
+    const appWithoutGroupA = JSON.parse(JSON.stringify(INITIAL_STUDENT_APPLICATION));
+    const intCrit = appWithoutGroupA.criteria.find((c: any) => c.id === 'integration');
+    if (intCrit?.groups) {
+      const grpA = intCrit.groups.find((g: any) => g.id === 'integration-skills-award');
+      if (grpA) {
+        grpA.requirements.forEach((r: any) => {
+          r.declarations = [];
+        });
+      }
+    }
+
+    const assessment = evaluateCriterionPreliminaryAssessment(
+      'integration',
+      appWithoutGroupA,
+      [],
+      '2025–2026',
+      {}
+    );
+
+    assert.equal(assessment.verdict, 'insufficient_evidence');
+    assert.match(assessment.headline, /Nhóm A/i);
+  });
+
+  // Test 23: Volunteer criterion strictly requires >= 05 days or award
+  it('23. Volunteer with only 2 days and no award strictly evaluates to insufficient_evidence', () => {
+    const appWith2Days = JSON.parse(JSON.stringify(INITIAL_STUDENT_APPLICATION));
+    const volCrit = appWith2Days.criteria.find((c: any) => c.id === 'volunteer');
+    if (volCrit?.groups) {
+      const volGroup = volCrit.groups.find((g: any) => g.id === 'volunteer-activities-group');
+      if (volGroup) {
+        volGroup.requirements.forEach((r: any) => {
+          if (r.id === 'volunteer-activities') {
+            r.declarations = [
+              {
+                id: 'decl-vol-2days',
+                value: '02 ngày tình nguyện Tiếp sức mùa thi',
+                evidenceFiles: [{ id: 'ev-v2', name: 'TSMT_2ngay.pdf' }],
+              },
+            ];
+          } else {
+            r.declarations = [];
+          }
+        });
+      }
+    }
+
+    const assessment = evaluateCriterionPreliminaryAssessment(
+      'volunteer',
+      appWith2Days,
+      [],
+      '2025–2026',
+      {}
+    );
+
+    assert.equal(assessment.verdict, 'insufficient_evidence');
+    assert.match(assessment.headline, /05 ngày/i);
+  });
+
+  // Test 24: Physical criterion strictly requires at least 01/02 forms with valid evidence
+  it('24. Physical criterion with empty evidence strictly evaluates to insufficient_evidence', () => {
+    const appWithEmptyPhys = JSON.parse(JSON.stringify(INITIAL_STUDENT_APPLICATION));
+    const physCrit = appWithEmptyPhys.criteria.find((c: any) => c.id === 'physical');
+    if (physCrit?.groups) {
+      physCrit.groups.forEach((g: any) => {
+        g.requirements.forEach((r: any) => {
+          r.declarations = [
+            {
+              id: 'decl-phys-no-ev',
+              value: 'Thanh niên khỏe',
+              evidenceFiles: [], // deliberately empty!
+            },
+          ];
+        });
+      });
+    }
+
+    const assessment = evaluateCriterionPreliminaryAssessment(
+      'physical',
+      appWithEmptyPhys,
+      [],
+      '2025–2026',
+      {}
+    );
+
+    assert.equal(assessment.verdict, 'insufficient_evidence');
+  });
 });

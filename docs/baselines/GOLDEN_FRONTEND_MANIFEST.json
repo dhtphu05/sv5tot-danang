@@ -1,7 +1,7 @@
 {
   "baselineName": "5TOT_DANANG_GOLDEN_FRONTEND_S487A_R3",
   "version": "2.0.0",
-  "createdAt": "2026-11-26T10:38:51.461Z",
+  "createdAt": "2026-11-26T11:13:43.637Z",
   "totalProtectedFiles": 536,
   "files": [
     {
@@ -1456,8 +1456,8 @@
     },
     {
       "path": "src/features/ai-review-copilot/copilotAggregation.ts",
-      "sizeBytes": 31708,
-      "sha256": "7f0148483ce0c106daa0ede5be44f79ef50775226e652be16e9b8834e1b84eff"
+      "sizeBytes": 40042,
+      "sha256": "a3586d66ccf47523e940b5b318aa71c45bf4b9b7f9f181b8b2f287372d36ccbe"
     },
     {
       "path": "src/features/ai-review-copilot/copilotTypes.ts",
@@ -2361,8 +2361,8 @@
     },
     {
       "path": "src/test/aiReviewCopilotUx4.test.ts",
-      "sizeBytes": 23791,
-      "sha256": "7d4f71fbd1dd528ccb710a3ac88f721206ede0624f7cbf88efe79b5b89df76bd"
+      "sizeBytes": 27847,
+      "sha256": "73705856eb8c03e2e161071f1464cb8b0f9f53bf17a143c7333995a6681c425e"
     },
     {
       "path": "src/test/collectiveCommitteeIntegration.test.ts",

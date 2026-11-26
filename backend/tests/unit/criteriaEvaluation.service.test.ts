@@ -526,4 +526,183 @@ describe('Criteria Preliminary Evaluation Service', () => {
     assert.equal(appEval.criteriaResults['ethics'].status, 'insufficient_evidence');
     assert.equal(appEval.criteriaResults['ethics'].badgeLabel, 'Cần kiểm tra thêm');
   });
+
+  it('strictly requires at least 01/06 academic achievements / NCKH forms for Tiêu chí Học tập tốt (academic) — only GPA returns insufficient_evidence', async () => {
+    const mockFetch = async () =>
+      ({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  isReadable: true,
+                  documentType: 'Bảng điểm năm học',
+                  extractedStudentName: 'Nguyễn Văn An',
+                  extractedStudentCode: '102220123',
+                  extractedValue: 'GPA: 3.65/4.00',
+                  numericMetric: 3.65,
+                  issuingAuthority: 'Trường Đại học Bách khoa - ĐHĐN',
+                  issueDate: '10/06/2026',
+                  hasRedStampOrSignature: 'verified',
+                  matchWithDeclaration: 'matched',
+                  discrepancyNote: null,
+                }),
+              },
+            },
+          ],
+        }),
+      }) as any;
+
+    const appEval = await evaluateFullApplicationWithOcr(
+      {
+        applicationId: 'APP-2026-ACAD-NO-ACH',
+        studentInfo: {
+          fullName: 'Nguyễn Văn An',
+          studentCode: '102220123',
+          schoolName: 'Trường Đại học Bách khoa - ĐHĐN',
+        },
+        criteria: [
+          {
+            criterionId: 'academic',
+            criterionName: 'Học tập tốt',
+            criterionNumber: 2,
+            declarations: [
+              {
+                declarationId: 'd-acad-gpa-only',
+                requirementId: 'academic-gpa',
+                requirementTitle: 'Điểm trung bình học tập cả năm học',
+                declaredValue: 'GPA 3.65/4.0',
+                evidenceList: [{ id: 'ev-acad-gpa', name: 'Bang_Diem_365.pdf' }],
+              },
+            ],
+          },
+        ],
+      },
+      { apiKey: 'sk-test-key', fetchImpl: mockFetch }
+    );
+
+    assert.equal(appEval.criteriaResults['academic'].status, 'insufficient_evidence');
+    assert.equal(appEval.criteriaResults['academic'].badgeLabel, 'Cần kiểm tra thêm');
+    assert.ok(appEval.criteriaResults['academic'].headline.includes('01/06'));
+  });
+
+  it('strictly requires both Group A and Group B for Tiêu chí Hội nhập tốt (integration) — only language returns insufficient_evidence', async () => {
+    const mockFetch = async () =>
+      ({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  isReadable: true,
+                  documentType: 'Chứng chỉ ngoại ngữ IELTS',
+                  extractedStudentName: 'Nguyễn Văn An',
+                  extractedStudentCode: '102220123',
+                  extractedValue: 'IELTS 7.0 Overall',
+                  numericMetric: 7.0,
+                  issuingAuthority: 'IDP Education',
+                  issueDate: '15/03/2026',
+                  hasRedStampOrSignature: 'verified',
+                  matchWithDeclaration: 'matched',
+                  discrepancyNote: null,
+                }),
+              },
+            },
+          ],
+        }),
+      }) as any;
+
+    const appEval = await evaluateFullApplicationWithOcr(
+      {
+        applicationId: 'APP-2026-INT-NO-GROUP-A',
+        studentInfo: {
+          fullName: 'Nguyễn Văn An',
+          studentCode: '102220123',
+          schoolName: 'Trường Đại học Bách khoa - ĐHĐN',
+        },
+        criteria: [
+          {
+            criterionId: 'integration',
+            criterionName: 'Hội nhập tốt',
+            criterionNumber: 5,
+            declarations: [
+              {
+                declarationId: 'd-int-lang-only',
+                requirementId: 'integration-lang',
+                requirementTitle: 'Tiêu chuẩn năng lực ngoại ngữ',
+                declaredValue: 'IELTS 7.0',
+                evidenceList: [{ id: 'ev-ielts-70', name: 'IELTS_70.pdf' }],
+              },
+            ],
+          },
+        ],
+      },
+      { apiKey: 'sk-test-key', fetchImpl: mockFetch }
+    );
+
+    assert.equal(appEval.criteriaResults['integration'].status, 'insufficient_evidence');
+    assert.equal(appEval.criteriaResults['integration'].badgeLabel, 'Cần kiểm tra thêm');
+    assert.ok(appEval.criteriaResults['integration'].headline.includes('Nhóm A'));
+  });
+
+  it('strictly requires >= 05 volunteer days or volunteer award for Tiêu chí Tình nguyện tốt (volunteer) — 2 days without award returns insufficient_evidence', async () => {
+    const mockFetch = async () =>
+      ({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  isReadable: true,
+                  documentType: 'Giấy chứng nhận tình nguyện',
+                  extractedStudentName: 'Nguyễn Văn An',
+                  extractedStudentCode: '102220123',
+                  extractedValue: 'Tham gia 02 ngày tình nguyện Tiếp sức mùa thi',
+                  numericMetric: 2,
+                  issuingAuthority: 'Hội Sinh viên Thành phố',
+                  issueDate: '05/07/2026',
+                  hasRedStampOrSignature: 'verified',
+                  matchWithDeclaration: 'matched',
+                  discrepancyNote: null,
+                }),
+              },
+            },
+          ],
+        }),
+      }) as any;
+
+    const appEval = await evaluateFullApplicationWithOcr(
+      {
+        applicationId: 'APP-2026-VOL-ONLY-2-DAYS',
+        studentInfo: {
+          fullName: 'Nguyễn Văn An',
+          studentCode: '102220123',
+          schoolName: 'Trường Đại học Bách khoa - ĐHĐN',
+        },
+        criteria: [
+          {
+            criterionId: 'volunteer',
+            criterionName: 'Tình nguyện tốt',
+            criterionNumber: 4,
+            declarations: [
+              {
+                declarationId: 'd-vol-2days',
+                requirementId: 'volunteer-activities',
+                requirementTitle: 'Hoạt động tình nguyện tích lũy',
+                declaredValue: '02 ngày Tiếp sức mùa thi',
+                evidenceList: [{ id: 'ev-vol-2days', name: 'GCN_TSMT_2ngay.pdf' }],
+              },
+            ],
+          },
+        ],
+      },
+      { apiKey: 'sk-test-key', fetchImpl: mockFetch }
+    );
+
+    assert.equal(appEval.criteriaResults['volunteer'].status, 'insufficient_evidence');
+    assert.equal(appEval.criteriaResults['volunteer'].badgeLabel, 'Cần kiểm tra thêm');
+  });
 });
